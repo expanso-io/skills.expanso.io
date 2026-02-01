@@ -1,0 +1,25 @@
+name: string-reverse
+version: 1.0.0
+description: Reverse a string character by character
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to reverse
+
+outputs:
+  - name: reversed
+    type: string
+    description: Reversed text
+  - name: original
+    type: string
+    description: Original text
+
+backends:
+  - name: local
+    type: local
+    description: Local string reversal (no API needed)
+
+author: expanso
+license: MIT

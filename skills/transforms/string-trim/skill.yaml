@@ -1,0 +1,22 @@
+name: string-trim
+version: 1.0.0
+description: Trim whitespace from strings
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to trim
+
+outputs:
+  - name: trimmed
+    type: string
+    description: Trimmed text
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

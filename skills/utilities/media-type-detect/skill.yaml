@@ -1,0 +1,27 @@
+name: media-type-detect
+version: 1.0.0
+description: Detect media type from file extension or content
+
+inputs:
+  - name: filename
+    type: string
+    description: Filename to detect type from
+  - name: content_type
+    type: string
+    description: Content-Type header if available
+
+outputs:
+  - name: media_type
+    type: string
+    description: Detected media type
+  - name: category
+    type: string
+    description: Category (image, audio, video, document)
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

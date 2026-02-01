@@ -1,0 +1,15 @@
+# Test cases for email-validate skill
+
+tests:
+  - name: "Valid email"
+    input: "user@example.com"
+    expected:
+      has_field: valid
+      has_field: user
+      has_field: domain
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Invalid email"
+    input: "not-an-email"
+    expected:
+      has_field: valid

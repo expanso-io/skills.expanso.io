@@ -1,0 +1,37 @@
+name: "image-describe-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"image_url": $input})
+          let url = $parsed.image_url.or($input).string()
+
+          root.messages = [
+            {"role": "system", "content": "You are an image description expert. Describe the image in detail, including objects, colors, composition, and mood."},
+            {"role": "user", "content": [
+              {"type": "text", "text": "Describe this image in detail:"},
+              {"type": "image_url", "image_url": {"url": $url}}
+            ]}
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          root.description = this.choices.0.message.content
+          root.image_url = meta("image_url")
+          root.metadata = {"skill": "image-describe", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,1 @@
+{"event": "user.created", "user_id": "12345", "email": "test@example.com"}

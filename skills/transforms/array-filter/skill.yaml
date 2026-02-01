@@ -1,0 +1,29 @@
+name: array-filter
+version: 1.0.0
+description: Filter array elements by condition
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Source array
+  - name: condition
+    type: string
+    required: true
+    description: Filter condition
+
+outputs:
+  - name: filtered
+    type: array
+    description: Filtered elements
+  - name: count
+    type: integer
+    description: Number of matching elements
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

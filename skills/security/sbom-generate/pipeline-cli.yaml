@@ -1,0 +1,77 @@
+# Expanso Pipeline: sbom-generate (CLI mode)
+# ============================================
+#
+# Generate SBOM from package manifest.
+#
+# Usage:
+#   cat package.json | expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: sbom-generate-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let format = env("FORMAT").or("cyclonedx")
+
+          let pkg = content().parse_json()
+
+          # Extract dependencies
+          let deps = pkg.dependencies.or({})
+          let dev_deps = pkg.devDependencies.or({})
+
+          # Build component list
+          let components = $deps.keys().map_each(name -> {
+            "type": "library",
+            "name": name,
+            "version": $deps.index(name),
+            "scope": "required"
+          }) + $dev_deps.keys().map_each(name -> {
+            "type": "library",
+            "name": name,
+            "version": $dev_deps.index(name),
+            "scope": "optional"
+          })
+
+          # CycloneDX format
+          root.sbom = {
+            "bomFormat": "CycloneDX",
+            "specVersion": "1.5",
+            "serialNumber": "urn:uuid:" + meta("trace_id"),
+            "version": 1,
+            "metadata": {
+              "timestamp": now(),
+              "component": {
+                "type": "application",
+                "name": pkg.name.or("unknown"),
+                "version": pkg.version.or("0.0.0")
+              }
+            },
+            "components": $components
+          }
+          root.metadata = {
+            "skill": "sbom-generate",
+            "mode": "cli",
+            "format": $format,
+            "component_count": $components.length(),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [sbom-generate] Generated SBOM with ${! this.metadata.component_count } components (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

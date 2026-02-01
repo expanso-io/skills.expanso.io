@@ -1,0 +1,51 @@
+# Skill: todoist-automate
+# Version: 1.0.0
+#
+# Automate Todoist task management with AI prioritization.
+
+name: todoist-automate
+version: 1.0.0
+description: AI-powered Todoist automation with smart prioritization and scheduling
+
+credentials:
+  - name: TODOIST_TOKEN
+    required: true
+    description: Todoist API token
+  - name: OPENAI_API_KEY
+    required: true
+    description: OpenAI for AI features
+  - name: TELEGRAM_BOT_TOKEN
+    required: false
+    description: Telegram bot for notifications
+
+inputs:
+  - name: action
+    type: string
+    default: sync
+    enum: [sync, create, prioritize, schedule, remind]
+  - name: project
+    type: string
+    required: false
+  - name: task
+    type: string
+    required: false
+  - name: due_date
+    type: string
+    required: false
+
+outputs:
+  - name: tasks
+    type: array
+  - name: result
+    type: object
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, http, openai_chat_completion, log]
+  outputs: [http_client, stdout, sync_response]

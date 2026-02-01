@@ -1,0 +1,35 @@
+name: image-resize-calc
+version: 1.0.0
+description: Calculate new dimensions for image resizing
+
+inputs:
+  - name: width
+    type: integer
+    required: true
+    description: Current width
+  - name: height
+    type: integer
+    required: true
+    description: Current height
+  - name: max_width
+    type: integer
+    description: Maximum target width
+  - name: max_height
+    type: integer
+    description: Maximum target height
+
+outputs:
+  - name: new_width
+    type: integer
+    description: Calculated new width
+  - name: new_height
+    type: integer
+    description: Calculated new height
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

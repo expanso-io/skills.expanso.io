@@ -1,0 +1,30 @@
+name: "json-merge-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          # Parse as JSON array of objects
+          let parsed = $input.parse_json().catch([])
+          let is_array = $parsed.type() == "array"
+
+          # Merge objects if array
+          let merged = if $is_array { $parsed.fold({}, item, acc -> $acc.merge($item)) } else { $parsed }
+
+          root.merged = $merged
+          root.object_count = if $is_array { $parsed.length() } else { 1 }
+          root.valid = true
+          root.metadata = {"skill": "json-merge", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

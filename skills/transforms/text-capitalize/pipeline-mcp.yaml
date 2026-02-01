@@ -1,0 +1,37 @@
+name: "text-capitalize-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /capitalize
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.text.or(content()).string().trim()
+
+          let upper = $input.uppercase()
+          let lower = $input.lowercase()
+
+          let words = $input.split(" ")
+          let title = $words.map_each(w -> w.slice(0,1).uppercase() + w.slice(1).lowercase()).join(" ")
+
+          let sentence = $input.slice(0,1).uppercase() + $input.slice(1).lowercase()
+
+          root.original = $input
+          root.upper = $upper
+          root.lower = $lower
+          root.title = $title
+          root.sentence = $sentence
+          root.metadata = {"skill": "text-capitalize", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

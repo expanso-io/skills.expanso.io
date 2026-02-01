@@ -1,0 +1,22 @@
+name: text-reverse
+version: 1.0.0
+description: Reverse text strings
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to reverse
+
+outputs:
+  - name: reversed
+    type: string
+    description: Reversed text
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

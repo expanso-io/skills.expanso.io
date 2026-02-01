@@ -1,0 +1,29 @@
+name: "date-diff-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"start": now(), "end": now()})
+
+          let start = $parsed.start.or(now())
+          let end = $parsed.end.or(now())
+
+          root.start = $start
+          root.end = $end
+          root.diff_seconds = ($end.ts_unix() - $start.ts_unix())
+          root.diff_hours = root.diff_seconds / 3600
+          root.diff_days = root.diff_seconds / 86400
+          root.metadata = {"skill": "date-diff", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

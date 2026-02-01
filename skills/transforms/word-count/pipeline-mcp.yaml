@@ -1,0 +1,55 @@
+# Expanso Pipeline: word-count (MCP mode)
+# ========================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/count -d '{"text": "Hello world."}'
+
+name: "word-count-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /count
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let text = this.text.or(content())
+
+          let words = $text.re_find_all("[\\w']+").length()
+          let chars = $text.length()
+          let chars_no_spaces = $text.re_replace_all("\\s", "").length()
+          let sentences = $text.re_find_all("[.!?]+").length()
+          let sentences = if $sentences == 0 && $words > 0 { 1 } else { $sentences }
+          let paragraphs = $text.re_find_all("\\n\\n+").length() + 1
+          let paragraphs = if $text.trim().length() == 0 { 0 } else { $paragraphs }
+
+          root.words = $words
+          root.characters = $chars
+          root.characters_no_spaces = $chars_no_spaces
+          root.sentences = $sentences
+          root.paragraphs = $paragraphs
+          root.reading_time_minutes = ($words / 200).ceil()
+          root.metadata = {
+            "skill": "word-count",
+            "mode": "mcp",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [word-count] ${! root.words } words (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

@@ -1,0 +1,55 @@
+name: "media-type-detect-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"filename": $input})
+          let filename = $parsed.filename.or($input).string().lowercase()
+
+          # Extract extension
+          let parts = $filename.split(".")
+          let ext = if $parts.length() > 1 { $parts.index($parts.length() - 1) } else { "" }
+
+          # Map extension to media type and category
+          let media_type = match $ext {
+            "jpg" => "image/jpeg",
+            "jpeg" => "image/jpeg",
+            "png" => "image/png",
+            "gif" => "image/gif",
+            "webp" => "image/webp",
+            "svg" => "image/svg+xml",
+            "mp3" => "audio/mpeg",
+            "wav" => "audio/wav",
+            "ogg" => "audio/ogg",
+            "mp4" => "video/mp4",
+            "webm" => "video/webm",
+            "pdf" => "application/pdf",
+            "json" => "application/json",
+            "xml" => "application/xml",
+            "html" => "text/html",
+            "txt" => "text/plain",
+            "css" => "text/css",
+            "js" => "application/javascript",
+            _ => "application/octet-stream"
+          }
+
+          let category = if $media_type.has_prefix("image/") { "image" } else if $media_type.has_prefix("audio/") { "audio" } else if $media_type.has_prefix("video/") { "video" } else if $media_type.has_prefix("text/") { "text" } else { "document" }
+
+          root.filename = $filename
+          root.extension = $ext
+          root.media_type = $media_type
+          root.category = $category
+          root.metadata = {"skill": "media-type-detect", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

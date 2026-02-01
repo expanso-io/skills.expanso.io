@@ -1,0 +1,30 @@
+name: "date-format-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          # If input is "now" or empty, use current time
+          let ts = if $input == "now" || $input == "" { now() } else { $input.ts_parse("2006-01-02").catch(now()) }
+
+          root.iso = $ts.ts_format("2006-01-02T15:04:05Z07:00")
+          root.date = $ts.ts_format("2006-01-02")
+          root.time = $ts.ts_format("15:04:05")
+          root.unix = $ts.ts_unix()
+          root.unix_milli = $ts.ts_unix_milli()
+          root.day_of_week = $ts.ts_format("Monday")
+          root.input = $input
+          root.metadata = {"skill": "date-format", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

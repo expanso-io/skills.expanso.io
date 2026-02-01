@@ -1,0 +1,22 @@
+name: array-map
+version: 1.0.0
+description: Transform array elements
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Source array
+
+outputs:
+  - name: mapped
+    type: array
+    description: Transformed elements
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

@@ -1,0 +1,35 @@
+name: "array-first-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /first
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.array.or(content())
+          let count = this.count.or(1).number()
+
+          let parsed = if $input.type() == "array" { $input } else { $input.parse_json().catch([]) }
+          let length = $parsed.length()
+
+          let first = if $length > 0 { $parsed.index(0) } else { null }
+          let first_n = $parsed.slice(0, $count)
+
+          root.first = $first
+          root.first_n = $first_n
+          root.count = $count
+          root.length = $length
+          root.metadata = {"skill": "array-first", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

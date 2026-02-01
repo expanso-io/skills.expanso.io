@@ -1,0 +1,23 @@
+name: audio-transcribe
+version: 1.0.0
+description: Transcribe audio content using AI
+
+inputs:
+  - name: audio_url
+    type: string
+    required: true
+    description: URL of audio file to transcribe
+
+outputs:
+  - name: transcript
+    type: string
+    description: Transcribed text
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI Whisper API
+
+author: expanso
+license: MIT

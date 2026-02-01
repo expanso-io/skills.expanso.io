@@ -1,0 +1,7 @@
+# Test: todoist-automate
+tests:
+  - name: "Syncs tasks"
+    skip: true
+    input: '{"action": "sync"}'
+    expected_output:
+      action: "sync"

@@ -1,0 +1,87 @@
+# Expanso Pipeline: url-to-article (CLI mode)
+# ============================================
+#
+# Extract clean article content from a URL.
+#
+# Usage:
+#   echo "https://example.com/article" | expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: url-to-article-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      # 1. Prepare URL and trace metadata
+      - mapping: |
+          meta url = content().trim()
+          meta trace_id = uuid_v4()
+          root = ""
+
+      # 2. Fetch the URL content
+      - http:
+          url: "${! meta(\"url\") }"
+          verb: GET
+          headers:
+            User-Agent: "Expanso-Edge/1.0 (Article Extractor)"
+            Accept: "text/html,application/xhtml+xml"
+
+      # 3. Extract article content using heuristics
+      - mapping: |
+          # Get raw HTML
+          let html = content()
+
+          # Extract title (look for <title> or <h1>)
+          let title = $html.re_find_all("<title[^>]*>([^<]+)</title>").index(0).or(
+            $html.re_find_all("<h1[^>]*>([^<]+)</h1>").index(0)
+          ).or("Untitled")
+
+          # Extract meta author
+          let author = $html.re_find_all("\"author\"\\s*:\\s*\"([^\"]+)\"").index(0).or(
+            $html.re_find_all("name=[\"']author[\"'][^>]*content=[\"']([^\"']+)").index(0)
+          ).or("Unknown")
+
+          # Extract meta date
+          let date = $html.re_find_all("\"datePublished\"\\s*:\\s*\"([^\"]+)\"").index(0).or(
+            $html.re_find_all("name=[\"']date[\"'][^>]*content=[\"']([^\"']+)").index(0)
+          ).or("")
+
+          # Strip HTML tags for body (simplified)
+          let body = $html
+            .re_replace_all("<script[^>]*>[\\s\\S]*?</script>", "")
+            .re_replace_all("<style[^>]*>[\\s\\S]*?</style>", "")
+            .re_replace_all("<[^>]+>", " ")
+            .re_replace_all("\\s+", " ")
+            .trim()
+            .slice(0, 50000)  # Limit body size
+
+          root.article = {
+            "url": meta("url"),
+            "title": $title.re_replace_all("<[^>]+>", "").trim(),
+            "author": $author,
+            "date": $date,
+            "body": $body,
+            "word_count": $body.split(" ").length()
+          }
+          root.metadata = {
+            "skill": "url-to-article",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      # 4. Audit log
+      - log:
+          level: INFO
+          message: |
+            [url-to-article] Extracted ${! this.article.word_count } words from ${! meta("url") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

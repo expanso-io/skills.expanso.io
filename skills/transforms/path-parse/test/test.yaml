@@ -1,0 +1,7 @@
+tests:
+  - name: "Parse path"
+    input: "/path/to/file.txt"
+    expected:
+      has_field: dirname
+      has_field: extension
+      metadata_has: [skill, trace_id]

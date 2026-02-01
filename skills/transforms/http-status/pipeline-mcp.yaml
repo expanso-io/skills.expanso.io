@@ -1,0 +1,45 @@
+name: "http-status-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /lookup
+      allowed_verbs: [POST, GET]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let code = this.code.or(content()).number().catch(0)
+
+          let category = if $code >= 100 && $code < 200 { "Informational" }
+            else if $code >= 200 && $code < 300 { "Success" }
+            else if $code >= 300 && $code < 400 { "Redirection" }
+            else if $code >= 400 && $code < 500 { "Client Error" }
+            else if $code >= 500 && $code < 600 { "Server Error" }
+            else { "Unknown" }
+
+          let messages = {
+            "100": "Continue", "101": "Switching Protocols",
+            "200": "OK", "201": "Created", "202": "Accepted", "204": "No Content",
+            "301": "Moved Permanently", "302": "Found", "304": "Not Modified",
+            "400": "Bad Request", "401": "Unauthorized", "403": "Forbidden",
+            "404": "Not Found", "405": "Method Not Allowed", "409": "Conflict",
+            "422": "Unprocessable Entity", "429": "Too Many Requests",
+            "500": "Internal Server Error", "501": "Not Implemented",
+            "502": "Bad Gateway", "503": "Service Unavailable", "504": "Gateway Timeout"
+          }
+
+          root.code = $code
+          root.message = $messages.get($code.string()).or("Unknown Status")
+          root.category = $category
+          root.metadata = {"skill": "http-status", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

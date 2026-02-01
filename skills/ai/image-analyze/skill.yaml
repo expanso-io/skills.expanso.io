@@ -1,0 +1,57 @@
+# Skill: image-analyze
+# Version: 1.0.0
+#
+# Deep image analysis returning scene graph with objects, relations, and bounding boxes.
+
+name: image-analyze
+version: 1.0.0
+description: Analyze image content with objects, relations, and scene structure
+
+# Credentials
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key
+
+# Skill inputs
+inputs:
+  - name: image_url
+    type: string
+    required: true
+    description: URL of the image to analyze
+  - name: detail
+    type: string
+    default: high
+    enum: [low, high, auto]
+    description: Analysis detail level
+
+# Skill outputs
+outputs:
+  - name: analysis
+    type: object
+    description: "{objects, colors, text, scene_type, composition}"
+  - name: metadata
+    type: object
+    description: Processing metadata
+
+# Backend options
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+  - name: ollama
+    type: local
+    models: [llava, bakllava]
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+    - log
+  outputs:
+    - stdout
+    - sync_response

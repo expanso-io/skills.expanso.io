@@ -1,0 +1,35 @@
+name: "boolean-parse-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /parse
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.value.or(content()).string().trim().lowercase()
+
+          let truthy = ["true", "yes", "1", "on", "enabled", "y", "t"]
+          let falsy = ["false", "no", "0", "off", "disabled", "n", "f"]
+
+          let is_true = $truthy.contains($input)
+          let is_false = $falsy.contains($input)
+
+          root.input = $input
+          root.boolean = $is_true
+          root.is_truthy = $is_true
+          root.is_falsy = $is_false
+          root.is_valid = $is_true || $is_false
+          root.metadata = {"skill": "boolean-parse", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

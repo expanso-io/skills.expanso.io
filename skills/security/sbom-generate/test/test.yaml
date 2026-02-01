@@ -1,0 +1,7 @@
+# Test: sbom-generate
+tests:
+  - name: "Generates CycloneDX SBOM"
+    input: '{"name":"test","dependencies":{"lodash":"4.17.21"}}'
+    expected_output:
+      sbom:
+        bomFormat: "CycloneDX"

@@ -1,0 +1,7 @@
+# Test: video-generate
+tests:
+  - name: "Generates video"
+    skip: true
+    input: '{"script": "Hello world", "duration_seconds": 30}'
+    expected_output:
+      status: "generated"

@@ -1,0 +1,35 @@
+name: "math-max-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch(null)
+
+          let nums = if $parsed.type() == "array" {
+            $parsed.map_each(x -> x.number().catch(null)).filter(x -> x != null)
+          } else {
+            []
+          }
+
+          let max_val = if $nums.length() > 0 {
+            $nums.fold($nums.index(0), item, acc -> if $item > $acc { $item } else { $acc })
+          } else {
+            null
+          }
+
+          root.max = $max_val
+          root.count = $nums.length()
+          root.metadata = {"skill": "math-max", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

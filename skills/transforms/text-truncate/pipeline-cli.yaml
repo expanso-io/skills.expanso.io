@@ -1,0 +1,57 @@
+# Expanso Pipeline: text-truncate (CLI mode)
+# ===========================================
+#
+# Usage:
+#   echo "This is a long text that will be truncated" | expanso-edge run pipeline-cli.yaml
+#   LENGTH=20 echo "This is a long text" | expanso-edge run pipeline-cli.yaml
+#   LENGTH=20 SUFFIX="[more]" echo "This is a long text" | expanso-edge run pipeline-cli.yaml
+#
+# No API key needed - runs entirely locally.
+
+name: "text-truncate-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let text = content().trim()
+          let length = env("LENGTH").or("100").number().or(100)
+          let suffix = env("SUFFIX").or("...")
+
+          let original_length = $text.length()
+          let needs_truncate = $original_length > $length
+
+          let result = if $needs_truncate {
+            $text.slice(0, $length - $suffix.length()) + $suffix
+          } else {
+            $text
+          }
+
+          root.result = $result
+          root.truncated = $needs_truncate
+          root.original_length = $original_length
+          root.final_length = $result.length()
+          root.metadata = {
+            "skill": "text-truncate",
+            "mode": "cli",
+            "max_length": $length,
+            "suffix": $suffix,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-truncate] ${! root.original_length } -> ${! root.final_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

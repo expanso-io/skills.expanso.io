@@ -1,0 +1,54 @@
+# Skill: markdown-format
+# Version: 1.0.0
+#
+# Format text as Markdown elements (headings, lists, code blocks).
+# Runs locally without API calls.
+
+name: "markdown-format"
+version: "1.0.0"
+description: "Format text as Markdown elements (headings, lists, code blocks, links)"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to format
+  - name: format
+    type: string
+    default: "paragraph"
+    description: "Format type: heading, list, code, link, bold, italic, quote"
+  - name: level
+    type: integer
+    default: 1
+    description: Heading level (1-6) or list indentation
+
+outputs:
+  - name: markdown
+    type: string
+    description: Formatted Markdown
+  - name: format
+    type: string
+    description: Format applied
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local Markdown formatting
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

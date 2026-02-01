@@ -1,0 +1,49 @@
+# Expanso Pipeline: regex-extract (MCP mode)
+# ===========================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/extract \
+#     -d '{"text": "Contact test@example.com", "pattern": "[a-z]+@[a-z]+\\.[a-z]+"}'
+
+name: "regex-extract-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /extract
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let text = this.text.or(content())
+          let pattern = this.pattern.or("\\S+")
+
+          let matches = $text.re_find_all($pattern)
+
+          root.matches = $matches
+          root.count = $matches.length()
+          root.has_match = $matches.length() > 0
+          root.pattern = $pattern
+          root.metadata = {
+            "skill": "regex-extract",
+            "mode": "mcp",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [regex-extract] Found ${! root.count } matches (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

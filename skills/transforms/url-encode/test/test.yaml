@@ -1,0 +1,16 @@
+# Test cases for url-encode skill
+
+tests:
+  - name: "Encode text"
+    input: "Hello World!"
+    expected:
+      has_field: result
+      has_field: mode
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Decode URL-encoded text"
+    input: "Hello%20World%21"
+    env:
+      MODE: decode
+    expected:
+      has_field: result

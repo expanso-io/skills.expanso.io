@@ -1,0 +1,44 @@
+# Skill: idempotent-cache
+# Version: 1.0.0
+#
+# Cache results by input hash to prevent duplicate execution.
+
+name: idempotent-cache
+version: 1.0.0
+description: Cache results by input hash for idempotent operations
+
+credentials: []
+
+inputs:
+  - name: input
+    type: any
+    required: true
+    description: Input to hash and cache
+  - name: ttl_seconds
+    type: integer
+    default: 3600
+    description: Cache TTL in seconds
+
+outputs:
+  - name: hash
+    type: string
+    description: Input hash
+  - name: cached
+    type: boolean
+    description: Whether result was from cache
+  - name: result
+    type: any
+    description: Cached or computed result
+  - name: metadata
+    type: object
+    description: Cache metadata
+
+backends:
+  - name: local
+    type: local
+    description: Local file-based cache
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, cache, log]
+  outputs: [stdout, sync_response]

@@ -1,0 +1,31 @@
+name: "query-string-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /parse
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.query.or(content()).string().trim().trim_prefix("?")
+
+          let pairs = $input.split("&")
+          let count = $pairs.filter(p -> p.contains("=")).length()
+
+          root.raw = $input
+          root.param_count = $count
+          root.pairs = $pairs
+          root.has_encoded = $input.contains("%")
+          root.metadata = {"skill": "query-string", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

@@ -1,0 +1,30 @@
+name: string-replace
+version: 1.0.0
+description: Replace substrings in text
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Source text
+  - name: search
+    type: string
+    required: true
+    description: String to find
+  - name: replace
+    type: string
+    required: true
+    description: Replacement string
+
+outputs:
+  - name: result
+    type: string
+    description: Text with replacements
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

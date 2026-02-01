@@ -1,0 +1,22 @@
+name: password-generate
+version: 1.0.0
+description: Generate secure random passwords
+
+inputs:
+  - name: length
+    type: integer
+    default: 16
+    description: Password length
+
+outputs:
+  - name: password
+    type: string
+    description: Generated password
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

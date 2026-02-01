@@ -1,0 +1,22 @@
+name: lorem-ipsum
+version: 1.0.0
+description: Generate Lorem Ipsum placeholder text
+
+inputs:
+  - name: paragraphs
+    type: integer
+    default: 1
+    description: Number of paragraphs
+
+outputs:
+  - name: text
+    type: string
+    description: Generated text
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

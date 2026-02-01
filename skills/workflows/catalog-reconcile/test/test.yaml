@@ -1,0 +1,8 @@
+# Test: catalog-reconcile
+tests:
+  - name: "Reconciles catalogs"
+    skip: true
+    input: '{"catalogs": ["a", "b"]}'
+    expected_output:
+      metadata:
+        skill: "catalog-reconcile"

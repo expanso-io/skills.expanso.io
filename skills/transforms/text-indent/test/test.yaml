@@ -1,0 +1,7 @@
+tests:
+  - name: "Indent text"
+    input: "line1\nline2"
+    expected:
+      has_field: indented_2
+      has_field: line_count
+      metadata_has: [skill, trace_id]

@@ -1,0 +1,59 @@
+# Skill: text-embed
+# Version: 1.0.0
+#
+# Generate embedding vectors from text using OpenAI or local models.
+# Perfect for RAG, semantic search, and similarity matching.
+
+name: text-embed
+version: 1.0.0
+description: Generate embedding vectors from text for RAG and semantic search
+
+# Credentials
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key (not required if using Ollama)
+
+# Skill inputs
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to embed (up to 8191 tokens)
+  - name: model
+    type: string
+    default: text-embedding-3-small
+    description: Embedding model to use
+
+# Skill outputs
+outputs:
+  - name: embedding
+    type: array
+    description: Vector embedding (1536 or 3072 dimensions)
+  - name: metadata
+    type: object
+    description: Model info, dimensions, token count
+
+# Backend options
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI text-embedding-3-small (fast, ~$0.00002 per 1K tokens)
+  - name: ollama
+    type: local
+    models: [nomic-embed-text, all-minilm]
+    description: Local Ollama embeddings (private, free)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_embeddings
+    - log
+  outputs:
+    - stdout
+    - sync_response

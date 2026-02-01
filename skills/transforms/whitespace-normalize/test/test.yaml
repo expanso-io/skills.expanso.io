@@ -1,0 +1,7 @@
+tests:
+  - name: "Normalize whitespace"
+    input: "hello   world"
+    expected:
+      has_field: normalized
+      has_field: chars_removed
+      metadata_has: [skill, trace_id]

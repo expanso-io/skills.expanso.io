@@ -1,0 +1,94 @@
+# Expanso Pipeline: meeting-notes (MCP mode)
+# =============================================
+#
+# HTTP endpoint for meeting notes extraction.
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#
+#   curl -X POST http://localhost:8080/extract \
+#     -H "Content-Type: application/json" \
+#     -d '{"transcript": "Alice: Let us discuss the roadmap..."}'
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: meeting-notes-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /extract
+      allowed_verbs: [POST]
+      timeout: 120s
+
+  pipeline:
+    processors:
+      # 1. Parse and validate
+      - mapping: |
+          let transcript = this.transcript.or(content())
+          root = if $transcript.length() == 0 {
+            throw("transcript field is required")
+          } else if $transcript.length() > 2097152 {
+            throw("transcript exceeds maximum length of 2MB")
+          } else {
+            {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are a professional meeting notes assistant. Extract structured notes from transcripts. Always respond with valid JSON containing: summary (2-3 sentences), key_points (array of strings), action_items (array of {assignee, task, due_date}), decisions (array of strings), attendees (array of names mentioned)."
+                },
+                {
+                  "role": "user",
+                  "content": "Extract structured meeting notes from this transcript:\n\n" + $transcript
+                }
+              ]
+            }
+          }
+          meta input_hash = $transcript.hash("sha256").encode("hex")
+          meta input_length = $transcript.length()
+          meta trace_id = uuid_v4()
+
+      # 2. Process with LLM
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      # 3. Format response
+      - mapping: |
+          let raw_content = this.choices.0.message.content
+          let notes = $raw_content.parse_json().catch({
+            "summary": $raw_content,
+            "key_points": [],
+            "action_items": [],
+            "decisions": [],
+            "attendees": []
+          })
+
+          root.notes = $notes
+          root.metadata = {
+            "skill": "meeting-notes",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "input_hash": meta("input_hash"),
+            "input_length": meta("input_length"),
+            "action_item_count": $notes.action_items.length(),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [meeting-notes] MCP request: ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}
+
+selector:
+  match_labels:
+    capability: llm

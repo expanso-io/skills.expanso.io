@@ -1,0 +1,61 @@
+# Skill: image-alttext
+# Version: 1.0.0
+#
+# Generate accessibility-optimized alt text for images.
+# Follows WCAG guidelines for screen reader compatibility.
+
+name: image-alttext
+version: 1.0.0
+description: Generate accessibility-optimized alt text for images (WCAG compliant)
+
+# Credentials
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key
+
+# Skill inputs
+inputs:
+  - name: image_url
+    type: string
+    required: true
+    description: URL of the image to describe
+  - name: context
+    type: string
+    required: false
+    description: Additional context about where the image appears
+  - name: max_length
+    type: integer
+    default: 125
+    description: Maximum alt text length (WCAG recommends 125 chars)
+
+# Skill outputs
+outputs:
+  - name: alt_text
+    type: string
+    description: Accessibility-optimized alt text
+  - name: metadata
+    type: object
+    description: Processing metadata
+
+# Backend options
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+  - name: ollama
+    type: local
+    models: [llava, bakllava]
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+    - log
+  outputs:
+    - stdout
+    - sync_response

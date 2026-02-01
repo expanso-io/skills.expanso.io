@@ -1,0 +1,8 @@
+# Test: image-analyze
+tests:
+  - name: "Analyzes image"
+    skip: true
+    input: "https://example.com/test.jpg"
+    expected_output:
+      metadata:
+        skill: "image-analyze"

@@ -1,0 +1,33 @@
+name: "string-replace-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /replace
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let text = this.text.or("")
+          let search = this.search.or("")
+          let replace_with = this.replace.or("")
+
+          let result = $text.replace_all($search, $replace_with)
+
+          root.original = $text
+          root.result = $result
+          root.search = $search
+          root.replace = $replace_with
+          root.metadata = {"skill": "string-replace", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

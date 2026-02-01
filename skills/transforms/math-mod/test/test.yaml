@@ -1,0 +1,7 @@
+tests:
+  - name: "Calculate modulo"
+    input: '{"dividend": 10, "divisor": 3}'
+    expected:
+      has_field: remainder
+      has_field: dividend
+      metadata_has: [skill, trace_id]

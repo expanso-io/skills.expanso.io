@@ -1,0 +1,52 @@
+# Skill: policy-check
+# Version: 1.0.0
+#
+# Check configuration against policy rules (OPA/Rego style).
+
+name: policy-check
+version: 1.0.0
+description: Check configuration against policy rules (allow/deny with reasons)
+
+# No credentials required
+credentials: []
+
+# Skill inputs
+inputs:
+  - name: config
+    type: object
+    required: true
+    description: Configuration to check
+  - name: policy
+    type: object
+    required: true
+    description: "Policy rules: {allow: [...], deny: [...]}"
+
+# Skill outputs
+outputs:
+  - name: allowed
+    type: boolean
+    description: Whether config passes all policies
+  - name: violations
+    type: array
+    description: List of policy violations
+  - name: metadata
+    type: object
+    description: Check metadata
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    description: Local policy evaluation
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - log
+  outputs:
+    - stdout
+    - sync_response

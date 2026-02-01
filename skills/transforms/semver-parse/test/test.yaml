@@ -1,0 +1,8 @@
+tests:
+  - name: "Parse semver"
+    input: "1.2.3"
+    expected:
+      has_field: major
+      has_field: minor
+      has_field: patch
+      metadata_has: [skill, trace_id]

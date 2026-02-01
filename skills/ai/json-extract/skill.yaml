@@ -1,0 +1,64 @@
+# Skill: json-extract
+# Version: 1.0.0
+#
+# Extract structured JSON from natural language text.
+# Perfect for parsing unstructured data into typed schemas.
+
+name: json-extract
+version: 1.0.0
+description: Extract structured JSON from natural language text
+
+# Credentials (stored locally on Expanso Edge, never transmitted)
+credentials:
+  - name: OPENAI_API_KEY
+    required: false  # Not required if using Ollama
+    description: OpenAI API key for remote inference
+
+# Skill inputs
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to extract data from
+  - name: schema
+    type: object
+    required: false
+    description: JSON Schema for output validation
+  - name: fields
+    type: array
+    required: false
+    description: Simple list of fields to extract (alternative to schema)
+
+# Skill outputs
+outputs:
+  - name: extracted
+    type: object
+    description: Extracted JSON data
+  - name: metadata
+    type: object
+    description: Audit metadata (model, timestamp, input_hash)
+
+# Backend options (Expanso Edge flexibility)
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI GPT-4o-mini with JSON mode
+  - name: ollama
+    type: local
+    models: [llama3.2, mistral]
+    description: Local Ollama (private, free)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+    - json_schema  # For validation
+    - log
+  outputs:
+    - stdout
+    - sync_response

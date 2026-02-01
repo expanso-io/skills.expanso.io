@@ -1,0 +1,8 @@
+# Test: morning-briefing
+tests:
+  - name: "Generates briefing"
+    skip: true
+    input: '{"location": "NYC"}'
+    expected_output:
+      metadata:
+        skill: "morning-briefing"

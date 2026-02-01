@@ -1,0 +1,28 @@
+name: "timezone-convert-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"timestamp": now(), "timezone": "UTC"})
+
+          let ts = $parsed.timestamp.or(now())
+          let tz = $parsed.timezone.or("UTC").string()
+
+          root.original = $ts
+          root.timezone = $tz
+          root.converted = $ts.ts_tz($tz).catch($ts)
+          root.utc = $ts
+          root.metadata = {"skill": "timezone-convert", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

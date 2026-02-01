@@ -1,0 +1,28 @@
+name: media-info
+version: 1.0.0
+description: Get comprehensive media file information
+
+inputs:
+  - name: filename
+    type: string
+    required: true
+    description: Media filename
+  - name: size_bytes
+    type: integer
+    description: File size in bytes
+
+outputs:
+  - name: type
+    type: string
+    description: Media type category
+  - name: format
+    type: string
+    description: File format
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

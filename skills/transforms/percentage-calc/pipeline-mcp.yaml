@@ -1,0 +1,33 @@
+name: "percentage-calc-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /calculate
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let value = this.value.or(0).number()
+          let total = this.total.or(100).number()
+
+          let percentage = if $total > 0 { ($value / $total) * 100 } else { 0 }
+          let ratio = if $total > 0 { $value / $total } else { 0 }
+
+          root.value = $value
+          root.total = $total
+          root.percentage = $percentage
+          root.ratio = $ratio
+          root.formatted = $percentage.string() + "%"
+          root.metadata = {"skill": "percentage-calc", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

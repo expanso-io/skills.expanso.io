@@ -1,0 +1,41 @@
+# Expanso Pipeline: idempotent-cache (CLI mode)
+
+name: idempotent-cache-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let input = content()
+          let hash = $input.hash("sha256").encode("hex")
+
+          # Check cache (placeholder - real impl uses cache processor)
+          let cached = false
+          let result = $input
+
+          root.hash = $hash
+          root.cached = $cached
+          root.result = $result
+          root.metadata = {
+            "skill": "idempotent-cache",
+            "mode": "cli",
+            "input_size": $input.length(),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [idempotent-cache] Hash: ${! this.hash.slice(0, 16) }..., cached: ${! this.cached } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

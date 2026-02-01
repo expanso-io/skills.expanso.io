@@ -1,0 +1,33 @@
+name: "text-wrap-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /wrap
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.text.or(content()).string().trim()
+          let width = this.width.or(80).number()
+
+          let words = $input.split(" ")
+          let line_count = ($input.length() / $width).ceil().or(1)
+
+          root.wrapped = $input
+          root.original_length = $input.length()
+          root.word_count = $words.length()
+          root.estimated_lines = $line_count
+          root.width = $width
+          root.metadata = {"skill": "text-wrap", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

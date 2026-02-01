@@ -1,0 +1,7 @@
+tests:
+  - name: "Reverse text"
+    input: "Hello"
+    expected:
+      has_field: reversed
+      has_field: is_palindrome
+      metadata_has: [skill, trace_id]

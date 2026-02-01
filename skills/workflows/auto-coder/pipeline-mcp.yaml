@@ -1,0 +1,29 @@
+# Expanso Pipeline: auto-coder (MCP mode)
+
+name: auto-coder-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /code
+      allowed_verbs: [POST]
+      timeout: 600s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let task = this.task.or("")
+
+          root = if $task.length() == 0 { throw("task required") } else { "" }
+          root.task = $task
+          root.changes = []
+          root.metadata = {"skill": "auto-coder", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

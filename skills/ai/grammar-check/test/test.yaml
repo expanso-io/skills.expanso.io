@@ -1,0 +1,16 @@
+# Test cases for grammar-check skill
+
+tests:
+  - name: "Check text with errors"
+    input: "Their going to the store tommorow"
+    expected:
+      has_field: corrected
+      has_field: issues
+      has_field: issue_count
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Check correct text"
+    input: "The quick brown fox jumps over the lazy dog."
+    expected:
+      has_field: corrected
+      has_field: has_issues

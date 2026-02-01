@@ -1,0 +1,26 @@
+# Expanso Pipeline: voice-admin (MCP mode)
+
+name: voice-admin-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /voice
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          root.transcript = "Sample transcription"
+          root.actions = []
+          root.metadata = {"skill": "voice-admin", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

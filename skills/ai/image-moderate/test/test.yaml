@@ -1,0 +1,8 @@
+# Test: image-moderate
+tests:
+  - name: "Moderates image"
+    skip: true
+    input: "https://example.com/test.jpg"
+    expected_output:
+      metadata:
+        skill: "image-moderate"

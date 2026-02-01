@@ -1,0 +1,7 @@
+tests:
+  - name: "Generate random"
+    input: ""
+    expected:
+      has_field: uuid_based
+      has_field: random_hex
+      metadata_has: [skill, trace_id]

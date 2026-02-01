@@ -1,0 +1,49 @@
+# Skill: json-canonicalize
+# Version: 1.0.0
+#
+# Convert JSON to canonical form (stable key ordering + minimal whitespace).
+# Required for reproducible hashing and signing.
+
+name: json-canonicalize
+version: 1.0.0
+description: Convert JSON to canonical form for reproducible hashing/signing
+
+# No credentials required
+credentials: []
+
+# Skill inputs
+inputs:
+  - name: json
+    type: object
+    required: true
+    description: JSON to canonicalize
+
+# Skill outputs
+outputs:
+  - name: canonical
+    type: string
+    description: Canonicalized JSON string
+  - name: hash
+    type: string
+    description: SHA-256 hash of canonical form
+  - name: metadata
+    type: object
+    description: Processing metadata
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    description: Pure local processing
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - log
+  outputs:
+    - stdout
+    - sync_response

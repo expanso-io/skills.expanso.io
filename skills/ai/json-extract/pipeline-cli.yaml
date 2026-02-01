@@ -1,0 +1,84 @@
+# Expanso Pipeline: json-extract (CLI mode)
+# ==========================================
+#
+# Extract structured JSON from natural language text.
+#
+# Usage:
+#   echo "John Smith, 35 years old, lives in NYC" | expanso-edge run pipeline-cli.yaml
+#
+#   # With custom fields
+#   echo "Contact: jane@example.com, Phone: 555-1234" | \
+#     EXTRACT_FIELDS="email,phone" expanso-edge run pipeline-cli.yaml
+#
+# Why Expanso Edge?
+#   Your OPENAI_API_KEY stays on your machine.
+#   The AI service only sees the text - not your identity or key source.
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: json-extract-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+      max_buffer: 1048576  # 1MB max input
+
+  pipeline:
+    processors:
+      # 1. Prepare input with audit metadata
+      - mapping: |
+          # Generate audit trail data
+          meta input_hash = content().hash("sha256").encode("hex")
+          meta input_length = content().length()
+          meta trace_id = uuid_v4()
+
+          # Get extraction fields from environment (default to common fields)
+          let extract_fields = env("EXTRACT_FIELDS").or("name,email,phone,address,date,amount,company")
+
+          # Prepare prompt for structured extraction
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a precise data extractor. Extract structured information from text and return valid JSON. Only include fields that are actually present in the text. If a field is not found, omit it from the output. Never guess or make up values."
+            },
+            {
+              "role": "user",
+              "content": "Extract the following fields if present: " + $extract_fields + "\n\nText:\n" + content() + "\n\nRespond with valid JSON only, no explanation."
+            }
+          ]
+
+      # 2. Call OpenAI with JSON mode (credentials resolved locally)
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      # 3. Parse and format output
+      - mapping: |
+          # Try to parse the response as JSON
+          let raw_response = this.choices.0.message.content
+          let extracted = $raw_response.parse_json().catch({})
+
+          root.extracted = $extracted
+          root.raw_response = $raw_response
+          root.metadata = {
+            "skill": "json-extract",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "input_hash": meta("input_hash"),
+            "input_length": meta("input_length"),
+            "trace_id": meta("trace_id"),
+            "fields_requested": env("EXTRACT_FIELDS").or("default"),
+            "timestamp": now()
+          }
+
+      # 4. Audit log
+      - log:
+          level: INFO
+          message: |
+            [json-extract] Extracted from ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

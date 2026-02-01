@@ -1,0 +1,16 @@
+# Test cases for text-format skill
+
+tests:
+  - name: "Format to lowercase"
+    input: "HELLO WORLD"
+    expected:
+      has_field: result
+      has_field: format
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Format to uppercase"
+    input: "hello world"
+    env:
+      FORMAT: upper
+    expected:
+      has_field: result

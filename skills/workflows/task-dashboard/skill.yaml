@@ -1,0 +1,36 @@
+# Skill: task-dashboard
+name: task-dashboard
+version: 1.0.0
+description: Mission control dashboard for AI agent task queue management
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: true
+
+inputs:
+  - name: action
+    type: string
+    default: status
+    enum: [status, add, complete, prioritize]
+  - name: task
+    type: string
+    required: false
+
+outputs:
+  - name: queue
+    type: array
+  - name: completed
+    type: array
+  - name: status
+    type: object
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, log]
+  outputs: [stdout, sync_response]

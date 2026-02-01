@@ -1,0 +1,26 @@
+name: object-pick
+version: 1.0.0
+description: Pick specific keys from an object
+
+inputs:
+  - name: object
+    type: object
+    required: true
+    description: Source object
+  - name: keys
+    type: array
+    required: true
+    description: Keys to pick
+
+outputs:
+  - name: picked
+    type: object
+    description: Object with only picked keys
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

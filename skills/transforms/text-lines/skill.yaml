@@ -1,0 +1,25 @@
+name: text-lines
+version: 1.0.0
+description: Split text into lines and analyze
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Multi-line text
+
+outputs:
+  - name: lines
+    type: array
+    description: Array of lines
+  - name: count
+    type: integer
+    description: Line count
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

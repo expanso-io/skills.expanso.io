@@ -1,0 +1,36 @@
+# Skill: number-format
+name: "number-format"
+version: "1.0.0"
+description: "Format numbers with thousands separators, decimals, currency"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []
+
+inputs:
+  - name: number
+    type: number
+    required: true
+  - name: format
+    type: string
+    default: "standard"
+    description: "Format type: standard, currency, percent, scientific"
+
+outputs:
+  - name: formatted
+    type: string
+  - name: original
+    type: number
+
+backends:
+  - name: local
+    type: local
+    requires: []
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping]
+  outputs: [stdout, sync_response]

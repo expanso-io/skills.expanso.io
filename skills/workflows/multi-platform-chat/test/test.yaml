@@ -1,0 +1,7 @@
+# Test: multi-platform-chat
+tests:
+  - name: "Routes to platform"
+    skip: true
+    input: '{"message": "Hello", "platform": "telegram"}'
+    expected_output:
+      platform: "telegram"

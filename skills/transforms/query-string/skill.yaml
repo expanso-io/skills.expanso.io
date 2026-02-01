@@ -1,0 +1,22 @@
+name: query-string
+version: 1.0.0
+description: Parse and build URL query strings
+
+inputs:
+  - name: query
+    type: string
+    required: true
+    description: Query string to parse
+
+outputs:
+  - name: params
+    type: object
+    description: Parsed parameters
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

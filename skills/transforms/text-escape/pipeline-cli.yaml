@@ -1,0 +1,28 @@
+name: "text-escape-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          # Escape common special characters
+          let escaped = $input.escape_url_query()
+          let html_escaped = $input.re_replace_all("&", "&amp;").re_replace_all("<", "&lt;").re_replace_all(">", "&gt;")
+
+          root.original = $input
+          root.url_escaped = $escaped
+          root.html_escaped = $html_escaped
+          root.original_length = $input.length()
+          root.metadata = {"skill": "text-escape", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,6 @@
+tests:
+  - name: "Check prefix"
+    input: '{"text": "Hello", "prefix": "He"}'
+    expected:
+      has_field: starts_with
+      metadata_has: [skill, trace_id]

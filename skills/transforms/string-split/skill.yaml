@@ -1,0 +1,26 @@
+name: string-split
+version: 1.0.0
+description: Split strings by delimiter
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to split
+  - name: delimiter
+    type: string
+    default: ","
+    description: Delimiter character
+
+outputs:
+  - name: parts
+    type: array
+    description: Array of parts
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

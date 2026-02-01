@@ -1,0 +1,32 @@
+name: "json-merge-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /merge
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.objects.or(content())
+
+          let parsed = if $input.type() == "array" { $input } else { $input.parse_json().catch([]) }
+          let is_array = $parsed.type() == "array"
+
+          let merged = if $is_array { $parsed.fold({}, item, acc -> $acc.merge($item)) } else { $parsed }
+
+          root.merged = $merged
+          root.object_count = if $is_array { $parsed.length() } else { 1 }
+          root.valid = true
+          root.metadata = {"skill": "json-merge", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

@@ -1,0 +1,66 @@
+# Expanso Pipeline: html-strip (CLI mode)
+# ========================================
+#
+# Usage:
+#   echo "<p>Hello <b>World</b></p>" | expanso-edge run pipeline-cli.yaml
+#
+# No API key needed - runs entirely locally.
+
+name: "html-strip-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let html = content()
+          let original_length = $html.length()
+
+          # Remove script and style blocks first
+          let text = $html.re_replace_all("(?i)<script[^>]*>.*?</script>", "")
+          let text = $text.re_replace_all("(?i)<style[^>]*>.*?</style>", "")
+
+          # Remove HTML comments
+          let text = $text.re_replace_all("<!--.*?-->", "")
+
+          # Remove all HTML tags
+          let text = $text.re_replace_all("<[^>]+>", "")
+
+          # Decode common HTML entities
+          let text = $text.re_replace_all("&nbsp;", " ")
+          let text = $text.re_replace_all("&amp;", "&")
+          let text = $text.re_replace_all("&lt;", "<")
+          let text = $text.re_replace_all("&gt;", ">")
+          let text = $text.re_replace_all("&quot;", "\"")
+          let text = $text.re_replace_all("&#39;", "'")
+
+          # Normalize whitespace
+          let text = $text.re_replace_all("\\s+", " ").trim()
+
+          root.text = $text
+          root.original_length = $original_length
+          root.text_length = $text.length()
+          root.reduction_percent = if $original_length > 0 {
+            (($original_length - $text.length()) * 100 / $original_length).round()
+          } else { 0 }
+          root.metadata = {
+            "skill": "html-strip",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [html-strip] ${! root.original_length } -> ${! root.text_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

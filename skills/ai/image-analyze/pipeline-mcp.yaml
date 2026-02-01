@@ -1,0 +1,94 @@
+# Expanso Pipeline: image-analyze (MCP mode)
+# =============================================
+#
+# HTTP endpoint for image analysis.
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#
+#   curl -X POST http://localhost:8080/analyze \
+#     -H "Content-Type: application/json" \
+#     -d '{"image_url": "https://example.com/image.jpg"}'
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: image-analyze-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /analyze
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let url = this.image_url.or("")
+          let detail = this.detail.or("high")
+
+          root = if $url.length() == 0 {
+            throw("image_url field is required")
+          } else {
+            {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are an image analysis expert. Analyze images and return structured JSON with: objects (array of {name, confidence, position}), colors (dominant color palette), text (any text visible), scene_type (indoor/outdoor/abstract/etc), composition (rule_of_thirds, symmetry, etc), mood (emotional tone). Be precise and comprehensive."
+                },
+                {
+                  "role": "user",
+                  "content": [
+                    {"type": "image_url", "image_url": {"url": $url, "detail": $detail}},
+                    {"type": "text", "text": "Analyze this image and return structured JSON."}
+                  ]
+                }
+              ]
+            }
+          }
+          meta image_url = $url
+          meta trace_id = uuid_v4()
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let content = this.choices.0.message.content
+          let analysis = $content.parse_json().catch({
+            "raw_analysis": $content,
+            "objects": [],
+            "colors": [],
+            "text": "",
+            "scene_type": "unknown",
+            "composition": "unknown",
+            "mood": "neutral"
+          })
+
+          root.analysis = $analysis
+          root.metadata = {
+            "skill": "image-analyze",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "image_url": meta("image_url"),
+            "object_count": $analysis.objects.length(),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [image-analyze] MCP request (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}
+
+selector:
+  match_labels:
+    capability: llm

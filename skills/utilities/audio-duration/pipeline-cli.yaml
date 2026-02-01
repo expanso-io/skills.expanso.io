@@ -1,0 +1,35 @@
+name: "audio-duration-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"seconds": $input.number().catch(0)})
+          let secs = $parsed.seconds.or($input).number().catch(0)
+
+          let hours = ($secs / 3600).floor()
+          let mins = (($secs % 3600) / 60).floor()
+          let s = ($secs % 60).floor()
+
+          let h_str = if $hours < 10 { "0" + $hours.string() } else { $hours.string() }
+          let m_str = if $mins < 10 { "0" + $mins.string() } else { $mins.string() }
+          let s_str = if $s < 10 { "0" + $s.string() } else { $s.string() }
+
+          root.seconds = $secs
+          root.minutes = ($secs / 60)
+          root.hours = ($secs / 3600)
+          root.formatted = $h_str + ":" + $m_str + ":" + $s_str
+          root.short = if $hours > 0 { $h_str + ":" + $m_str + ":" + $s_str } else { $m_str + ":" + $s_str }
+          root.metadata = {"skill": "audio-duration", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,30 @@
+name: "password-generate-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /generate
+      allowed_verbs: [POST, GET]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let random1 = uuid_v4().replace_all("-", "")
+          let random2 = uuid_v4().replace_all("-", "")
+          let combined = $random1 + $random2
+
+          root.password = $combined.slice(0, 16)
+          root.length = 16
+          root.entropy_bits = 64
+          root.metadata = {"skill": "password-generate", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

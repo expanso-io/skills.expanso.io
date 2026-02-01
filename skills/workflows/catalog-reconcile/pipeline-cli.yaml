@@ -1,0 +1,37 @@
+# Expanso Pipeline: catalog-reconcile (CLI mode)
+
+name: catalog-reconcile-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+
+          # Simulated catalog reconciliation
+          root.matches = [
+            {"sku": "SKU-001", "sources": ["catalog_a", "catalog_b"], "confidence": 0.98},
+            {"sku": "SKU-002", "sources": ["catalog_a", "catalog_b", "catalog_c"], "confidence": 0.95}
+          ]
+          root.conflicts = [
+            {"sku": "SKU-003", "field": "price", "values": {"catalog_a": 29.99, "catalog_b": 24.99}}
+          ]
+          root.unmatched = [
+            {"sku": "SKU-100", "source": "catalog_a", "reason": "no_match_found"}
+          ]
+          root.summary = {"total_processed": 1000, "matched": 950, "conflicts": 25, "unmatched": 25}
+          root.metadata = {"skill": "catalog-reconcile", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[catalog-reconcile] ${! this.summary.matched } matches, ${! this.summary.conflicts } conflicts"
+
+  output:
+    stdout:
+      codec: json_object

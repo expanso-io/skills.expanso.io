@@ -1,0 +1,29 @@
+# Expanso Pipeline: marketing-auto (MCP mode)
+
+name: marketing-auto-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /marketing
+      allowed_verbs: [POST]
+      timeout: 120s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let action = this.action.or("campaign")
+
+          root.action = $action
+          root.content = []
+          root.schedule = []
+          root.metadata = {"skill": "marketing-auto", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

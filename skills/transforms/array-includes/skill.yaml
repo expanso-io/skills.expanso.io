@@ -1,0 +1,26 @@
+name: array-includes
+version: 1.0.0
+description: Check if array includes a value
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Array to search
+  - name: value
+    type: any
+    required: true
+    description: Value to find
+
+outputs:
+  - name: includes
+    type: boolean
+    description: Whether value was found
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

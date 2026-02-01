@@ -1,0 +1,6 @@
+# Test: idempotent-cache
+tests:
+  - name: "Hashes input"
+    input: '{"data":"test"}'
+    expected_output:
+      cached: false

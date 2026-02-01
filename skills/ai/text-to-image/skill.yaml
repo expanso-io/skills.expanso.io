@@ -1,0 +1,65 @@
+# Skill: text-to-image
+# Version: 1.0.0
+#
+# Generate images from text descriptions using DALL-E.
+
+name: text-to-image
+version: 1.0.0
+description: Generate images from text descriptions using AI
+
+# Credentials
+credentials:
+  - name: OPENAI_API_KEY
+    required: true
+    description: OpenAI API key for DALL-E
+
+# Skill inputs
+inputs:
+  - name: prompt
+    type: string
+    required: true
+    description: Text description of the image to generate
+  - name: size
+    type: string
+    default: 1024x1024
+    enum: [1024x1024, 1792x1024, 1024x1792]
+    description: Image dimensions
+  - name: quality
+    type: string
+    default: standard
+    enum: [standard, hd]
+    description: Image quality
+  - name: style
+    type: string
+    default: vivid
+    enum: [vivid, natural]
+    description: Generation style
+
+# Skill outputs
+outputs:
+  - name: image_url
+    type: string
+    description: URL of generated image (expires in 1 hour)
+  - name: metadata
+    type: object
+    description: Generation metadata
+
+# Backend options
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: DALL-E 3 (~$0.04 per image)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_image_generation
+    - log
+  outputs:
+    - stdout
+    - sync_response

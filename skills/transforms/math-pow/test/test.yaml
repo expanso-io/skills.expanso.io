@@ -1,0 +1,7 @@
+tests:
+  - name: "Calculate power"
+    input: '{"base": 2, "exponent": 3}'
+    expected:
+      has_field: result
+      has_field: base
+      metadata_has: [skill, trace_id]

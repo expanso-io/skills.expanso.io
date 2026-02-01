@@ -1,0 +1,22 @@
+name: math-abs
+version: 1.0.0
+description: Calculate absolute value
+
+inputs:
+  - name: number
+    type: number
+    required: true
+    description: Number to get absolute value of
+
+outputs:
+  - name: abs
+    type: number
+    description: Absolute value
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

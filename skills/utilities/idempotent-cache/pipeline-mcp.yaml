@@ -1,0 +1,43 @@
+# Expanso Pipeline: idempotent-cache (MCP mode)
+
+name: idempotent-cache-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /cache
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let input = this.input
+          meta trace_id = uuid_v4()
+
+          root = if $input == null { throw("input field is required") } else { "" }
+
+          let canonical = $input.format_json().catch($input.string())
+          let hash = $canonical.hash("sha256").encode("hex")
+
+          root.hash = $hash
+          root.cached = false
+          root.result = $input
+          root.metadata = {
+            "skill": "idempotent-cache",
+            "mode": "mcp",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: "[idempotent-cache] MCP hash: ${! this.hash.slice(0, 16) }..."
+
+  output:
+    sync_response: {}

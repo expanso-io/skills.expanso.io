@@ -1,0 +1,7 @@
+tests:
+  - name: "Chunk array"
+    input: "[1, 2, 3, 4]"
+    expected:
+      has_field: chunk_count
+      has_field: original_length
+      metadata_has: [skill, trace_id]

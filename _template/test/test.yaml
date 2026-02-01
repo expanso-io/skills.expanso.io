@@ -1,0 +1,37 @@
+# Test cases for {{SKILL_NAME}}
+# Run with: ./scripts/test-skill.sh {{SKILL_NAME}}
+
+name: "{{SKILL_NAME}}-tests"
+description: "Test cases for the {{SKILL_NAME}} skill"
+
+# Test fixtures are in the fixtures/ subdirectory
+fixtures_dir: "./fixtures"
+
+tests:
+  - name: "basic_input"
+    description: "Test with basic text input"
+    input_file: "fixtures/input.txt"
+    expected:
+      # The result field should exist
+      has_field: "result"
+      # Metadata should include trace_id
+      metadata_has: ["trace_id", "input_hash", "timestamp"]
+
+  - name: "empty_input"
+    description: "Test graceful handling of empty input"
+    input: ""
+    expected:
+      # Should either error gracefully or return empty result
+      error_or_empty: true
+
+  - name: "large_input"
+    description: "Test with larger input (under max_buffer)"
+    input_file: "fixtures/large-input.txt"
+    expected:
+      has_field: "result"
+      max_latency_ms: 30000  # 30 second timeout
+
+# Notes for test implementation:
+# - Tests run against pipeline-cli.yaml by default
+# - Set MOCK_LLM=true to use mock responses (faster, no API key needed)
+# - Actual LLM tests require OPENAI_API_KEY

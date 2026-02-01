@@ -1,0 +1,7 @@
+# Test: sign-envelope
+tests:
+  - name: "Signs payload"
+    input: '{"data":"test"}'
+    expected_output:
+      envelope:
+        algorithm: "hmac-sha256"

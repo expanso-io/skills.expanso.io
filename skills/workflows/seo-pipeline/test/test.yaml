@@ -1,0 +1,8 @@
+# Test: seo-pipeline
+tests:
+  - name: "Analyzes URL"
+    skip: true
+    input: '{"url": "https://example.com"}'
+    expected_output:
+      analysis:
+        url: "https://example.com"

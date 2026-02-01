@@ -1,0 +1,28 @@
+# Expanso Pipeline: todoist-automate (MCP mode)
+
+name: todoist-automate-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /todoist
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let action = this.action.or("sync")
+
+          root.action = $action
+          root.tasks = [{"id": "1", "content": "Sample task", "priority": 3}]
+          root.metadata = {"skill": "todoist-automate", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

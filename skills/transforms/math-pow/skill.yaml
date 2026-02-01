@@ -1,0 +1,26 @@
+name: math-pow
+version: 1.0.0
+description: Calculate power (exponentiation)
+
+inputs:
+  - name: base
+    type: number
+    required: true
+    description: Base number
+  - name: exponent
+    type: number
+    required: true
+    description: Exponent
+
+outputs:
+  - name: result
+    type: number
+    description: Result of base^exponent
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

@@ -1,0 +1,69 @@
+# Expanso Pipeline: text-analyze (CLI mode)
+# ==========================================
+#
+# Analyze text for sentiment, entities, topics, and key phrases.
+#
+# Usage:
+#   echo "I love this product! It's amazing." | expanso-edge run pipeline-cli.yaml
+#
+#   # Specific analyses
+#   echo "Apple Inc. announced..." | ANALYSES="entities,sentiment" expanso-edge run pipeline-cli.yaml
+
+name: text-analyze-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta input_hash = content().hash("sha256").encode("hex")
+          meta input_length = content().length()
+          meta trace_id = uuid_v4()
+
+          let analyses = env("ANALYSES").or("sentiment,entities,topics,keywords")
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a text analyst. Analyze text and return structured JSON. Be precise and objective."
+            },
+            {
+              "role": "user",
+              "content": "Analyze this text for: " + $analyses + "\n\nReturn a JSON object with the following structure:\n{\n  \"sentiment\": {\"label\": \"positive|negative|neutral\", \"score\": 0.0-1.0, \"explanation\": \"...\"},\n  \"entities\": [{\"text\": \"...\", \"type\": \"PERSON|ORG|LOCATION|DATE|...\", \"start\": 0, \"end\": 0}],\n  \"topics\": [\"topic1\", \"topic2\"],\n  \"keywords\": [\"keyword1\", \"keyword2\"]\n}\n\nOnly include the analyses requested. Return valid JSON only.\n\nText:\n" + content()
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let raw = this.choices.0.message.content
+          let parsed = $raw.parse_json().catch({})
+
+          root.analysis = $parsed
+          root.raw_response = $raw
+          root.metadata = {
+            "skill": "text-analyze",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "input_hash": meta("input_hash"),
+            "input_length": meta("input_length"),
+            "trace_id": meta("trace_id"),
+            "analyses_requested": env("ANALYSES").or("all"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-analyze] Analyzed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

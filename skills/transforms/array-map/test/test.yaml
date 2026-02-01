@@ -1,0 +1,7 @@
+tests:
+  - name: "Map array"
+    input: '[1, true, null]'
+    expected:
+      has_field: mapped
+      has_field: count
+      metadata_has: [skill, trace_id]

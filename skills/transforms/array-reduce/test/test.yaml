@@ -1,0 +1,7 @@
+tests:
+  - name: "Reduce array"
+    input: '[1, 2, 3, 4, 5]'
+    expected:
+      has_field: sum
+      has_field: average
+      metadata_has: [skill, trace_id]

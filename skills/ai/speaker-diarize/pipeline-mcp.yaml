@@ -1,0 +1,85 @@
+# Expanso Pipeline: speaker-diarize (MCP mode)
+# ===============================================
+#
+# HTTP endpoint for speaker diarization.
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#
+#   curl -X POST http://localhost:8080/diarize \
+#     -H "Content-Type: application/json" \
+#     -d '{"transcript": "Hello everyone..."}'
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: speaker-diarize-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /diarize
+      allowed_verbs: [POST]
+      timeout: 120s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let transcript = this.transcript.or(content())
+          root = if $transcript.length() == 0 {
+            throw("transcript field is required")
+          } else {
+            {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are a speaker diarization assistant. Analyze the transcript and identify different speakers. Respond with JSON: {\"speakers\": [\"name1\", \"name2\"], \"segments\": [{\"speaker\": \"name\", \"text\": \"what they said\"}]}. Identify speakers by name if mentioned, otherwise use Speaker 1, Speaker 2, etc."
+                },
+                {
+                  "role": "user",
+                  "content": "Identify speakers and segment this transcript:\n\n" + $transcript
+                }
+              ]
+            }
+          }
+          meta input_hash = $transcript.hash("sha256").encode("hex")
+          meta trace_id = uuid_v4()
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let result = this.choices.0.message.content.parse_json().catch({
+            "speakers": ["Unknown"],
+            "segments": [{"speaker": "Unknown", "text": this.choices.0.message.content}]
+          })
+
+          root.speakers = $result.speakers
+          root.segments = $result.segments
+          root.metadata = {
+            "skill": "speaker-diarize",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "speaker_count": $result.speakers.length(),
+            "segment_count": $result.segments.length(),
+            "input_hash": meta("input_hash"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [speaker-diarize] MCP request (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}
+
+selector:
+  match_labels:
+    capability: llm

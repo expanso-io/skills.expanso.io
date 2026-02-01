@@ -1,0 +1,22 @@
+# Test cases for text-diff skill
+
+tests:
+  - name: "Compare different texts"
+    input: '{"original": "Hello World", "modified": "Hello Universe"}'
+    expected:
+      has_field: identical
+      has_field: changes
+      has_field: similarity
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Compare identical texts"
+    input: '{"original": "Same text", "modified": "Same text"}'
+    expected:
+      has_field: identical
+      has_field: similarity
+
+  - name: "Compare from fixture"
+    input_file: fixtures/input.txt
+    expected:
+      has_field: identical
+      has_field: hashes

@@ -1,0 +1,33 @@
+# Test cases for text-to-command
+name: text-to-command-tests
+description: Test cases for the text-to-command skill
+
+tests:
+  - name: find_files
+    description: Find files command
+    input: "find all python files"
+    expected:
+      has_field: command
+      command_contains: ["find", ".py"]
+
+  - name: disk_usage
+    description: Disk usage command
+    input: "show disk usage"
+    expected:
+      has_field: command
+      command_contains: ["du"]
+
+  - name: powershell
+    description: PowerShell command
+    input: "list running processes"
+    env:
+      SHELL_TYPE: powershell
+    expected:
+      has_field: command
+      command_contains: ["Process"]
+
+  - name: empty_input
+    description: Handle empty input
+    input: ""
+    expected:
+      error_or_empty: true

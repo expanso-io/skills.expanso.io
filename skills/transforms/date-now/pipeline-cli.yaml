@@ -1,0 +1,23 @@
+name: "date-now-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          root.now = now()
+          root.iso = now().ts_format("2006-01-02T15:04:05Z07:00")
+          root.date = now().ts_format("2006-01-02")
+          root.time = now().ts_format("15:04:05")
+          root.metadata = {"skill": "date-now", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

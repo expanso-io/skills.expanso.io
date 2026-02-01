@@ -1,0 +1,28 @@
+name: text-stats
+version: 1.0.0
+description: Calculate detailed text statistics
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to analyze
+
+outputs:
+  - name: chars
+    type: integer
+    description: Character count
+  - name: words
+    type: integer
+    description: Word count
+  - name: lines
+    type: integer
+    description: Line count
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

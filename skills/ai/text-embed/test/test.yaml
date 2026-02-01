@@ -1,0 +1,8 @@
+# Test: text-embed
+tests:
+  - name: "Generates embedding vector"
+    skip: true  # Requires API key
+    input: "Hello, world!"
+    expected_output:
+      metadata:
+        skill: "text-embed"

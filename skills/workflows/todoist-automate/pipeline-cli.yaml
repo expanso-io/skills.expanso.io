@@ -1,0 +1,40 @@
+# Expanso Pipeline: todoist-automate (CLI mode)
+
+name: todoist-automate-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+          let action = $input.action.or("sync")
+
+          # Simulated Todoist data
+          let tasks = [
+            {"id": "1", "content": "Review Q1 roadmap", "priority": 4, "due": {"date": "2024-01-31"}},
+            {"id": "2", "content": "Send client update", "priority": 3, "due": {"date": "2024-01-30"}},
+            {"id": "3", "content": "Team meeting prep", "priority": 2, "due": {"date": "2024-02-01"}}
+          ]
+
+          root.action = $action
+          root.tasks = $tasks
+          root.summary = {
+            "total": $tasks.length(),
+            "high_priority": $tasks.filter(t -> t.priority >= 3).length(),
+            "due_today": 1
+          }
+          root.metadata = {"skill": "todoist-automate", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[todoist-automate] ${! this.summary.total } tasks synced"
+
+  output:
+    stdout:
+      codec: json_object

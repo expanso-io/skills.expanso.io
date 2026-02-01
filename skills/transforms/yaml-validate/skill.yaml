@@ -1,0 +1,49 @@
+# Skill: yaml-validate
+# Version: 1.0.0
+#
+# Validate YAML syntax and structure.
+# Runs locally without API calls.
+
+name: "yaml-validate"
+version: "1.0.0"
+description: "Validate YAML syntax and provide detailed error information"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []  # No API key needed
+
+inputs:
+  - name: yaml
+    type: string
+    required: true
+    description: YAML content to validate
+
+outputs:
+  - name: valid
+    type: boolean
+    description: Whether the YAML is valid
+  - name: error
+    type: string
+    description: Error message if invalid
+  - name: parsed
+    type: object
+    description: Parsed YAML as JSON (if valid)
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local validation
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

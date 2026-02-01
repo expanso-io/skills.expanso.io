@@ -1,0 +1,7 @@
+tests:
+  - name: "Slice array"
+    input: '[1, 2, 3, 4, 5]'
+    expected:
+      has_field: sliced
+      has_field: sliced_count
+      metadata_has: [skill, trace_id]

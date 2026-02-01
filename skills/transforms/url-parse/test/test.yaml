@@ -1,0 +1,7 @@
+tests:
+  - name: "Parse URL"
+    input: "https://example.com/path"
+    expected:
+      has_field: protocol
+      has_field: host
+      metadata_has: [skill, trace_id]

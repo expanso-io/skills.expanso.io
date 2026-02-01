@@ -1,0 +1,25 @@
+name: date-format
+version: 1.0.0
+description: Parse and format dates in various formats
+
+inputs:
+  - name: date
+    type: string
+    required: true
+    description: Date string to parse
+
+outputs:
+  - name: iso
+    type: string
+    description: ISO 8601 format
+  - name: unix
+    type: integer
+    description: Unix timestamp
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

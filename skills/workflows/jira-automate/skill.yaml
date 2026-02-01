@@ -1,0 +1,71 @@
+# Skill: jira-automate
+# Version: 1.0.0
+#
+# Automate Jira and Confluence workflows with AI.
+# Create issues, update status, generate docs, and sync with codebase.
+
+name: jira-automate
+version: 1.0.0
+description: Automate Jira/Confluence workflows with AI-powered issue management
+
+credentials:
+  - name: JIRA_URL
+    required: true
+    description: Jira instance URL (e.g., https://company.atlassian.net)
+  - name: JIRA_EMAIL
+    required: true
+    description: Jira account email
+  - name: JIRA_API_TOKEN
+    required: true
+    description: Jira API token
+  - name: OPENAI_API_KEY
+    required: true
+    description: OpenAI for AI features
+
+inputs:
+  - name: action
+    type: string
+    required: true
+    enum: [create, update, search, summarize, link_pr, generate_docs]
+    description: Action to perform
+  - name: project
+    type: string
+    required: false
+    description: Jira project key
+  - name: issue_key
+    type: string
+    required: false
+    description: Issue key (e.g., PROJ-123)
+  - name: summary
+    type: string
+    required: false
+    description: Issue summary for create/update
+  - name: description
+    type: string
+    required: false
+    description: Issue description
+  - name: issue_type
+    type: string
+    default: Task
+    description: Issue type (Task, Bug, Story, Epic)
+
+outputs:
+  - name: result
+    type: object
+    description: Action result
+  - name: issues
+    type: array
+    description: Affected issues
+  - name: metadata
+    type: object
+    description: Execution metadata
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, http, openai_chat_completion, switch, log]
+  outputs: [http_client, stdout, sync_response]

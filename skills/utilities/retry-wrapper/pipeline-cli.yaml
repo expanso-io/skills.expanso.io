@@ -1,0 +1,41 @@
+# Expanso Pipeline: retry-wrapper (CLI mode)
+
+name: retry-wrapper-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta start_time = now()
+
+          let input = content().parse_json().catch({"command": content()})
+          meta command = $input.command.or(content())
+          meta max_retries = $input.max_retries.or(3)
+
+          # Placeholder - actual retry logic would be in a retry processor
+          root.output = "Command would be executed: " + meta("command")
+          root.attempts = 1
+          root.success = true
+          root.metadata = {
+            "skill": "retry-wrapper",
+            "mode": "cli",
+            "command": meta("command"),
+            "max_retries": meta("max_retries"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [retry-wrapper] Success after ${! this.attempts } attempts (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

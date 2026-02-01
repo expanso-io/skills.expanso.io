@@ -1,0 +1,22 @@
+name: type-check
+version: 1.0.0
+description: Check the type of a JSON value
+
+inputs:
+  - name: value
+    type: any
+    required: true
+    description: Value to check
+
+outputs:
+  - name: type
+    type: string
+    description: Type name
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

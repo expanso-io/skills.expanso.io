@@ -1,0 +1,7 @@
+tests:
+  - name: "Parse env format"
+    input: "KEY=value"
+    expected:
+      has_field: variable_count
+      has_field: line_count
+      metadata_has: [skill, trace_id]

@@ -1,0 +1,64 @@
+# Skill: sql-generate
+# Version: 1.0.0
+#
+# Generate SQL from natural language descriptions.
+
+name: "sql-generate"
+version: "1.0.0"
+description: "Generate SQL queries from natural language descriptions"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key
+
+inputs:
+  - name: description
+    type: string
+    required: true
+    description: Natural language query description
+  - name: dialect
+    type: string
+    default: "postgresql"
+    description: "SQL dialect: postgresql, mysql, sqlite, mssql"
+  - name: schema
+    type: string
+    default: ""
+    description: Optional table schema for context
+
+outputs:
+  - name: sql
+    type: string
+    description: Generated SQL query
+  - name: explanation
+    type: string
+    description: Explanation of the query
+  - name: dialect
+    type: string
+    description: SQL dialect used
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI GPT
+  - name: ollama
+    type: local
+    models: [llama3.2, mistral]
+    description: Local Ollama
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+  outputs:
+    - stdout
+    - sync_response

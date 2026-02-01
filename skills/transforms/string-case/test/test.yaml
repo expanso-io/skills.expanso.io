@@ -1,0 +1,7 @@
+tests:
+  - name: "Convert case formats"
+    input: "Hello World"
+    expected:
+      has_field: snake
+      has_field: kebab
+      metadata_has: [skill, trace_id]

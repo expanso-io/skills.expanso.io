@@ -1,0 +1,30 @@
+name: "object-keys-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          let parsed = $input.parse_json().catch({})
+          let is_object = $parsed.type() == "object"
+
+          let keys = if $is_object { $parsed.keys() } else { [] }
+          let values = if $is_object { $parsed.values() } else { [] }
+
+          root.keys = $keys
+          root.values = $values
+          root.count = $keys.length()
+          root.valid = $is_object
+          root.metadata = {"skill": "object-keys", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

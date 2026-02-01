@@ -1,0 +1,8 @@
+# Test: text-to-speech
+tests:
+  - name: "Generates audio"
+    skip: true
+    input: "Hello world"
+    expected_output:
+      metadata:
+        skill: "text-to-speech"

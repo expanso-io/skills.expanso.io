@@ -1,0 +1,51 @@
+# Skill: url-to-article
+# Version: 1.0.0
+#
+# Extract clean article content from any URL.
+# Returns structured data: title, author, date, and clean body text.
+
+name: url-to-article
+version: 1.0.0
+description: Extract clean article text from a URL (title, author, date, body)
+
+# No credentials required for basic extraction
+credentials: []
+
+# Skill inputs
+inputs:
+  - name: url
+    type: string
+    required: true
+    description: URL of the article to extract
+  - name: include_images
+    type: boolean
+    default: false
+    description: Include image URLs in output
+
+# Skill outputs
+outputs:
+  - name: article
+    type: object
+    description: "Extracted article: {title, author, date, body, url}"
+  - name: metadata
+    type: object
+    description: Extraction metadata
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    description: Local HTTP fetch + parsing (no API key required)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - http
+    - mapping
+    - log
+  outputs:
+    - stdout
+    - sync_response

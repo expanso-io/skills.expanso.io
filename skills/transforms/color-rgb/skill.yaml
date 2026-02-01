@@ -1,0 +1,22 @@
+name: color-rgb
+version: 1.0.0
+description: Convert between hex and RGB color formats
+
+inputs:
+  - name: color
+    type: string
+    required: true
+    description: Color in hex format
+
+outputs:
+  - name: rgb
+    type: object
+    description: RGB values
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

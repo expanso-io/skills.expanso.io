@@ -1,0 +1,57 @@
+# Skill: text-truncate
+# Version: 1.0.0
+#
+# Truncate text to specified length with optional suffix.
+# Runs locally without API calls.
+
+name: "text-truncate"
+version: "1.0.0"
+description: "Truncate text to specified length with optional suffix"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to truncate
+  - name: length
+    type: integer
+    default: 100
+    description: Maximum length
+  - name: suffix
+    type: string
+    default: "..."
+    description: Suffix to append if truncated
+
+outputs:
+  - name: result
+    type: string
+    description: Truncated text
+  - name: truncated
+    type: boolean
+    description: Whether text was truncated
+  - name: original_length
+    type: integer
+    description: Original text length
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local text truncation
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

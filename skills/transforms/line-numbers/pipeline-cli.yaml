@@ -1,0 +1,28 @@
+name: "line-numbers-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content()
+          let lines = $input.split("\n")
+
+          # Add line numbers
+          let numbered = $lines.enumerate().map_each(item -> (item.index + 1).string() + ": " + item.value).join("\n")
+
+          root.original = $input
+          root.numbered = $numbered
+          root.line_count = $lines.length()
+          root.empty_lines = $lines.filter(l -> l.trim() == "").length()
+          root.metadata = {"skill": "line-numbers", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

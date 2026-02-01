@@ -1,0 +1,74 @@
+# Expanso Pipeline: text-to-speech (MCP mode)
+# ==============================================
+#
+# HTTP endpoint for TTS.
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#
+#   curl -X POST http://localhost:8080/speak \
+#     -H "Content-Type: application/json" \
+#     -d '{"text": "Hello world", "voice": "nova"}'
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: text-to-speech-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /speak
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let text = this.text.or("")
+          let voice = this.voice.or("alloy")
+
+          root = if $text.length() == 0 {
+            throw("text field is required")
+          } else if $text.length() > 4096 {
+            throw("text exceeds maximum length of 4096 characters")
+          } else {
+            $text
+          }
+
+          meta voice = $voice
+          meta text_length = $text.length()
+          meta trace_id = uuid_v4()
+
+      - openai_speech:
+          api_key: "${OPENAI_API_KEY}"
+          model: tts-1
+          voice: "${! meta(\"voice\") }"
+
+      - mapping: |
+          root.audio = content().encode("base64")
+          root.metadata = {
+            "skill": "text-to-speech",
+            "mode": "mcp",
+            "model": "tts-1",
+            "voice": meta("voice"),
+            "text_length": meta("text_length"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-to-speech] MCP request: ${! meta("text_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}
+
+selector:
+  match_labels:
+    capability: llm

@@ -1,0 +1,36 @@
+name: "array-chunk-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /chunk
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.array.or(content())
+          let size = this.size.or(2).number()
+
+          let parsed = if $input.type() == "array" { $input } else { $input.parse_json().catch([]) }
+          let is_array = $parsed.type() == "array"
+
+          let length = if $is_array { $parsed.length() } else { 0 }
+          let chunk_count = if $length > 0 { ($length / $size).ceil() } else { 0 }
+
+          root.original = $parsed
+          root.original_length = $length
+          root.chunk_size = $size
+          root.chunk_count = $chunk_count
+          root.valid = $is_array
+          root.metadata = {"skill": "array-chunk", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

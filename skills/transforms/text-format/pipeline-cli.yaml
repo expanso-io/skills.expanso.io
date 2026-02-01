@@ -1,0 +1,53 @@
+# Expanso Pipeline: text-format (CLI mode)
+# =========================================
+#
+# Usage:
+#   echo "hello world" | expanso-edge run pipeline-cli.yaml                    # lowercase
+#   FORMAT=upper echo "hello world" | expanso-edge run pipeline-cli.yaml       # UPPERCASE
+#   FORMAT=title echo "hello world" | expanso-edge run pipeline-cli.yaml       # Title Case
+#
+# No API key needed - runs entirely locally.
+
+name: "text-format-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta format = env("FORMAT").or("lower")
+          let text = content().trim()
+
+          let result = match meta("format") {
+            "upper" => $text.uppercase(),
+            "lower" => $text.lowercase(),
+            "title" => $text.lowercase().capitalize(),
+            "sentence" => $text.lowercase().re_replace_all("^(.)", "$1".uppercase()),
+            _ => $text.lowercase()
+          }
+
+          root.result = $result
+          root.format = meta("format")
+          root.original_length = $text.length()
+          root.metadata = {
+            "skill": "text-format",
+            "mode": "cli",
+            "format_applied": meta("format"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-format] Applied ${! meta("format") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,7 @@
+tests:
+  - name: "Extract keys"
+    input: '{"a": 1, "b": 2}'
+    expected:
+      has_field: keys
+      has_field: count
+      metadata_has: [skill, trace_id]

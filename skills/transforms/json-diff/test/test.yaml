@@ -1,0 +1,7 @@
+tests:
+  - name: "Compare JSON"
+    input: '{"a": {"x": 1}, "b": {"x": 1}}'
+    expected:
+      has_field: equal
+      has_field: only_in_a
+      metadata_has: [skill, trace_id]

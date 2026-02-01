@@ -1,0 +1,26 @@
+name: string-ends-with
+version: 1.0.0
+description: Check if string ends with suffix
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to check
+  - name: suffix
+    type: string
+    required: true
+    description: Suffix to match
+
+outputs:
+  - name: ends_with
+    type: boolean
+    description: Whether text ends with suffix
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

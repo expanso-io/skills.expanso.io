@@ -1,0 +1,33 @@
+name: string-pad
+version: 1.0.0
+description: Pad strings to specified length
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to pad
+  - name: length
+    type: integer
+    default: 10
+    description: Target length
+  - name: char
+    type: string
+    default: " "
+    description: Padding character
+
+outputs:
+  - name: left
+    type: string
+    description: Left-padded string
+  - name: right
+    type: string
+    description: Right-padded string
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

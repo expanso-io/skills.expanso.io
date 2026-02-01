@@ -1,0 +1,8 @@
+# Test: task-dashboard
+tests:
+  - name: "Shows status"
+    skip: true
+    input: '{"action": "status"}'
+    expected_output:
+      metadata:
+        skill: "task-dashboard"

@@ -1,0 +1,52 @@
+# Expanso Pipeline: email-validate (MCP mode)
+# ============================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/validate -d '{"email": "user@example.com"}'
+
+name: "email-validate-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /validate
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let email = this.email.or(content()).string().trim().lowercase()
+
+          let pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+          let valid = $email.re_match($pattern)
+
+          let parts = $email.split("@")
+          let user = if $parts.length() >= 1 { $parts.index(0) } else { "" }
+          let domain = if $parts.length() >= 2 { $parts.index(1) } else { "" }
+
+          root.valid = $valid
+          root.email = $email
+          root.user = $user
+          root.domain = $domain
+          root.metadata = {
+            "skill": "email-validate",
+            "mode": "mcp",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [email-validate] ${! root.email } valid: ${! root.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

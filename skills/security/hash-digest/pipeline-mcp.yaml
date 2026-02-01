@@ -1,0 +1,55 @@
+# Expanso Pipeline: hash-digest (MCP mode)
+# ==========================================
+
+name: hash-digest-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /hash
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let data = this.data.or("")
+
+          root = if $data.length() == 0 {
+            throw("data field is required")
+          }
+
+          let algo = this.algorithm.or("sha256")
+
+          let hash = match $algo {
+            "sha256" => $data.hash("sha256").encode("hex"),
+            "sha512" => $data.hash("sha512").encode("hex"),
+            "md5" => $data.hash("md5").encode("hex"),
+            "xxhash64" => $data.hash("xxhash64").encode("hex"),
+            _ => $data.hash("sha256").encode("hex")
+          }
+
+          root.hash = $hash
+          root.algorithm = $algo
+          root.input_length = $data.length()
+          root.metadata = {
+            "skill": "hash-digest",
+            "mode": "mcp",
+            "algorithm": $algo,
+            "input_length": $data.length(),
+            "trace_id": uuid_v4(),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [hash-digest] ${! root.algorithm } hash computed
+
+  output:
+    sync_response: {}

@@ -1,0 +1,29 @@
+name: "date-add-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /add
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let base_date = this.date.or(now())
+          let days = this.days.or(0).number()
+          let hours = days * 24
+
+          root.original = $base_date
+          root.days_added = days
+          root.result = $base_date.ts_add_iso8601("PT" + ($hours.abs().string()) + "H")
+          root.metadata = {"skill": "date-add", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

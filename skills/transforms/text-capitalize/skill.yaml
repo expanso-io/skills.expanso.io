@@ -1,0 +1,25 @@
+name: text-capitalize
+version: 1.0.0
+description: Capitalize text in various styles
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to capitalize
+
+outputs:
+  - name: title
+    type: string
+    description: Title case
+  - name: sentence
+    type: string
+    description: Sentence case
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

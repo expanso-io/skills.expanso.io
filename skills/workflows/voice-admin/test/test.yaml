@@ -1,0 +1,8 @@
+# Test: voice-admin
+tests:
+  - name: "Processes voice command"
+    skip: true
+    input: '{"action": "transcribe"}'
+    expected_output:
+      metadata:
+        skill: "voice-admin"

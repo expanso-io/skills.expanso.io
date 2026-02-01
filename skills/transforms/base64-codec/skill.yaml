@@ -1,0 +1,50 @@
+# Skill: base64-codec
+# Version: 1.0.0
+#
+# Encode or decode Base64 content.
+# Runs locally without API calls.
+
+name: "base64-codec"
+version: "1.0.0"
+description: "Encode and decode Base64 content"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []  # No API key needed
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to encode or Base64 to decode
+  - name: mode
+    type: string
+    default: "encode"
+    description: "Operation mode: 'encode' or 'decode'"
+
+outputs:
+  - name: result
+    type: string
+    description: Encoded or decoded result
+  - name: mode
+    type: string
+    description: Operation performed
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local encoding/decoding
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

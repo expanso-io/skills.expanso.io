@@ -1,0 +1,56 @@
+# Skill: grammar-check
+# Version: 1.0.0
+#
+# Check text for grammar, spelling, and style issues.
+
+name: "grammar-check"
+version: "1.0.0"
+description: "Check text for grammar, spelling, and style issues with corrections"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to check
+
+outputs:
+  - name: corrected
+    type: string
+    description: Text with corrections applied
+  - name: issues
+    type: array
+    description: List of issues found
+  - name: issue_count
+    type: integer
+    description: Number of issues
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI GPT for grammar checking
+  - name: ollama
+    type: local
+    models: [llama3.2, mistral]
+    description: Local Ollama
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+  outputs:
+    - stdout
+    - sync_response

@@ -1,0 +1,41 @@
+# Skill: catalog-reconcile
+# Version: 1.0.0
+#
+# Reconcile product data across multiple catalogs.
+# Inspired by @BwcDeals reducing days of work to minutes.
+
+name: catalog-reconcile
+version: 1.0.0
+description: AI-powered product catalog reconciliation across multiple sources
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: true
+
+inputs:
+  - name: catalogs
+    type: array
+    required: true
+    description: List of catalog sources to reconcile
+  - name: match_fields
+    type: array
+    default: [sku, upc, name]
+
+outputs:
+  - name: matches
+    type: array
+  - name: conflicts
+    type: array
+  - name: unmatched
+    type: array
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, openai_chat_completion, dedupe, log]
+  outputs: [stdout, sync_response]

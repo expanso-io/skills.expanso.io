@@ -1,0 +1,18 @@
+# Test cases for audit-envelope skill
+
+tests:
+  - name: "Wrap JSON data"
+    input: '{"action": "test"}'
+    expected:
+      has_field: envelope
+      has_field: signature
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Wrap with source and actor"
+    input_file: fixtures/input.txt
+    env:
+      SOURCE: test-service
+      ACTOR: test-user
+    expected:
+      has_field: envelope
+      has_field: signature

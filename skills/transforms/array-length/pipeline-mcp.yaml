@@ -1,0 +1,33 @@
+name: "array-length-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /length
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.value.or(content())
+
+          let type = $input.type()
+          let length = if $type == "array" { $input.length() }
+            else if $type == "object" { $input.keys().length() }
+            else if $type == "string" { $input.length() }
+            else { 0 }
+
+          root.type = $type
+          root.length = $length
+          root.is_empty = $length == 0
+          root.metadata = {"skill": "array-length", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

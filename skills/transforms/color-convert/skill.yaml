@@ -1,0 +1,35 @@
+# Skill: color-convert
+name: "color-convert"
+version: "1.0.0"
+description: "Convert colors between hex, RGB, and HSL formats"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []
+
+inputs:
+  - name: color
+    type: string
+    required: true
+    description: "Color in hex (#fff or #ffffff) or rgb(r,g,b)"
+
+outputs:
+  - name: hex
+    type: string
+  - name: rgb
+    type: object
+  - name: css
+    type: string
+
+backends:
+  - name: local
+    type: local
+    requires: []
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping]
+  outputs: [stdout, sync_response]

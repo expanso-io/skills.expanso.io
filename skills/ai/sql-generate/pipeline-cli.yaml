@@ -1,0 +1,72 @@
+# Expanso Pipeline: sql-generate (CLI mode)
+# ==========================================
+#
+# Usage:
+#   echo "Get all users who signed up last month" | expanso-edge run pipeline-cli.yaml
+#   DIALECT=mysql echo "Count orders by status" | expanso-edge run pipeline-cli.yaml
+#
+# Requires OPENAI_API_KEY.
+
+name: "sql-generate-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10240
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta input_hash = content().hash("sha256").encode("hex")
+          let dialect = env("DIALECT").or("postgresql")
+          let schema = env("SCHEMA").or("")
+
+          let schema_context = if $schema.length() > 0 {
+            "\n\nTable schema:\n" + $schema
+          } else { "" }
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a SQL expert. Generate " + $dialect + " queries from natural language. Return JSON with: 'sql' (the query, properly formatted), 'explanation' (brief explanation). Use best practices: aliases, proper JOINs, avoid SELECT *. Only return valid SQL." + $schema_context
+            },
+            {
+              "role": "user",
+              "content": content()
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let response = this.choices.0.message.content.parse_json().catch({
+            "sql": this.choices.0.message.content,
+            "explanation": ""
+          })
+
+          root.sql = $response.sql
+          root.explanation = $response.explanation.or("")
+          root.dialect = env("DIALECT").or("postgresql")
+          root.metadata = {
+            "skill": "sql-generate",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "dialect": root.dialect,
+            "input_hash": meta("input_hash"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [sql-generate] Generated ${! root.dialect } query (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

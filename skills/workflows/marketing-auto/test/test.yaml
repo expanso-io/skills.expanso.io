@@ -1,0 +1,8 @@
+# Test: marketing-auto
+tests:
+  - name: "Creates campaign"
+    skip: true
+    input: '{"action": "campaign", "topic": "product launch"}'
+    expected_output:
+      metadata:
+        skill: "marketing-auto"

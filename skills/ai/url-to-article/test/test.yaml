@@ -1,0 +1,8 @@
+# Test: url-to-article
+tests:
+  - name: "Extracts article from URL"
+    skip: true  # Requires network access
+    input: "https://example.com"
+    expected_output:
+      article:
+        url: "https://example.com"

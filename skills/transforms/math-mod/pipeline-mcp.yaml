@@ -1,0 +1,29 @@
+name: "math-mod-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /mod
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let dividend = this.dividend.number().catch(0)
+          let divisor = this.divisor.number().catch(1)
+
+          root.remainder = if $divisor != 0 { $dividend % $divisor } else { null }
+          root.dividend = $dividend
+          root.divisor = $divisor
+          root.valid = $divisor != 0
+          root.metadata = {"skill": "math-mod", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

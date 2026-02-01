@@ -1,0 +1,64 @@
+# Skill: image-moderate
+# Version: 1.0.0
+#
+# Check images for content policy violations using AI moderation.
+# Returns safety scores and flags.
+
+name: image-moderate
+version: 1.0.0
+description: Check images for content policy violations and safety flags
+
+# Credentials
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key
+
+# Skill inputs
+inputs:
+  - name: image_url
+    type: string
+    required: true
+    description: URL of the image to moderate
+  - name: policy
+    type: string
+    default: standard
+    enum: [standard, strict]
+    description: Moderation strictness
+
+# Skill outputs
+outputs:
+  - name: flagged
+    type: boolean
+    description: Whether content violates policy
+  - name: categories
+    type: object
+    description: Category flags (violence, sexual, hate, etc.)
+  - name: scores
+    type: object
+    description: Confidence scores per category
+  - name: metadata
+    type: object
+    description: Processing metadata
+
+# Backend options
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+  - name: ollama
+    type: local
+    models: [llava]
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+    - log
+  outputs:
+    - stdout
+    - sync_response

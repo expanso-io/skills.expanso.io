@@ -1,0 +1,64 @@
+# Expanso Pipeline: audit-envelope (MCP mode)
+# ============================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/wrap \
+#     -d '{"data": {"action": "user.login"}, "source": "auth-service", "actor": "user-123"}'
+
+name: "audit-envelope-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /wrap
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta timestamp = now()
+
+          let payload = this.data.or(content())
+          let source = this.source.or("mcp")
+          let actor = this.actor.or("system")
+          let payload_str = $payload.string()
+          let payload_hash = $payload_str.hash("sha256").encode("hex")
+
+          # Create audit envelope
+          root.envelope = {
+            "trace_id": meta("trace_id"),
+            "timestamp": meta("timestamp"),
+            "source": $source,
+            "actor": $actor,
+            "payload": $payload,
+            "payload_hash": $payload_hash,
+            "payload_size": $payload_str.length(),
+            "version": "1.0"
+          }
+
+          # Create signature
+          let sig_input = meta("trace_id") + "|" + meta("timestamp").string() + "|" + $payload_hash
+          root.signature = $sig_input.hash("sha256").encode("hex")
+
+          root.metadata = {
+            "skill": "audit-envelope",
+            "mode": "mcp",
+            "trace_id": meta("trace_id"),
+            "timestamp": meta("timestamp")
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [audit-envelope] Created envelope (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

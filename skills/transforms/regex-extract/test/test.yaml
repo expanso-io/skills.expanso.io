@@ -1,0 +1,18 @@
+# Test cases for regex-extract skill
+
+tests:
+  - name: "Extract words"
+    input: "Hello World Test"
+    env:
+      PATTERN: "\\w+"
+    expected:
+      has_field: matches
+      has_field: count
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "No matches"
+    input: "Hello World"
+    env:
+      PATTERN: "\\d+"
+    expected:
+      has_field: has_match

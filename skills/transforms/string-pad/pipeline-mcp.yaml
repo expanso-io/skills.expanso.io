@@ -1,0 +1,35 @@
+name: "string-pad-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /pad
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.text.or(content()).string().trim()
+          let target = this.length.or(10).number()
+          let pad_char = "0"
+
+          let pad_len = if $input.length() < $target { $target - $input.length() } else { 0 }
+          let padding = if $pad_len > 0 { "0000000000".slice(0, $pad_len) } else { "" }
+
+          root.left = $padding + $input
+          root.right = $input + $padding
+          root.center = $padding.slice(0, $pad_len / 2) + $input + $padding.slice(0, $pad_len / 2)
+          root.original = $input
+          root.original_length = $input.length()
+          root.target_length = $target
+          root.metadata = {"skill": "string-pad", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

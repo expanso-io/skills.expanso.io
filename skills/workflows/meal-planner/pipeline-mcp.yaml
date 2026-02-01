@@ -1,0 +1,40 @@
+# Expanso Pipeline: meal-planner (MCP mode)
+
+name: meal-planner-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /plan
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let days = this.days.or(7)
+
+          root.messages = [
+            {"role": "system", "content": "Create a meal plan. Return JSON."},
+            {"role": "user", "content": "Create a " + $days.string() + "-day meal plan"}
+          ]
+          meta days = $days
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let result = this.choices.0.message.content.parse_json().catch({})
+          root.meal_plan = $result.meal_plan.or([])
+          root.grocery_list = $result.grocery_list.or([])
+          root.metadata = {"skill": "meal-planner", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

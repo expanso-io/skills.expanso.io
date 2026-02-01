@@ -1,0 +1,16 @@
+# Test cases for base64-codec skill
+
+tests:
+  - name: "Encode text"
+    input: "Hello World"
+    expected:
+      has_field: result
+      has_field: mode
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Decode Base64"
+    input: "SGVsbG8gV29ybGQ="
+    env:
+      MODE: decode
+    expected:
+      has_field: result

@@ -1,0 +1,22 @@
+name: array-reduce
+version: 1.0.0
+description: Reduce array to single value (sum)
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Array of numbers
+
+outputs:
+  - name: sum
+    type: number
+    description: Sum of all elements
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

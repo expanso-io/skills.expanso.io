@@ -1,0 +1,7 @@
+tests:
+  - name: "Absolute value"
+    input: "-42"
+    expected:
+      has_field: abs
+      has_field: original
+      metadata_has: [skill, trace_id]

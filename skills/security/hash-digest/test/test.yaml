@@ -1,0 +1,44 @@
+# Test cases for hash-digest
+name: hash-digest-tests
+description: Test cases for the hash-digest skill
+
+tests:
+  - name: sha256_default
+    description: SHA256 hash (default)
+    input: "Hello, World!"
+    expected:
+      has_field: hash
+      hash_length: 64
+      algorithm: sha256
+
+  - name: sha512
+    description: SHA512 hash
+    input: "Hello, World!"
+    env:
+      ALGORITHM: sha512
+    expected:
+      has_field: hash
+      hash_length: 128
+      algorithm: sha512
+
+  - name: md5
+    description: MD5 hash
+    input: "Hello, World!"
+    env:
+      ALGORITHM: md5
+    expected:
+      has_field: hash
+      hash_length: 32
+      algorithm: md5
+
+  - name: deterministic
+    description: Same input produces same hash
+    input: "test"
+    expected:
+      hash: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+
+  - name: empty_input
+    description: Handle empty input
+    input: ""
+    expected:
+      error_or_empty: true

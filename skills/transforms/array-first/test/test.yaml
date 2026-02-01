@@ -1,0 +1,7 @@
+tests:
+  - name: "Get first"
+    input: "[1, 2, 3]"
+    expected:
+      has_field: first
+      has_field: length
+      metadata_has: [skill, trace_id]

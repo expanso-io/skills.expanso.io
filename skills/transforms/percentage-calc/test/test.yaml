@@ -1,0 +1,7 @@
+tests:
+  - name: "Calculate percentage"
+    input: "50/200"
+    expected:
+      has_field: percentage
+      has_field: ratio
+      metadata_has: [skill, trace_id]

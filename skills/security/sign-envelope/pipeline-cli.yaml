@@ -1,0 +1,55 @@
+# Expanso Pipeline: sign-envelope (CLI mode)
+# ============================================
+#
+# Create signed envelope for payload.
+#
+# Usage:
+#   echo '{"data":"secret"}' | SIGNING_KEY=base64... expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: sign-envelope-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta created_at = now()
+
+          let payload = content()
+          let canonical = $payload.parse_json().catch($payload).format_json().catch($payload)
+          let hash = $canonical.hash("sha256").encode("hex")
+
+          # For demo: HMAC signature (production would use ed25519)
+          let key = env("SIGNING_KEY").or("default-dev-key")
+          let signature = ($hash + "." + $key).hash("sha256").encode("hex")
+
+          root.envelope = {
+            "payload": $payload.parse_json().catch($payload),
+            "hash": $hash,
+            "signature": $signature,
+            "key_id": env("KEY_ID").or("default"),
+            "algorithm": "hmac-sha256",
+            "created_at": meta("created_at")
+          }
+          root.metadata = {
+            "skill": "sign-envelope",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [sign-envelope] Signed payload (hash: ${! this.envelope.hash.slice(0, 16) }..., trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

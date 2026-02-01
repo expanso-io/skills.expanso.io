@@ -1,0 +1,68 @@
+# Expanso Pipeline: jira-automate (CLI mode)
+
+name: jira-automate-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+
+          let action = $input.action.or("search")
+          let project = $input.project.or("PROJ")
+          let issue_key = $input.issue_key.or("")
+          let summary = $input.summary.or("")
+
+          meta action = $action
+          meta project = $project
+
+          # Simulated Jira responses
+          let result = match $action {
+            "create" => {
+              "action": "create",
+              "issue": {
+                "key": $project + "-" + random_int(100, 999).string(),
+                "summary": $summary,
+                "status": "To Do",
+                "created": now()
+              }
+            },
+            "search" => {
+              "action": "search",
+              "issues": [
+                {"key": $project + "-101", "summary": "Implement user auth", "status": "In Progress", "assignee": "alice@company.com"},
+                {"key": $project + "-102", "summary": "Fix login bug", "status": "To Do", "assignee": "bob@company.com"},
+                {"key": $project + "-103", "summary": "Add API docs", "status": "Done", "assignee": "alice@company.com"}
+              ]
+            },
+            "summarize" => {
+              "action": "summarize",
+              "needs_ai": true,
+              "issue_key": $issue_key
+            },
+            _ => {"action": $action, "status": "not_implemented"}
+          }
+
+          root = $result
+          root.metadata = {
+            "skill": "jira-automate",
+            "mode": "cli",
+            "action": $action,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [jira-automate] Action: ${! meta("action") } on project ${! meta("project") }
+
+  output:
+    stdout:
+      codec: json_object

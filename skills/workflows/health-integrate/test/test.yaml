@@ -1,0 +1,8 @@
+# Test: health-integrate
+tests:
+  - name: "Integrates health data"
+    skip: true
+    input: '{"sources": ["oura"]}'
+    expected_output:
+      metadata:
+        skill: "health-integrate"

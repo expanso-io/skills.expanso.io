@@ -1,0 +1,7 @@
+tests:
+  - name: "Join array"
+    input: '["a", "b"]'
+    expected:
+      has_field: by_comma
+      has_field: count
+      metadata_has: [skill, trace_id]

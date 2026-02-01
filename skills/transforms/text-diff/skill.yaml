@@ -1,0 +1,53 @@
+# Skill: text-diff
+# Version: 1.0.0
+#
+# Compare two texts and show differences.
+# Runs locally without API calls.
+
+name: "text-diff"
+version: "1.0.0"
+description: "Compare two texts and identify differences"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []  # No API key needed
+
+inputs:
+  - name: original
+    type: string
+    required: true
+    description: Original text
+  - name: modified
+    type: string
+    required: true
+    description: Modified text to compare
+
+outputs:
+  - name: identical
+    type: boolean
+    description: Whether the texts are identical
+  - name: changes
+    type: object
+    description: Summary of changes (additions, deletions)
+  - name: similarity
+    type: number
+    description: Similarity score (0-1)
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local comparison
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

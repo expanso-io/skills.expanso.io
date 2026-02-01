@@ -1,0 +1,56 @@
+# Skill: {{SKILL_NAME}}
+# Version: 1.0.0
+#
+# {{DESCRIPTION}}
+
+name: "{{SKILL_NAME}}"
+version: "1.0.0"
+description: "{{DESCRIPTION}}"
+
+# Author information - YOUR NAME AND LINKS APPEAR IN THE SKILL CATALOG!
+author:
+  name: "{{AUTHOR_NAME}}"      # Your name (displayed on skill cards)
+  url: "{{AUTHOR_URL}}"        # Your website, GitHub, Twitter, etc.
+  avatar: "{{AUTHOR_AVATAR}}"  # Your initials (2 chars, e.g., "JD")
+
+# Credentials (stored locally on Expanso Edge, never transmitted)
+credentials:
+  - name: OPENAI_API_KEY
+    required: false  # Set to true if always needed
+    description: OpenAI API key for remote inference
+
+# Skill inputs
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Input text to process
+
+# Skill outputs
+outputs:
+  - name: result
+    type: string
+    description: Processed output
+
+# Backend options (Expanso Edge flexibility)
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI GPT-4o-mini (fast, requires API key)
+  - name: ollama
+    type: local
+    models: [llama3.2, mistral]
+    description: Local Ollama (private, no API key needed)
+
+# Expanso components used (for documentation)
+components:
+  inputs:
+    - stdin          # CLI mode
+    - http_server    # MCP mode
+  processors:
+    - mapping
+    - openai_chat_completion
+  outputs:
+    - stdout         # CLI mode
+    - sync_response  # MCP mode

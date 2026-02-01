@@ -1,0 +1,7 @@
+tests:
+  - name: "Find in array"
+    input: '[null, "found"]'
+    expected:
+      has_field: first
+      has_field: found
+      metadata_has: [skill, trace_id]

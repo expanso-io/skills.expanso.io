@@ -1,0 +1,7 @@
+# Test: llm-router
+tests:
+  - name: "Routes simple prompt to mini model"
+    skip: true
+    input: '{"prompt": "Say hello", "task_type": "simple"}'
+    expected_output:
+      model_used: "gpt-4o-mini"

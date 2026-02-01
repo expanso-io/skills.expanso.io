@@ -1,0 +1,25 @@
+name: time-parse
+version: 1.0.0
+description: Parse time string to components
+
+inputs:
+  - name: time
+    type: string
+    required: true
+    description: Time string to parse
+
+outputs:
+  - name: hour
+    type: integer
+    description: Hour component
+  - name: minute
+    type: integer
+    description: Minute component
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

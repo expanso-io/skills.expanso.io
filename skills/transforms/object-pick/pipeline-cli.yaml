@@ -1,0 +1,30 @@
+name: "object-pick-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim().parse_json().catch({})
+
+          let obj = $input.object.or($input)
+          let keys_to_pick = $input.keys.or([])
+
+          let all_keys = $obj.keys()
+          let picked_keys = $all_keys.filter(k -> $keys_to_pick.contains(k))
+
+          root.original_keys = $all_keys
+          root.picked_keys = $picked_keys
+          root.picked_count = $picked_keys.length()
+          root.omitted_count = $all_keys.length() - $picked_keys.length()
+          root.metadata = {"skill": "object-pick", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

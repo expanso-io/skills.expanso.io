@@ -1,0 +1,37 @@
+name: "path-parse-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10240
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let path = content().trim()
+
+          # Split by /
+          let parts = $path.split("/")
+          let filename = $parts.index($parts.length() - 1)
+          let dirname = $parts.slice(0, $parts.length() - 1).join("/")
+
+          # Get extension
+          let ext_parts = $filename.split(".")
+          let extension = if $ext_parts.length() > 1 { "." + $ext_parts.index($ext_parts.length() - 1) } else { "" }
+          let basename = if $ext_parts.length() > 1 { $ext_parts.slice(0, $ext_parts.length() - 1).join(".") } else { $filename }
+
+          root.path = $path
+          root.dirname = if $dirname != "" { $dirname } else { "." }
+          root.filename = $filename
+          root.basename = $basename
+          root.extension = $extension
+          root.is_absolute = $path.has_prefix("/")
+          root.depth = $parts.filter(p -> p != "").length()
+          root.metadata = {"skill": "path-parse", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

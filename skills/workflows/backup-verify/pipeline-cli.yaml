@@ -1,0 +1,38 @@
+# Expanso Pipeline: backup-verify (CLI mode)
+
+name: backup-verify-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+
+          # Simulated backup verification
+          root.status = {
+            "verified": true,
+            "local_files": 1250,
+            "cloud_files": 1248,
+            "missing_in_cloud": 2,
+            "last_backup": now().ts_sub("2h"),
+            "total_size_gb": 45.2
+          }
+          root.differences = [
+            {"file": "/data/recent/file1.txt", "status": "missing_in_cloud"},
+            {"file": "/data/recent/file2.txt", "status": "missing_in_cloud"}
+          ]
+          root.metadata = {"skill": "backup-verify", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[backup-verify] Verified ${! this.status.local_files } files"
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,9 @@
+# Test cases for uuid-generate skill
+
+tests:
+  - name: "Generate single UUID"
+    input: ""
+    expected:
+      has_field: uuid
+      has_field: format
+      metadata_has: [skill, trace_id, timestamp]

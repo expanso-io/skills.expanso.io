@@ -1,0 +1,60 @@
+# Skill: meeting-notes
+# Version: 1.0.0
+#
+# Transform meeting transcripts into structured notes with action items.
+# Perfect for Zoom, Teams, or manual transcripts.
+
+name: meeting-notes
+version: 1.0.0
+description: Convert meeting transcripts into structured notes with action items
+
+# Credentials
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key (not required if using Ollama)
+
+# Skill inputs
+inputs:
+  - name: transcript
+    type: string
+    required: true
+    description: Meeting transcript text
+  - name: format
+    type: string
+    default: json
+    enum: [json, markdown]
+    description: Output format
+
+# Skill outputs
+outputs:
+  - name: notes
+    type: object
+    description: "Structured notes: {summary, key_points, action_items, attendees, decisions}"
+  - name: metadata
+    type: object
+    description: Processing metadata
+
+# Backend options
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI GPT-4o-mini
+  - name: ollama
+    type: local
+    models: [llama3.2, mistral]
+    description: Local Ollama
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+    - log
+  outputs:
+    - stdout
+    - sync_response

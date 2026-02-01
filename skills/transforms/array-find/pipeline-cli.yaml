@@ -1,0 +1,31 @@
+name: "array-find-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch(null)
+
+          # Find first non-null element
+          let first = if $parsed.type() == "array" && $parsed.length() > 0 {
+            $parsed.filter(x -> x != null).index(0).catch(null)
+          } else {
+            null
+          }
+
+          root.first = $first
+          root.found = $first != null
+          root.count = if $parsed.type() == "array" { $parsed.length() } else { 0 }
+          root.metadata = {"skill": "array-find", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

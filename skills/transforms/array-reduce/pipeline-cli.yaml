@@ -1,0 +1,30 @@
+name: "array-reduce-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch(null)
+
+          let sum = if $parsed.type() == "array" {
+            $parsed.fold(0, item, acc -> $acc + $item.number().catch(0))
+          } else {
+            0
+          }
+
+          root.sum = $sum
+          root.count = if $parsed.type() == "array" { $parsed.length() } else { 0 }
+          root.average = if root.count > 0 { $sum / root.count } else { 0 }
+          root.metadata = {"skill": "array-reduce", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

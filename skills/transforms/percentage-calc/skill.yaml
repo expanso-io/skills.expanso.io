@@ -1,0 +1,26 @@
+name: percentage-calc
+version: 1.0.0
+description: Calculate percentages and ratios
+
+inputs:
+  - name: value
+    type: number
+    required: true
+    description: Value to calculate
+  - name: total
+    type: number
+    required: true
+    description: Total value
+
+outputs:
+  - name: percentage
+    type: number
+    description: Percentage result
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

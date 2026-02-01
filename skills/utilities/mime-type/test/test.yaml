@@ -1,0 +1,7 @@
+tests:
+  - name: "Lookup MIME type"
+    input: "json"
+    expected:
+      has_field: mime
+      has_field: category
+      metadata_has: [skill, trace_id]

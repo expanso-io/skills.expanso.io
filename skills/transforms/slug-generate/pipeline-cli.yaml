@@ -1,0 +1,54 @@
+# Expanso Pipeline: slug-generate (CLI mode)
+# ===========================================
+#
+# Usage:
+#   echo "Hello World! This is a Test" | expanso-edge run pipeline-cli.yaml
+#   SEPARATOR=_ echo "Hello World" | expanso-edge run pipeline-cli.yaml
+#
+# No API key needed - runs entirely locally.
+
+name: "slug-generate-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta separator = env("SEPARATOR").or("-")
+          let text = content().trim()
+
+          # Convert to slug
+          let slug = $text.lowercase()
+          # Replace spaces with separator
+          let slug = $slug.re_replace_all("\\s+", meta("separator"))
+          # Remove special characters
+          let slug = $slug.re_replace_all("[^a-z0-9" + meta("separator") + "]", "")
+          # Remove multiple separators
+          let slug = $slug.re_replace_all(meta("separator") + "+", meta("separator"))
+          # Trim separators from ends
+          let slug = $slug.trim(meta("separator"))
+
+          root.slug = $slug
+          root.original = $text
+          root.separator = meta("separator")
+          root.metadata = {
+            "skill": "slug-generate",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [slug-generate] "${! root.original }" -> "${! root.slug }" (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

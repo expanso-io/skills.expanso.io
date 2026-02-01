@@ -1,0 +1,6 @@
+tests:
+  - name: "Check suffix"
+    input: '{"text": "Hello", "suffix": "lo"}'
+    expected:
+      has_field: ends_with
+      metadata_has: [skill, trace_id]

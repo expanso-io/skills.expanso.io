@@ -1,0 +1,29 @@
+name: "random-number-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /generate
+      allowed_verbs: [POST, GET]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let uuid = uuid_v4().replace_all("-", "")
+          let hex_part = $uuid.slice(0, 8)
+
+          root.uuid_based = $uuid.slice(0, 16)
+          root.random_hex = $hex_part
+          root.timestamp = now()
+          root.metadata = {"skill": "random-number", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

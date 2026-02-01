@@ -1,0 +1,22 @@
+name: array-length
+version: 1.0.0
+description: Get length/size of arrays and strings
+
+inputs:
+  - name: value
+    type: any
+    required: true
+    description: Array or string
+
+outputs:
+  - name: length
+    type: integer
+    description: Length of the value
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

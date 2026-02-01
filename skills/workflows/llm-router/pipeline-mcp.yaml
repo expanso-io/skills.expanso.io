@@ -1,0 +1,43 @@
+# Expanso Pipeline: llm-router (MCP mode)
+
+name: llm-router-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /route
+      allowed_verbs: [POST]
+      timeout: 120s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let prompt = this.prompt.or("")
+
+          root = if $prompt.length() == 0 { throw("prompt is required") } else { "" }
+
+          # Simple routing logic
+          let is_code = $prompt.contains("code") || $prompt.contains("function")
+          let model = if $is_code { "gpt-4o-mini" } else { "gpt-4o-mini" }
+          meta model = $model
+
+          root.messages = [{"role": "user", "content": $prompt}]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          root.response = this.choices.0.message.content
+          root.model_used = meta("model")
+          root.cost = {"tokens": this.usage.total_tokens.or(0)}
+          root.metadata = {"skill": "llm-router", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

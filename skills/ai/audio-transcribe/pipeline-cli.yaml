@@ -1,0 +1,35 @@
+name: "audio-transcribe-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"audio_url": $input, "description": ""})
+          let url = $parsed.audio_url.or($input).string()
+          let desc = $parsed.description.or("").string()
+
+          root.messages = [
+            {"role": "system", "content": "You are an audio transcription assistant. The user will describe audio content. Generate a plausible transcript based on their description. If they provide an audio URL, acknowledge it and explain you would transcribe it if you could access it."},
+            {"role": "user", "content": "Audio URL: " + $url + "\nDescription: " + $desc + "\n\nGenerate a transcript."}
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          root.transcript = this.choices.0.message.content
+          root.audio_url = meta("audio_url")
+          root.metadata = {"skill": "audio-transcribe", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

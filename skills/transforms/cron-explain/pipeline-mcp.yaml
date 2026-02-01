@@ -1,0 +1,77 @@
+# Expanso Pipeline: cron-explain (MCP mode)
+# ==========================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/explain -d '{"cron": "0 9 * * 1-5"}'
+
+name: "cron-explain-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /explain
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let cron = this.cron.or(content()).string().trim()
+          meta input_hash = $cron.hash("sha256").encode("hex")
+          meta cron = $cron
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a cron expression expert. Explain cron expressions in clear, simple English. Include when it will run (time, days, frequency). Format: Start with a one-sentence summary, then provide details. Be concise but complete."
+            },
+            {
+              "role": "user",
+              "content": "Explain this cron expression: " + $cron
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let cron = meta("cron")
+          let parts = $cron.split(" ")
+
+          root.explanation = this.choices.0.message.content
+          root.cron = $cron
+          root.fields = {
+            "minute": $parts.index(0).or("*"),
+            "hour": $parts.index(1).or("*"),
+            "day_of_month": $parts.index(2).or("*"),
+            "month": $parts.index(3).or("*"),
+            "day_of_week": $parts.index(4).or("*")
+          }
+          root.metadata = {
+            "skill": "cron-explain",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "input_hash": meta("input_hash"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [cron-explain] Explained cron (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}
+
+selector:
+  match_labels:
+    capability: llm

@@ -1,0 +1,9 @@
+# Test: config-normalize
+tests:
+  - name: "Converts YAML to JSON"
+    input: "key: value\nnested:\n  item: 123"
+    expected_output:
+      json:
+        key: "value"
+        nested:
+          item: 123

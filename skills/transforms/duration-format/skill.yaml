@@ -1,0 +1,22 @@
+name: duration-format
+version: 1.0.0
+description: Format durations in human-readable format
+
+inputs:
+  - name: seconds
+    type: integer
+    required: true
+    description: Duration in seconds
+
+outputs:
+  - name: formatted
+    type: string
+    description: Human-readable duration
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

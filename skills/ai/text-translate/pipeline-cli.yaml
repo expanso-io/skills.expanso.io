@@ -1,0 +1,40 @@
+# Expanso Pipeline: text-translate (CLI mode)
+name: "text-translate-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta input_hash = content().hash("sha256").encode("hex")
+          let target = env("TARGET").or("english")
+          let source = env("SOURCE").or("auto")
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a translator. Translate the text to " + $target + ". Return JSON with: 'translation' (translated text), 'source_language' (detected language), 'target_language'. Preserve formatting and tone."
+            },
+            {"role": "user", "content": content()}
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let r = this.choices.0.message.content.parse_json().catch({"translation": this.choices.0.message.content})
+          root.translation = $r.translation
+          root.source_language = $r.source_language.or("unknown")
+          root.target_language = $r.target_language.or(env("TARGET").or("english"))
+          root.metadata = {"skill": "text-translate", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

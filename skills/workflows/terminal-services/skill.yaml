@@ -1,0 +1,36 @@
+# Skill: terminal-services
+name: terminal-services
+version: 1.0.0
+description: Terminal-first integrations for 40+ popular services
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: true
+
+inputs:
+  - name: service
+    type: string
+    required: true
+  - name: action
+    type: string
+    required: true
+  - name: params
+    type: object
+    default: {}
+
+outputs:
+  - name: result
+    type: object
+  - name: formatted_output
+    type: string
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, http, log]
+  outputs: [stdout, sync_response]

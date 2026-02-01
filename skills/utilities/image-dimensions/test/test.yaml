@@ -1,0 +1,7 @@
+tests:
+  - name: "Calculate dimensions"
+    input: '{"width": 1920, "height": 1080}'
+    expected:
+      has_field: aspect_ratio
+      has_field: megapixels
+      metadata_has: [skill, trace_id]

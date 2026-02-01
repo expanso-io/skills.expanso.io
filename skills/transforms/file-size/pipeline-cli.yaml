@@ -1,0 +1,34 @@
+name: "file-size-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let bytes = content().trim().number().catch(0)
+
+          let kb = $bytes / 1024
+          let mb = $kb / 1024
+          let gb = $mb / 1024
+
+          let formatted = if $gb >= 1 { $gb.string() + " GB" }
+            else if $mb >= 1 { $mb.string() + " MB" }
+            else if $kb >= 1 { $kb.string() + " KB" }
+            else { $bytes.string() + " B" }
+
+          root.bytes = $bytes
+          root.kb = $kb.floor()
+          root.mb = $mb.floor()
+          root.gb = $gb.floor()
+          root.formatted = $formatted
+          root.metadata = {"skill": "file-size", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

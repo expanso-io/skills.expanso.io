@@ -1,0 +1,38 @@
+# Expanso Pipeline: multi-platform-chat (MCP mode)
+
+name: multi-platform-chat-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /chat
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let message = this.message.or("")
+          let platform = this.platform.or("telegram")
+
+          root = if $message.length() == 0 { throw("message required") } else { "" }
+          root.messages = [{"role": "user", "content": $message}]
+          meta platform = $platform
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          root.response = this.choices.0.message.content
+          root.platform = meta("platform")
+          root.metadata = {"skill": "multi-platform-chat", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

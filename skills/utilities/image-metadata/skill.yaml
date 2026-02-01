@@ -1,0 +1,25 @@
+name: image-metadata
+version: 1.0.0
+description: Extract metadata from base64-encoded image
+
+inputs:
+  - name: image_base64
+    type: string
+    required: true
+    description: Base64-encoded image data
+
+outputs:
+  - name: format
+    type: string
+    description: Image format detected
+  - name: size_bytes
+    type: integer
+    description: Size in bytes
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

@@ -1,0 +1,25 @@
+name: object-merge
+version: 1.0.0
+description: Deep merge two JSON objects
+
+inputs:
+  - name: objects
+    type: array
+    required: true
+    description: Array of objects to merge
+
+outputs:
+  - name: merged
+    type: object
+    description: Merged object
+  - name: count
+    type: integer
+    description: Number of objects merged
+
+backends:
+  - name: local
+    type: local
+    description: Local object merging (no API needed)
+
+author: expanso
+license: MIT

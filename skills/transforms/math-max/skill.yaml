@@ -1,0 +1,22 @@
+name: math-max
+version: 1.0.0
+description: Find maximum value in array
+
+inputs:
+  - name: numbers
+    type: array
+    required: true
+    description: Array of numbers
+
+outputs:
+  - name: max
+    type: number
+    description: Maximum value
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

@@ -1,0 +1,29 @@
+name: "string-trim-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content()
+
+          let trimmed = $input.trim()
+          let trim_start = $input.trim_prefix(" ").trim_prefix("\t").trim_prefix("\n")
+          let trim_end = $input.trim_suffix(" ").trim_suffix("\t").trim_suffix("\n")
+
+          root.original = $input
+          root.trimmed = $trimmed
+          root.original_length = $input.length()
+          root.trimmed_length = $trimmed.length()
+          root.chars_removed = $input.length() - $trimmed.length()
+          root.metadata = {"skill": "string-trim", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

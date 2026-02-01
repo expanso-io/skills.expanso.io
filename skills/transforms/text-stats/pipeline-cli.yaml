@@ -1,0 +1,38 @@
+name: "text-stats-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let text = content()
+
+          let chars = $text.length()
+          let chars_no_spaces = $text.re_replace_all("\\s", "").length()
+          let words = $text.split(" ").filter(w -> w.trim() != "").length()
+          let lines = $text.split("\n").length()
+          let sentences = $text.split(".").filter(s -> s.trim() != "").length()
+          let paragraphs = $text.split("\n\n").filter(p -> p.trim() != "").length()
+
+          # Average calculations
+          let avg_word_length = if $words > 0 { $chars_no_spaces / $words } else { 0 }
+
+          root.characters = $chars
+          root.characters_no_spaces = $chars_no_spaces
+          root.words = $words
+          root.lines = $lines
+          root.sentences = $sentences
+          root.paragraphs = $paragraphs
+          root.avg_word_length = $avg_word_length
+          root.reading_time_minutes = ($words / 200).ceil()
+          root.metadata = {"skill": "text-stats", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,89 @@
+# Expanso Pipeline: code-explain (MCP mode)
+# ==========================================
+#
+# HTTP server for MCP/OpenClaw integration.
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/explain \
+#     -H "Content-Type: application/json" \
+#     -d '{"code": "def hello(): print(\"Hello\")", "language": "python"}'
+
+name: code-explain-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /explain
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let code = this.code.or("")
+
+          root = if $code.length() == 0 {
+            throw("code field is required")
+          }
+
+          meta input_hash = $code.hash("sha256").encode("hex")
+          meta input_length = $code.length()
+          meta trace_id = uuid_v4()
+
+          let language = this.language.or("auto-detect")
+          let detail = this.detail_level.or("normal")
+
+          let system_prompt = match $detail {
+            "brief" => "You are a code explainer. Explain code in 2-3 sentences. Be concise.",
+            "detailed" => "You are a senior developer explaining code to a junior. Explain line-by-line with examples and potential pitfalls.",
+            _ => "You are a code explainer. Explain code clearly with step-by-step breakdown. Cover what the code does and why."
+          }
+
+          let language_hint = if $language != "auto-detect" {
+            "The code is written in " + $language + ".\n\n"
+          } else { "" }
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": $system_prompt
+            },
+            {
+              "role": "user",
+              "content": $language_hint + "Explain this code:\n\n```\n" + $code + "\n```"
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          root.explanation = this.choices.0.message.content
+          root.metadata = {
+            "skill": "code-explain",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "input_hash": meta("input_hash"),
+            "input_length": meta("input_length"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [code-explain] Explained ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}
+
+selector:
+  match_labels:
+    capability: llm

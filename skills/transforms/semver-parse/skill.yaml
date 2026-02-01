@@ -1,0 +1,28 @@
+name: semver-parse
+version: 1.0.0
+description: Parse semantic version strings
+
+inputs:
+  - name: version
+    type: string
+    required: true
+    description: Semantic version string
+
+outputs:
+  - name: major
+    type: integer
+    description: Major version
+  - name: minor
+    type: integer
+    description: Minor version
+  - name: patch
+    type: integer
+    description: Patch version
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

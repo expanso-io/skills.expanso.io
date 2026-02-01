@@ -1,0 +1,26 @@
+# Expanso Pipeline: health-integrate (MCP mode)
+
+name: health-integrate-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /health
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          root.health_summary = {"readiness_score": 78}
+          root.recommendations = []
+          root.metadata = {"skill": "health-integrate", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

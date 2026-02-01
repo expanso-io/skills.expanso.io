@@ -1,0 +1,8 @@
+tests:
+  - name: "Translate to Spanish"
+    input: "Hello world"
+    env:
+      TARGET: spanish
+    expected:
+      has_field: translation
+      metadata_has: [skill, trace_id]

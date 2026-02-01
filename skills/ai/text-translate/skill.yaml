@@ -1,0 +1,64 @@
+# Skill: text-translate
+# Version: 1.0.0
+#
+# Translate text between languages.
+
+name: "text-translate"
+version: "1.0.0"
+description: "Translate text between languages using LLM"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to translate
+  - name: target
+    type: string
+    default: "english"
+    description: Target language
+  - name: source
+    type: string
+    default: "auto"
+    description: Source language (auto-detect if not specified)
+
+outputs:
+  - name: translation
+    type: string
+    description: Translated text
+  - name: source_language
+    type: string
+    description: Detected source language
+  - name: target_language
+    type: string
+    description: Target language
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI GPT
+  - name: ollama
+    type: local
+    models: [llama3.2, mistral]
+    description: Local Ollama
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+  outputs:
+    - stdout
+    - sync_response

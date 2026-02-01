@@ -1,0 +1,7 @@
+tests:
+  - name: "Sort array"
+    input: "[3, 1, 2]"
+    expected:
+      has_field: sorted
+      has_field: reversed
+      metadata_has: [skill, trace_id]

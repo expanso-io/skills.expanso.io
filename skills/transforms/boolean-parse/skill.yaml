@@ -1,0 +1,22 @@
+name: boolean-parse
+version: 1.0.0
+description: Parse various boolean representations
+
+inputs:
+  - name: value
+    type: string
+    required: true
+    description: Value to parse as boolean
+
+outputs:
+  - name: boolean
+    type: boolean
+    description: Parsed boolean value
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

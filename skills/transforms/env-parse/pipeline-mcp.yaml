@@ -1,0 +1,31 @@
+name: "env-parse-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /parse
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.content.or(content()).string().trim()
+          let lines = $input.split("\n")
+
+          let var_count = $lines.filter(l -> !l.has_prefix("#") && l.contains("=") && l.trim() != "").length()
+
+          root.raw = $input
+          root.line_count = $lines.length()
+          root.variable_count = $var_count
+          root.has_comments = $input.contains("#")
+          root.metadata = {"skill": "env-parse", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

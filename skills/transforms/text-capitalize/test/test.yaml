@@ -1,0 +1,7 @@
+tests:
+  - name: "Capitalize text"
+    input: "hello world"
+    expected:
+      has_field: title
+      has_field: sentence
+      metadata_has: [skill, trace_id]

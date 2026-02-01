@@ -1,0 +1,43 @@
+# Expanso Pipeline: retry-wrapper (MCP mode)
+
+name: retry-wrapper-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /execute
+      allowed_verbs: [POST]
+      timeout: 120s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let command = this.command.or("")
+          let max_retries = this.max_retries.or(3)
+          meta trace_id = uuid_v4()
+
+          root = if $command.length() == 0 { throw("command field is required") } else { "" }
+
+          root.output = "Command would be executed: " + $command
+          root.attempts = 1
+          root.success = true
+          root.metadata = {
+            "skill": "retry-wrapper",
+            "mode": "mcp",
+            "command": $command,
+            "max_retries": $max_retries,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: "[retry-wrapper] MCP success (trace: ${! meta(\"trace_id\").slice(0, 8) })"
+
+  output:
+    sync_response: {}

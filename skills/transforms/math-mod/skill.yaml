@@ -1,0 +1,26 @@
+name: math-mod
+version: 1.0.0
+description: Calculate modulo (remainder)
+
+inputs:
+  - name: dividend
+    type: number
+    required: true
+    description: Number to divide
+  - name: divisor
+    type: number
+    required: true
+    description: Number to divide by
+
+outputs:
+  - name: remainder
+    type: number
+    description: Remainder after division
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

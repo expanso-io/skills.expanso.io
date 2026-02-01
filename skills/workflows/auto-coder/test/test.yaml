@@ -1,0 +1,7 @@
+# Test: auto-coder
+tests:
+  - name: "Codes autonomously"
+    skip: true
+    input: '{"task": "Add error handling", "repo": "org/repo"}'
+    expected_output:
+      tests_passed: true

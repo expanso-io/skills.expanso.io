@@ -1,0 +1,51 @@
+# Expanso Pipeline: slug-generate (MCP mode)
+# ===========================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/slugify -d '{"text": "Hello World!"}'
+
+name: "slug-generate-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /slugify
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let text = this.text.or(content())
+          let separator = this.separator.or("-")
+
+          let slug = $text.lowercase()
+          let slug = $slug.re_replace_all("\\s+", $separator)
+          let slug = $slug.re_replace_all("[^a-z0-9" + $separator + "]", "")
+          let slug = $slug.re_replace_all($separator + "+", $separator)
+          let slug = $slug.trim($separator)
+
+          root.slug = $slug
+          root.original = $text
+          root.separator = $separator
+          root.metadata = {
+            "skill": "slug-generate",
+            "mode": "mcp",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [slug-generate] Generated slug (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

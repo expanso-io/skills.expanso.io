@@ -1,0 +1,28 @@
+name: "hex-encode-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /encode
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.text.or(content()).string().trim()
+
+          root.hex = $input.encode("hex")
+          root.input = $input
+          root.length = $input.length()
+          root.hex_length = $input.encode("hex").length()
+          root.metadata = {"skill": "hex-encode", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

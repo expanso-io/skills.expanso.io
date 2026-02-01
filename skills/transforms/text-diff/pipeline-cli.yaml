@@ -1,0 +1,75 @@
+# Expanso Pipeline: text-diff (CLI mode)
+# =======================================
+#
+# Usage:
+#   echo '{"original": "Hello World", "modified": "Hello Universe"}' | expanso-edge run pipeline-cli.yaml
+#
+# No API key needed - runs entirely locally.
+
+name: "text-diff-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let input = content().parse_json()
+          let original = $input.original.or("")
+          let modified = $input.modified.or("")
+
+          # Calculate basic metrics
+          let orig_len = $original.length()
+          let mod_len = $modified.length()
+          let identical = $original == $modified
+
+          # Simple word-based comparison
+          let orig_words = $original.split(" ")
+          let mod_words = $modified.split(" ")
+
+          # Calculate similarity (Jaccard-like)
+          let common = 0
+          let total = ($orig_words.length() + $mod_words.length())
+          let similarity = if $identical { 1.0 } else {
+            if $total == 0 { 1.0 } else {
+              # Simplified similarity based on length difference
+              let max_len = if $orig_len > $mod_len { $orig_len } else { $mod_len }
+              let min_len = if $orig_len < $mod_len { $orig_len } else { $mod_len }
+              if $max_len == 0 { 1.0 } else { $min_len / $max_len }
+            }
+          }
+
+          root.identical = $identical
+          root.changes = {
+            "original_length": $orig_len,
+            "modified_length": $mod_len,
+            "length_delta": $mod_len - $orig_len,
+            "original_words": $orig_words.length(),
+            "modified_words": $mod_words.length()
+          }
+          root.similarity = $similarity
+          root.hashes = {
+            "original": $original.hash("sha256").encode("hex"),
+            "modified": $modified.hash("sha256").encode("hex")
+          }
+          root.metadata = {
+            "skill": "text-diff",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-diff] Identical: ${! root.identical } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

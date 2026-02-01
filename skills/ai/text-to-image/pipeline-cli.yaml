@@ -1,0 +1,63 @@
+# Expanso Pipeline: text-to-image (CLI mode)
+# ============================================
+#
+# Generate images from text descriptions.
+#
+# Usage:
+#   echo "a sunset over mountains" | expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: text-to-image-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+      max_buffer: 4000
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta prompt = content().trim()
+          meta trace_id = uuid_v4()
+
+          root = if content().length() == 0 {
+            throw("prompt is required")
+          } else if content().length() > 4000 {
+            throw("prompt exceeds maximum length of 4000 characters")
+          } else {
+            content()
+          }
+
+      - openai_image_generation:
+          api_key: "${OPENAI_API_KEY}"
+          model: dall-e-3
+          size: "${SIZE:-1024x1024}"
+          quality: "${QUALITY:-standard}"
+          style: "${STYLE:-vivid}"
+
+      - mapping: |
+          root.image_url = this.data.0.url
+          root.revised_prompt = this.data.0.revised_prompt
+          root.metadata = {
+            "skill": "text-to-image",
+            "mode": "cli",
+            "model": "dall-e-3",
+            "size": env("SIZE").or("1024x1024"),
+            "quality": env("QUALITY").or("standard"),
+            "style": env("STYLE").or("vivid"),
+            "original_prompt": meta("prompt"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-to-image] Generated image (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

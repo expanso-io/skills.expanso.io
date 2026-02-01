@@ -1,0 +1,39 @@
+name: "path-parse-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /parse
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let path = this.path.or(content()).string().trim()
+
+          let parts = $path.split("/")
+          let filename = $parts.index($parts.length() - 1)
+          let dirname = $parts.slice(0, $parts.length() - 1).join("/")
+
+          let ext_parts = $filename.split(".")
+          let extension = if $ext_parts.length() > 1 { "." + $ext_parts.index($ext_parts.length() - 1) } else { "" }
+          let basename = if $ext_parts.length() > 1 { $ext_parts.slice(0, $ext_parts.length() - 1).join(".") } else { $filename }
+
+          root.path = $path
+          root.dirname = if $dirname != "" { $dirname } else { "." }
+          root.filename = $filename
+          root.basename = $basename
+          root.extension = $extension
+          root.is_absolute = $path.has_prefix("/")
+          root.depth = $parts.filter(p -> p != "").length()
+          root.metadata = {"skill": "path-parse", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

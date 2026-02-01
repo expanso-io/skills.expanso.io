@@ -1,0 +1,7 @@
+tests:
+  - name: "Merge JSON objects"
+    input: '[{"a": 1}, {"b": 2}]'
+    expected:
+      has_field: merged
+      has_field: object_count
+      metadata_has: [skill, trace_id]

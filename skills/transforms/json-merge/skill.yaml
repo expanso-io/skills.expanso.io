@@ -1,0 +1,22 @@
+name: json-merge
+version: 1.0.0
+description: Merge multiple JSON objects
+
+inputs:
+  - name: objects
+    type: array
+    required: true
+    description: JSON objects to merge
+
+outputs:
+  - name: merged
+    type: object
+    description: Merged JSON object
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

@@ -1,0 +1,1 @@
+{"object": {"name": "test", "value": 123, "active": true}, "keys": ["name", "active"]}

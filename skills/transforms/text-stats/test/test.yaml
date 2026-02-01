@@ -1,0 +1,7 @@
+tests:
+  - name: "Calculate text stats"
+    input: "Hello world"
+    expected:
+      has_field: characters
+      has_field: words
+      metadata_has: [skill, trace_id]

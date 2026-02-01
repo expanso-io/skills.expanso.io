@@ -1,0 +1,7 @@
+tests:
+  - name: "Format date"
+    input: "2024-01-15"
+    expected:
+      has_field: iso
+      has_field: unix
+      metadata_has: [skill, trace_id]

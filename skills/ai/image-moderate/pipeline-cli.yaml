@@ -1,0 +1,72 @@
+# Expanso Pipeline: image-moderate (CLI mode)
+# =============================================
+#
+# Check image for content policy violations.
+#
+# Usage:
+#   echo "https://example.com/image.jpg" | expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: image-moderate-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta image_url = content().trim()
+          meta trace_id = uuid_v4()
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a content moderation expert. Analyze images for policy violations. Return JSON: {\"flagged\": boolean, \"categories\": {\"violence\": boolean, \"sexual\": boolean, \"hate\": boolean, \"self_harm\": boolean, \"illegal\": boolean, \"dangerous\": boolean}, \"scores\": {same keys with 0-1 confidence}, \"reasoning\": \"brief explanation\"}. Be objective and accurate."
+            },
+            {
+              "role": "user",
+              "content": [
+                {"type": "image_url", "image_url": {"url": meta("image_url")}},
+                {"type": "text", "text": "Analyze this image for content policy violations."}
+              ]
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let content = this.choices.0.message.content
+          let result = $content.parse_json().catch({
+            "flagged": false,
+            "categories": {},
+            "scores": {},
+            "reasoning": $content
+          })
+
+          root.flagged = $result.flagged
+          root.categories = $result.categories
+          root.scores = $result.scores
+          root.reasoning = $result.reasoning
+          root.metadata = {
+            "skill": "image-moderate",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "image_url": meta("image_url"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [image-moderate] Flagged: ${! this.flagged } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

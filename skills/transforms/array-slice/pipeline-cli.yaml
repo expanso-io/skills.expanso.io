@@ -1,0 +1,31 @@
+name: "array-slice-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch(null)
+
+          # Slice first 3 elements by default
+          let sliced = if $parsed.type() == "array" {
+            $parsed.slice(0, 3.min($parsed.length()))
+          } else {
+            []
+          }
+
+          root.sliced = $sliced
+          root.original_count = if $parsed.type() == "array" { $parsed.length() } else { 0 }
+          root.sliced_count = $sliced.length()
+          root.metadata = {"skill": "array-slice", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

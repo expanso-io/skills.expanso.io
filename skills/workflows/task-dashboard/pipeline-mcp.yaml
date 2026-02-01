@@ -1,0 +1,26 @@
+# Expanso Pipeline: task-dashboard (MCP mode)
+
+name: task-dashboard-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /dashboard
+      allowed_verbs: [POST, GET]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          root.queue = [{"id": "1", "task": "Sample task", "status": "pending"}]
+          root.status = {"total_pending": 1}
+          root.metadata = {"skill": "task-dashboard", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

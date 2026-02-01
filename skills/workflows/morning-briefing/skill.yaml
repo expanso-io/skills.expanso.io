@@ -1,0 +1,86 @@
+# Skill: morning-briefing
+# Version: 1.0.0
+#
+# Personalized daily briefing: calendar, weather, news, and tasks.
+# Delivered to your preferred messaging platform.
+#
+# Features:
+# - Today's calendar events and deadlines
+# - Weather forecast for your location
+# - Relevant news based on your interests
+# - Task summary from Todoist/Linear/etc
+# - AI-generated priorities and focus areas
+
+name: morning-briefing
+version: 1.0.0
+description: Personalized daily briefing with calendar, weather, news, and tasks
+
+credentials:
+  - name: GOOGLE_CALENDAR_TOKEN
+    required: false
+    description: Google Calendar OAuth token
+  - name: OPENWEATHER_API_KEY
+    required: false
+    description: OpenWeatherMap API key
+  - name: NEWS_API_KEY
+    required: false
+    description: NewsAPI key for headlines
+  - name: TODOIST_TOKEN
+    required: false
+    description: Todoist API token
+  - name: OPENAI_API_KEY
+    required: true
+    description: OpenAI for summary and priorities
+  - name: TELEGRAM_BOT_TOKEN
+    required: false
+    description: Telegram bot for delivery
+  - name: SLACK_WEBHOOK
+    required: false
+    description: Slack webhook for delivery
+
+inputs:
+  - name: location
+    type: string
+    default: "San Francisco, CA"
+    description: Location for weather
+  - name: news_topics
+    type: array
+    default: [technology, business]
+    description: News topics of interest
+  - name: calendar_hours
+    type: integer
+    default: 24
+    description: Calendar lookahead hours
+  - name: delivery
+    type: string
+    default: json
+    enum: [json, telegram, slack, email]
+    description: Delivery method
+  - name: voice
+    type: boolean
+    default: false
+    description: Include TTS audio version
+
+outputs:
+  - name: briefing
+    type: object
+    description: "Complete briefing: {calendar, weather, news, tasks, priorities}"
+  - name: summary
+    type: string
+    description: AI-generated executive summary
+  - name: audio_url
+    type: string
+    description: URL to audio version (if voice enabled)
+  - name: metadata
+    type: object
+    description: Generation metadata
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, http, openai_chat_completion, branch, log]
+  outputs: [http_client, stdout, sync_response]

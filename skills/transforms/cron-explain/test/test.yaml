@@ -1,0 +1,15 @@
+# Test cases for cron-explain skill
+
+tests:
+  - name: "Explain weekday cron"
+    input: "0 9 * * 1-5"
+    expected:
+      has_field: explanation
+      has_field: cron
+      has_field: fields
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Explain interval cron"
+    input: "*/15 * * * *"
+    expected:
+      has_field: explanation

@@ -1,0 +1,31 @@
+name: "number-format-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let num = content().trim().number().or(0)
+          let format = env("FORMAT").or("standard")
+
+          let formatted = match $format {
+            "currency" => "$" + $num.format("%.2f"),
+            "percent" => ($num * 100).format("%.1f") + "%",
+            "scientific" => $num.format("%e"),
+            _ => $num.format("%.2f")
+          }
+
+          root.formatted = $formatted
+          root.original = $num
+          root.format = $format
+          root.metadata = {"skill": "number-format", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

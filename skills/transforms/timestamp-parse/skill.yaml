@@ -1,0 +1,53 @@
+# Skill: timestamp-parse
+# Version: 1.0.0
+#
+# Parse and format timestamps in various formats.
+# Runs locally without API calls.
+
+name: "timestamp-parse"
+version: "1.0.0"
+description: "Parse and format timestamps between different formats (ISO, Unix, RFC)"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []
+
+inputs:
+  - name: timestamp
+    type: string
+    required: false
+    description: Timestamp to parse (defaults to now)
+  - name: format
+    type: string
+    default: "iso"
+    description: "Output format: iso, unix, rfc2822"
+
+outputs:
+  - name: iso
+    type: string
+    description: ISO 8601 format
+  - name: unix
+    type: integer
+    description: Unix timestamp (seconds)
+  - name: unix_ms
+    type: integer
+    description: Unix timestamp (milliseconds)
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local timestamp operations
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

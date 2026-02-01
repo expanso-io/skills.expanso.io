@@ -1,0 +1,55 @@
+# Skill: determinism-test
+# Version: 1.0.0
+#
+# Run input N times and measure output stability.
+# Catches flaky LLM behavior.
+
+name: determinism-test
+version: 1.0.0
+description: Run input N times and measure output determinism/stability
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: For testing LLM-based pipelines
+
+inputs:
+  - name: input
+    type: any
+    required: true
+    description: Input to test
+  - name: runs
+    type: integer
+    default: 3
+    description: Number of runs
+  - name: pipeline
+    type: string
+    required: false
+    description: Pipeline to test
+
+outputs:
+  - name: stable
+    type: boolean
+    description: Whether all outputs matched
+  - name: stability_score
+    type: number
+    description: Percentage of matching outputs (0-100)
+  - name: outputs
+    type: array
+    description: All outputs collected
+  - name: diffs
+    type: array
+    description: Differences between outputs
+  - name: metadata
+    type: object
+    description: Test metadata
+
+backends:
+  - name: local
+    type: local
+    description: Local execution
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, log]
+  outputs: [stdout, sync_response]

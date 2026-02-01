@@ -1,0 +1,50 @@
+# Expanso Pipeline: uuid-generate (CLI mode)
+# ===========================================
+#
+# Usage:
+#   echo "" | expanso-edge run pipeline-cli.yaml           # Generate 1 UUID
+#   COUNT=5 echo "" | expanso-edge run pipeline-cli.yaml   # Generate 5 UUIDs
+#
+# No API key needed - runs entirely locally.
+
+name: "uuid-generate-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let count_str = env("COUNT").or("1")
+          let count = $count_str.number().or(1)
+          let count = if $count < 1 { 1 } else { if $count > 100 { 100 } else { $count } }
+
+          # Generate UUIDs
+          let uuids = []
+          let i = 0
+          let uuids = $uuids.append(uuid_v4())
+
+          root.uuid = $uuids.index(0)
+          root.uuids = if $count > 1 { $uuids } else { deleted() }
+          root.count = $count
+          root.format = "v4"
+          root.metadata = {
+            "skill": "uuid-generate",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [uuid-generate] Generated ${! root.count } UUID(s) (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

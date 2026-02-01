@@ -1,0 +1,38 @@
+# Expanso Pipeline: openapi-validate (CLI mode)
+
+name: openapi-validate-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+
+          # Simplified validation - check spec exists
+          let spec = $input.spec.or({})
+          let valid = spec.openapi.or("").length() > 0 || spec.swagger.or("").length() > 0
+
+          root.valid = $valid
+          root.errors = if !$valid { ["Missing or invalid OpenAPI spec"] } else { [] }
+          root.metadata = {
+            "skill": "openapi-validate",
+            "mode": "cli",
+            "spec_version": spec.openapi.or(spec.swagger).or("unknown"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [openapi-validate] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

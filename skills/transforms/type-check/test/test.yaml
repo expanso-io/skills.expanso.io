@@ -1,0 +1,7 @@
+tests:
+  - name: "Check type"
+    input: "[1, 2, 3]"
+    expected:
+      has_field: type
+      has_field: is_array
+      metadata_has: [skill, trace_id]
