@@ -21,17 +21,16 @@ Each skill includes:
 
 ## Quick Start
 
-### 1. Install Expanso CLI
+### 1. Install Expanso
 
 ```bash
-# macOS
-brew install expanso-io/tap/expanso
+# Install Expanso Edge (the runtime)
+curl -fsSL https://get.expanso.io/edge/install.sh | bash
+expanso-edge --version
 
-# Linux
-curl -fsSL https://get.expanso.io | sh
-
-# Or via Docker
-docker pull ghcr.io/expanso-io/expanso:latest
+# Install Expanso CLI (for job management)
+curl -fsSL https://get.expanso.io/cli/install.sh | sh
+expanso-cli --version
 ```
 
 ### 2. Run a Skill
@@ -41,27 +40,29 @@ docker pull ghcr.io/expanso-io/expanso:latest
 git clone https://github.com/expanso-io/expanso-skills.git
 cd expanso-skills
 
-# Run a skill directly
-echo '{"text": "Hello world"}' | expanso run skills/transforms/json-pretty/pipeline-cli.yaml
+# Run a skill directly (pipe input)
+echo '{"key": "value"}' | expanso-edge run --config skills/json-pretty/pipeline-cli.yaml
 
-# Or install as MCP server
-expanso mcp install skills/ai/text-summarize/pipeline-mcp.yaml
+# Validate a skill before running
+expanso-cli job validate skills/text-summarize/pipeline-cli.yaml --offline
 ```
 
-### 3. Use with Claude
+### 3. Use with Claude Desktop
 
-Add to your `~/.claude/claude_desktop_config.json`:
+Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
 ```json
 {
   "mcpServers": {
-    "expanso-skills": {
-      "command": "expanso",
-      "args": ["mcp", "serve", "--skills-dir", "/path/to/expanso-skills/skills"]
+    "expanso-pipelines": {
+      "command": "npx",
+      "args": ["@expanso/mcp-pipelines"]
     }
   }
 }
 ```
+
+This MCP server provides tools to validate, create, and deploy Expanso pipelines directly from Claude.
 
 ## Skill Categories
 
@@ -186,56 +187,67 @@ backends:
 ### CLI Mode
 
 ```bash
-# Pipe input
-echo "Long text to summarize..." | expanso run skills/ai/text-summarize/pipeline-cli.yaml
+# Pipe input to a skill
+echo "Long text to summarize..." | expanso-edge run \
+  --config skills/text-summarize/pipeline-cli.yaml
 
-# With parameters
-expanso run skills/ai/text-summarize/pipeline-cli.yaml \
-  --input.text "Your text here" \
-  --input.max_length 50
+# Run with environment variables for credentials
+OPENAI_API_KEY=sk-xxx expanso-edge run \
+  --config skills/text-summarize/pipeline-cli.yaml
 
-# Using local backend (Ollama)
-EXPANSO_BACKEND=ollama expanso run skills/ai/text-summarize/pipeline-cli.yaml
+# Using local backend (Ollama) - set in environment
+OPENAI_BASE_URL=http://localhost:11434/v1 \
+OPENAI_MODEL=llama3.2 \
+expanso-edge run --config skills/text-summarize/pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
+Skills with `pipeline-mcp.yaml` are designed to run as HTTP endpoints:
+
 ```bash
-# Start MCP server for a single skill
-expanso mcp serve skills/ai/text-summarize/pipeline-mcp.yaml
+# Run a skill as an HTTP server (for MCP integration)
+expanso-edge run --config skills/text-summarize/pipeline-mcp.yaml
 
-# Start MCP server for all skills
-expanso mcp serve --skills-dir skills/
-
-# With specific port
-expanso mcp serve --port 8080 skills/
+# The skill exposes an HTTP endpoint that MCP clients can call
+# Default: http://localhost:4195/<skill-path>
 ```
 
-### Programmatic Usage
+### Deploy to Expanso Cloud
 
-```python
-from expanso import Pipeline
+```bash
+# Validate the pipeline first
+expanso-cli job validate skills/text-summarize/pipeline-cli.yaml --offline
 
-# Load and run a skill
-pipeline = Pipeline.load("skills/ai/text-summarize/pipeline-cli.yaml")
-result = pipeline.run({"text": "Long document...", "max_length": 100})
-print(result["summary"])
+# Deploy to Expanso Cloud
+expanso-cli job deploy skills/text-summarize/pipeline-cli.yaml
+
+# List deployed jobs
+expanso-cli job list
+
+# View job logs
+expanso-cli job logs <job-id>
 ```
 
 ## Credential Management
 
-Expanso keeps credentials secure:
+Expanso keeps credentials secure - they stay on your machine and are never transmitted:
 
 ```bash
-# Set credentials (stored locally, never transmitted)
-expanso credentials set OPENAI_API_KEY sk-...
-expanso credentials set SLACK_WEBHOOK https://hooks.slack.com/...
+# Set credentials as environment variables
+export OPENAI_API_KEY=sk-...
+export SLACK_WEBHOOK=https://hooks.slack.com/...
 
-# List configured credentials
-expanso credentials list
+# Or use a .env file in your project
+echo "OPENAI_API_KEY=sk-..." >> .env
+echo "SLACK_WEBHOOK=https://hooks.slack.com/..." >> .env
 
-# Credentials are injected at runtime, never embedded in pipelines
+# Credentials are read from the environment at runtime
+# They are never embedded in pipeline definitions
+expanso-edge run --config skills/text-summarize/pipeline-cli.yaml
 ```
+
+Each skill's `skill.yaml` documents which credentials are required.
 
 ## Contributing
 
