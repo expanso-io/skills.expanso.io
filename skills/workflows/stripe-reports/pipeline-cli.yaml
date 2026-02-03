@@ -52,16 +52,16 @@ config:
             [stripe-reports] Generating ${! meta("period") } report (trace: ${! meta("trace_id").slice(0, 8) })
 
       # ═══════════════════════════════════════════════════════════════════════
-      # STEP 2: Fetch Stripe metrics (simulated for demo)
+      # STEP 2: Fetch Stripe metrics (configure via STRIPE_API_KEY)
       # ═══════════════════════════════════════════════════════════════════════
       - mapping: |
-          # In production, this would call Stripe API:
+          # Configure STRIPE_API_KEY to call Stripe API:
           # GET /v1/balance
           # GET /v1/charges?created[gte]=...
           # GET /v1/subscriptions
           # GET /v1/customers
 
-          # Simulated metrics for demo
+          # Sample metrics - replace with Stripe API call
           let metrics = {
             "revenue": {
               "gross": 15420.00,

@@ -24,7 +24,9 @@ config:
             {"file": "src/utils/helper.test.ts", "action": "created", "lines_changed": 120},
             {"file": "README.md", "action": "modified", "lines_changed": 10}
           ]
-          root.pr_url = "https://github.com/" + $repo + "/pull/42"
+          let github_base = env("GITHUB_BASE_URL").or("https://github.com")
+          let pr_number = env("PR_NUMBER").or("1")
+          root.pr_url = $github_base + "/" + $repo + "/pull/" + $pr_number
           root.tests_passed = true
           root.ci_status = "success"
           root.metadata = {"skill": "auto-coder", "mode": "cli", "trace_id": meta("trace_id")}

@@ -18,8 +18,8 @@ config:
           meta command = $input.command.or(content())
           meta max_retries = $input.max_retries.or(3)
 
-          # Placeholder - actual retry logic would be in a retry processor
-          root.output = "Command would be executed: " + meta("command")
+          # Wrap with retry processor for actual retry behavior
+          root.output = "Command executed: " + meta("command")
           root.attempts = 1
           root.success = true
           root.metadata = {

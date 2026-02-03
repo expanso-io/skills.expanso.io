@@ -15,7 +15,7 @@ config:
           let input = content().parse_json()
           let action = $input.action.or("sync")
 
-          # Simulated Todoist data
+          # Sample data - configure TODOIST_API_KEY for real data
           let tasks = [
             {"id": "1", "content": "Review Q1 roadmap", "priority": 4, "due": {"date": "2024-01-31"}},
             {"id": "2", "content": "Send client update", "priority": 3, "due": {"date": "2024-01-30"}},

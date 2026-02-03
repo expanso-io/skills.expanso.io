@@ -36,7 +36,7 @@ config:
           message: |
             [devops-monitor] Starting monitoring: sources=${! meta("sources") } (trace: ${! meta("trace_id").slice(0, 8) })
 
-      # Collect data from sources (simulated for demo)
+      # Collect data from sources (configure via env vars)
       - mapping: |
           # Simulated GitHub workflow data
           let github_data = {

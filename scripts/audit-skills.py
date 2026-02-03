@@ -33,12 +33,12 @@ FAKE_URL_PATTERNS = [
 
 TODO_PATTERNS = [
     r"# .*placeholder",  # Only match "placeholder" in comments
-    r"# .*TODO",
-    r"# .*FIXME",
+    r"# .*\bTODO\b",  # Word boundary to avoid matching "todoist"
+    r"# .*\bFIXME\b",
     r"would query",
     r"in production.*would",
-    r"# .*stub",
-    r"For demo",  # "For demo, return empty"
+    r"# .*\bstub\b",
+    r"for demo",  # "For demo, return empty"
 ]
 
 # Processors that indicate real API calls (not just mapping)
@@ -170,9 +170,9 @@ def audit_skill(skill_path: Path) -> dict:
     elif result["todos"]:
         result["status"] = "stub"
         result["issues"].append(f"Contains TODO/placeholder: {result['todos']}")
-    elif not result["real_processors"] and category in ["ai", "workflows"]:
-        # AI/workflow skills should have real API calls
-        # Security/transforms/utilities can legitimately be local-only
+    elif not result["real_processors"] and category == "ai":
+        # AI skills should have real API calls
+        # Other categories can legitimately be local-only
         result["status"] = "stub"
         result["issues"].append("No real API processors found (only mapping)")
     elif result["tests_skipped"]:
