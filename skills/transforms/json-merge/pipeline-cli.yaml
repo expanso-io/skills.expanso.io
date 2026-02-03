@@ -18,7 +18,7 @@ config:
           let is_array = $parsed.type() == "array"
 
           # Merge objects if array
-          let merged = if $is_array { $parsed.fold({}, item, acc -> $acc.merge($item)) } else { $parsed }
+          let merged = if $is_array { $parsed.fold({}, pair -> pair.tally.merge(pair.value)) } else { $parsed }
 
           root.merged = $merged
           root.object_count = if $is_array { $parsed.length() } else { 1 }
