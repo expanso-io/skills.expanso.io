@@ -26,6 +26,11 @@ config:
           let level = env("LEVEL").or("1").number().or(1)
           let lang = env("LANG").or("")
 
+          let numbered = $text.split("\n").fold({"index": 1, "items": []}, pair -> {
+            "index": pair.tally.index + 1,
+            "items": pair.tally.items.append(pair.tally.index.string() + ". " + pair.value)
+          }).items.join("\n")
+
           let result = match $format {
             "heading" => "#".repeat($level) + " " + $text,
             "h1" => "# " + $text,
@@ -37,7 +42,7 @@ config:
             "inline-code" => "`" + $text + "`",
             "quote" => "> " + $text.re_replace_all("\n", "\n> "),
             "list" => $text.split("\n").map_each(line -> "- " + line).join("\n"),
-            "numbered" => $text.split("\n").enumerate().map_each(item -> (item.index + 1).string() + ". " + item.value).join("\n"),
+            "numbered" => $numbered,
             "link" => "[" + $text + "](" + env("URL").or("#") + ")",
             _ => $text
           }
