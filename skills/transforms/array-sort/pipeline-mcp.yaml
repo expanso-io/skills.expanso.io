@@ -22,7 +22,7 @@ config:
           let is_array = $parsed.type() == "array"
 
           let sorted = if $is_array { $parsed.sort() } else { [] }
-          let reversed = if $is_array { $parsed.sort().reverse() } else { [] }
+          let reversed = if $is_array { $sorted.fold([], pair -> [pair.value].concat(pair.tally)) } else { [] }
 
           root.sorted = $sorted
           root.reversed = $reversed
