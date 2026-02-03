@@ -16,7 +16,7 @@ config:
 
           # Merge array of objects
           let merged = if $parsed.type() == "array" {
-            $parsed.fold({}, item, acc -> $acc.merge($item))
+            $parsed.fold({}, pair -> pair.tally.merge(pair.value))
           } else if $parsed.type() == "object" {
             $parsed
           } else {
