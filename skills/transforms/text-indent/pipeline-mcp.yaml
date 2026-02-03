@@ -17,15 +17,14 @@ config:
       - mapping: |
           meta trace_id = uuid_v4()
           let input = this.text.or(content()).string()
-          let spaces = this.spaces.or(2).number()
           let lines = $input.split("\n")
 
-          let indent = "  "
-          let indented = $lines.map_each(l -> $indent + l).join("\n")
+          let indented_2 = $lines.map_each(l -> "  " + l).join("\n")
+          let indented_4 = $lines.map_each(l -> "    " + l).join("\n")
 
           root.original = $input
-          root.indented = $indented
-          root.spaces = $spaces
+          root.indented_2 = $indented_2
+          root.indented_4 = $indented_4
           root.line_count = $lines.length()
           root.metadata = {"skill": "text-indent", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
 
