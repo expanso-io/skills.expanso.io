@@ -15,7 +15,10 @@ config:
           let lines = $input.split("\n")
 
           # Add line numbers
-          let numbered = $lines.enumerate().map_each(item -> (item.index + 1).string() + ": " + item.value).join("\n")
+          let numbered = $lines.fold({"index": 1, "items": []}, pair -> {
+            "index": pair.tally.index + 1,
+            "items": pair.tally.items.append(pair.tally.index.string() + ": " + pair.value)
+          }).items.join("\n")
 
           root.original = $input
           root.numbered = $numbered
