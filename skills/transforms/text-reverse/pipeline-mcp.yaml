@@ -19,7 +19,7 @@ config:
           let input = this.text.or(content()).string().trim()
 
           let chars = $input.split("")
-          let reversed = $chars.reverse().join("")
+          let reversed = $chars.fold("", pair -> pair.value + pair.tally)
 
           root.reversed = $reversed
           root.input = $input
