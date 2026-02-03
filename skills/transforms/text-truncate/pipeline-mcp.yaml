@@ -25,7 +25,7 @@ config:
       - mapping: |
           meta trace_id = uuid_v4()
           let text = this.text.or(content())
-          let length = this.length.or(100)
+          let length = this.length.or(100).number().catch(100)
           let suffix = this.suffix.or("...")
 
           let original_length = $text.length()
