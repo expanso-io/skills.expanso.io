@@ -16,6 +16,21 @@ outputs:
   - name: parts
     type: array
     description: Array of parts
+  - name: by_comma
+    type: array
+    description: Parts split by comma
+  - name: by_space
+    type: array
+    description: Parts split by space
+  - name: by_newline
+    type: array
+    description: Parts split by newline
+  - name: by_pipe
+    type: array
+    description: Parts split by pipe
+  - name: comma_count
+    type: number
+    description: Number of comma-separated parts
 
 backends:
   - name: local

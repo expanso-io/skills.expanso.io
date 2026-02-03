@@ -20,11 +20,20 @@ config:
           let delimiter = this.delimiter.or(",")
 
           let parts = $input.split($delimiter).map_each(s -> s.trim())
+          let by_comma = $input.split(",").map_each(s -> s.trim())
+          let by_space = $input.split(" ").filter(s -> s != "")
+          let by_newline = $input.split("\n")
+          let by_pipe = $input.split("|").map_each(s -> s.trim())
 
           root.input = $input
           root.delimiter = $delimiter
           root.parts = $parts
+          root.by_comma = $by_comma
+          root.by_space = $by_space
+          root.by_newline = $by_newline
+          root.by_pipe = $by_pipe
           root.count = $parts.length()
+          root.comma_count = $by_comma.length()
           root.metadata = {"skill": "string-split", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
 
   output:
