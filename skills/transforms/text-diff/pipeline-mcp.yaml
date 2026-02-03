@@ -35,14 +35,10 @@ config:
           let orig_words = $original.split(" ")
           let mod_words = $modified.split(" ")
 
-          let similarity = if $identical { 1.0 } else {
-            let total = ($orig_words.length() + $mod_words.length())
-            if $total == 0 { 1.0 } else {
-              let max_len = if $orig_len > $mod_len { $orig_len } else { $mod_len }
-              let min_len = if $orig_len < $mod_len { $orig_len } else { $mod_len }
-              if $max_len == 0 { 1.0 } else { $min_len / $max_len }
-            }
-          }
+          let total_words = $orig_words.length() + $mod_words.length()
+          let max_len = if $orig_len > $mod_len { $orig_len } else { $mod_len }
+          let min_len = if $orig_len < $mod_len { $orig_len } else { $mod_len }
+          let similarity = if $identical { 1.0 } else if $total_words == 0 { 1.0 } else if $max_len == 0 { 1.0 } else { $min_len / $max_len }
 
           root.identical = $identical
           root.changes = {
