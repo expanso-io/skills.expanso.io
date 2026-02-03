@@ -63,13 +63,7 @@ config:
 
           let date = $html.re_find_all("\"datePublished\"\\s*:\\s*\"([^\"]+)\"").index(0).or("")
 
-          let body = $html
-            .re_replace_all("<script[^>]*>[\\s\\S]*?</script>", "")
-            .re_replace_all("<style[^>]*>[\\s\\S]*?</style>", "")
-            .re_replace_all("<[^>]+>", " ")
-            .re_replace_all("\\s+", " ")
-            .trim()
-            .slice(0, 50000)
+          let body = $html.re_replace_all("<script[^>]*>[\\s\\S]*?</script>", "").re_replace_all("<style[^>]*>[\\s\\S]*?</style>", "").re_replace_all("<[^>]+>", " ").re_replace_all("\\s+", " ").trim().slice(0, 50000)
 
           root.article = {
             "url": meta("url"),

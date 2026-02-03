@@ -53,13 +53,7 @@ config:
           ).or("")
 
           # Strip HTML tags for body (simplified)
-          let body = $html
-            .re_replace_all("<script[^>]*>[\\s\\S]*?</script>", "")
-            .re_replace_all("<style[^>]*>[\\s\\S]*?</style>", "")
-            .re_replace_all("<[^>]+>", " ")
-            .re_replace_all("\\s+", " ")
-            .trim()
-            .slice(0, 50000)  # Limit body size
+          let body = $html.re_replace_all("<script[^>]*>[\\s\\S]*?</script>", "").re_replace_all("<style[^>]*>[\\s\\S]*?</style>", "").re_replace_all("<[^>]+>", " ").re_replace_all("\\s+", " ").trim().slice(0, 50000)  # Limit body size
 
           root.article = {
             "url": meta("url"),
