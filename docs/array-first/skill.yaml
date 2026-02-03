@@ -1,0 +1,26 @@
+name: array-first
+version: 1.0.0
+description: Get first element(s) from array
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Source array
+  - name: count
+    type: integer
+    default: 1
+    description: Number of elements
+
+outputs:
+  - name: first
+    type: any
+    description: First element(s)
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

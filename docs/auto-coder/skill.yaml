@@ -1,0 +1,48 @@
+# Skill: auto-coder
+# Version: 1.0.0
+#
+# Autonomous coding agent that runs while you're AFK.
+
+name: auto-coder
+version: 1.0.0
+description: Autonomous coding with GitHub integration and CI/CD automation
+
+credentials:
+  - name: GITHUB_TOKEN
+    required: true
+  - name: OPENAI_API_KEY
+    required: true
+
+inputs:
+  - name: task
+    type: string
+    required: true
+    description: Coding task to accomplish
+  - name: repo
+    type: string
+    required: true
+  - name: branch
+    type: string
+    default: auto-coder
+  - name: create_pr
+    type: boolean
+    default: true
+
+outputs:
+  - name: changes
+    type: array
+  - name: pr_url
+    type: string
+  - name: tests_passed
+    type: boolean
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, openai_chat_completion, http, command, log]
+  outputs: [http_client, stdout, sync_response]

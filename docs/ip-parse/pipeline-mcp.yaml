@@ -1,0 +1,32 @@
+name: "ip-parse-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /parse
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let ip = this.ip.or(content()).string().trim()
+
+          let is_ipv4 = $ip.re_match("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$")
+          let is_ipv6 = $ip.contains(":") && !$ip.re_match("^\\d")
+
+          root.ip = $ip
+          root.valid = $is_ipv4 || $is_ipv6
+          root.version = if $is_ipv4 { 4 } else if $is_ipv6 { 6 } else { 0 }
+          root.is_private = $ip.has_prefix("10.") || $ip.has_prefix("192.168.") || $ip.has_prefix("172.16.")
+          root.is_loopback = $ip == "127.0.0.1" || $ip == "::1"
+          root.metadata = {"skill": "ip-parse", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

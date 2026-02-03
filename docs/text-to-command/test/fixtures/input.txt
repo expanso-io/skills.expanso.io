@@ -1,0 +1,1 @@
+find all python files modified in the last week and count the total lines of code

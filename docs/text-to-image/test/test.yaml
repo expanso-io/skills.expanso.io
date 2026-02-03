@@ -1,0 +1,8 @@
+# Test: text-to-image
+tests:
+  - name: "Generates image"
+    skip: true
+    input: "a red apple"
+    expected_output:
+      metadata:
+        skill: "text-to-image"

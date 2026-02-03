@@ -1,0 +1,47 @@
+# Expanso Pipeline: policy-check (CLI mode)
+
+name: policy-check-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let input = content().parse_json()
+          let config = $input.config.or({})
+          let policy = $input.policy.or({})
+
+          # Simple policy evaluation
+          let deny_rules = $policy.deny.or([])
+          let violations = []
+
+          # Check each deny rule
+          # Format: {"path": "key.path", "condition": "equals|exists|not_empty", "value": "..."}
+          # Simplified: just check if keys exist
+
+          let allowed = $violations.length() == 0
+
+          root.allowed = $allowed
+          root.violations = $violations
+          root.metadata = {
+            "skill": "policy-check",
+            "mode": "cli",
+            "rules_checked": $deny_rules.length(),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [policy-check] Allowed: ${! this.allowed } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

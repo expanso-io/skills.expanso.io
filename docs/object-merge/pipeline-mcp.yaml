@@ -1,0 +1,37 @@
+name: "object-merge-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /merge
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.objects.or(content()).string().trim()
+          let parsed = $input.parse_json().catch(null)
+
+          let merged = if $parsed.type() == "array" {
+            $parsed.fold({}, item, acc -> $acc.merge($item))
+          } else if $parsed.type() == "object" {
+            $parsed
+          } else {
+            {}
+          }
+
+          root.merged = $merged
+          root.count = if $parsed.type() == "array" { $parsed.length() } else { 1 }
+          root.valid = $parsed != null
+          root.error = if $parsed == null { "Invalid JSON input" } else { "" }
+          root.metadata = {"skill": "object-merge", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

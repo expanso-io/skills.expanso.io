@@ -1,0 +1,54 @@
+# Expanso Pipeline: text-format (MCP mode)
+# =========================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/format -d '{"text": "hello world", "format": "upper"}'
+
+name: "text-format-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /format
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let text = this.text.or(content())
+          let format = this.format.or("lower")
+
+          let result = match $format {
+            "upper" => $text.uppercase(),
+            "lower" => $text.lowercase(),
+            "title" => $text.lowercase().capitalize(),
+            "sentence" => $text.lowercase().re_replace_all("^(.)", "$1".uppercase()),
+            _ => $text.lowercase()
+          }
+
+          root.result = $result
+          root.format = $format
+          root.original_length = $text.length()
+          root.metadata = {
+            "skill": "text-format",
+            "mode": "mcp",
+            "format_applied": $format,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-format] Applied ${! root.format } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

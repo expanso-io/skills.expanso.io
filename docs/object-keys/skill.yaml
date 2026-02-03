@@ -1,0 +1,22 @@
+name: object-keys
+version: 1.0.0
+description: Extract keys from JSON objects
+
+inputs:
+  - name: object
+    type: object
+    required: true
+    description: JSON object
+
+outputs:
+  - name: keys
+    type: array
+    description: Array of keys
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

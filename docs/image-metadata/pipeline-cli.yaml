@@ -1,0 +1,33 @@
+name: "image-metadata-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"image_base64": $input})
+          let b64 = $parsed.image_base64.or($input).string()
+
+          # Detect format from magic bytes (first few chars of base64)
+          let prefix = $b64.slice(0, 20)
+          let format = if $prefix.has_prefix("/9j/") { "jpeg" } else if $prefix.has_prefix("iVBOR") { "png" } else if $prefix.has_prefix("R0lGO") { "gif" } else if $prefix.has_prefix("UklGR") { "webp" } else { "unknown" }
+
+          # Estimate size (base64 is ~4/3 of original)
+          let size_bytes = ($b64.length() * 3 / 4).floor()
+
+          root.format = $format
+          root.size_bytes = $size_bytes
+          root.size_kb = ($size_bytes / 1024).floor()
+          root.base64_length = $b64.length()
+          root.metadata = {"skill": "image-metadata", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

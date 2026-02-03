@@ -1,0 +1,1 @@
+This is a very long paragraph of text that should be truncated to a much shorter length. It contains multiple sentences and goes on for quite a while to demonstrate the truncation functionality.

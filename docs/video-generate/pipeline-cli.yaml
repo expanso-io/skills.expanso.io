@@ -1,0 +1,32 @@
+# Expanso Pipeline: video-generate (CLI mode)
+
+name: video-generate-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+          let script = $input.script.or("")
+
+          root.script_original = $script
+          root.script_enhanced = $script + " [Enhanced with B-roll suggestions]"
+          root.video_url = "https://storage.example.com/videos/" + meta("trace_id") + ".mp4"
+          root.audio_url = "https://storage.example.com/audio/" + meta("trace_id") + ".mp3"
+          root.status = "generated"
+          root.duration = $input.duration_seconds.or(60)
+          root.metadata = {"skill": "video-generate", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[video-generate] Generated ${! this.duration }s video"
+
+  output:
+    stdout:
+      codec: json_object

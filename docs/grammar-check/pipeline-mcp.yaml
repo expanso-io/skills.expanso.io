@@ -1,0 +1,75 @@
+# Expanso Pipeline: grammar-check (MCP mode)
+# ===========================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/check -d '{"text": "Their going tommorow"}'
+
+name: "grammar-check-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /check
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let input_text = this.text.or(content())
+          meta trace_id = uuid_v4()
+          meta input_hash = $input_text.hash("sha256").encode("hex")
+          meta input_length = $input_text.length()
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a grammar and spelling expert. Check the text for errors and return a JSON object with: 'corrected' (the fixed text), 'issues' (array of objects with 'original', 'correction', 'type' where type is 'grammar', 'spelling', or 'style'). Only include actual errors, not stylistic preferences. Be precise."
+            },
+            {
+              "role": "user",
+              "content": $input_text
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let response = this.choices.0.message.content.parse_json().catch({
+            "corrected": this.choices.0.message.content,
+            "issues": []
+          })
+
+          root.corrected = $response.corrected
+          root.issues = $response.issues.or([])
+          root.issue_count = $response.issues.or([]).length()
+          root.has_issues = $response.issues.or([]).length() > 0
+          root.metadata = {
+            "skill": "grammar-check",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "input_hash": meta("input_hash"),
+            "input_length": meta("input_length"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [grammar-check] Found ${! root.issue_count } issues (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}
+
+selector:
+  match_labels:
+    capability: llm

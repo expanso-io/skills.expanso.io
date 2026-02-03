@@ -1,0 +1,7 @@
+tests:
+  - name: "Filter array"
+    input: '[1, null, 2, "", 3]'
+    expected:
+      has_field: filtered
+      has_field: filtered_count
+      metadata_has: [skill, trace_id]

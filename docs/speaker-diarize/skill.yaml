@@ -1,0 +1,60 @@
+# Skill: speaker-diarize
+# Version: 1.0.0
+#
+# Split transcript into per-speaker segments.
+# Useful for multi-speaker meetings and interviews.
+
+name: speaker-diarize
+version: 1.0.0
+description: Split transcript into per-speaker segments with speaker identification
+
+# Credentials
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key
+
+# Skill inputs
+inputs:
+  - name: transcript
+    type: string
+    required: true
+    description: Raw transcript text
+  - name: speaker_hints
+    type: array
+    required: false
+    description: Optional list of known speaker names
+
+# Skill outputs
+outputs:
+  - name: segments
+    type: array
+    description: "Array of {speaker, text, start_time?, end_time?}"
+  - name: speakers
+    type: array
+    description: List of identified speakers
+  - name: metadata
+    type: object
+    description: Processing metadata
+
+# Backend options
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+  - name: ollama
+    type: local
+    models: [llama3.2, mistral]
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+    - log
+  outputs:
+    - stdout
+    - sync_response

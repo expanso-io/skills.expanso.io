@@ -1,0 +1,31 @@
+name: "text-escape-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /escape
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.text.or(content()).string().trim()
+
+          let escaped = $input.escape_url_query()
+          let html_escaped = $input.re_replace_all("&", "&amp;").re_replace_all("<", "&lt;").re_replace_all(">", "&gt;")
+
+          root.original = $input
+          root.url_escaped = $escaped
+          root.html_escaped = $html_escaped
+          root.original_length = $input.length()
+          root.metadata = {"skill": "text-escape", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

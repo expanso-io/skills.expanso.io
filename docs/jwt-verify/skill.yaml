@@ -1,0 +1,58 @@
+# Skill: jwt-verify
+# Version: 1.0.0
+#
+# Verify JWT tokens and extract claims.
+
+name: jwt-verify
+version: 1.0.0
+description: Verify JWT signature and extract/validate claims
+
+# Credentials
+credentials:
+  - name: JWT_SECRET
+    required: false
+    description: Secret for HMAC verification
+
+# Skill inputs
+inputs:
+  - name: token
+    type: string
+    required: true
+    description: JWT token to verify
+  - name: verify_exp
+    type: boolean
+    default: true
+    description: Check expiration
+
+# Skill outputs
+outputs:
+  - name: valid
+    type: boolean
+    description: Whether token is valid
+  - name: header
+    type: object
+    description: JWT header
+  - name: claims
+    type: object
+    description: JWT payload/claims
+  - name: metadata
+    type: object
+    description: Verification details
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    description: Local JWT verification
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - log
+  outputs:
+    - stdout
+    - sync_response

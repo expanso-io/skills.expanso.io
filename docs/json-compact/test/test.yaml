@@ -1,0 +1,7 @@
+tests:
+  - name: "Compact JSON"
+    input: '{"a": 1}'
+    expected:
+      has_field: compact
+      has_field: valid
+      metadata_has: [skill, trace_id]

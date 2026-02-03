@@ -1,0 +1,28 @@
+name: path-parse
+version: 1.0.0
+description: Parse file paths into components
+
+inputs:
+  - name: path
+    type: string
+    required: true
+    description: File path to parse
+
+outputs:
+  - name: dirname
+    type: string
+    description: Directory name
+  - name: basename
+    type: string
+    description: File name
+  - name: extension
+    type: string
+    description: File extension
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

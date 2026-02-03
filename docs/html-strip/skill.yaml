@@ -1,0 +1,49 @@
+# Skill: html-strip
+# Version: 1.0.0
+#
+# Strip HTML tags from text.
+# Runs locally without API calls.
+
+name: "html-strip"
+version: "1.0.0"
+description: "Strip HTML tags from text, leaving only plain text content"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []
+
+inputs:
+  - name: html
+    type: string
+    required: true
+    description: HTML content to strip
+
+outputs:
+  - name: text
+    type: string
+    description: Plain text without HTML tags
+  - name: original_length
+    type: integer
+    description: Original HTML length
+  - name: text_length
+    type: integer
+    description: Resulting text length
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local HTML stripping
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

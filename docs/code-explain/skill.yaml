@@ -1,0 +1,62 @@
+# Skill: code-explain
+# Version: 1.0.0
+#
+# Explain code in plain English with step-by-step breakdown.
+
+name: code-explain
+version: 1.0.0
+description: Explain code in plain English with step-by-step breakdown
+
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key for remote inference
+
+inputs:
+  - name: code
+    type: string
+    required: true
+    description: Code snippet to explain
+  - name: language
+    type: string
+    required: false
+    description: Programming language (auto-detected if not provided)
+  - name: detail_level
+    type: string
+    required: false
+    description: Level of detail (brief, normal, detailed)
+
+outputs:
+  - name: explanation
+    type: string
+    description: Plain English explanation of the code
+  - name: metadata
+    type: object
+    description: Audit metadata
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI GPT-4o-mini
+  - name: ollama
+    type: local
+    models: [llama3.2, codellama, mistral]
+    description: Local Ollama (private, free)
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+    - log
+  outputs:
+    - stdout
+    - sync_response

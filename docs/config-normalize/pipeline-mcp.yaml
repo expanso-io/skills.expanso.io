@@ -1,0 +1,71 @@
+# Expanso Pipeline: config-normalize (MCP mode)
+# ================================================
+#
+# HTTP endpoint for config normalization.
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#
+#   curl -X POST http://localhost:8080/normalize \
+#     -H "Content-Type: application/json" \
+#     -d '{"config": "key: value\n", "format": "yaml"}'
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: config-normalize-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /normalize
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let raw = this.config.or("")
+          let format = this.format.or("auto")
+
+          root = if $raw.length() == 0 {
+            throw("config field is required")
+          } else { "" }
+
+          let detected_format = if $format != "auto" {
+            $format
+          } else if $raw.contains("---") || $raw.re_match("^\\s*\\w+:") {
+            "yaml"
+          } else if $raw.contains("[") && $raw.contains("]") && $raw.contains("=") {
+            "toml"
+          } else {
+            "yaml"
+          }
+
+          meta detected_format = $detected_format
+          meta input_hash = $raw.hash("sha256").encode("hex")
+          meta trace_id = uuid_v4()
+
+          let parsed = $raw.parse_yaml()
+
+          root.json = $parsed
+          root.metadata = {
+            "skill": "config-normalize",
+            "mode": "mcp",
+            "detected_format": $detected_format,
+            "input_hash": meta("input_hash"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [config-normalize] MCP: ${! meta("detected_format") } to JSON (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

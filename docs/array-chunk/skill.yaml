@@ -1,0 +1,26 @@
+name: array-chunk
+version: 1.0.0
+description: Split arrays into smaller chunks
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Array to chunk
+  - name: size
+    type: integer
+    default: 2
+    description: Chunk size
+
+outputs:
+  - name: chunks
+    type: array
+    description: Array of chunks
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

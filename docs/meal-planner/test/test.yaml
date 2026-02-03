@@ -1,0 +1,8 @@
+# Test: meal-planner
+tests:
+  - name: "Creates meal plan"
+    skip: true
+    input: '{"days": 7, "people": 2}'
+    expected_output:
+      metadata:
+        skill: "meal-planner"

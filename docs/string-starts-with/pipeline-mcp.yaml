@@ -1,0 +1,28 @@
+name: "string-starts-with-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /check
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let text = this.text.or("").string()
+          let prefix = this.prefix.or("").string()
+
+          root.starts_with = $text.has_prefix($prefix)
+          root.text = $text
+          root.prefix = $prefix
+          root.metadata = {"skill": "string-starts-with", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

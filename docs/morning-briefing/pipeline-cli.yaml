@@ -1,0 +1,108 @@
+# Expanso Pipeline: morning-briefing (CLI mode)
+# ===============================================
+#
+# Generate personalized morning briefing.
+#
+# Usage:
+#   echo '{"location":"NYC"}' | OPENAI_API_KEY=... expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: morning-briefing-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+          meta location = $input.location.or("San Francisco, CA")
+          meta news_topics = $input.news_topics.or(["technology", "business"])
+
+          # Simulated data sources (production would call real APIs)
+          let calendar_events = [
+            {"time": "09:00", "title": "Team Standup", "duration": "30m", "location": "Zoom"},
+            {"time": "11:00", "title": "Product Review", "duration": "1h", "location": "Conference Room A"},
+            {"time": "14:00", "title": "1:1 with Manager", "duration": "30m", "location": "Zoom"},
+            {"time": "16:00", "title": "Sprint Planning", "duration": "2h", "location": "Main Office"}
+          ]
+
+          let weather = {
+            "location": meta("location"),
+            "temperature": 68,
+            "condition": "Partly Cloudy",
+            "high": 72,
+            "low": 58,
+            "precipitation_chance": 10
+          }
+
+          let news = [
+            {"title": "AI Breakthrough in Protein Folding", "source": "TechCrunch", "topic": "technology"},
+            {"title": "Fed Signals Rate Decision", "source": "Bloomberg", "topic": "business"},
+            {"title": "New Startup Raises $50M Series B", "source": "VentureBeat", "topic": "technology"}
+          ]
+
+          let tasks = [
+            {"title": "Review Q1 roadmap", "due": "today", "priority": 1},
+            {"title": "Finalize budget proposal", "due": "tomorrow", "priority": 2},
+            {"title": "Send client update", "due": "today", "priority": 1}
+          ]
+
+          root.calendar = $calendar_events
+          root.weather = $weather
+          root.news = $news
+          root.tasks = $tasks
+
+          meta briefing_data = {
+            "calendar": $calendar_events,
+            "weather": $weather,
+            "news": $news,
+            "tasks": $tasks
+          }
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a personal assistant creating a morning briefing. Summarize the day ahead in a friendly, professional tone. Highlight key meetings, deadlines, and priorities. Include weather-appropriate advice. Keep it concise but comprehensive."
+            },
+            {
+              "role": "user",
+              "content": "Create my morning briefing:\n\n" + meta("briefing_data").format_json()
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let summary = this.choices.0.message.content
+
+          root.briefing = meta("briefing_data")
+          root.summary = $summary
+          root.priorities = [
+            "Complete 'Review Q1 roadmap' before standup",
+            "Prepare for Product Review at 11am",
+            "Send client update by EOD"
+          ]
+          root.metadata = {
+            "skill": "morning-briefing",
+            "mode": "cli",
+            "location": meta("location"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [morning-briefing] Generated: ${! root.briefing.calendar.length() } events, ${! root.briefing.tasks.length() } tasks
+
+  output:
+    stdout:
+      codec: json_object

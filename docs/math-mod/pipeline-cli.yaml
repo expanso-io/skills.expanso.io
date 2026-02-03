@@ -1,0 +1,28 @@
+name: "math-mod-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"dividend": 0, "divisor": 1})
+
+          let dividend = $parsed.dividend.number().catch(0)
+          let divisor = $parsed.divisor.number().catch(1)
+
+          root.remainder = if $divisor != 0 { $dividend % $divisor } else { null }
+          root.dividend = $dividend
+          root.divisor = $divisor
+          root.valid = $divisor != 0
+          root.metadata = {"skill": "math-mod", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

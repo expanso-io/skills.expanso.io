@@ -1,0 +1,56 @@
+# Expanso Pipeline: url-encode (MCP mode)
+# ========================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/encode -d '{"text": "Hello World!"}'
+#   curl -X POST http://localhost:8080/encode -d '{"text": "Hello%20World%21", "mode": "decode"}'
+
+name: "url-encode-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /encode
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let input_text = this.text.or(content())
+          let mode = this.mode.or("encode")
+          meta input_hash = $input_text.hash("sha256").encode("hex")
+          meta input_length = $input_text.length()
+          meta trace_id = uuid_v4()
+
+          let result = if $mode == "decode" {
+            $input_text.unescape_url_query().catch("Error: Invalid URL-encoded input")
+          } else {
+            $input_text.escape_url_query()
+          }
+
+          root.result = $result
+          root.mode = $mode
+          root.metadata = {
+            "skill": "url-encode",
+            "mode": "mcp",
+            "operation": $mode,
+            "input_hash": meta("input_hash"),
+            "input_length": meta("input_length"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [url-encode] ${! $mode } ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

@@ -1,0 +1,58 @@
+# Expanso Pipeline: text-to-speech (CLI mode)
+# =============================================
+#
+# Convert text to speech audio.
+#
+# Usage:
+#   echo "Hello world" | expanso-edge run pipeline-cli.yaml > output.mp3
+#   echo "Hello world" | expanso-edge run pipeline-cli.yaml --format json
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: text-to-speech-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+      max_buffer: 4096
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta text_length = content().length()
+          meta trace_id = uuid_v4()
+          root = if content().length() == 0 {
+            throw("text is required")
+          } else if content().length() > 4096 {
+            throw("text exceeds maximum length of 4096 characters")
+          } else {
+            content()
+          }
+
+      - openai_speech:
+          api_key: "${OPENAI_API_KEY}"
+          model: tts-1
+          voice: "${VOICE:-alloy}"
+
+      - mapping: |
+          root.audio = content().encode("base64")
+          root.metadata = {
+            "skill": "text-to-speech",
+            "mode": "cli",
+            "model": "tts-1",
+            "voice": env("VOICE").or("alloy"),
+            "text_length": meta("text_length"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-to-speech] Generated audio for ${! meta("text_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

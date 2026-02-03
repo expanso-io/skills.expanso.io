@@ -1,0 +1,70 @@
+# Expanso Pipeline: image-alttext (CLI mode)
+# ============================================
+#
+# Generate accessibility alt text for images.
+#
+# Usage:
+#   echo "https://example.com/image.jpg" | expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: image-alttext-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta image_url = content().trim()
+          meta trace_id = uuid_v4()
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are an accessibility expert. Generate concise, descriptive alt text for images following WCAG guidelines. The alt text should: 1) Be under 125 characters, 2) Describe the image content and function, 3) Skip phrases like 'image of' or 'picture of', 4) Include relevant text shown in the image. Respond with ONLY the alt text, no quotes or explanation."
+            },
+            {
+              "role": "user",
+              "content": [
+                {
+                  "type": "image_url",
+                  "image_url": {"url": meta("image_url")}
+                },
+                {
+                  "type": "text",
+                  "text": "Generate accessible alt text for this image."
+                }
+              ]
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let alt = this.choices.0.message.content.trim().slice(0, 125)
+
+          root.alt_text = $alt
+          root.metadata = {
+            "skill": "image-alttext",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "image_url": meta("image_url"),
+            "alt_length": $alt.length(),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [image-alttext] Generated ${! this.metadata.alt_length } char alt text (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

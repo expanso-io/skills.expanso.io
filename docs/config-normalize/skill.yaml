@@ -1,0 +1,51 @@
+# Skill: config-normalize
+# Version: 1.0.0
+#
+# Convert YAML, TOML, or INI config files to canonical JSON.
+# Reduces ambiguity and enables consistent processing.
+
+name: config-normalize
+version: 1.0.0
+description: Convert YAML/TOML/INI configs to canonical JSON
+
+# No credentials required
+credentials: []
+
+# Skill inputs
+inputs:
+  - name: config
+    type: string
+    required: true
+    description: Config content (YAML, TOML, or INI)
+  - name: format
+    type: string
+    default: auto
+    enum: [auto, yaml, toml, ini]
+    description: Input format (auto-detect by default)
+
+# Skill outputs
+outputs:
+  - name: json
+    type: object
+    description: Normalized JSON object
+  - name: metadata
+    type: object
+    description: Processing metadata including detected format
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    description: Pure local processing (no network)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - log
+  outputs:
+    - stdout
+    - sync_response

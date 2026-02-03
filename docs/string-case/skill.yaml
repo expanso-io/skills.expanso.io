@@ -1,0 +1,26 @@
+name: string-case
+version: 1.0.0
+description: Convert string between case formats (camel, snake, kebab, pascal)
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to convert
+  - name: format
+    type: string
+    default: snake
+    description: "Target format: snake, camel, kebab, pascal, upper, lower"
+
+outputs:
+  - name: result
+    type: string
+    description: Converted string
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

@@ -1,0 +1,7 @@
+tests:
+  - name: "Flatten array"
+    input: "[[1, 2], [3, 4]]"
+    expected:
+      has_field: flat
+      has_field: flat_length
+      metadata_has: [skill, trace_id]

@@ -1,0 +1,57 @@
+# Skill: cron-explain
+# Version: 1.0.0
+#
+# Explain cron expressions in plain English.
+# Uses LLM for natural language explanation.
+
+name: "cron-explain"
+version: "1.0.0"
+description: "Explain cron expressions in plain English"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key for natural language explanation
+
+inputs:
+  - name: cron
+    type: string
+    required: true
+    description: Cron expression to explain (5 or 6 fields)
+
+outputs:
+  - name: explanation
+    type: string
+    description: Human-readable explanation
+  - name: cron
+    type: string
+    description: Original cron expression
+  - name: fields
+    type: object
+    description: Parsed cron fields
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI GPT for natural language
+  - name: ollama
+    type: local
+    models: [llama3.2, mistral]
+    description: Local Ollama
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+  outputs:
+    - stdout
+    - sync_response

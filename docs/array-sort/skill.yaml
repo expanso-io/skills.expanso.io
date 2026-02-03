@@ -1,0 +1,22 @@
+name: array-sort
+version: 1.0.0
+description: Sort arrays of values
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Array to sort
+
+outputs:
+  - name: sorted
+    type: array
+    description: Sorted array
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

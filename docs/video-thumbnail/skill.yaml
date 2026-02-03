@@ -1,0 +1,28 @@
+name: video-thumbnail
+version: 1.0.0
+description: Generate thumbnail URL/timestamp for video
+
+inputs:
+  - name: video_url
+    type: string
+    required: true
+    description: Video URL
+  - name: timestamp
+    type: number
+    description: Timestamp in seconds for thumbnail
+
+outputs:
+  - name: thumbnail_time
+    type: string
+    description: Formatted timestamp for thumbnail
+  - name: video_url
+    type: string
+    description: Original video URL
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

@@ -1,0 +1,30 @@
+name: "array-map-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch(null)
+
+          # Convert all elements to strings
+          let mapped = if $parsed.type() == "array" {
+            $parsed.map_each(x -> x.string())
+          } else {
+            []
+          }
+
+          root.mapped = $mapped
+          root.count = $mapped.length()
+          root.metadata = {"skill": "array-map", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,17 @@
+# Test cases for text-truncate skill
+
+tests:
+  - name: "Truncate long text"
+    input: "This is a very long text that should be truncated"
+    env:
+      LENGTH: "20"
+    expected:
+      has_field: result
+      has_field: truncated
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Short text unchanged"
+    input: "Short"
+    expected:
+      has_field: result
+      has_field: original_length

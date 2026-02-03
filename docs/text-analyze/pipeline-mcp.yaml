@@ -1,0 +1,71 @@
+# Expanso Pipeline: text-analyze (MCP mode)
+# ==========================================
+#
+# HTTP server for text analysis.
+
+name: text-analyze-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /analyze
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let text = this.text.or("")
+
+          root = if $text.length() == 0 {
+            throw("text field is required")
+          }
+
+          meta input_hash = $text.hash("sha256").encode("hex")
+          meta input_length = $text.length()
+          meta trace_id = uuid_v4()
+
+          let analyses = this.analyses.or(["sentiment", "entities", "topics", "keywords"]).join(",")
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a text analyst. Analyze text and return structured JSON. Be precise and objective."
+            },
+            {
+              "role": "user",
+              "content": "Analyze this text for: " + $analyses + "\n\nReturn a JSON object with the following structure:\n{\n  \"sentiment\": {\"label\": \"positive|negative|neutral\", \"score\": 0.0-1.0, \"explanation\": \"...\"},\n  \"entities\": [{\"text\": \"...\", \"type\": \"PERSON|ORG|LOCATION|DATE|...\", \"start\": 0, \"end\": 0}],\n  \"topics\": [\"topic1\", \"topic2\"],\n  \"keywords\": [\"keyword1\", \"keyword2\"]\n}\n\nOnly include the analyses requested. Return valid JSON only.\n\nText:\n" + $text
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let raw = this.choices.0.message.content
+          let parsed = $raw.parse_json().catch({})
+
+          root.analysis = $parsed
+          root.metadata = {
+            "skill": "text-analyze",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "input_hash": meta("input_hash"),
+            "input_length": meta("input_length"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-analyze] Analyzed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

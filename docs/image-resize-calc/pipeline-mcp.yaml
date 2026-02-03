@@ -1,0 +1,39 @@
+name: "image-resize-calc-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /resize
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let width = this.width.or(100).number()
+          let height = this.height.or(100).number()
+          let max_w = this.max_width.or(800).number()
+          let max_h = this.max_height.or(600).number()
+
+          let aspect = $width / $height
+          let scale_w = $max_w / $width
+          let scale_h = $max_h / $height
+          let scale = if $scale_w < $scale_h { $scale_w } else { $scale_h }
+          let final_scale = if $scale > 1 { 1 } else { $scale }
+
+          root.original_width = $width
+          root.original_height = $height
+          root.new_width = ($width * $final_scale).floor()
+          root.new_height = ($height * $final_scale).floor()
+          root.aspect_ratio = $aspect
+          root.scale_factor = $final_scale
+          root.metadata = {"skill": "image-resize-calc", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

@@ -1,0 +1,7 @@
+tests:
+  - name: "Check includes"
+    input: '{"array": [1, 2, 3], "value": 2}'
+    expected:
+      has_field: includes
+      has_field: length
+      metadata_has: [skill, trace_id]

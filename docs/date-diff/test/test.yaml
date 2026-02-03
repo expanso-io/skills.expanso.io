@@ -1,0 +1,7 @@
+tests:
+  - name: "Calculate date difference"
+    input: '{"start": "2024-01-01T00:00:00Z", "end": "2024-01-02T00:00:00Z"}'
+    expected:
+      has_field: diff_days
+      has_field: start
+      metadata_has: [skill, trace_id]

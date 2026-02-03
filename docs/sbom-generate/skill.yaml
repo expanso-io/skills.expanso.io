@@ -1,0 +1,50 @@
+# Skill: sbom-generate
+# Version: 1.0.0
+#
+# Generate Software Bill of Materials (SBOM) in CycloneDX or SPDX format.
+
+name: sbom-generate
+version: 1.0.0
+description: Generate SBOM (Software Bill of Materials) from package files
+
+# No credentials required
+credentials: []
+
+# Skill inputs
+inputs:
+  - name: packages
+    type: object
+    required: true
+    description: "Package manifest (package.json, requirements.txt content, etc.)"
+  - name: format
+    type: string
+    default: cyclonedx
+    enum: [cyclonedx, spdx]
+    description: SBOM output format
+
+# Skill outputs
+outputs:
+  - name: sbom
+    type: object
+    description: SBOM in CycloneDX or SPDX format
+  - name: metadata
+    type: object
+    description: Processing metadata
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    description: Pure local processing
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - log
+  outputs:
+    - stdout
+    - sync_response

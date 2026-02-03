@@ -1,0 +1,22 @@
+name: math-floor
+version: 1.0.0
+description: Round number down to integer
+
+inputs:
+  - name: number
+    type: number
+    required: true
+    description: Number to floor
+
+outputs:
+  - name: floor
+    type: integer
+    description: Floored value
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

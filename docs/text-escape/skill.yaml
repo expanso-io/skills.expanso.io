@@ -1,0 +1,22 @@
+name: text-escape
+version: 1.0.0
+description: Escape special characters in text
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to escape
+
+outputs:
+  - name: escaped
+    type: string
+    description: Escaped text
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

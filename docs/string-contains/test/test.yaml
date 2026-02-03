@@ -1,0 +1,7 @@
+tests:
+  - name: "Check contains"
+    input: '{"text": "hello", "search": "ell"}'
+    expected:
+      has_field: contains
+      has_field: starts_with
+      metadata_has: [skill, trace_id]

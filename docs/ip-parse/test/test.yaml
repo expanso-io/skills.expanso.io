@@ -1,0 +1,7 @@
+tests:
+  - name: "Parse IP address"
+    input: "192.168.1.1"
+    expected:
+      has_field: valid
+      has_field: version
+      metadata_has: [skill, trace_id]

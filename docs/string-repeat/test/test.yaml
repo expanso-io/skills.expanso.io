@@ -1,0 +1,7 @@
+tests:
+  - name: "Repeat string"
+    input: "ab"
+    expected:
+      has_field: repeated
+      has_field: count
+      metadata_has: [skill, trace_id]

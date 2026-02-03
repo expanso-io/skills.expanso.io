@@ -1,0 +1,46 @@
+# Skill: site-migrate
+name: site-migrate
+version: 1.0.0
+description: Migrate websites across platforms (Notion→Astro, WordPress→Hugo, etc.)
+
+credentials:
+  - name: NOTION_TOKEN
+    required: false
+  - name: CLOUDFLARE_API_TOKEN
+    required: false
+  - name: OPENAI_API_KEY
+    required: true
+
+inputs:
+  - name: source
+    type: string
+    required: true
+    enum: [notion, wordpress, ghost, markdown]
+  - name: destination
+    type: string
+    required: true
+    enum: [astro, hugo, nextjs, static]
+  - name: source_url
+    type: string
+    required: false
+
+outputs:
+  - name: pages_migrated
+    type: integer
+  - name: assets_migrated
+    type: integer
+  - name: errors
+    type: array
+  - name: deploy_url
+    type: string
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, http, openai_chat_completion, log]
+  outputs: [http_client, stdout, sync_response]

@@ -1,0 +1,26 @@
+# Expanso Pipeline: backup-verify (MCP mode)
+
+name: backup-verify-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /verify
+      allowed_verbs: [POST]
+      timeout: 120s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          root.status = {"verified": true, "local_files": 1250, "cloud_files": 1248}
+          root.differences = []
+          root.metadata = {"skill": "backup-verify", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

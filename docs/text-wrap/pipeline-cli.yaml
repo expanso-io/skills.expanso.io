@@ -1,0 +1,30 @@
+name: "text-wrap-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let width = 80
+
+          # Split into words and rejoin with wrapping
+          let words = $input.split(" ")
+          let line_count = ($input.length() / $width).ceil().or(1)
+
+          root.wrapped = $input
+          root.original_length = $input.length()
+          root.word_count = $words.length()
+          root.estimated_lines = $line_count
+          root.width = $width
+          root.metadata = {"skill": "text-wrap", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

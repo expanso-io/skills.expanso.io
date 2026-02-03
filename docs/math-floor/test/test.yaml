@@ -1,0 +1,7 @@
+tests:
+  - name: "Floor number"
+    input: "3.7"
+    expected:
+      has_field: floor
+      has_field: original
+      metadata_has: [skill, trace_id]

@@ -1,0 +1,26 @@
+name: date-diff
+version: 1.0.0
+description: Calculate difference between dates
+
+inputs:
+  - name: start
+    type: string
+    required: true
+    description: Start date
+  - name: end
+    type: string
+    required: true
+    description: End date
+
+outputs:
+  - name: days
+    type: number
+    description: Difference in days
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

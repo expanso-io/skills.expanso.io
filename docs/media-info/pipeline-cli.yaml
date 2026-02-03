@@ -1,0 +1,57 @@
+name: "media-info-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"filename": $input})
+
+          let filename = $parsed.filename.or($input).string().lowercase()
+          let size = $parsed.size_bytes.or(0).number()
+
+          let parts = $filename.split(".")
+          let ext = if $parts.length() > 1 { $parts.index($parts.length() - 1) } else { "" }
+
+          let type = match $ext {
+            "jpg" => "image",
+            "jpeg" => "image",
+            "png" => "image",
+            "gif" => "image",
+            "webp" => "image",
+            "svg" => "image",
+            "mp3" => "audio",
+            "wav" => "audio",
+            "ogg" => "audio",
+            "flac" => "audio",
+            "aac" => "audio",
+            "mp4" => "video",
+            "webm" => "video",
+            "avi" => "video",
+            "mov" => "video",
+            "mkv" => "video",
+            _ => "unknown"
+          }
+
+          let size_kb = ($size / 1024).floor()
+          let size_mb = ($size / 1048576)
+
+          root.filename = $filename
+          root.extension = $ext
+          root.type = $type
+          root.size_bytes = $size
+          root.size_kb = $size_kb
+          root.size_mb = $size_mb
+          root.is_media = $type != "unknown"
+          root.metadata = {"skill": "media-info", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

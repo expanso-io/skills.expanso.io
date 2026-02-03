@@ -1,0 +1,45 @@
+# Skill: video-generate
+name: video-generate
+version: 1.0.0
+description: AI video generation pipeline with script, voiceover, and editing
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: true
+  - name: ELEVENLABS_API_KEY
+    required: false
+  - name: RUNWAY_API_KEY
+    required: false
+
+inputs:
+  - name: script
+    type: string
+    required: true
+  - name: style
+    type: string
+    default: professional
+  - name: duration_seconds
+    type: integer
+    default: 60
+  - name: voice
+    type: string
+    default: alloy
+
+outputs:
+  - name: video_url
+    type: string
+  - name: audio_url
+    type: string
+  - name: script_enhanced
+    type: string
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, openai_chat_completion, openai_speech, http, log]
+  outputs: [http_client, stdout, sync_response]

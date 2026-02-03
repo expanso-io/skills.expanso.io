@@ -1,0 +1,22 @@
+name: json-compact
+version: 1.0.0
+description: Compact JSON by removing whitespace
+
+inputs:
+  - name: json
+    type: string
+    required: true
+    description: JSON to compact
+
+outputs:
+  - name: compact
+    type: string
+    description: Compacted JSON
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

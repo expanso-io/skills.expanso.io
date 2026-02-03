@@ -1,0 +1,42 @@
+# Expanso Pipeline: openapi-validate (MCP mode)
+
+name: openapi-validate-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /validate
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let spec = this.spec
+          meta trace_id = uuid_v4()
+
+          root = if $spec == null { throw("spec field is required") } else { "" }
+
+          let valid = $spec.openapi.or("").length() > 0 || $spec.swagger.or("").length() > 0
+
+          root.valid = $valid
+          root.errors = if !$valid { ["Missing or invalid OpenAPI spec"] } else { [] }
+          root.metadata = {
+            "skill": "openapi-validate",
+            "mode": "mcp",
+            "spec_version": $spec.openapi.or($spec.swagger).or("unknown"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: "[openapi-validate] MCP valid: ${! this.valid }"
+
+  output:
+    sync_response: {}

@@ -1,0 +1,8 @@
+# Test: backup-verify
+tests:
+  - name: "Verifies backups"
+    skip: true
+    input: '{"bucket": "my-backup"}'
+    expected_output:
+      status:
+        verified: true

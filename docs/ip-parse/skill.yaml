@@ -1,0 +1,25 @@
+name: ip-parse
+version: 1.0.0
+description: Parse and validate IP addresses
+
+inputs:
+  - name: ip
+    type: string
+    required: true
+    description: IP address to parse
+
+outputs:
+  - name: valid
+    type: boolean
+    description: Whether IP is valid
+  - name: version
+    type: integer
+    description: IP version (4 or 6)
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

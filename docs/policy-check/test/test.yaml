@@ -1,0 +1,6 @@
+# Test: policy-check
+tests:
+  - name: "Checks policy"
+    input: '{"config":{},"policy":{"deny":[]}}'
+    expected_output:
+      allowed: true

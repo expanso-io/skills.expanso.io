@@ -1,0 +1,54 @@
+# Skill: audit-envelope
+# Version: 1.0.0
+#
+# Wrap any data with audit metadata for compliance and traceability.
+# Runs locally without API calls.
+
+name: "audit-envelope"
+version: "1.0.0"
+description: "Wrap data with audit metadata (timestamp, hash, trace ID, signatures)"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []  # No API key needed
+
+inputs:
+  - name: data
+    type: any
+    required: true
+    description: Data to wrap with audit envelope
+  - name: source
+    type: string
+    default: "unknown"
+    description: Source system identifier
+  - name: actor
+    type: string
+    default: "system"
+    description: Actor/user who initiated the action
+
+outputs:
+  - name: envelope
+    type: object
+    description: Complete audit envelope with metadata
+  - name: signature
+    type: string
+    description: HMAC signature of the envelope
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local envelope creation
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

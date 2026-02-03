@@ -1,0 +1,8 @@
+# Test: jwt-verify
+tests:
+  - name: "Verifies JWT"
+    skip: true
+    input: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+    expected_output:
+      metadata:
+        skill: "jwt-verify"

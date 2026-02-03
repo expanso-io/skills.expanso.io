@@ -1,0 +1,80 @@
+# Expanso Pipeline: code-explain (CLI mode)
+# ==========================================
+#
+# Explain code in plain English.
+#
+# Usage:
+#   cat mycode.py | expanso-edge run pipeline-cli.yaml
+#
+#   # With language hint
+#   cat mycode.rs | LANGUAGE=rust expanso-edge run pipeline-cli.yaml
+#
+#   # With detail level
+#   cat mycode.js | DETAIL_LEVEL=detailed expanso-edge run pipeline-cli.yaml
+
+name: code-explain-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta input_hash = content().hash("sha256").encode("hex")
+          meta input_length = content().length()
+          meta trace_id = uuid_v4()
+
+          let language = env("LANGUAGE").or("auto-detect")
+          let detail = env("DETAIL_LEVEL").or("normal")
+
+          let system_prompt = match $detail {
+            "brief" => "You are a code explainer. Explain code in 2-3 sentences. Be concise.",
+            "detailed" => "You are a senior developer explaining code to a junior. Explain line-by-line with examples and potential pitfalls.",
+            _ => "You are a code explainer. Explain code clearly with step-by-step breakdown. Cover what the code does and why."
+          }
+
+          let language_hint = if $language != "auto-detect" {
+            "The code is written in " + $language + ".\n\n"
+          } else { "" }
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": $system_prompt
+            },
+            {
+              "role": "user",
+              "content": $language_hint + "Explain this code:\n\n```\n" + content() + "\n```"
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          root.explanation = this.choices.0.message.content
+          root.metadata = {
+            "skill": "code-explain",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "input_hash": meta("input_hash"),
+            "input_length": meta("input_length"),
+            "trace_id": meta("trace_id"),
+            "language": env("LANGUAGE").or("auto-detect"),
+            "detail_level": env("DETAIL_LEVEL").or("normal"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [code-explain] Explained ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,30 @@
+name: "math-abs-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let num = $input.number().catch(null)
+
+          let abs_val = if $num != null {
+            if $num < 0 { $num * -1 } else { $num }
+          } else {
+            null
+          }
+
+          root.abs = $abs_val
+          root.original = $num
+          root.was_negative = $num != null && $num < 0
+          root.metadata = {"skill": "math-abs", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,7 @@
+# Test: verify-signature
+tests:
+  - name: "Verifies signature"
+    skip: true  # Requires matching key
+    input: '{"envelope": {...}}'
+    expected_output:
+      valid: true

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MPSKFDMF');</script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expanso Skills Marketplace</title>
+    <meta name="description" content="172 pre-built data processing pipelines for AI assistants. Browse, filter, and install skills for Claude, OpenClaw, and any MCP-compatible tool.">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>E</text></svg>">
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MPSKFDMF"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">E</span>
+                <span class="logo-text">Expanso Skills</span>
+            </div>
+            <div class="header-stats">
+                <span id="skill-count">172</span> skills
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <h1>Data Processing Pipelines for AI</h1>
+            <p class="hero-subtitle">Pre-built skills that keep credentials local, work offline, and run anywhere.</p>
+            <div class="install-box">
+                <code>curl -fsSL https://skills.expanso.io/install.sh | bash</code>
+                <button class="copy-btn" data-copy="curl -fsSL https://skills.expanso.io/install.sh | bash" title="Copy">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <section class="filters">
+            <div class="search-box">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input type="text" id="search" placeholder="Search skills..." autocomplete="off">
+            </div>
+
+            <div class="filter-row">
+                <div class="category-tabs" role="tablist">
+                    <button class="tab active" data-category="all" role="tab" aria-selected="true">All</button>
+                    <button class="tab" data-category="ai" role="tab">AI</button>
+                    <button class="tab" data-category="security" role="tab">Security</button>
+                    <button class="tab" data-category="transforms" role="tab">Transforms</button>
+                    <button class="tab" data-category="utilities" role="tab">Utilities</button>
+                    <button class="tab" data-category="workflows" role="tab">Workflows</button>
+                </div>
+
+                <div class="filter-toggles">
+                    <label class="toggle">
+                        <input type="checkbox" id="filter-local">
+                        <span>Local only</span>
+                    </label>
+                    <label class="toggle">
+                        <input type="checkbox" id="filter-no-creds">
+                        <span>No API key</span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <section class="skills-grid" id="skills-grid">
+            <div class="loading">Loading skills...</div>
+        </section>
+    </main>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="skill-modal" role="dialog" aria-modal="true">
+            <button class="modal-close" aria-label="Close">&times;</button>
+            <div class="modal-content" id="modal-content">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://docs.expanso.io" target="_blank" rel="noopener">Docs</a>
+                <a href="https://cloud.expanso.io" target="_blank" rel="noopener">Cloud</a>
+                <a href="https://openclaw.ai" target="_blank" rel="noopener">OpenClaw</a>
+                <a href="https://github.com/expanso-io/expanso-skills" target="_blank" rel="noopener">GitHub</a>
+            </div>
+            <div class="footer-text">
+                MIT License &bull; Built by <a href="https://expanso.io" target="_blank" rel="noopener">Expanso</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

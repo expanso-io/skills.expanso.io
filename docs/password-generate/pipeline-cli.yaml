@@ -1,0 +1,28 @@
+name: "password-generate-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          # Generate random bytes and encode
+          let random1 = uuid_v4().replace_all("-", "")
+          let random2 = uuid_v4().replace_all("-", "")
+          let combined = $random1 + $random2
+
+          # Take first 16 chars as password (mix of hex chars)
+          root.password = $combined.slice(0, 16)
+          root.length = 16
+          root.entropy_bits = 64
+          root.metadata = {"skill": "password-generate", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

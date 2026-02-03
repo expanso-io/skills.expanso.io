@@ -1,0 +1,50 @@
+# Skill: url-encode
+# Version: 1.0.0
+#
+# URL encode or decode text.
+# Runs locally without API calls.
+
+name: "url-encode"
+version: "1.0.0"
+description: "URL encode and decode text for safe URL parameters"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []  # No API key needed
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to encode or URL-encoded text to decode
+  - name: mode
+    type: string
+    default: "encode"
+    description: "Operation mode: 'encode' or 'decode'"
+
+outputs:
+  - name: result
+    type: string
+    description: Encoded or decoded result
+  - name: mode
+    type: string
+    description: Operation performed
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local encoding/decoding
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

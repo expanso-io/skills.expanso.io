@@ -1,0 +1,31 @@
+# Expanso Pipeline: task-dashboard (CLI mode)
+
+name: task-dashboard-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+          let action = $input.action.or("status")
+
+          root.queue = [
+            {"id": "1", "task": "Review PR #42", "priority": 1, "status": "pending"},
+            {"id": "2", "task": "Update documentation", "priority": 2, "status": "in_progress"},
+            {"id": "3", "task": "Fix bug in auth", "priority": 1, "status": "pending"}
+          ]
+          root.completed_today = [
+            {"id": "0", "task": "Deploy v2.1", "completed_at": now().ts_sub("2h")}
+          ]
+          root.status = {"total_pending": 3, "in_progress": 1, "completed_today": 1}
+          root.metadata = {"skill": "task-dashboard", "mode": "cli", "action": $action, "trace_id": meta("trace_id")}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,7 @@
+tests:
+  - name: "Pad string"
+    input: "42"
+    expected:
+      has_field: left
+      has_field: right
+      metadata_has: [skill, trace_id]

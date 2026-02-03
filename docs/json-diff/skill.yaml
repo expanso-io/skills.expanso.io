@@ -1,0 +1,29 @@
+name: json-diff
+version: 1.0.0
+description: Compare two JSON objects and find differences
+
+inputs:
+  - name: a
+    type: object
+    required: true
+    description: First JSON object
+  - name: b
+    type: object
+    required: true
+    description: Second JSON object
+
+outputs:
+  - name: equal
+    type: boolean
+    description: Whether objects are equal
+  - name: differences
+    type: array
+    description: List of differences
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

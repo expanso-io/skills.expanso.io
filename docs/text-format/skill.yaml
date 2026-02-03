@@ -1,0 +1,50 @@
+# Skill: text-format
+# Version: 1.0.0
+#
+# Format text: uppercase, lowercase, title case, sentence case.
+# Runs locally without API calls.
+
+name: "text-format"
+version: "1.0.0"
+description: "Transform text case: uppercase, lowercase, title case, sentence case"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to format
+  - name: format
+    type: string
+    default: "lower"
+    description: "Format type: upper, lower, title, sentence"
+
+outputs:
+  - name: result
+    type: string
+    description: Formatted text
+  - name: format
+    type: string
+    description: Format applied
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local text formatting
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

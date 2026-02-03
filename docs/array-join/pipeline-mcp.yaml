@@ -1,0 +1,34 @@
+name: "array-join-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /join
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.array.or(content())
+          let separator = this.separator.or(", ")
+
+          let parsed = if $input.type() == "array" { $input } else { $input.parse_json().catch([]) }
+          let is_array = $parsed.type() == "array"
+
+          let joined = if $is_array { $parsed.join($separator) } else { "" }
+
+          root.array = $parsed
+          root.separator = $separator
+          root.joined = $joined
+          root.count = if $is_array { $parsed.length() } else { 0 }
+          root.metadata = {"skill": "array-join", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

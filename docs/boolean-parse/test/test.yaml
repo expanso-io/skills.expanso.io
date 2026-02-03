@@ -1,0 +1,7 @@
+tests:
+  - name: "Parse boolean"
+    input: "true"
+    expected:
+      has_field: boolean
+      has_field: is_valid
+      metadata_has: [skill, trace_id]

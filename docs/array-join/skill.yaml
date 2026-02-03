@@ -1,0 +1,26 @@
+name: array-join
+version: 1.0.0
+description: Join array elements with separator
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Array to join
+  - name: separator
+    type: string
+    default: ","
+    description: Separator string
+
+outputs:
+  - name: joined
+    type: string
+    description: Joined string
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

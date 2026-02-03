@@ -1,0 +1,26 @@
+name: random-number
+version: 1.0.0
+description: Generate random numbers within a range
+
+inputs:
+  - name: min
+    type: integer
+    default: 0
+    description: Minimum value
+  - name: max
+    type: integer
+    default: 100
+    description: Maximum value
+
+outputs:
+  - name: number
+    type: integer
+    description: Random number
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

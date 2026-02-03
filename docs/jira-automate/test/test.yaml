@@ -1,0 +1,8 @@
+# Test: jira-automate
+tests:
+  - name: "Searches issues"
+    skip: true
+    input: '{"action": "search", "project": "TEST"}'
+    expected_output:
+      metadata:
+        action: "search"

@@ -1,0 +1,7 @@
+tests:
+  - name: "Parse query string"
+    input: "a=1&b=2"
+    expected:
+      has_field: param_count
+      has_field: pairs
+      metadata_has: [skill, trace_id]

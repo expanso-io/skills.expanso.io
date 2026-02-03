@@ -1,0 +1,32 @@
+name: "array-first-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          let parsed = $input.parse_json().catch([])
+          let is_array = $parsed.type() == "array"
+          let length = if $is_array { $parsed.length() } else { 0 }
+
+          let first = if $length > 0 { $parsed.index(0) } else { null }
+          let first_3 = if $length >= 3 { $parsed.slice(0, 3) } else { $parsed }
+
+          root.array = $parsed
+          root.first = $first
+          root.first_3 = $first_3
+          root.length = $length
+          root.is_empty = $length == 0
+          root.metadata = {"skill": "array-first", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

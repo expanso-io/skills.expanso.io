@@ -1,0 +1,138 @@
+# Expanso Pipeline: devops-monitor (CLI mode)
+# =============================================
+#
+# Monitor DevOps systems with AI-powered analysis.
+#
+# Usage:
+#   echo '{"repos":["org/repo"],"lookback_hours":2}' | \
+#     GITHUB_TOKEN=... OPENAI_API_KEY=... expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: devops-monitor-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta start_time = now()
+
+          let input = content().parse_json()
+          meta sources = $input.sources.or(["github", "logs"])
+          meta repos = $input.repos.or([])
+          meta lookback_hours = $input.lookback_hours.or(1)
+          meta alert_threshold = $input.alert_threshold.or("high")
+
+          root.status = "collecting"
+
+      - log:
+          level: INFO
+          message: |
+            [devops-monitor] Starting monitoring: sources=${! meta("sources") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      # Collect data from sources (simulated for demo)
+      - mapping: |
+          # Simulated GitHub workflow data
+          let github_data = {
+            "workflows": [
+              {"repo": "org/api", "name": "CI", "status": "success", "duration_s": 245, "completed_at": now().ts_sub("30m")},
+              {"repo": "org/api", "name": "Deploy", "status": "success", "duration_s": 120, "completed_at": now().ts_sub("25m")},
+              {"repo": "org/frontend", "name": "CI", "status": "failure", "duration_s": 180, "completed_at": now().ts_sub("15m"), "error": "Test suite failed: 3 assertions"},
+              {"repo": "org/backend", "name": "CI", "status": "success", "duration_s": 300, "completed_at": now().ts_sub("1h")}
+            ],
+            "recent_commits": 12,
+            "open_prs": 5
+          }
+
+          # Simulated log analysis
+          let log_data = {
+            "error_count": 23,
+            "warning_count": 156,
+            "sample_errors": [
+              {"timestamp": now().ts_sub("10m"), "level": "ERROR", "message": "Connection timeout to database replica", "count": 15},
+              {"timestamp": now().ts_sub("30m"), "level": "ERROR", "message": "Rate limit exceeded for API endpoint /users", "count": 8}
+            ]
+          }
+
+          # Simulated metrics
+          let metrics = {
+            "cpu_avg": 45,
+            "memory_avg": 72,
+            "disk_usage": 65,
+            "request_rate": 1250,
+            "error_rate": 0.3,
+            "p99_latency_ms": 450
+          }
+
+          root.collected = {
+            "github": $github_data,
+            "logs": $log_data,
+            "metrics": $metrics
+          }
+          meta collected = root.collected
+
+      # AI analysis
+      - mapping: |
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a DevOps expert analyzing system health. Review the data and identify issues. For each issue, provide: severity (critical, high, medium, low), source, description, and actionable suggestion. Focus on problems that need immediate attention. Return JSON: {\"issues\": [{\"severity\": \"\", \"source\": \"\", \"description\": \"\", \"suggestion\": \"\"}], \"overall_health\": \"healthy|degraded|critical\", \"summary\": \"\"}"
+            },
+            {
+              "role": "user",
+              "content": "Analyze this DevOps data:\n\n" + meta("collected").format_json()
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let analysis = this.choices.0.message.content.parse_json().catch({
+            "issues": [],
+            "overall_health": "unknown",
+            "summary": "Analysis failed"
+          })
+
+          # Filter issues by threshold
+          let threshold_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+          let min_severity = threshold_order.index(meta("alert_threshold")).or(1)
+          let filtered_issues = $analysis.issues.filter(i ->
+            threshold_order.index(i.severity).or(3) <= $min_severity
+          )
+
+          root.status = {
+            "overall_health": $analysis.overall_health,
+            "summary": $analysis.summary,
+            "issue_count": $filtered_issues.length()
+          }
+          root.issues = $filtered_issues
+          root.workflows = meta("collected").github.workflows
+          root.metrics = meta("collected").metrics
+          root.alerts_sent = []  # Would send to Slack/PagerDuty if configured
+
+          root.metadata = {
+            "skill": "devops-monitor",
+            "mode": "cli",
+            "sources": meta("sources"),
+            "lookback_hours": meta("lookback_hours"),
+            "trace_id": meta("trace_id"),
+            "processing_time_ms": now().ts_sub(meta("start_time")).abs(),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [devops-monitor] Complete: ${! this.status.overall_health }, ${! this.issues.length() } issues found (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

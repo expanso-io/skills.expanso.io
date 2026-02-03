@@ -1,0 +1,32 @@
+name: "string-case-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /convert
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.text.or(content()).string().trim()
+
+          # Convert to snake_case as base
+          let normalized = $input.re_replace_all("[\\s\\-]+", "_").lowercase()
+
+          root.snake = $normalized
+          root.upper = $input.uppercase()
+          root.lower = $input.lowercase()
+          root.kebab = $normalized.re_replace_all("_", "-")
+          root.input = $input
+          root.metadata = {"skill": "string-case", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

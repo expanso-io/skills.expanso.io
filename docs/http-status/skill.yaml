@@ -1,0 +1,25 @@
+name: http-status
+version: 1.0.0
+description: Look up HTTP status code meanings
+
+inputs:
+  - name: code
+    type: integer
+    required: true
+    description: HTTP status code
+
+outputs:
+  - name: message
+    type: string
+    description: Status message
+  - name: category
+    type: string
+    description: Status category
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

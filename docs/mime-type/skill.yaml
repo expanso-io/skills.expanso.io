@@ -1,0 +1,22 @@
+name: mime-type
+version: 1.0.0
+description: Look up MIME types by file extension
+
+inputs:
+  - name: extension
+    type: string
+    required: true
+    description: File extension
+
+outputs:
+  - name: mime
+    type: string
+    description: MIME type
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

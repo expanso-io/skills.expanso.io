@@ -1,0 +1,85 @@
+# Expanso Pipeline: image-alttext (MCP mode)
+# =============================================
+#
+# HTTP endpoint for alt text generation.
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#
+#   curl -X POST http://localhost:8080/alttext \
+#     -H "Content-Type: application/json" \
+#     -d '{"image_url": "https://example.com/image.jpg"}'
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: image-alttext-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /alttext
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let url = this.image_url.or("")
+          let context = this.context.or("")
+
+          root = if $url.length() == 0 {
+            throw("image_url field is required")
+          } else {
+            {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are an accessibility expert. Generate concise, descriptive alt text for images following WCAG guidelines. The alt text should: 1) Be under 125 characters, 2) Describe the image content and function, 3) Skip phrases like 'image of' or 'picture of', 4) Include relevant text shown in the image. Respond with ONLY the alt text, no quotes or explanation."
+                },
+                {
+                  "role": "user",
+                  "content": [
+                    {"type": "image_url", "image_url": {"url": $url}},
+                    {"type": "text", "text": "Generate accessible alt text for this image." + if $context.length() > 0 { " Context: " + $context } else { "" }}
+                  ]
+                }
+              ]
+            }
+          }
+          meta image_url = $url
+          meta trace_id = uuid_v4()
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let alt = this.choices.0.message.content.trim().slice(0, 125)
+
+          root.alt_text = $alt
+          root.metadata = {
+            "skill": "image-alttext",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "image_url": meta("image_url"),
+            "alt_length": $alt.length(),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [image-alttext] MCP request (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}
+
+selector:
+  match_labels:
+    capability: llm

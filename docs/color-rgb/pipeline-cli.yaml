@@ -1,0 +1,35 @@
+name: "color-rgb-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim().lowercase().trim_prefix("#")
+
+          # Expand 3-char hex to 6-char
+          let hex = if $input.length() == 3 {
+            $input.slice(0,1) + $input.slice(0,1) +
+            $input.slice(1,2) + $input.slice(1,2) +
+            $input.slice(2,3) + $input.slice(2,3)
+          } else { $input }
+
+          let valid = $hex.length() == 6
+
+          root.input = "#" + $input
+          root.hex = "#" + $hex
+          root.hex_r = $hex.slice(0, 2)
+          root.hex_g = $hex.slice(2, 4)
+          root.hex_b = $hex.slice(4, 6)
+          root.valid = $valid
+          root.metadata = {"skill": "color-rgb", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

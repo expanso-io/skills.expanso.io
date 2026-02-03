@@ -1,0 +1,73 @@
+# Expanso Pipeline: image-analyze (CLI mode)
+# ============================================
+#
+# Deep image analysis with scene graph.
+#
+# Usage:
+#   echo "https://example.com/image.jpg" | expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: image-analyze-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta image_url = content().trim()
+          meta trace_id = uuid_v4()
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are an image analysis expert. Analyze images and return structured JSON with: objects (array of {name, confidence, position}), colors (dominant color palette), text (any text visible), scene_type (indoor/outdoor/abstract/etc), composition (rule_of_thirds, symmetry, etc), mood (emotional tone). Be precise and comprehensive."
+            },
+            {
+              "role": "user",
+              "content": [
+                {"type": "image_url", "image_url": {"url": meta("image_url"), "detail": "high"}},
+                {"type": "text", "text": "Analyze this image and return structured JSON."}
+              ]
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let content = this.choices.0.message.content
+          let analysis = $content.parse_json().catch({
+            "raw_analysis": $content,
+            "objects": [],
+            "colors": [],
+            "text": "",
+            "scene_type": "unknown",
+            "composition": "unknown",
+            "mood": "neutral"
+          })
+
+          root.analysis = $analysis
+          root.metadata = {
+            "skill": "image-analyze",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "image_url": meta("image_url"),
+            "object_count": $analysis.objects.length(),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [image-analyze] Found ${! this.metadata.object_count } objects (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

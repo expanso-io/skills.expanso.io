@@ -1,0 +1,28 @@
+# Expanso Pipeline: terminal-services (MCP mode)
+
+name: terminal-services-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /service
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let service = this.service.or("")
+          let action = this.action.or("")
+
+          root.result = {"status": "ok"}
+          root.metadata = {"skill": "terminal-services", "mode": "mcp", "service": $service, "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

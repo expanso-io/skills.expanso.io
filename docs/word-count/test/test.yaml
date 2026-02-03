@@ -1,0 +1,16 @@
+# Test cases for word-count skill
+
+tests:
+  - name: "Count simple text"
+    input: "Hello world. This is a test."
+    expected:
+      has_field: words
+      has_field: characters
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Count from file"
+    input_file: fixtures/input.txt
+    expected:
+      has_field: words
+      has_field: sentences
+      has_field: paragraphs

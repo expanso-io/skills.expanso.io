@@ -1,0 +1,7 @@
+tests:
+  - name: "Find maximum"
+    input: '[5, 2, 8, 1]'
+    expected:
+      has_field: max
+      has_field: count
+      metadata_has: [skill, trace_id]

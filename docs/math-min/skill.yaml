@@ -1,0 +1,22 @@
+name: math-min
+version: 1.0.0
+description: Find minimum value in array
+
+inputs:
+  - name: numbers
+    type: array
+    required: true
+    description: Array of numbers
+
+outputs:
+  - name: min
+    type: number
+    description: Minimum value
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

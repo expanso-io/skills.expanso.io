@@ -1,0 +1,7 @@
+tests:
+  - name: "Split string"
+    input: "a,b,c"
+    expected:
+      has_field: by_comma
+      has_field: comma_count
+      metadata_has: [skill, trace_id]

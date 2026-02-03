@@ -1,0 +1,50 @@
+# Skill: slug-generate
+# Version: 1.0.0
+#
+# Generate URL-safe slugs from text.
+# Runs locally without API calls.
+
+name: "slug-generate"
+version: "1.0.0"
+description: "Generate URL-safe slugs from text (lowercase, hyphens, no special chars)"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to convert to slug
+  - name: separator
+    type: string
+    default: "-"
+    description: "Separator character (default: hyphen)"
+
+outputs:
+  - name: slug
+    type: string
+    description: URL-safe slug
+  - name: original
+    type: string
+    description: Original text
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local slug generation
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

@@ -1,0 +1,7 @@
+tests:
+  - name: "Generate thumbnail info"
+    input: '{"video_url": "https://example.com/video.mp4", "timestamp": 30}'
+    expected:
+      has_field: thumbnail_time
+      has_field: video_url
+      metadata_has: [skill, trace_id]

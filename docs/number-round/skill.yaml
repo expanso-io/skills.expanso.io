@@ -1,0 +1,26 @@
+name: number-round
+version: 1.0.0
+description: Round numbers with precision control
+
+inputs:
+  - name: number
+    type: number
+    required: true
+    description: Number to round
+  - name: precision
+    type: integer
+    default: 0
+    description: Decimal places
+
+outputs:
+  - name: rounded
+    type: number
+    description: Rounded number
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

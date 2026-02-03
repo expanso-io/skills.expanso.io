@@ -1,0 +1,22 @@
+name: env-parse
+version: 1.0.0
+description: Parse .env file format to JSON
+
+inputs:
+  - name: content
+    type: string
+    required: true
+    description: .env file content
+
+outputs:
+  - name: variables
+    type: object
+    description: Parsed environment variables
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

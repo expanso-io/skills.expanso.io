@@ -1,0 +1,7 @@
+tests:
+  - name: "Detect media type"
+    input: '{"filename": "photo.jpg"}'
+    expected:
+      has_field: media_type
+      has_field: category
+      metadata_has: [skill, trace_id]

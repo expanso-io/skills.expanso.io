@@ -1,0 +1,8 @@
+# Test: stripe-reports
+tests:
+  - name: "Generates daily report"
+    skip: true
+    input: '{"period": "today"}'
+    expected_output:
+      report:
+        period: "today"

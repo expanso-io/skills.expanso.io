@@ -1,0 +1,16 @@
+# Test cases for slug-generate skill
+
+tests:
+  - name: "Generate slug"
+    input: "Hello World! This is a Test"
+    expected:
+      has_field: slug
+      has_field: original
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Custom separator"
+    input: "Hello World"
+    env:
+      SEPARATOR: "_"
+    expected:
+      has_field: slug

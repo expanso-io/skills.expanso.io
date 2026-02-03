@@ -1,0 +1,22 @@
+name: whitespace-normalize
+version: 1.0.0
+description: Normalize whitespace in text
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to normalize
+
+outputs:
+  - name: normalized
+    type: string
+    description: Text with normalized whitespace
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

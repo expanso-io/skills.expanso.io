@@ -1,0 +1,7 @@
+tests:
+  - name: "Ceil number"
+    input: "3.2"
+    expected:
+      has_field: ceil
+      has_field: original
+      metadata_has: [skill, trace_id]

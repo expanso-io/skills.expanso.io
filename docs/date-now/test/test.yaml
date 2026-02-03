@@ -1,0 +1,7 @@
+tests:
+  - name: "Get current time"
+    input: ""
+    expected:
+      has_field: now
+      has_field: iso
+      metadata_has: [skill, trace_id]

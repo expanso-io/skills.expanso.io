@@ -1,0 +1,45 @@
+# Skill: openapi-validate
+# Version: 1.0.0
+#
+# Validate requests/responses against OpenAPI spec.
+
+name: openapi-validate
+version: 1.0.0
+description: Validate HTTP requests/responses against OpenAPI specification
+
+credentials: []
+
+inputs:
+  - name: spec
+    type: object
+    required: true
+    description: OpenAPI specification
+  - name: request
+    type: object
+    required: false
+    description: HTTP request to validate
+  - name: response
+    type: object
+    required: false
+    description: HTTP response to validate
+
+outputs:
+  - name: valid
+    type: boolean
+    description: Whether request/response matches spec
+  - name: errors
+    type: array
+    description: Validation errors
+  - name: metadata
+    type: object
+    description: Validation metadata
+
+backends:
+  - name: local
+    type: local
+    description: Local validation
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, json_schema, log]
+  outputs: [stdout, sync_response]

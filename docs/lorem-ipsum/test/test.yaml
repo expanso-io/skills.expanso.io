@@ -1,0 +1,7 @@
+tests:
+  - name: "Generate lorem ipsum"
+    input: ""
+    expected:
+      has_field: text
+      has_field: words
+      metadata_has: [skill, trace_id]

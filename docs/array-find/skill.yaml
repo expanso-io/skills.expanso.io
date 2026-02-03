@@ -1,0 +1,29 @@
+name: array-find
+version: 1.0.0
+description: Find element index in array
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Source array
+  - name: value
+    type: any
+    required: true
+    description: Value to find
+
+outputs:
+  - name: index
+    type: integer
+    description: Index of element (-1 if not found)
+  - name: found
+    type: boolean
+    description: Whether element was found
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

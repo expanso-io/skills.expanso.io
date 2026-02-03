@@ -1,0 +1,7 @@
+tests:
+  - name: "Parse time"
+    input: "14:30:00"
+    expected:
+      has_field: hour
+      has_field: minute
+      metadata_has: [skill, trace_id]

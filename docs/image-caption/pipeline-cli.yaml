@@ -1,0 +1,38 @@
+name: "image-caption-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"image_url": $input})
+          let url = $parsed.image_url.or($input).string()
+
+          root.messages = [
+            {"role": "system", "content": "You are an accessibility expert. Generate a concise alt text (max 125 chars) for screen readers, and a short caption. Return as JSON: {\"alt_text\": \"...\", \"caption\": \"...\"}"},
+            {"role": "user", "content": [
+              {"type": "text", "text": "Generate alt text and caption for this image:"},
+              {"type": "image_url", "image_url": {"url": $url}}
+            ]}
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let response = this.choices.0.message.content.parse_json().catch({})
+          root.alt_text = $response.alt_text.or("Image")
+          root.caption = $response.caption.or("An image")
+          root.metadata = {"skill": "image-caption", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

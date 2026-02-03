@@ -1,0 +1,26 @@
+name: text-indent
+version: 1.0.0
+description: Indent text blocks
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to indent
+  - name: spaces
+    type: integer
+    default: 2
+    description: Number of spaces
+
+outputs:
+  - name: indented
+    type: string
+    description: Indented text
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

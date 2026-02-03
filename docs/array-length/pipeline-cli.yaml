@@ -1,0 +1,32 @@
+name: "array-length-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          let parsed = $input.parse_json().catch(null)
+          let type = if $parsed != null { $parsed.type() } else { "string" }
+
+          let length = if $type == "array" { $parsed.length() }
+            else if $type == "object" { $parsed.keys().length() }
+            else if $type == "string" { $parsed.length() }
+            else { $input.length() }
+
+          root.input = if $parsed != null { $parsed } else { $input }
+          root.type = $type
+          root.length = $length
+          root.is_empty = $length == 0
+          root.metadata = {"skill": "array-length", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

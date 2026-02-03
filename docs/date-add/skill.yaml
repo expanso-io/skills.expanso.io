@@ -1,0 +1,25 @@
+name: date-add
+version: 1.0.0
+description: Add duration to date
+
+inputs:
+  - name: date
+    type: string
+    required: true
+    description: Base date
+  - name: days
+    type: integer
+    description: Days to add
+
+outputs:
+  - name: result
+    type: string
+    description: Resulting date
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

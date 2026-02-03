@@ -1,0 +1,22 @@
+name: object-values
+version: 1.0.0
+description: Extract all values from an object
+
+inputs:
+  - name: object
+    type: object
+    required: true
+    description: Source object
+
+outputs:
+  - name: values
+    type: array
+    description: Array of values
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

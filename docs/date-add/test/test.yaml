@@ -1,0 +1,7 @@
+tests:
+  - name: "Add days to date"
+    input: '{"days": 7}'
+    expected:
+      has_field: result
+      has_field: days_added
+      metadata_has: [skill, trace_id]

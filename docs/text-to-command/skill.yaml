@@ -1,0 +1,62 @@
+# Skill: text-to-command
+# Version: 1.0.0
+#
+# Convert natural language to CLI commands.
+
+name: text-to-command
+version: 1.0.0
+description: Convert natural language instructions to CLI commands
+
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key
+
+inputs:
+  - name: instruction
+    type: string
+    required: true
+    description: Natural language instruction
+  - name: shell
+    type: string
+    required: false
+    description: Target shell (bash, zsh, powershell, fish)
+  - name: context
+    type: string
+    required: false
+    description: Additional context (current directory, available tools)
+
+outputs:
+  - name: command
+    type: string
+    description: Generated CLI command
+  - name: explanation
+    type: string
+    description: Brief explanation of what the command does
+  - name: metadata
+    type: object
+    description: Audit metadata
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+  - name: ollama
+    type: local
+    models: [llama3.2, codellama]
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+  outputs:
+    - stdout
+    - sync_response

@@ -1,0 +1,32 @@
+name: "array-filter-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch(null)
+
+          # Filter non-null/non-empty elements by default
+          let filtered = if $parsed.type() == "array" {
+            $parsed.filter(x -> x != null && x != "")
+          } else {
+            []
+          }
+
+          root.filtered = $filtered
+          root.original_count = if $parsed.type() == "array" { $parsed.length() } else { 0 }
+          root.filtered_count = $filtered.length()
+          root.removed_count = root.original_count - root.filtered_count
+          root.metadata = {"skill": "array-filter", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

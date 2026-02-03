@@ -1,0 +1,60 @@
+# Test cases for json-extract
+# Run with: uv run -s scripts/test-skills.py json-extract
+
+name: json-extract-tests
+description: Test cases for the json-extract skill
+
+fixtures_dir: "./fixtures"
+
+tests:
+  - name: contact_info
+    description: Extract contact information from text
+    input: "John Smith, email: john@example.com, phone: 555-1234"
+    expected:
+      has_field: extracted
+      metadata_has: [trace_id, input_hash, timestamp, model]
+      extracted_contains: [name, email, phone]
+
+  - name: business_card
+    description: Extract from business card text
+    input_file: fixtures/input.txt
+    expected:
+      has_field: extracted
+      has_field: metadata
+      extracted_contains: [name, company, email]
+
+  - name: custom_fields
+    description: Extract only specific fields
+    input: "Order #12345 for $99.99 on 2026-01-15"
+    env:
+      EXTRACT_FIELDS: "amount,date"
+    expected:
+      has_field: extracted
+      extracted_contains: [amount, date]
+
+  - name: no_matches
+    description: Handle text with no extractable fields
+    input: "The quick brown fox jumps over the lazy dog."
+    expected:
+      has_field: extracted
+      # extracted may be empty or have minimal fields
+
+  - name: empty_input
+    description: Handle empty input gracefully
+    input: ""
+    expected:
+      # CLI mode may return error or empty
+      # MCP mode should return error
+      error_or_empty: true
+
+  - name: json_in_text
+    description: Extract from text that contains JSON
+    input: "Response: {\"status\": \"ok\"}, contact: jane@test.com"
+    expected:
+      has_field: extracted
+      extracted_contains: [email]
+
+# Notes:
+# - Tests run against pipeline-cli.yaml by default
+# - Set OPENAI_API_KEY for live tests
+# - Set MOCK_LLM=true for faster mock tests (no API call)

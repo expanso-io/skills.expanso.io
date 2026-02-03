@@ -1,0 +1,85 @@
+# Skill: llm-router
+# Version: 1.0.0
+#
+# Intelligent LLM routing: select the best model for each request.
+# Routes to OpenAI, Anthropic, Ollama, or custom models based on:
+# - Task complexity
+# - Cost optimization
+# - Latency requirements
+# - Privacy constraints
+#
+# Features:
+# - Automatic model selection based on task analysis
+# - Cost/quality tradeoff optimization
+# - Fallback chains for reliability
+# - Usage tracking and analytics
+
+name: llm-router
+version: 1.0.0
+description: Intelligent LLM routing with automatic model selection and fallbacks
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key
+  - name: ANTHROPIC_API_KEY
+    required: false
+    description: Anthropic API key
+  - name: OPENROUTER_API_KEY
+    required: false
+    description: OpenRouter API key (access to 100+ models)
+
+inputs:
+  - name: prompt
+    type: string
+    required: true
+    description: The prompt to process
+  - name: task_type
+    type: string
+    default: auto
+    enum: [auto, simple, complex, code, creative, analysis]
+    description: Task type for routing
+  - name: priority
+    type: string
+    default: balanced
+    enum: [cost, quality, speed, balanced]
+    description: Optimization priority
+  - name: max_cost_cents
+    type: integer
+    default: 10
+    description: Maximum cost per request in cents
+  - name: require_local
+    type: boolean
+    default: false
+    description: Require local/private model (no cloud)
+  - name: fallback_models
+    type: array
+    default: []
+    description: Fallback model chain
+
+outputs:
+  - name: response
+    type: string
+    description: Model response
+  - name: model_used
+    type: string
+    description: Which model was selected
+  - name: routing_reason
+    type: string
+    description: Why this model was chosen
+  - name: cost
+    type: object
+    description: "{tokens, cost_cents}"
+  - name: metadata
+    type: object
+    description: Routing and execution metadata
+
+backends:
+  - name: multi
+    type: hybrid
+    description: Routes to best available backend
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, switch, openai_chat_completion, http, log]
+  outputs: [stdout, sync_response]

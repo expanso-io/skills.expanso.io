@@ -1,0 +1,27 @@
+name: "string-ends-with-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"text": $input, "suffix": ""})
+
+          let text = $parsed.text.or($input).string()
+          let suffix = $parsed.suffix.or("").string()
+
+          root.ends_with = $text.has_suffix($suffix)
+          root.text = $text
+          root.suffix = $suffix
+          root.metadata = {"skill": "string-ends-with", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

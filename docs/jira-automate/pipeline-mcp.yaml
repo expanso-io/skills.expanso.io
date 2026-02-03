@@ -1,0 +1,32 @@
+# Expanso Pipeline: jira-automate (MCP mode)
+
+name: jira-automate-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /jira
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let action = this.action.or("search")
+          let project = this.project.or("PROJ")
+
+          root.result = match $action {
+            "search" => {"issues": [{"key": $project + "-101", "summary": "Sample issue"}]},
+            "create" => {"issue": {"key": $project + "-" + random_int(100, 999).string()}},
+            _ => {"status": "ok"}
+          }
+          root.metadata = {"skill": "jira-automate", "mode": "mcp", "action": $action}
+
+  output:
+    sync_response: {}

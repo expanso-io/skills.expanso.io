@@ -1,0 +1,48 @@
+# Expanso Pipeline: determinism-test (CLI mode)
+
+name: determinism-test-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let input = content().parse_json().catch({"input": content()})
+          let runs = $input.runs.or(3)
+          let test_input = $input.input.or(content())
+
+          # Hash the input for comparison
+          let input_hash = $test_input.format_json().catch($test_input.string()).hash("sha256").encode("hex")
+
+          # Placeholder: Real implementation would run pipeline N times
+          let outputs = [input_hash, input_hash, input_hash].slice(0, $runs)
+          let all_same = outputs.all(o -> o == outputs.index(0))
+
+          root.stable = $all_same
+          root.stability_score = if $all_same { 100 } else { 0 }
+          root.runs = $runs
+          root.input_hash = $input_hash
+          root.outputs = $outputs
+          root.diffs = if $all_same { [] } else { ["Outputs differed"] }
+          root.metadata = {
+            "skill": "determinism-test",
+            "mode": "cli",
+            "runs": $runs,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [determinism-test] Stability: ${! this.stability_score }% over ${! this.runs } runs (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

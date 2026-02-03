@@ -1,0 +1,27 @@
+name: "string-starts-with-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+          let parsed = $input.parse_json().catch({"text": $input, "prefix": ""})
+
+          let text = $parsed.text.or($input).string()
+          let prefix = $parsed.prefix.or("").string()
+
+          root.starts_with = $text.has_prefix($prefix)
+          root.text = $text
+          root.prefix = $prefix
+          root.metadata = {"skill": "string-starts-with", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

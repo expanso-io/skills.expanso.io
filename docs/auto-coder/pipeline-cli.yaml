@@ -1,0 +1,38 @@
+# Expanso Pipeline: auto-coder (CLI mode)
+
+name: auto-coder-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+          let task = $input.task.or("")
+          let repo = $input.repo.or("")
+
+          # Simulated autonomous coding results
+          root.task = $task
+          root.repo = $repo
+          root.changes = [
+            {"file": "src/utils/helper.ts", "action": "modified", "lines_changed": 45},
+            {"file": "src/utils/helper.test.ts", "action": "created", "lines_changed": 120},
+            {"file": "README.md", "action": "modified", "lines_changed": 10}
+          ]
+          root.pr_url = "https://github.com/" + $repo + "/pull/42"
+          root.tests_passed = true
+          root.ci_status = "success"
+          root.metadata = {"skill": "auto-coder", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[auto-coder] ${! this.changes.length() } files changed, PR created"
+
+  output:
+    stdout:
+      codec: json_object

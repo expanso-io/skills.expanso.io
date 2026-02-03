@@ -1,0 +1,6 @@
+# Test: json-canonicalize
+tests:
+  - name: "Canonicalizes JSON"
+    input: '{"b":2,"a":1}'
+    expected_output:
+      canonical: '{"a":1,"b":2}'

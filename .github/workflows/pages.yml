@@ -1,0 +1,66 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build site with skills
+        run: |
+          # Copy catalog files
+          cp catalog.json docs/
+          cp catalog-minimal.json docs/
+
+          # Flatten skills structure: skills.expanso.io/<name>/ (no categories in URL)
+          for category_dir in skills/*/; do
+            for skill_dir in "$category_dir"*/; do
+              if [ -d "$skill_dir" ]; then
+                skill_name=$(basename "$skill_dir")
+                echo "Copying $skill_name..."
+                cp -r "$skill_dir" "docs/$skill_name"
+              fi
+            done
+          done
+
+          # List what we're deploying
+          echo ""
+          echo "Skills deployed (flat structure):"
+          ls -d docs/*/pipeline-cli.yaml 2>/dev/null | head -20 || true
+          echo ""
+          echo "Total skills: $(ls -d docs/*/pipeline-cli.yaml 2>/dev/null | wc -l)"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

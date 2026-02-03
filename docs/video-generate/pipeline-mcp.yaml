@@ -1,0 +1,26 @@
+# Expanso Pipeline: video-generate (MCP mode)
+
+name: video-generate-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /generate
+      allowed_verbs: [POST]
+      timeout: 300s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          root.video_url = "https://storage.example.com/video.mp4"
+          root.status = "queued"
+          root.metadata = {"skill": "video-generate", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

@@ -1,0 +1,26 @@
+name: text-wrap
+version: 1.0.0
+description: Wrap text at specified width
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to wrap
+  - name: width
+    type: integer
+    default: 80
+    description: Maximum line width
+
+outputs:
+  - name: wrapped
+    type: string
+    description: Wrapped text
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

@@ -1,0 +1,22 @@
+name: math-sqrt
+version: 1.0.0
+description: Calculate square root
+
+inputs:
+  - name: number
+    type: number
+    required: true
+    description: Number to get square root of
+
+outputs:
+  - name: sqrt
+    type: number
+    description: Square root
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

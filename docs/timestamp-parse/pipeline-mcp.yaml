@@ -1,0 +1,59 @@
+# Expanso Pipeline: timestamp-parse (MCP mode)
+# =============================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/parse -d '{}'                           # Current time
+#   curl -X POST http://localhost:8080/parse -d '{"timestamp": "2024-01-15"}'  # Parse date
+
+name: "timestamp-parse-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /parse
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.timestamp.or("")
+
+          let ts = if $input.length() == 0 {
+            now()
+          } else {
+            $input.ts_parse("2006-01-02T15:04:05Z07:00").catch(
+              $input.ts_parse("2006-01-02").catch(
+                now()
+              )
+            )
+          }
+
+          root.iso = $ts.ts_format("2006-01-02T15:04:05Z07:00")
+          root.date = $ts.ts_format("2006-01-02")
+          root.time = $ts.ts_format("15:04:05")
+          root.unix = $ts.ts_unix()
+          root.unix_ms = $ts.ts_unix_milli()
+          root.day_of_week = $ts.ts_format("Monday")
+          root.metadata = {
+            "skill": "timestamp-parse",
+            "mode": "mcp",
+            "input": $input,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [timestamp-parse] Processed timestamp (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

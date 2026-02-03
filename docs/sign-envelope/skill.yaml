@@ -1,0 +1,54 @@
+# Skill: sign-envelope
+# Version: 1.0.0
+#
+# Wrap payload in a signed envelope with hash, signature, and metadata.
+# Uses ed25519 for signing (key stored locally).
+
+name: sign-envelope
+version: 1.0.0
+description: Create signed envelope with payload, hash, signature, and timestamp
+
+# Credentials
+credentials:
+  - name: SIGNING_KEY
+    required: true
+    description: Base64-encoded ed25519 private key
+
+# Skill inputs
+inputs:
+  - name: payload
+    type: any
+    required: true
+    description: Data to wrap and sign
+  - name: key_id
+    type: string
+    required: false
+    description: Key identifier for verification
+
+# Skill outputs
+outputs:
+  - name: envelope
+    type: object
+    description: "{payload, hash, signature, key_id, created_at}"
+  - name: metadata
+    type: object
+    description: Processing metadata
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    description: Local signing with ed25519
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - command
+    - log
+  outputs:
+    - stdout
+    - sync_response

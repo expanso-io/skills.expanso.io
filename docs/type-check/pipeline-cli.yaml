@@ -1,0 +1,38 @@
+name: "type-check-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          let parsed = $input.parse_json().catch(null)
+          let type = if $parsed != null { $parsed.type() } else { "string" }
+
+          let is_null = $parsed == null && $input == "null"
+          let is_array = $type == "array"
+          let is_object = $type == "object"
+          let is_number = $type == "number"
+          let is_string = $type == "string"
+          let is_bool = $type == "bool"
+
+          root.input = $input
+          root.type = $type
+          root.is_null = $is_null
+          root.is_array = $is_array
+          root.is_object = $is_object
+          root.is_number = $is_number
+          root.is_string = $is_string
+          root.is_bool = $is_bool
+          root.metadata = {"skill": "type-check", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,30 @@
+# Expanso Pipeline: voice-admin (CLI mode)
+
+name: voice-admin-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          # Simulated voice processing
+          root.transcript = "Schedule appointment with Johnson family for Tuesday at 2pm, need to fix their water heater"
+          root.actions = [
+            {"type": "schedule", "customer": "Johnson family", "date": "Tuesday 2pm", "service": "water heater repair"},
+            {"type": "reminder", "message": "Bring water heater parts", "time": "Tuesday 1pm"}
+          ]
+          root.confirmations = ["Appointment scheduled for Tuesday 2pm", "Reminder set for parts"]
+          root.metadata = {"skill": "voice-admin", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[voice-admin] ${! this.actions.length() } actions extracted"
+
+  output:
+    stdout:
+      codec: json_object

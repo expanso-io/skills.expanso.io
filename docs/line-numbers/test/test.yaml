@@ -1,0 +1,7 @@
+tests:
+  - name: "Add line numbers"
+    input: "line1\nline2"
+    expected:
+      has_field: numbered
+      has_field: line_count
+      metadata_has: [skill, trace_id]

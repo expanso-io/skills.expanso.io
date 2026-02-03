@@ -1,0 +1,29 @@
+name: image-dimensions
+version: 1.0.0
+description: Parse image dimensions and calculate properties
+
+inputs:
+  - name: width
+    type: integer
+    required: true
+    description: Image width in pixels
+  - name: height
+    type: integer
+    required: true
+    description: Image height in pixels
+
+outputs:
+  - name: aspect_ratio
+    type: string
+    description: Aspect ratio (e.g., 16:9)
+  - name: megapixels
+    type: number
+    description: Total megapixels
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

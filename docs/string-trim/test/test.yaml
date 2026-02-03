@@ -1,0 +1,7 @@
+tests:
+  - name: "Trim string"
+    input: "  hello  "
+    expected:
+      has_field: trimmed
+      has_field: chars_removed
+      metadata_has: [skill, trace_id]

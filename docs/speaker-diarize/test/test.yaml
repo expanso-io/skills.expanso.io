@@ -1,0 +1,8 @@
+# Test: speaker-diarize
+tests:
+  - name: "Identifies speakers"
+    skip: true
+    input: "Alice: Hello Bob. Bob: Hi Alice."
+    expected_output:
+      metadata:
+        skill: "speaker-diarize"

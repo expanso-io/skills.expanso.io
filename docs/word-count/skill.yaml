@@ -1,0 +1,55 @@
+# Skill: word-count
+# Version: 1.0.0
+#
+# Count words, characters, sentences, and paragraphs in text.
+# Runs locally without API calls.
+
+name: "word-count"
+version: "1.0.0"
+description: "Count words, characters, sentences, and paragraphs in text"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to analyze
+
+outputs:
+  - name: words
+    type: integer
+    description: Word count
+  - name: characters
+    type: integer
+    description: Character count (with spaces)
+  - name: characters_no_spaces
+    type: integer
+    description: Character count (without spaces)
+  - name: sentences
+    type: integer
+    description: Sentence count
+  - name: paragraphs
+    type: integer
+    description: Paragraph count
+
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Pure local text analysis
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

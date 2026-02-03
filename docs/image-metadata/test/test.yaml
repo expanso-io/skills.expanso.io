@@ -1,0 +1,7 @@
+tests:
+  - name: "Extract image metadata"
+    input: '{"image_base64": "/9j/4AAQSkZJRgAB"}'
+    expected:
+      has_field: format
+      has_field: size_bytes
+      metadata_has: [skill, trace_id]

@@ -1,0 +1,22 @@
+name: line-numbers
+version: 1.0.0
+description: Add or remove line numbers from text
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to process
+
+outputs:
+  - name: numbered
+    type: string
+    description: Text with line numbers
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

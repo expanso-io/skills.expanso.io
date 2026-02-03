@@ -1,0 +1,7 @@
+tests:
+  - name: "Strip emojis"
+    input: "Hello!"
+    expected:
+      has_field: clean
+      has_field: removed_count
+      metadata_has: [skill, trace_id]

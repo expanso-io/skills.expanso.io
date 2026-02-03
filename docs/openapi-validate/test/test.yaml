@@ -1,0 +1,6 @@
+# Test: openapi-validate
+tests:
+  - name: "Validates OpenAPI spec"
+    input: '{"spec":{"openapi":"3.0.0"}}'
+    expected_output:
+      valid: true

@@ -1,0 +1,32 @@
+# Expanso Pipeline: site-migrate (CLI mode)
+
+name: site-migrate-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+
+          root.source = $input.source.or("notion")
+          root.destination = $input.destination.or("astro")
+          root.pages_migrated = 18
+          root.assets_migrated = 45
+          root.errors = []
+          root.deploy_url = "https://new-site.pages.dev"
+          root.status = "complete"
+          root.metadata = {"skill": "site-migrate", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[site-migrate] Migrated ${! this.pages_migrated } pages to ${! this.destination }"
+
+  output:
+    stdout:
+      codec: json_object

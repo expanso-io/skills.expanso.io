@@ -1,0 +1,23 @@
+name: image-describe
+version: 1.0.0
+description: Generate description of an image using AI
+
+inputs:
+  - name: image_url
+    type: string
+    required: true
+    description: URL of image to describe
+
+outputs:
+  - name: description
+    type: string
+    description: AI-generated image description
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI GPT-4 Vision
+
+author: expanso
+license: MIT

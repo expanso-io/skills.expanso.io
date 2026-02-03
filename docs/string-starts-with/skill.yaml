@@ -1,0 +1,26 @@
+name: string-starts-with
+version: 1.0.0
+description: Check if string starts with prefix
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to check
+  - name: prefix
+    type: string
+    required: true
+    description: Prefix to match
+
+outputs:
+  - name: starts_with
+    type: boolean
+    description: Whether text starts with prefix
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

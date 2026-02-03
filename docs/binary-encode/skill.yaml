@@ -1,0 +1,22 @@
+name: binary-encode
+version: 1.0.0
+description: Convert text to binary representation
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to encode
+
+outputs:
+  - name: binary
+    type: string
+    description: Binary representation
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

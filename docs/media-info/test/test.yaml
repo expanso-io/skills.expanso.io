@@ -1,0 +1,7 @@
+tests:
+  - name: "Get media info"
+    input: '{"filename": "video.mp4", "size_bytes": 1024}'
+    expected:
+      has_field: type
+      has_field: extension
+      metadata_has: [skill, trace_id]

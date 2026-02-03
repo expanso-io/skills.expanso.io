@@ -1,0 +1,25 @@
+name: audio-duration
+version: 1.0.0
+description: Parse and format audio duration
+
+inputs:
+  - name: seconds
+    type: number
+    required: true
+    description: Duration in seconds
+
+outputs:
+  - name: formatted
+    type: string
+    description: Formatted duration (HH:MM:SS)
+  - name: minutes
+    type: number
+    description: Total minutes
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

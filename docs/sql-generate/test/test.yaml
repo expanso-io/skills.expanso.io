@@ -1,0 +1,15 @@
+# Test cases for sql-generate skill
+
+tests:
+  - name: "Generate simple query"
+    input: "Get all users"
+    expected:
+      has_field: sql
+      has_field: dialect
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Generate with schema"
+    input_file: fixtures/input.txt
+    expected:
+      has_field: sql
+      has_field: explanation

@@ -1,0 +1,51 @@
+# Skill: hash-digest
+# Version: 1.0.0
+#
+# Compute cryptographic hash of any input.
+
+name: hash-digest
+version: 1.0.0
+description: Compute cryptographic hash (SHA256, SHA512, MD5) of any input
+
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+
+credentials: []  # No credentials needed - pure local processing
+
+inputs:
+  - name: data
+    type: string
+    required: true
+    description: Data to hash
+  - name: algorithm
+    type: string
+    required: false
+    description: Hash algorithm (sha256, sha512, md5, xxhash64)
+
+outputs:
+  - name: hash
+    type: string
+    description: Hex-encoded hash
+  - name: algorithm
+    type: string
+    description: Algorithm used
+  - name: metadata
+    type: object
+    description: Audit metadata
+
+backends:
+  - name: local
+    type: local
+    description: Pure local processing (no external calls)
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+  outputs:
+    - stdout
+    - sync_response

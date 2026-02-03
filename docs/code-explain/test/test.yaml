@@ -1,0 +1,40 @@
+# Test cases for code-explain
+name: code-explain-tests
+description: Test cases for the code-explain skill
+
+tests:
+  - name: simple_function
+    description: Explain a simple function
+    input: |
+      def add(a, b):
+        return a + b
+    expected:
+      has_field: explanation
+      metadata_has: [trace_id, input_hash, timestamp, model]
+
+  - name: with_language_hint
+    description: Explain with explicit language
+    input: |
+      fn main() {
+        println!("Hello, world!");
+      }
+    env:
+      LANGUAGE: rust
+    expected:
+      has_field: explanation
+      explanation_contains: ["Rust", "print", "main"]
+
+  - name: brief_mode
+    description: Brief explanation
+    input: "for i in range(10): print(i)"
+    env:
+      DETAIL_LEVEL: brief
+    expected:
+      has_field: explanation
+      max_length: 500
+
+  - name: empty_input
+    description: Handle empty input
+    input: ""
+    expected:
+      error_or_empty: true

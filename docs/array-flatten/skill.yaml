@@ -1,0 +1,22 @@
+name: array-flatten
+version: 1.0.0
+description: Flatten nested arrays
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Nested array to flatten
+
+outputs:
+  - name: flat
+    type: array
+    description: Flattened array
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

@@ -1,0 +1,188 @@
+# Expanso Pipeline: stripe-reports (CLI mode)
+# =============================================
+#
+# Generate business intelligence reports from Stripe.
+#
+# Usage:
+#   echo '{"period":"today"}' | STRIPE_API_KEY=sk_... OPENAI_API_KEY=... expanso-edge run pipeline-cli.yaml
+#
+#   # Weekly report with Slack delivery
+#   echo '{"period":"week","send_slack":true}' | STRIPE_API_KEY=... SLACK_WEBHOOK=... expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: stripe-reports-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 1: Initialize and calculate date range
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta start_time = now()
+
+          let input = content().parse_json()
+          let period = $input.period.or("today")
+          meta period = $period
+          meta include_insights = $input.include_insights.or(true)
+          meta send_slack = $input.send_slack.or(false)
+
+          # Calculate date range based on period
+          let date_range = match $period {
+            "today" => {"start": now().ts_strftime("%Y-%m-%d"), "end": now().ts_strftime("%Y-%m-%d")},
+            "yesterday" => {"start": now().ts_sub("24h").ts_strftime("%Y-%m-%d"), "end": now().ts_sub("24h").ts_strftime("%Y-%m-%d")},
+            "week" => {"start": now().ts_sub("168h").ts_strftime("%Y-%m-%d"), "end": now().ts_strftime("%Y-%m-%d")},
+            "month" => {"start": now().ts_sub("720h").ts_strftime("%Y-%m-%d"), "end": now().ts_strftime("%Y-%m-%d")},
+            _ => {"start": now().ts_strftime("%Y-%m-%d"), "end": now().ts_strftime("%Y-%m-%d")}
+          }
+
+          meta date_range = $date_range
+          root.status = "fetching_metrics"
+
+      - log:
+          level: INFO
+          message: |
+            [stripe-reports] Generating ${! meta("period") } report (trace: ${! meta("trace_id").slice(0, 8) })
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 2: Fetch Stripe metrics (simulated for demo)
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          # In production, this would call Stripe API:
+          # GET /v1/balance
+          # GET /v1/charges?created[gte]=...
+          # GET /v1/subscriptions
+          # GET /v1/customers
+
+          # Simulated metrics for demo
+          let metrics = {
+            "revenue": {
+              "gross": 15420.00,
+              "net": 14650.00,
+              "fees": 770.00,
+              "refunds": 250.00,
+              "currency": "USD"
+            },
+            "subscriptions": {
+              "active": 342,
+              "new": 28,
+              "churned": 5,
+              "mrr": 8500.00,
+              "arr": 102000.00
+            },
+            "customers": {
+              "total": 1250,
+              "new": 45,
+              "returning": 180
+            },
+            "transactions": {
+              "successful": 520,
+              "failed": 12,
+              "pending": 3,
+              "success_rate": 97.7
+            },
+            "top_products": [
+              {"name": "Pro Plan", "revenue": 6800.00, "count": 85},
+              {"name": "Team Plan", "revenue": 4200.00, "count": 42},
+              {"name": "Enterprise", "revenue": 3000.00, "count": 6}
+            ],
+            "period": meta("period"),
+            "date_range": meta("date_range")
+          }
+
+          root.metrics = $metrics
+          meta metrics = $metrics
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 3: Generate AI insights
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          root = if meta("include_insights") {
+            {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are a business analytics expert. Analyze Stripe metrics and provide actionable insights. Focus on: 1) Revenue trends, 2) Subscription health (churn, growth), 3) Payment success rates, 4) Quick wins to improve metrics. Be specific and data-driven. Respond with JSON: {\"insights\": [{\"title\": \"\", \"observation\": \"\", \"recommendation\": \"\", \"impact\": \"high|medium|low\"}], \"quick_wins\": [{\"action\": \"\", \"expected_impact\": \"\", \"effort\": \"low|medium|high\"}]}"
+                },
+                {
+                  "role": "user",
+                  "content": "Analyze these Stripe metrics and provide insights:\n\n" + meta("metrics").format_json()
+                }
+              ],
+              "metrics": meta("metrics")
+            }
+          } else {
+            {"messages": [], "metrics": meta("metrics"), "skip_ai": true}
+          }
+
+      - branch:
+          processors:
+            - openai_chat_completion:
+                api_key: "${OPENAI_API_KEY}"
+                model: gpt-4o-mini
+          request_map: |
+            root = if this.skip_ai.or(false) {
+              deleted()
+            } else {
+              this
+            }
+          result_map: |
+            root.ai_response = this.choices.0.message.content
+            root.metrics = meta("metrics")
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 4: Compile final report
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          let ai_data = this.ai_response.parse_json().catch({"insights": [], "quick_wins": []})
+
+          root.report = {
+            "title": meta("period").capitalize() + " Stripe Report",
+            "period": meta("period"),
+            "date_range": meta("date_range"),
+            "generated_at": now()
+          }
+
+          root.metrics = this.metrics
+
+          root.insights = $ai_data.insights.or([
+            {
+              "title": "Revenue Performance",
+              "observation": "Net revenue of $" + this.metrics.revenue.net.string() + " with " + this.metrics.transactions.success_rate.string() + "% success rate",
+              "recommendation": "Monitor failed transactions for patterns",
+              "impact": "medium"
+            }
+          ])
+
+          root.quick_wins = $ai_data.quick_wins.or([
+            {
+              "action": "Review 12 failed transactions for recovery opportunities",
+              "expected_impact": "Potential $" + (this.metrics.revenue.gross / this.metrics.transactions.successful * 12).floor().string() + " recovery",
+              "effort": "low"
+            }
+          ])
+
+          root.metadata = {
+            "skill": "stripe-reports",
+            "mode": "cli",
+            "period": meta("period"),
+            "trace_id": meta("trace_id"),
+            "processing_time_ms": now().ts_sub(meta("start_time")).abs(),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [stripe-reports] Report complete: $${! this.metrics.revenue.net } revenue, ${! this.insights.length() } insights (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

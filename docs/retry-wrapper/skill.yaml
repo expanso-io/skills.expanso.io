@@ -1,0 +1,48 @@
+# Skill: retry-wrapper
+# Version: 1.0.0
+#
+# Wrap commands with automatic retry and exponential backoff.
+
+name: retry-wrapper
+version: 1.0.0
+description: Wrap commands with automatic retry and exponential backoff
+
+credentials: []
+
+inputs:
+  - name: command
+    type: string
+    required: true
+    description: Command to execute and retry
+  - name: max_retries
+    type: integer
+    default: 3
+    description: Maximum retry attempts
+  - name: backoff_ms
+    type: integer
+    default: 1000
+    description: Initial backoff in milliseconds
+
+outputs:
+  - name: output
+    type: string
+    description: Command output
+  - name: attempts
+    type: integer
+    description: Number of attempts made
+  - name: success
+    type: boolean
+    description: Whether command succeeded
+  - name: metadata
+    type: object
+    description: Execution metadata
+
+backends:
+  - name: local
+    type: local
+    description: Local command execution
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, retry, command, log]
+  outputs: [stdout, sync_response]

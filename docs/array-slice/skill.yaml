@@ -1,0 +1,29 @@
+name: array-slice
+version: 1.0.0
+description: Extract portion of array
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Source array
+  - name: start
+    type: integer
+    default: 0
+    description: Start index
+  - name: end
+    type: integer
+    description: End index
+
+outputs:
+  - name: sliced
+    type: array
+    description: Sliced array portion
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

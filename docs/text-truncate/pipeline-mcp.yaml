@@ -1,0 +1,59 @@
+# Expanso Pipeline: text-truncate (MCP mode)
+# ===========================================
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   curl -X POST http://localhost:8080/truncate \
+#     -d '{"text": "This is a long text", "length": 15, "suffix": "..."}'
+
+name: "text-truncate-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /truncate
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let text = this.text.or(content())
+          let length = this.length.or(100)
+          let suffix = this.suffix.or("...")
+
+          let original_length = $text.length()
+          let needs_truncate = $original_length > $length
+
+          let result = if $needs_truncate {
+            $text.slice(0, $length - $suffix.length()) + $suffix
+          } else {
+            $text
+          }
+
+          root.result = $result
+          root.truncated = $needs_truncate
+          root.original_length = $original_length
+          root.final_length = $result.length()
+          root.metadata = {
+            "skill": "text-truncate",
+            "mode": "mcp",
+            "max_length": $length,
+            "suffix": $suffix,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-truncate] ${! root.original_length } -> ${! root.final_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

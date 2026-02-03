@@ -1,0 +1,7 @@
+tests:
+  - name: "Wrap text"
+    input: "Hello world"
+    expected:
+      has_field: wrapped
+      has_field: word_count
+      metadata_has: [skill, trace_id]

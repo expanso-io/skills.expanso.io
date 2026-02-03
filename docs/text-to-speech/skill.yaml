@@ -1,0 +1,61 @@
+# Skill: text-to-speech
+# Version: 1.0.0
+#
+# Convert text to speech using OpenAI TTS.
+# Outputs audio in various formats (mp3, wav, opus).
+
+name: text-to-speech
+version: 1.0.0
+description: Convert text to speech using AI (mp3, wav, opus output)
+
+# Credentials
+credentials:
+  - name: OPENAI_API_KEY
+    required: true
+    description: OpenAI API key for TTS
+
+# Skill inputs
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to convert to speech (max 4096 chars)
+  - name: voice
+    type: string
+    default: alloy
+    enum: [alloy, echo, fable, onyx, nova, shimmer]
+    description: Voice to use
+  - name: format
+    type: string
+    default: mp3
+    enum: [mp3, opus, aac, flac, wav, pcm]
+    description: Audio output format
+
+# Skill outputs
+outputs:
+  - name: audio
+    type: binary
+    description: Audio file content (base64 encoded)
+  - name: metadata
+    type: object
+    description: Generation metadata
+
+# Backend options
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI TTS-1 (~$0.015 per 1K chars)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_speech
+    - log
+  outputs:
+    - stdout
+    - sync_response

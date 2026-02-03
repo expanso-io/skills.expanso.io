@@ -1,0 +1,29 @@
+name: "array-includes-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim().parse_json().catch({})
+
+          let arr = $input.array.or([])
+          let value = $input.value.or(null)
+
+          let includes = $arr.contains($value)
+
+          root.array = $arr
+          root.value = $value
+          root.includes = $includes
+          root.length = $arr.length()
+          root.metadata = {"skill": "array-includes", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,127 @@
+# Expanso Pipeline: llm-router (CLI mode)
+# =========================================
+#
+# Route requests to the optimal LLM.
+#
+# Usage:
+#   echo '{"prompt":"Write hello world in Python","task_type":"code"}' | \
+#     OPENAI_API_KEY=... expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: llm-router-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta start_time = now()
+
+          let input = content().parse_json()
+          let prompt = $input.prompt.or("")
+          let task_type = $input.task_type.or("auto")
+          let priority = $input.priority.or("balanced")
+          let require_local = $input.require_local.or(false)
+          let max_cost = $input.max_cost_cents.or(10)
+
+          meta prompt = $prompt
+          meta task_type = $task_type
+          meta priority = $priority
+          meta require_local = $require_local
+
+          # Analyze prompt to determine complexity
+          let prompt_length = $prompt.length()
+          let has_code_markers = $prompt.contains("```") || $prompt.contains("function") || $prompt.contains("def ")
+          let is_simple = $prompt_length < 200 && !$has_code_markers
+
+          # Auto-detect task type
+          let detected_type = if $task_type != "auto" {
+            $task_type
+          } else if $has_code_markers {
+            "code"
+          } else if $prompt.re_match("(?i)analyze|compare|evaluate") {
+            "analysis"
+          } else if $prompt.re_match("(?i)write|create|generate|story") {
+            "creative"
+          } else if $is_simple {
+            "simple"
+          } else {
+            "complex"
+          }
+
+          meta detected_type = $detected_type
+
+          # Select model based on task type and priority
+          let model_selection = match [$detected_type, $priority, $require_local] {
+            ["simple", _, false] => {"model": "gpt-4o-mini", "reason": "Simple task, cost-optimized"},
+            ["simple", _, true] => {"model": "ollama/llama3.2", "reason": "Simple task, local required"},
+            ["code", "quality", false] => {"model": "gpt-4o", "reason": "Code task, quality priority"},
+            ["code", _, false] => {"model": "gpt-4o-mini", "reason": "Code task, balanced"},
+            ["code", _, true] => {"model": "ollama/codellama", "reason": "Code task, local required"},
+            ["complex", "quality", false] => {"model": "gpt-4o", "reason": "Complex task, quality priority"},
+            ["complex", _, false] => {"model": "gpt-4o-mini", "reason": "Complex task, balanced"},
+            ["creative", _, false] => {"model": "gpt-4o", "reason": "Creative task benefits from larger model"},
+            ["analysis", _, false] => {"model": "gpt-4o-mini", "reason": "Analysis task, balanced"},
+            _ => {"model": "gpt-4o-mini", "reason": "Default fallback"}
+          }
+
+          meta selected_model = $model_selection.model
+          meta routing_reason = $model_selection.reason
+
+          root.messages = [
+            {"role": "user", "content": $prompt}
+          ]
+
+      - log:
+          level: INFO
+          message: |
+            [llm-router] Routing to ${! meta("selected_model") }: ${! meta("routing_reason") }
+
+      # Route to selected model (using OpenAI for demo)
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: "${! meta(\"selected_model\").re_replace(\"ollama/\", \"\") }"
+
+      - mapping: |
+          let response = this.choices.0.message.content
+          let tokens = this.usage.total_tokens.or(0)
+
+          # Estimate cost (simplified)
+          let cost_per_1k = match meta("selected_model") {
+            "gpt-4o" => 0.5,
+            "gpt-4o-mini" => 0.015,
+            _ => 0.0
+          }
+          let cost_cents = ($tokens / 1000) * $cost_per_1k
+
+          root.response = $response
+          root.model_used = meta("selected_model")
+          root.routing_reason = meta("routing_reason")
+          root.cost = {
+            "tokens": $tokens,
+            "cost_cents": $cost_cents.round()
+          }
+          root.metadata = {
+            "skill": "llm-router",
+            "mode": "cli",
+            "task_type": meta("detected_type"),
+            "priority": meta("priority"),
+            "latency_ms": now().ts_sub(meta("start_time")).abs(),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [llm-router] Complete: ${! this.cost.tokens } tokens, $${! this.cost.cost_cents / 100 } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

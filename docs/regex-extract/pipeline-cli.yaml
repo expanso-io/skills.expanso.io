@@ -1,0 +1,46 @@
+# Expanso Pipeline: regex-extract (CLI mode)
+# ===========================================
+#
+# Usage:
+#   PATTERN="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" echo "Contact us at test@example.com" | expanso-edge run pipeline-cli.yaml
+#
+# No API key needed - runs entirely locally.
+
+name: "regex-extract-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let text = content()
+          let pattern = env("PATTERN").or("\\S+")
+
+          # Find all matches
+          let matches = $text.re_find_all($pattern)
+
+          root.matches = $matches
+          root.count = $matches.length()
+          root.has_match = $matches.length() > 0
+          root.pattern = $pattern
+          root.metadata = {
+            "skill": "regex-extract",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [regex-extract] Found ${! root.count } matches (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

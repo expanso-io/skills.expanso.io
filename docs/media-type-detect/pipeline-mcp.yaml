@@ -1,0 +1,47 @@
+name: "media-type-detect-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /detect
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let filename = this.filename.or("").string().lowercase()
+
+          let parts = $filename.split(".")
+          let ext = if $parts.length() > 1 { $parts.index($parts.length() - 1) } else { "" }
+
+          let media_type = match $ext {
+            "jpg" => "image/jpeg",
+            "jpeg" => "image/jpeg",
+            "png" => "image/png",
+            "gif" => "image/gif",
+            "webp" => "image/webp",
+            "mp3" => "audio/mpeg",
+            "wav" => "audio/wav",
+            "mp4" => "video/mp4",
+            "pdf" => "application/pdf",
+            "json" => "application/json",
+            _ => "application/octet-stream"
+          }
+
+          let category = if $media_type.has_prefix("image/") { "image" } else if $media_type.has_prefix("audio/") { "audio" } else if $media_type.has_prefix("video/") { "video" } else { "document" }
+
+          root.filename = $filename
+          root.extension = $ext
+          root.media_type = $media_type
+          root.category = $category
+          root.metadata = {"skill": "media-type-detect", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

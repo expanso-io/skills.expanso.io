@@ -1,0 +1,7 @@
+tests:
+  - name: "Generate password"
+    input: ""
+    expected:
+      has_field: password
+      has_field: length
+      metadata_has: [skill, trace_id]

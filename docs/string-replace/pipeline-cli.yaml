@@ -1,0 +1,31 @@
+name: "string-replace-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim().parse_json().catch({})
+
+          let text = $input.text.or("")
+          let search = $input.search.or("")
+          let replace_with = $input.replace.or("")
+
+          let result = $text.replace_all($search, $replace_with)
+          let count = ($text.length() - $result.length()) / $search.length()
+
+          root.original = $text
+          root.result = $result
+          root.search = $search
+          root.replace = $replace_with
+          root.metadata = {"skill": "string-replace", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

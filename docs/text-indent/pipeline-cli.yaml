@@ -1,0 +1,31 @@
+name: "text-indent-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content()
+          let lines = $input.split("\n")
+
+          # Add 2-space indent to each line
+          let indented = $lines.map_each(l -> "  " + l).join("\n")
+
+          # Add 4-space indent
+          let indented_4 = $lines.map_each(l -> "    " + l).join("\n")
+
+          root.original = $input
+          root.indented_2 = $indented
+          root.indented_4 = $indented_4
+          root.line_count = $lines.length()
+          root.metadata = {"skill": "text-indent", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

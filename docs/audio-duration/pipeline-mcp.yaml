@@ -1,0 +1,35 @@
+name: "audio-duration-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /duration
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let secs = this.seconds.or(0).number()
+
+          let hours = ($secs / 3600).floor()
+          let mins = (($secs % 3600) / 60).floor()
+          let s = ($secs % 60).floor()
+
+          let h_str = if $hours < 10 { "0" + $hours.string() } else { $hours.string() }
+          let m_str = if $mins < 10 { "0" + $mins.string() } else { $mins.string() }
+          let s_str = if $s < 10 { "0" + $s.string() } else { $s.string() }
+
+          root.seconds = $secs
+          root.minutes = ($secs / 60)
+          root.formatted = $h_str + ":" + $m_str + ":" + $s_str
+          root.metadata = {"skill": "audio-duration", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

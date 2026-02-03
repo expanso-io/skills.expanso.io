@@ -1,0 +1,7 @@
+tests:
+  - name: "Square root"
+    input: "16"
+    expected:
+      has_field: sqrt
+      has_field: original
+      metadata_has: [skill, trace_id]

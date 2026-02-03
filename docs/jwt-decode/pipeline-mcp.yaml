@@ -1,0 +1,37 @@
+name: "jwt-decode-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /decode
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let token = this.token.or(content()).string().trim()
+          let parts = $token.split(".")
+
+          let header = if $parts.length() >= 1 {
+            $parts.index(0).decode("base64").parse_json().catch({})
+          } else { {} }
+
+          let payload = if $parts.length() >= 2 {
+            $parts.index(1).decode("base64").parse_json().catch({})
+          } else { {} }
+
+          root.header = $header
+          root.payload = $payload
+          root.signature = if $parts.length() >= 3 { $parts.index(2) } else { "" }
+          root.valid_format = $parts.length() == 3
+          root.metadata = {"skill": "jwt-decode", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

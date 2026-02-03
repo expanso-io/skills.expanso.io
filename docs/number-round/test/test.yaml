@@ -1,0 +1,7 @@
+tests:
+  - name: "Round number"
+    input: "3.5"
+    expected:
+      has_field: round
+      has_field: floor
+      metadata_has: [skill, trace_id]

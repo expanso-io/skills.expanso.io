@@ -1,0 +1,44 @@
+# Skill: meal-planner
+# Version: 1.0.0
+#
+# AI-powered weekly meal planning with grocery lists.
+
+name: meal-planner
+version: 1.0.0
+description: AI-powered meal planning with recipes and grocery lists
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: true
+  - name: NOTION_TOKEN
+    required: false
+
+inputs:
+  - name: preferences
+    type: object
+    description: "Dietary preferences: {vegetarian, allergies, cuisine}"
+  - name: days
+    type: integer
+    default: 7
+  - name: people
+    type: integer
+    default: 2
+
+outputs:
+  - name: meal_plan
+    type: array
+  - name: grocery_list
+    type: array
+  - name: recipes
+    type: array
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, openai_chat_completion, log]
+  outputs: [stdout, sync_response]

@@ -1,0 +1,39 @@
+name: "duration-format-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /format
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let seconds = this.seconds.or(content()).number().catch(0)
+
+          let days = ($seconds / 86400).floor()
+          let hours = (($seconds % 86400) / 3600).floor()
+          let minutes = (($seconds % 3600) / 60).floor()
+          let secs = $seconds % 60
+
+          let formatted = if $days > 0 { $days.string() + "d " + $hours.string() + "h" }
+            else if $hours > 0 { $hours.string() + "h " + $minutes.string() + "m" }
+            else if $minutes > 0 { $minutes.string() + "m " + $secs.string() + "s" }
+            else { $secs.string() + "s" }
+
+          root.seconds = $seconds
+          root.days = $days
+          root.hours = $hours
+          root.minutes = $minutes
+          root.formatted = $formatted
+          root.metadata = {"skill": "duration-format", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

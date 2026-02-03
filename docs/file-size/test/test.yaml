@@ -1,0 +1,7 @@
+tests:
+  - name: "Format file size"
+    input: "1048576"
+    expected:
+      has_field: bytes
+      has_field: formatted
+      metadata_has: [skill, trace_id]

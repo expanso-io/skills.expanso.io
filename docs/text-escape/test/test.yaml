@@ -1,0 +1,7 @@
+tests:
+  - name: "Escape text"
+    input: "Hello & World"
+    expected:
+      has_field: url_escaped
+      has_field: html_escaped
+      metadata_has: [skill, trace_id]

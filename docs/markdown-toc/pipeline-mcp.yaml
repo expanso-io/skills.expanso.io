@@ -1,0 +1,36 @@
+name: "markdown-toc-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /extract
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let content = this.markdown.or(content()).string()
+          let lines = $content.split("\n")
+
+          let headings = $lines.filter(l -> l.has_prefix("#"))
+
+          let h1_count = $headings.filter(h -> h.has_prefix("# ") && !h.has_prefix("## ")).length()
+          let h2_count = $headings.filter(h -> h.has_prefix("## ") && !h.has_prefix("### ")).length()
+          let h3_count = $headings.filter(h -> h.has_prefix("### ")).length()
+
+          root.headings = $headings
+          root.heading_count = $headings.length()
+          root.h1_count = $h1_count
+          root.h2_count = $h2_count
+          root.h3_count = $h3_count
+          root.metadata = {"skill": "markdown-toc", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

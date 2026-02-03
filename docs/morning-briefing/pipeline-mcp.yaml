@@ -1,0 +1,47 @@
+# Expanso Pipeline: morning-briefing (MCP mode)
+
+name: morning-briefing-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /briefing
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta location = this.location.or("San Francisco")
+
+          # Simulated data
+          let data = {
+            "calendar": [{"time": "09:00", "title": "Standup"}],
+            "weather": {"temp": 68, "condition": "Sunny"},
+            "news": [{"title": "Tech News", "source": "TechCrunch"}],
+            "tasks": [{"title": "Review docs", "due": "today"}]
+          }
+
+          root.messages = [
+            {"role": "system", "content": "Create a concise morning briefing."},
+            {"role": "user", "content": "Data: " + $data.format_json()}
+          ]
+          meta data = $data
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          root.briefing = meta("data")
+          root.summary = this.choices.0.message.content
+          root.metadata = {"skill": "morning-briefing", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

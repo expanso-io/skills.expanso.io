@@ -1,0 +1,92 @@
+# Expanso Pipeline: image-moderate (MCP mode)
+# ==============================================
+#
+# HTTP endpoint for image moderation.
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#
+#   curl -X POST http://localhost:8080/moderate \
+#     -H "Content-Type: application/json" \
+#     -d '{"image_url": "https://example.com/image.jpg"}'
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: image-moderate-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /moderate
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let url = this.image_url.or("")
+
+          root = if $url.length() == 0 {
+            throw("image_url field is required")
+          } else {
+            {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are a content moderation expert. Analyze images for policy violations. Return JSON: {\"flagged\": boolean, \"categories\": {\"violence\": boolean, \"sexual\": boolean, \"hate\": boolean, \"self_harm\": boolean, \"illegal\": boolean, \"dangerous\": boolean}, \"scores\": {same keys with 0-1 confidence}, \"reasoning\": \"brief explanation\"}. Be objective and accurate."
+                },
+                {
+                  "role": "user",
+                  "content": [
+                    {"type": "image_url", "image_url": {"url": $url}},
+                    {"type": "text", "text": "Analyze this image for content policy violations."}
+                  ]
+                }
+              ]
+            }
+          }
+          meta image_url = $url
+          meta trace_id = uuid_v4()
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let content = this.choices.0.message.content
+          let result = $content.parse_json().catch({
+            "flagged": false,
+            "categories": {},
+            "scores": {},
+            "reasoning": $content
+          })
+
+          root.flagged = $result.flagged
+          root.categories = $result.categories
+          root.scores = $result.scores
+          root.reasoning = $result.reasoning
+          root.metadata = {
+            "skill": "image-moderate",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "image_url": meta("image_url"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [image-moderate] MCP request, flagged: ${! this.flagged } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}
+
+selector:
+  match_labels:
+    capability: llm

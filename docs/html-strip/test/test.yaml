@@ -1,0 +1,15 @@
+# Test cases for html-strip skill
+
+tests:
+  - name: "Strip simple HTML"
+    input: "<p>Hello <b>World</b></p>"
+    expected:
+      has_field: text
+      has_field: text_length
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Strip complex HTML"
+    input_file: fixtures/input.txt
+    expected:
+      has_field: text
+      has_field: reduction_percent

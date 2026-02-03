@@ -1,0 +1,37 @@
+name: "string-contains-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /check
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let text = this.text.or("")
+          let search = this.search.or("")
+
+          let contains = $text.contains($search)
+          let contains_case_insensitive = $text.lowercase().contains($search.lowercase())
+          let starts_with = $text.has_prefix($search)
+          let ends_with = $text.has_suffix($search)
+
+          root.text = $text
+          root.search = $search
+          root.contains = $contains
+          root.contains_case_insensitive = $contains_case_insensitive
+          root.starts_with = $starts_with
+          root.ends_with = $ends_with
+          root.metadata = {"skill": "string-contains", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

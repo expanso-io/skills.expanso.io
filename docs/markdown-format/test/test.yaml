@@ -1,0 +1,19 @@
+# Test cases for markdown-format skill
+
+tests:
+  - name: "Format as heading"
+    input: "My Title"
+    env:
+      FORMAT: heading
+      LEVEL: "2"
+    expected:
+      has_field: markdown
+      has_field: format
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Format as list"
+    input: "Item 1\nItem 2"
+    env:
+      FORMAT: list
+    expected:
+      has_field: markdown

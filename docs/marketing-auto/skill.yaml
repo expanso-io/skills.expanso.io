@@ -1,0 +1,46 @@
+# Skill: marketing-auto
+name: marketing-auto
+version: 1.0.0
+description: Self-running marketing automation with AI content and analytics
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: true
+  - name: TWITTER_API_KEY
+    required: false
+  - name: LINKEDIN_TOKEN
+    required: false
+  - name: MAILCHIMP_API_KEY
+    required: false
+
+inputs:
+  - name: action
+    type: string
+    default: campaign
+    enum: [campaign, content, analytics, schedule]
+  - name: platform
+    type: string
+    default: all
+    enum: [all, twitter, linkedin, email, blog]
+  - name: topic
+    type: string
+    required: false
+
+outputs:
+  - name: content
+    type: array
+  - name: schedule
+    type: array
+  - name: analytics
+    type: object
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, openai_chat_completion, http, log]
+  outputs: [http_client, stdout, sync_response]

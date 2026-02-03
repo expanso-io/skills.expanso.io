@@ -1,0 +1,7 @@
+tests:
+  - name: "Get last"
+    input: "[1, 2, 3]"
+    expected:
+      has_field: last
+      has_field: length
+      metadata_has: [skill, trace_id]

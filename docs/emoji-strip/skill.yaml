@@ -1,0 +1,22 @@
+name: emoji-strip
+version: 1.0.0
+description: Remove or extract emojis from text
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text with emojis
+
+outputs:
+  - name: clean
+    type: string
+    description: Text without emojis
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

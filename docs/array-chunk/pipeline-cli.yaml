@@ -1,0 +1,33 @@
+name: "array-chunk-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          let parsed = $input.parse_json().catch([])
+          let is_array = $parsed.type() == "array"
+          let size = 2
+
+          # Calculate chunk count
+          let length = if $is_array { $parsed.length() } else { 0 }
+          let chunk_count = if $length > 0 { ($length / $size).ceil() } else { 0 }
+
+          root.original = $parsed
+          root.original_length = $length
+          root.chunk_size = $size
+          root.chunk_count = $chunk_count
+          root.valid = $is_array
+          root.metadata = {"skill": "array-chunk", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

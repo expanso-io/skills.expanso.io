@@ -1,0 +1,37 @@
+name: "semver-parse-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim().trim_prefix("v")
+
+          # Split on dots
+          let parts = $input.split(".")
+          let major = if $parts.length() >= 1 { $parts.index(0).number().catch(0) } else { 0 }
+          let minor = if $parts.length() >= 2 { $parts.index(1).number().catch(0) } else { 0 }
+          let patch_part = if $parts.length() >= 3 { $parts.index(2) } else { "0" }
+
+          # Handle prerelease suffix like "1.0.0-beta"
+          let patch_split = $patch_part.split("-")
+          let patch = $patch_split.index(0).number().catch(0)
+          let prerelease = if $patch_split.length() > 1 { $patch_split.index(1) } else { "" }
+
+          root.version = $input
+          root.major = $major
+          root.minor = $minor
+          root.patch = $patch
+          root.prerelease = $prerelease
+          root.valid = $parts.length() >= 3
+          root.metadata = {"skill": "semver-parse", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

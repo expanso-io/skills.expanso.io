@@ -1,0 +1,22 @@
+name: file-size
+version: 1.0.0
+description: Format file sizes in human-readable format
+
+inputs:
+  - name: bytes
+    type: integer
+    required: true
+    description: Size in bytes
+
+outputs:
+  - name: formatted
+    type: string
+    description: Human-readable size
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

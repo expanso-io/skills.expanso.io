@@ -1,0 +1,7 @@
+# Test: determinism-test
+tests:
+  - name: "Tests determinism"
+    input: '{"input":"test","runs":3}'
+    expected_output:
+      stable: true
+      stability_score: 100

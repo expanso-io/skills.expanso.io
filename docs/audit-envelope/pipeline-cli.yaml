@@ -1,0 +1,61 @@
+# Expanso Pipeline: audit-envelope (CLI mode)
+# ============================================
+#
+# Usage:
+#   echo '{"action": "user.login"}' | expanso-edge run pipeline-cli.yaml
+#   SOURCE=payment-service ACTOR=user-123 echo '{"amount": 100}' | expanso-edge run pipeline-cli.yaml
+#
+# No API key needed - runs entirely locally.
+
+name: "audit-envelope-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta timestamp = now()
+          meta source = env("SOURCE").or("cli")
+          meta actor = env("ACTOR").or("system")
+
+          # Parse input if JSON, otherwise use as string
+          let payload = content().parse_json().catch(content())
+          let payload_hash = content().hash("sha256").encode("hex")
+
+          # Create audit envelope
+          root.envelope = {
+            "trace_id": meta("trace_id"),
+            "timestamp": meta("timestamp"),
+            "source": meta("source"),
+            "actor": meta("actor"),
+            "payload": $payload,
+            "payload_hash": $payload_hash,
+            "payload_size": content().length(),
+            "version": "1.0"
+          }
+
+          # Create signature (using payload hash + metadata)
+          let sig_input = meta("trace_id") + "|" + meta("timestamp").string() + "|" + $payload_hash
+          root.signature = $sig_input.hash("sha256").encode("hex")
+
+          root.metadata = {
+            "skill": "audit-envelope",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "timestamp": meta("timestamp")
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [audit-envelope] Created envelope (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

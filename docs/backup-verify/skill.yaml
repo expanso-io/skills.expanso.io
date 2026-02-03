@@ -1,0 +1,45 @@
+# Skill: backup-verify
+# Version: 1.0.0
+#
+# Verify backup integrity across local and cloud storage.
+
+name: backup-verify
+version: 1.0.0
+description: Verify backup integrity and sync status across storage providers
+
+credentials:
+  - name: AWS_ACCESS_KEY_ID
+    required: false
+  - name: AWS_SECRET_ACCESS_KEY
+    required: false
+  - name: GOOGLE_CLOUD_KEY
+    required: false
+
+inputs:
+  - name: local_paths
+    type: array
+    default: []
+  - name: cloud_provider
+    type: string
+    default: s3
+    enum: [s3, gcs, azure, backblaze]
+  - name: bucket
+    type: string
+    required: false
+
+outputs:
+  - name: status
+    type: object
+  - name: differences
+    type: array
+  - name: metadata
+    type: object
+
+backends:
+  - name: local
+    type: local
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, http, log]
+  outputs: [stdout, sync_response]

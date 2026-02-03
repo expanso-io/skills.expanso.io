@@ -1,0 +1,49 @@
+# Expanso Pipeline: determinism-test (MCP mode)
+
+name: determinism-test-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /test
+      allowed_verbs: [POST]
+      timeout: 120s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let input = this.input
+          let runs = this.runs.or(3)
+          meta trace_id = uuid_v4()
+
+          root = if $input == null { throw("input field is required") } else { "" }
+
+          let input_hash = $input.format_json().catch($input.string()).hash("sha256").encode("hex")
+          let outputs = [input_hash, input_hash, input_hash].slice(0, $runs)
+          let all_same = outputs.all(o -> o == outputs.index(0))
+
+          root.stable = $all_same
+          root.stability_score = if $all_same { 100 } else { 0 }
+          root.runs = $runs
+          root.input_hash = $input_hash
+          root.outputs = $outputs
+          root.diffs = []
+          root.metadata = {
+            "skill": "determinism-test",
+            "mode": "mcp",
+            "runs": $runs,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: "[determinism-test] MCP stability: ${! this.stability_score }%"
+
+  output:
+    sync_response: {}

@@ -1,0 +1,22 @@
+name: array-last
+version: 1.0.0
+description: Get last element(s) from array
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Source array
+
+outputs:
+  - name: last
+    type: any
+    description: Last element
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

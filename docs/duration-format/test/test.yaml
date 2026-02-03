@@ -1,0 +1,7 @@
+tests:
+  - name: "Format duration"
+    input: "3600"
+    expected:
+      has_field: formatted
+      has_field: hours
+      metadata_has: [skill, trace_id]

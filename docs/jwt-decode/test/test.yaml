@@ -1,0 +1,7 @@
+tests:
+  - name: "Decode JWT"
+    input: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.sig"
+    expected:
+      has_field: header
+      has_field: payload
+      metadata_has: [skill, trace_id]

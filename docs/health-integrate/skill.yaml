@@ -1,0 +1,42 @@
+# Skill: health-integrate
+name: health-integrate
+version: 1.0.0
+description: Integrate wearable health data with calendar and fitness optimization
+
+credentials:
+  - name: OURA_TOKEN
+    required: false
+  - name: FITBIT_TOKEN
+    required: false
+  - name: GOOGLE_CALENDAR_TOKEN
+    required: false
+  - name: OPENAI_API_KEY
+    required: true
+
+inputs:
+  - name: sources
+    type: array
+    default: [oura, calendar]
+  - name: optimize_for
+    type: string
+    default: energy
+    enum: [energy, sleep, recovery, performance]
+
+outputs:
+  - name: health_summary
+    type: object
+  - name: recommendations
+    type: array
+  - name: schedule_adjustments
+    type: array
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, http, openai_chat_completion, log]
+  outputs: [http_client, stdout, sync_response]

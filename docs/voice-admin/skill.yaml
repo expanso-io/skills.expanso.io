@@ -1,0 +1,45 @@
+# Skill: voice-admin
+# Version: 1.0.0
+#
+# Voice-driven business administration for blue-collar professionals.
+# Inspired by @thespearing's plumber workflow.
+
+name: voice-admin
+version: 1.0.0
+description: Voice-driven business admin for scheduling, invoicing, and task management
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: true
+  - name: TWILIO_ACCOUNT_SID
+    required: false
+  - name: QUICKBOOKS_TOKEN
+    required: false
+
+inputs:
+  - name: audio
+    type: string
+    description: Base64 audio or audio URL
+  - name: action
+    type: string
+    default: transcribe_and_act
+    enum: [transcribe, schedule, invoice, task]
+
+outputs:
+  - name: transcript
+    type: string
+  - name: actions
+    type: array
+  - name: confirmations
+    type: array
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, openai_transcription, openai_chat_completion, log]
+  outputs: [stdout, sync_response]

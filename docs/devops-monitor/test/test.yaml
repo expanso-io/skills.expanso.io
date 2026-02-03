@@ -1,0 +1,8 @@
+# Test: devops-monitor
+tests:
+  - name: "Monitors and analyzes"
+    skip: true
+    input: '{"sources": ["github", "logs"]}'
+    expected_output:
+      metadata:
+        skill: "devops-monitor"

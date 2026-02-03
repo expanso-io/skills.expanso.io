@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Page</title>
+  <style>body { color: red; }</style>
+</head>
+<body>
+  <h1>Welcome</h1>
+  <p>This is a <strong>test</strong> paragraph.</p>
+  <script>console.log('ignored');</script>
+</body>
+</html>

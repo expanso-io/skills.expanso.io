@@ -1,0 +1,46 @@
+# Expanso Pipeline: multi-platform-chat (CLI mode)
+
+name: multi-platform-chat-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+          let message = $input.message.or("")
+          let platform = $input.platform.or("telegram")
+
+          meta message = $message
+          meta platform = $platform
+
+          root.messages = [
+            {"role": "system", "content": "You are a helpful assistant responding via " + $platform + ". Keep responses concise and appropriate for chat."},
+            {"role": "user", "content": $message}
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let response = this.choices.0.message.content
+          let platform = meta("platform")
+
+          root.response = $response
+          root.platform = $platform
+          root.sent_to = if $platform == "all" { ["telegram", "discord", "slack"] } else { [$platform] }
+          root.metadata = {"skill": "multi-platform-chat", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[multi-platform-chat] Sent to ${! this.platform }"
+
+  output:
+    stdout:
+      codec: json_object

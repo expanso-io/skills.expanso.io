@@ -1,0 +1,28 @@
+name: url-parse
+version: 1.0.0
+description: Parse URL components (protocol, host, path, query)
+
+inputs:
+  - name: url
+    type: string
+    required: true
+    description: URL to parse
+
+outputs:
+  - name: protocol
+    type: string
+    description: URL protocol
+  - name: host
+    type: string
+    description: Host/domain
+  - name: path
+    type: string
+    description: URL path
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

@@ -1,0 +1,33 @@
+# Test cases for text-analyze
+name: text-analyze-tests
+description: Test cases for the text-analyze skill
+
+tests:
+  - name: sentiment_positive
+    description: Detect positive sentiment
+    input: "I absolutely love this product! It's the best thing ever!"
+    expected:
+      has_field: analysis
+      analysis_has: [sentiment]
+
+  - name: entity_extraction
+    description: Extract named entities
+    input: "Tim Cook announced Apple's new iPhone in Cupertino."
+    env:
+      ANALYSES: entities
+    expected:
+      has_field: analysis
+      analysis_has: [entities]
+
+  - name: full_analysis
+    description: Full analysis with all types
+    input: "Microsoft stock rose 5% after Satya Nadella's AI announcement."
+    expected:
+      has_field: analysis
+      metadata_has: [trace_id, input_hash]
+
+  - name: empty_input
+    description: Handle empty input
+    input: ""
+    expected:
+      error_or_empty: true

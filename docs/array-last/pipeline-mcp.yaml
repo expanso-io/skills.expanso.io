@@ -1,0 +1,31 @@
+name: "array-last-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /last
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = this.array.or(content())
+
+          let parsed = if $input.type() == "array" { $input } else { $input.parse_json().catch([]) }
+          let length = $parsed.length()
+
+          let last = if $length > 0 { $parsed.index($length - 1) } else { null }
+
+          root.last = $last
+          root.length = $length
+          root.metadata = {"skill": "array-last", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

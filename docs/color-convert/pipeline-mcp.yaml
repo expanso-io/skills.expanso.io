@@ -1,0 +1,36 @@
+name: "color-convert-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /convert
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let color = this.color.or(content()).string().trim().lowercase()
+
+          let is_hex = $color.has_prefix("#")
+          let hex_val = if $is_hex { $color.trim_prefix("#") } else { "" }
+
+          let hex_full = if $hex_val.length() == 3 {
+            $hex_val.slice(0,1) + $hex_val.slice(0,1) +
+            $hex_val.slice(1,2) + $hex_val.slice(1,2) +
+            $hex_val.slice(2,3) + $hex_val.slice(2,3)
+          } else { $hex_val }
+
+          root.hex = "#" + $hex_full
+          root.input = $color
+          root.valid = $is_hex && ($hex_val.length() == 3 || $hex_val.length() == 6)
+          root.metadata = {"skill": "color-convert", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

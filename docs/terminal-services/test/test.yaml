@@ -1,0 +1,8 @@
+# Test: terminal-services
+tests:
+  - name: "Calls service"
+    skip: true
+    input: '{"service": "github", "action": "repos"}'
+    expected_output:
+      result:
+        status: "ok"

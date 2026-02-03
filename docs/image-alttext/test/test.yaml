@@ -1,0 +1,8 @@
+# Test: image-alttext
+tests:
+  - name: "Generates alt text"
+    skip: true
+    input: "https://example.com/test.jpg"
+    expected_output:
+      metadata:
+        skill: "image-alttext"

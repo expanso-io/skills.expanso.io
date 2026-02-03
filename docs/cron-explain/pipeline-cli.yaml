@@ -1,0 +1,70 @@
+# Expanso Pipeline: cron-explain (CLI mode)
+# ==========================================
+#
+# Usage:
+#   echo "0 9 * * 1-5" | expanso-edge run pipeline-cli.yaml
+#   echo "*/15 * * * *" | expanso-edge run pipeline-cli.yaml
+#
+# Requires OPENAI_API_KEY for natural language explanation.
+
+name: "cron-explain-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta input_hash = content().hash("sha256").encode("hex")
+          let cron = content().trim()
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a cron expression expert. Explain cron expressions in clear, simple English. Include when it will run (time, days, frequency). Format: Start with a one-sentence summary, then provide details. Be concise but complete."
+            },
+            {
+              "role": "user",
+              "content": "Explain this cron expression: " + $cron
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let cron = content().trim()
+          let parts = $cron.split(" ")
+
+          root.explanation = this.choices.0.message.content
+          root.cron = $cron
+          root.fields = {
+            "minute": $parts.index(0).or("*"),
+            "hour": $parts.index(1).or("*"),
+            "day_of_month": $parts.index(2).or("*"),
+            "month": $parts.index(3).or("*"),
+            "day_of_week": $parts.index(4).or("*")
+          }
+          root.metadata = {
+            "skill": "cron-explain",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "input_hash": meta("input_hash"),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [cron-explain] Explained cron (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

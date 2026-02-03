@@ -1,0 +1,7 @@
+tests:
+  - name: "Convert timezone"
+    input: '{"timezone": "UTC"}'
+    expected:
+      has_field: converted
+      has_field: timezone
+      metadata_has: [skill, trace_id]

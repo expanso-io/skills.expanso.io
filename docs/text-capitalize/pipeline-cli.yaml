@@ -1,0 +1,36 @@
+name: "text-capitalize-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          # Different capitalizations
+          let upper = $input.uppercase()
+          let lower = $input.lowercase()
+
+          # Title case: capitalize first letter of each word
+          let words = $input.split(" ")
+          let title = $words.map_each(w -> w.slice(0,1).uppercase() + w.slice(1).lowercase()).join(" ")
+
+          # Sentence case: capitalize first letter only
+          let sentence = $input.slice(0,1).uppercase() + $input.slice(1).lowercase()
+
+          root.original = $input
+          root.upper = $upper
+          root.lower = $lower
+          root.title = $title
+          root.sentence = $sentence
+          root.metadata = {"skill": "text-capitalize", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

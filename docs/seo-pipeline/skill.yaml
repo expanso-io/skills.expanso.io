@@ -1,0 +1,46 @@
+# Skill: seo-pipeline
+# Version: 1.0.0
+#
+# Complete SEO automation: analysis, reporting, and content optimization.
+# Inspired by @kr2idiots' $20/mo SEO workflow.
+
+name: seo-pipeline
+version: 1.0.0
+description: Complete SEO workflow with analysis, reporting, and AI content optimization
+
+credentials:
+  - name: GOOGLE_SEARCH_CONSOLE_TOKEN
+    required: false
+  - name: AHREFS_API_KEY
+    required: false
+  - name: OPENAI_API_KEY
+    required: true
+
+inputs:
+  - name: action
+    type: string
+    default: analyze
+    enum: [analyze, report, optimize, keywords, backlinks]
+  - name: url
+    type: string
+    required: false
+  - name: keywords
+    type: array
+    default: []
+
+outputs:
+  - name: analysis
+    type: object
+  - name: recommendations
+    type: array
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, http, openai_chat_completion, log]
+  outputs: [stdout, sync_response]

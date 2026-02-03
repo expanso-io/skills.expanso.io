@@ -1,0 +1,26 @@
+name: image-caption
+version: 1.0.0
+description: Generate accessible alt text for images
+
+inputs:
+  - name: image_url
+    type: string
+    required: true
+    description: URL of image to caption
+
+outputs:
+  - name: caption
+    type: string
+    description: Short image caption
+  - name: alt_text
+    type: string
+    description: Accessibility alt text
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI GPT-4 Vision
+
+author: expanso
+license: MIT

@@ -1,0 +1,29 @@
+name: "array-unique-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          let parsed = $input.parse_json().catch([])
+          let is_array = $parsed.type() == "array"
+
+          let unique = if $is_array { $parsed.unique() } else { [] }
+
+          root.unique = $unique
+          root.original_count = if $is_array { $parsed.length() } else { 0 }
+          root.unique_count = $unique.length()
+          root.duplicates_removed = if $is_array { $parsed.length() - $unique.length() } else { 0 }
+          root.metadata = {"skill": "array-unique", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

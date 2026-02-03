@@ -1,0 +1,7 @@
+tests:
+  - name: "Encode to binary/hex"
+    input: "Hi"
+    expected:
+      has_field: hex
+      has_field: byte_count
+      metadata_has: [skill, trace_id]

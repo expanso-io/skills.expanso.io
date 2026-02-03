@@ -1,0 +1,46 @@
+name: "mime-type-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /lookup
+      allowed_verbs: [POST, GET]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let ext = this.extension.or(content()).string().trim().lowercase().trim_prefix(".")
+
+          let types = {
+            "html": "text/html", "htm": "text/html",
+            "css": "text/css", "js": "application/javascript",
+            "json": "application/json", "xml": "application/xml",
+            "txt": "text/plain", "md": "text/markdown",
+            "pdf": "application/pdf", "zip": "application/zip",
+            "png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+            "gif": "image/gif", "svg": "image/svg+xml", "webp": "image/webp",
+            "mp3": "audio/mpeg", "wav": "audio/wav", "ogg": "audio/ogg",
+            "mp4": "video/mp4", "webm": "video/webm", "avi": "video/x-msvideo",
+            "csv": "text/csv", "yaml": "application/yaml", "yml": "application/yaml",
+            "woff": "font/woff", "woff2": "font/woff2", "ttf": "font/ttf",
+            "ico": "image/x-icon", "tar": "application/x-tar", "gz": "application/gzip"
+          }
+
+          root.extension = $ext
+          root.mime = $types.get($ext).or("application/octet-stream")
+          root.category = if $types.get($ext).or("").has_prefix("image") { "image" }
+            else if $types.get($ext).or("").has_prefix("video") { "video" }
+            else if $types.get($ext).or("").has_prefix("audio") { "audio" }
+            else if $types.get($ext).or("").has_prefix("text") { "text" }
+            else { "application" }
+          root.metadata = {"skill": "mime-type", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

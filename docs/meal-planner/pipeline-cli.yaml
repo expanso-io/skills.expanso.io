@@ -1,0 +1,41 @@
+# Expanso Pipeline: meal-planner (CLI mode)
+
+name: meal-planner-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+          meta days = $input.days.or(7)
+          meta people = $input.people.or(2)
+
+          root.messages = [
+            {"role": "system", "content": "Create a meal plan. Return JSON with meal_plan (array of {day, breakfast, lunch, dinner}), grocery_list (array of {item, quantity, category}), and recipes (array of {name, ingredients, steps})."},
+            {"role": "user", "content": "Create a " + meta("days").string() + "-day meal plan for " + meta("people").string() + " people. Preferences: " + $input.preferences.format_json().or("none")}
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let result = this.choices.0.message.content.parse_json().catch({})
+          root.meal_plan = $result.meal_plan.or([])
+          root.grocery_list = $result.grocery_list.or([])
+          root.recipes = $result.recipes.or([])
+          root.metadata = {"skill": "meal-planner", "mode": "cli", "days": meta("days"), "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[meal-planner] Generated ${! meta(\"days\") }-day plan"
+
+  output:
+    stdout:
+      codec: json_object

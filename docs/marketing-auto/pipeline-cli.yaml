@@ -1,0 +1,43 @@
+# Expanso Pipeline: marketing-auto (CLI mode)
+
+name: marketing-auto-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+          let action = $input.action.or("campaign")
+          let topic = $input.topic.or("product launch")
+
+          root.action = $action
+          root.content = [
+            {"platform": "twitter", "type": "thread", "posts": 5, "scheduled": now().ts_add("2h")},
+            {"platform": "linkedin", "type": "article", "word_count": 800, "scheduled": now().ts_add("4h")},
+            {"platform": "email", "type": "newsletter", "subscribers": 2500, "scheduled": now().ts_add("6h")}
+          ]
+          root.schedule = [
+            {"time": now().ts_add("2h"), "action": "Publish Twitter thread"},
+            {"time": now().ts_add("4h"), "action": "Publish LinkedIn article"},
+            {"time": now().ts_add("6h"), "action": "Send email newsletter"}
+          ]
+          root.analytics = {
+            "expected_reach": 15000,
+            "expected_engagement": 750,
+            "expected_clicks": 300
+          }
+          root.metadata = {"skill": "marketing-auto", "mode": "cli", "action": $action, "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[marketing-auto] Campaign created: ${! this.content.length() } content pieces"
+
+  output:
+    stdout:
+      codec: json_object

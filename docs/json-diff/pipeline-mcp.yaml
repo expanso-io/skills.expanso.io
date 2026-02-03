@@ -1,0 +1,37 @@
+name: "json-diff-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /diff
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let a = this.a.or({})
+          let b = this.b.or({})
+
+          let a_keys = $a.keys()
+          let b_keys = $b.keys()
+
+          let only_in_a = $a_keys.filter(k -> !$b_keys.contains(k))
+          let only_in_b = $b_keys.filter(k -> !$a_keys.contains(k))
+
+          root.a_key_count = $a_keys.length()
+          root.b_key_count = $b_keys.length()
+          root.only_in_a = $only_in_a
+          root.only_in_b = $only_in_b
+          root.equal = $only_in_a.length() == 0 && $only_in_b.length() == 0 && $a_keys.length() == $b_keys.length()
+          root.metadata = {"skill": "json-diff", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

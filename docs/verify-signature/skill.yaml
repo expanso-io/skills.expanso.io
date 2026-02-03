@@ -1,0 +1,51 @@
+# Skill: verify-signature
+# Version: 1.0.0
+#
+# Verify signed envelope and extract payload if valid.
+
+name: verify-signature
+version: 1.0.0
+description: Verify signed envelope signature and extract payload
+
+# Credentials
+credentials:
+  - name: VERIFY_KEY
+    required: true
+    description: Verification key
+
+# Skill inputs
+inputs:
+  - name: envelope
+    type: object
+    required: true
+    description: Signed envelope from sign-envelope skill
+
+# Skill outputs
+outputs:
+  - name: valid
+    type: boolean
+    description: Whether signature is valid
+  - name: payload
+    type: any
+    description: Extracted payload (if valid)
+  - name: metadata
+    type: object
+    description: Verification details
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    description: Local signature verification
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - log
+  outputs:
+    - stdout
+    - sync_response

@@ -1,0 +1,32 @@
+name: "emoji-strip-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          # Remove common emoji patterns (simplified approach)
+          let clean = $input.re_replace_all("[\\x{1F600}-\\x{1F64F}]", "")
+          let clean2 = $clean.re_replace_all("[\\x{1F300}-\\x{1F5FF}]", "")
+          let clean3 = $clean2.re_replace_all("[\\x{1F680}-\\x{1F6FF}]", "")
+          let clean4 = $clean3.re_replace_all("[\\x{2600}-\\x{26FF}]", "")
+          let final = $clean4.re_replace_all("[\\x{2700}-\\x{27BF}]", "")
+
+          root.original = $input
+          root.clean = $final.trim()
+          root.original_length = $input.length()
+          root.clean_length = $final.trim().length()
+          root.removed_count = $input.length() - $final.trim().length()
+          root.metadata = {"skill": "emoji-strip", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

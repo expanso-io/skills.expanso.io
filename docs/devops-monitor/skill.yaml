@@ -1,0 +1,90 @@
+# Skill: devops-monitor
+# Version: 1.0.0
+#
+# Automated DevOps monitoring with AI-powered analysis.
+# Monitors logs, metrics, and codebase for issues.
+# Runs while you sleep - alerts on critical issues only.
+#
+# Features:
+# - Log analysis and anomaly detection
+# - GitHub workflow monitoring
+# - Server health checks
+# - Automated debugging suggestions
+# - Smart alerting (no noise)
+
+name: devops-monitor
+version: 1.0.0
+description: AI-powered DevOps monitoring with automated log analysis and alerting
+
+credentials:
+  - name: GITHUB_TOKEN
+    required: false
+    description: GitHub personal access token
+  - name: PROMETHEUS_URL
+    required: false
+    description: Prometheus endpoint for metrics
+  - name: GRAFANA_API_KEY
+    required: false
+    description: Grafana API key
+  - name: SLACK_WEBHOOK
+    required: false
+    description: Slack webhook for alerts
+  - name: PAGERDUTY_KEY
+    required: false
+    description: PagerDuty integration key
+  - name: OPENAI_API_KEY
+    required: true
+    description: OpenAI for AI analysis
+
+inputs:
+  - name: sources
+    type: array
+    default: [github, logs]
+    description: "Data sources: github, logs, prometheus, uptime"
+  - name: repos
+    type: array
+    default: []
+    description: GitHub repos to monitor (owner/repo format)
+  - name: log_paths
+    type: array
+    default: []
+    description: Log file paths to analyze
+  - name: alert_threshold
+    type: string
+    default: high
+    enum: [low, medium, high, critical]
+    description: Minimum severity for alerts
+  - name: lookback_hours
+    type: integer
+    default: 1
+    description: Hours of data to analyze
+
+outputs:
+  - name: status
+    type: object
+    description: "Overall status: {healthy, warnings, errors}"
+  - name: issues
+    type: array
+    description: "Detected issues: {severity, source, description, suggestion}"
+  - name: workflows
+    type: array
+    description: GitHub workflow statuses
+  - name: metrics
+    type: object
+    description: Key metrics summary
+  - name: alerts_sent
+    type: array
+    description: Alerts that were dispatched
+  - name: metadata
+    type: object
+    description: Monitoring metadata
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+
+components:
+  inputs: [stdin, http_server, http_client]
+  processors: [mapping, http, openai_chat_completion, branch, log]
+  outputs: [http_client, stdout, sync_response]

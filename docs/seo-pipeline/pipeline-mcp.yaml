@@ -1,0 +1,28 @@
+# Expanso Pipeline: seo-pipeline (MCP mode)
+
+name: seo-pipeline-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /seo
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let url = this.url.or("https://example.com")
+
+          root.analysis = {"url": $url, "score": 72}
+          root.recommendations = [{"priority": "high", "issue": "Missing meta", "action": "Add meta descriptions"}]
+          root.metadata = {"skill": "seo-pipeline", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

@@ -1,0 +1,40 @@
+# Expanso Pipeline: health-integrate (CLI mode)
+
+name: health-integrate-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          root.health_summary = {
+            "sleep_score": 85,
+            "readiness_score": 78,
+            "activity_score": 65,
+            "hrv": 45,
+            "resting_hr": 58,
+            "steps_today": 4500
+          }
+          root.recommendations = [
+            {"priority": "high", "action": "Light workout recommended - recovery day", "reason": "HRV below baseline"},
+            {"priority": "medium", "action": "Earlier bedtime tonight", "reason": "Sleep debt accumulating"},
+            {"priority": "low", "action": "Take walking meeting at 2pm", "reason": "Activity goal behind"}
+          ]
+          root.schedule_adjustments = [
+            {"event": "Gym session", "original": "6am", "suggested": "5pm", "reason": "Better recovery in evening"}
+          ]
+          root.metadata = {"skill": "health-integrate", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[health-integrate] Readiness: ${! this.health_summary.readiness_score }%"
+
+  output:
+    stdout:
+      codec: json_object

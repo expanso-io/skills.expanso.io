@@ -1,0 +1,47 @@
+name: "url-parse-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /parse
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let url = this.url.or(content()).string().trim()
+
+          let has_protocol = $url.contains("://")
+          let protocol = if $has_protocol { $url.split("://").index(0) } else { "" }
+          let rest = if $has_protocol { $url.split("://").index(1) } else { $url }
+
+          let has_path = $rest.contains("/")
+          let host_part = if $has_path { $rest.split("/").index(0) } else { $rest }
+          let path = if $has_path { "/" + $rest.trim_prefix($host_part + "/") } else { "/" }
+
+          let has_port = $host_part.contains(":")
+          let host = if $has_port { $host_part.split(":").index(0) } else { $host_part }
+          let port = if $has_port { $host_part.split(":").index(1) } else { "" }
+
+          let has_query = $path.contains("?")
+          let clean_path = if $has_query { $path.split("?").index(0) } else { $path }
+          let query = if $has_query { $path.split("?").index(1) } else { "" }
+
+          root.url = $url
+          root.protocol = $protocol
+          root.host = $host
+          root.port = $port
+          root.path = $clean_path
+          root.query = $query
+          root.valid = $has_protocol && $host != ""
+          root.metadata = {"skill": "url-parse", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

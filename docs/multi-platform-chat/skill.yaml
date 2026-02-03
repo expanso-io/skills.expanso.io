@@ -1,0 +1,52 @@
+# Skill: multi-platform-chat
+# Version: 1.0.0
+#
+# Route AI responses across Telegram, Discord, WhatsApp, and Slack.
+
+name: multi-platform-chat
+version: 1.0.0
+description: Route AI agent responses across multiple messaging platforms
+
+credentials:
+  - name: TELEGRAM_BOT_TOKEN
+    required: false
+  - name: DISCORD_BOT_TOKEN
+    required: false
+  - name: SLACK_BOT_TOKEN
+    required: false
+  - name: WHATSAPP_TOKEN
+    required: false
+  - name: OPENAI_API_KEY
+    required: true
+
+inputs:
+  - name: message
+    type: string
+    required: true
+  - name: platform
+    type: string
+    required: true
+    enum: [telegram, discord, slack, whatsapp, all]
+  - name: channel_id
+    type: string
+    required: false
+  - name: user_id
+    type: string
+    required: false
+
+outputs:
+  - name: response
+    type: string
+  - name: sent_to
+    type: array
+  - name: metadata
+    type: object
+
+backends:
+  - name: openai
+    type: remote
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, openai_chat_completion, http, log]
+  outputs: [http_client, stdout, sync_response]

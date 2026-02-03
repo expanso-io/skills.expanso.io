@@ -1,0 +1,51 @@
+# Expanso Pipeline: email-validate (CLI mode)
+# ============================================
+#
+# Usage:
+#   echo "user@example.com" | expanso-edge run pipeline-cli.yaml
+#
+# No API key needed - runs entirely locally.
+
+name: "email-validate-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let email = content().trim().lowercase()
+
+          # Email regex pattern
+          let pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+          let valid = $email.re_match($pattern)
+
+          # Extract parts
+          let parts = $email.split("@")
+          let user = if $parts.length() >= 1 { $parts.index(0) } else { "" }
+          let domain = if $parts.length() >= 2 { $parts.index(1) } else { "" }
+
+          root.valid = $valid
+          root.email = $email
+          root.user = $user
+          root.domain = $domain
+          root.metadata = {
+            "skill": "email-validate",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [email-validate] ${! root.email } valid: ${! root.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

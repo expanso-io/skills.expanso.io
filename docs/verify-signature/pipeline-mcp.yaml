@@ -1,0 +1,75 @@
+# Expanso Pipeline: verify-signature (MCP mode)
+# ================================================
+#
+# HTTP endpoint for signature verification.
+#
+# Usage:
+#   VERIFY_KEY=... PORT=8080 expanso-edge run pipeline-mcp.yaml
+#
+#   curl -X POST http://localhost:8080/verify \
+#     -H "Content-Type: application/json" \
+#     -d '{"envelope": {...}}'
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: verify-signature-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /verify
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let envelope = this.envelope
+          meta trace_id = uuid_v4()
+
+          root = if $envelope == null {
+            throw("envelope field is required")
+          } else { "" }
+
+          let payload = $envelope.payload
+          let claimed_hash = $envelope.hash
+          let claimed_sig = $envelope.signature
+          let key_id = $envelope.key_id
+
+          let canonical = $payload.format_json().catch($payload.string())
+          let computed_hash = $canonical.hash("sha256").encode("hex")
+          let hash_valid = $computed_hash == $claimed_hash
+
+          let key = env("VERIFY_KEY").or("default-dev-key")
+          let expected_sig = ($computed_hash + "." + $key).hash("sha256").encode("hex")
+          let sig_valid = $expected_sig == $claimed_sig
+
+          let valid = $hash_valid && $sig_valid
+
+          root.valid = $valid
+          root.payload = if $valid { $payload } else { null }
+          root.verification = {
+            "hash_valid": $hash_valid,
+            "signature_valid": $sig_valid,
+            "key_id": $key_id,
+            "algorithm": $envelope.algorithm
+          }
+          root.metadata = {
+            "skill": "verify-signature",
+            "mode": "mcp",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [verify-signature] MCP valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

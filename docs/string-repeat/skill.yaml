@@ -1,0 +1,26 @@
+name: string-repeat
+version: 1.0.0
+description: Repeat a string multiple times
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to repeat
+  - name: count
+    type: integer
+    default: 2
+    description: Number of repetitions
+
+outputs:
+  - name: repeated
+    type: string
+    description: Repeated string
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

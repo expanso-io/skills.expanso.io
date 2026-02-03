@@ -1,0 +1,7 @@
+tests:
+  - name: "Lookup status code"
+    input: "200"
+    expected:
+      has_field: code
+      has_field: message
+      metadata_has: [skill, trace_id]

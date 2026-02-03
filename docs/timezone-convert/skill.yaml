@@ -1,0 +1,26 @@
+name: timezone-convert
+version: 1.0.0
+description: Convert timestamp between timezones
+
+inputs:
+  - name: timestamp
+    type: string
+    required: true
+    description: Timestamp to convert
+  - name: timezone
+    type: string
+    required: true
+    description: Target timezone
+
+outputs:
+  - name: converted
+    type: string
+    description: Converted timestamp
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

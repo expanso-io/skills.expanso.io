@@ -1,0 +1,57 @@
+# Expanso Pipeline: hash-digest (CLI mode)
+# ==========================================
+#
+# Compute cryptographic hash of any input.
+# No external API calls - pure local processing.
+#
+# Usage:
+#   echo "Hello, World!" | expanso-edge run pipeline-cli.yaml
+#
+#   # Different algorithm
+#   echo "Hello, World!" | ALGORITHM=sha512 expanso-edge run pipeline-cli.yaml
+#
+#   # Hash a file
+#   cat myfile.bin | expanso-edge run pipeline-cli.yaml
+
+name: hash-digest-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760  # 10MB max
+
+  pipeline:
+    processors:
+      - mapping: |
+          let algo = env("ALGORITHM").or("sha256")
+
+          let hash = match $algo {
+            "sha256" => content().hash("sha256").encode("hex"),
+            "sha512" => content().hash("sha512").encode("hex"),
+            "md5" => content().hash("md5").encode("hex"),
+            "xxhash64" => content().hash("xxhash64").encode("hex"),
+            _ => content().hash("sha256").encode("hex")
+          }
+
+          root.hash = $hash
+          root.algorithm = $algo
+          root.input_length = content().length()
+          root.metadata = {
+            "skill": "hash-digest",
+            "mode": "cli",
+            "algorithm": $algo,
+            "input_length": content().length(),
+            "trace_id": uuid_v4(),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [hash-digest] ${! root.algorithm } hash of ${! root.input_length } bytes
+
+  output:
+    stdout:
+      codec: json_object

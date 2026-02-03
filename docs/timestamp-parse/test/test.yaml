@@ -1,0 +1,16 @@
+# Test cases for timestamp-parse skill
+
+tests:
+  - name: "Current time"
+    input: ""
+    expected:
+      has_field: iso
+      has_field: unix
+      metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Parse ISO date"
+    input: "2024-01-15T10:30:00Z"
+    expected:
+      has_field: iso
+      has_field: date
+      has_field: time

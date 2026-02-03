@@ -1,0 +1,55 @@
+# Expanso Pipeline: stripe-reports (MCP mode)
+
+name: stripe-reports-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /report
+      allowed_verbs: [POST]
+      timeout: 60s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let period = this.period.or("today")
+          meta period = $period
+
+          # Simulated metrics
+          root.metrics = {
+            "revenue": {"gross": 15420.00, "net": 14650.00},
+            "subscriptions": {"active": 342, "mrr": 8500.00},
+            "period": $period
+          }
+          meta metrics = root.metrics
+
+          root.messages = [
+            {"role": "system", "content": "Analyze Stripe metrics. Return JSON with insights array."},
+            {"role": "user", "content": "Metrics: " + root.metrics.format_json()}
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let ai = this.choices.0.message.content.parse_json().catch({})
+
+          root.report = {"title": meta("period") + " Report", "period": meta("period")}
+          root.metrics = meta("metrics")
+          root.insights = $ai.insights.or([])
+          root.quick_wins = $ai.quick_wins.or([])
+          root.metadata = {"skill": "stripe-reports", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+      - log:
+          level: INFO
+          message: "[stripe-reports] MCP report generated"
+
+  output:
+    sync_response: {}

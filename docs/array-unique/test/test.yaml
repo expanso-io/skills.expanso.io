@@ -1,0 +1,7 @@
+tests:
+  - name: "Remove duplicates"
+    input: "[1, 1, 2, 2, 3]"
+    expected:
+      has_field: unique
+      has_field: duplicates_removed
+      metadata_has: [skill, trace_id]

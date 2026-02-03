@@ -1,0 +1,66 @@
+# Expanso Pipeline: verify-signature (CLI mode)
+# ===============================================
+#
+# Verify signed envelope.
+#
+# Usage:
+#   cat envelope.json | VERIFY_KEY=... expanso-edge run pipeline-cli.yaml
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: verify-signature-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let envelope = content().parse_json()
+          let payload = $envelope.payload
+          let claimed_hash = $envelope.hash
+          let claimed_sig = $envelope.signature
+          let key_id = $envelope.key_id
+
+          # Recompute hash
+          let canonical = $payload.format_json().catch($payload.string())
+          let computed_hash = $canonical.hash("sha256").encode("hex")
+
+          # Verify hash matches
+          let hash_valid = $computed_hash == $claimed_hash
+
+          # Verify signature (using same HMAC approach as sign-envelope)
+          let key = env("VERIFY_KEY").or("default-dev-key")
+          let expected_sig = ($computed_hash + "." + $key).hash("sha256").encode("hex")
+          let sig_valid = $expected_sig == $claimed_sig
+
+          let valid = $hash_valid && $sig_valid
+
+          root.valid = $valid
+          root.payload = if $valid { $payload } else { null }
+          root.verification = {
+            "hash_valid": $hash_valid,
+            "signature_valid": $sig_valid,
+            "key_id": $key_id,
+            "algorithm": $envelope.algorithm
+          }
+          root.metadata = {
+            "skill": "verify-signature",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [verify-signature] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

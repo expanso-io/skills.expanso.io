@@ -1,0 +1,6 @@
+tests:
+  - name: "Describe image"
+    input: '{"image_url": "https://example.com/test.jpg"}'
+    expected:
+      has_field: description
+      metadata_has: [skill, trace_id]

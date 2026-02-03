@@ -1,0 +1,55 @@
+# Skill: text-analyze
+# Version: 1.0.0
+#
+# Analyze text for sentiment, entities, topics, and key phrases.
+
+name: text-analyze
+version: 1.0.0
+description: Analyze text for sentiment, entities, topics, and key phrases
+
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+
+credentials:
+  - name: OPENAI_API_KEY
+    required: false
+    description: OpenAI API key for remote inference
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to analyze
+  - name: analyses
+    type: array
+    required: false
+    description: Types of analysis (sentiment, entities, topics, keywords)
+
+outputs:
+  - name: analysis
+    type: object
+    description: Analysis results
+  - name: metadata
+    type: object
+    description: Audit metadata
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+  - name: ollama
+    type: local
+    models: [llama3.2, mistral]
+
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - openai_chat_completion
+  outputs:
+    - stdout
+    - sync_response

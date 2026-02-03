@@ -1,0 +1,7 @@
+tests:
+  - name: "Format number"
+    input: "1234.56"
+    expected:
+      has_field: formatted
+      has_field: original
+      metadata_has: [skill, trace_id]

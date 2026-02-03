@@ -1,0 +1,28 @@
+name: "math-pow-mcp"
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /pow
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let base = this.base.number().catch(0)
+          let exp = this.exponent.number().catch(2)
+
+          root.result = $base.pow($exp)
+          root.base = $base
+          root.exponent = $exp
+          root.metadata = {"skill": "math-pow", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    sync_response: {}

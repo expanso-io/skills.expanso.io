@@ -1,0 +1,85 @@
+# Expanso Pipeline: sbom-generate (MCP mode)
+# =============================================
+#
+# HTTP endpoint for SBOM generation.
+#
+# Usage:
+#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#
+#   curl -X POST http://localhost:8080/generate \
+#     -H "Content-Type: application/json" \
+#     -d '{"packages": {"name":"myapp","dependencies":{...}}}'
+#
+# Validates against: docs.expanso.io/schemas/pipeline.schema.json
+
+name: sbom-generate-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /generate
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  pipeline:
+    processors:
+      - mapping: |
+          let pkg = this.packages
+          let format = this.format.or("cyclonedx")
+          meta trace_id = uuid_v4()
+
+          root = if $pkg == null {
+            throw("packages field is required")
+          } else { "" }
+
+          let deps = $pkg.dependencies.or({})
+          let dev_deps = $pkg.devDependencies.or({})
+
+          let components = $deps.keys().map_each(name -> {
+            "type": "library",
+            "name": name,
+            "version": $deps.index(name),
+            "scope": "required"
+          }) + $dev_deps.keys().map_each(name -> {
+            "type": "library",
+            "name": name,
+            "version": $dev_deps.index(name),
+            "scope": "optional"
+          })
+
+          root.sbom = {
+            "bomFormat": "CycloneDX",
+            "specVersion": "1.5",
+            "serialNumber": "urn:uuid:" + meta("trace_id"),
+            "version": 1,
+            "metadata": {
+              "timestamp": now(),
+              "component": {
+                "type": "application",
+                "name": $pkg.name.or("unknown"),
+                "version": $pkg.version.or("0.0.0")
+              }
+            },
+            "components": $components
+          }
+          root.metadata = {
+            "skill": "sbom-generate",
+            "mode": "mcp",
+            "format": $format,
+            "component_count": $components.length(),
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [sbom-generate] MCP: ${! this.metadata.component_count } components (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

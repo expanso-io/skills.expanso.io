@@ -1,0 +1,22 @@
+name: hex-encode
+version: 1.0.0
+description: Encode and decode hexadecimal strings
+
+inputs:
+  - name: text
+    type: string
+    required: true
+    description: Text to encode/decode
+
+outputs:
+  - name: hex
+    type: string
+    description: Hex encoded result
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

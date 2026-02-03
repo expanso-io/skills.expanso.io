@@ -1,0 +1,54 @@
+# Expanso Pipeline: seo-pipeline (CLI mode)
+
+name: seo-pipeline-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+          let url = $input.url.or("https://example.com")
+
+          # Simulated SEO analysis
+          root.analysis = {
+            "url": $url,
+            "score": 72,
+            "issues": {
+              "critical": 2,
+              "warnings": 5,
+              "info": 12
+            },
+            "keywords": {
+              "ranking": [
+                {"keyword": "ai automation", "position": 15, "volume": 2400},
+                {"keyword": "workflow tools", "position": 8, "volume": 1800}
+              ]
+            },
+            "performance": {
+              "page_speed": 85,
+              "mobile_friendly": true,
+              "core_web_vitals": {"lcp": 2.1, "fid": 45, "cls": 0.05}
+            }
+          }
+
+          root.recommendations = [
+            {"priority": "high", "issue": "Missing meta descriptions on 3 pages", "action": "Add unique meta descriptions"},
+            {"priority": "high", "issue": "Large image files", "action": "Compress images to improve page speed"},
+            {"priority": "medium", "issue": "Low internal linking", "action": "Add related post links"}
+          ]
+
+          root.metadata = {"skill": "seo-pipeline", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[seo-pipeline] Analyzed ${! this.analysis.url }, score: ${! this.analysis.score }"
+
+  output:
+    stdout:
+      codec: json_object

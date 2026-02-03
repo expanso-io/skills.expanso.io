@@ -1,0 +1,30 @@
+name: "whitespace-normalize-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10485760
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content()
+
+          # Normalize various whitespace issues
+          let trimmed = $input.trim()
+          let single_spaces = $trimmed.re_replace_all("[ \\t]+", " ")
+          let single_newlines = $single_spaces.re_replace_all("\\n{3,}", "\n\n")
+
+          root.original = $input
+          root.normalized = $single_newlines
+          root.original_length = $input.length()
+          root.normalized_length = $single_newlines.length()
+          root.chars_removed = $input.length() - $single_newlines.length()
+          root.metadata = {"skill": "whitespace-normalize", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,28 @@
+name: "query-string-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 10240
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim().trim_prefix("?")
+
+          # Split into key=value pairs
+          let pairs = $input.split("&")
+          let count = $pairs.filter(p -> p.contains("=")).length()
+
+          root.raw = $input
+          root.param_count = $count
+          root.pairs = $pairs
+          root.has_encoded = $input.contains("%")
+          root.metadata = {"skill": "query-string", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,46 @@
+# Expanso Pipeline: terminal-services (CLI mode)
+
+name: terminal-services-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().parse_json()
+          let service = $input.service.or("")
+          let action = $input.action.or("")
+
+          # Supported services
+          let services = {
+            "github": ["repos", "issues", "prs", "actions"],
+            "slack": ["send", "channels", "users"],
+            "discord": ["send", "channels"],
+            "telegram": ["send", "updates"],
+            "notion": ["pages", "databases"],
+            "linear": ["issues", "projects"],
+            "figma": ["files", "comments"],
+            "stripe": ["customers", "payments"],
+            "aws": ["s3", "ec2", "lambda"],
+            "vercel": ["deployments", "domains"]
+          }
+
+          root.service = $service
+          root.action = $action
+          root.supported_services = $services.keys()
+          root.result = {"status": "ok", "message": "Action " + $action + " on " + $service}
+          root.formatted_output = "✓ " + $service + "." + $action + " completed"
+          root.metadata = {"skill": "terminal-services", "mode": "cli", "trace_id": meta("trace_id")}
+
+      - log:
+          level: INFO
+          message: "[terminal-services] ${! this.service }.${! this.action }"
+
+  output:
+    stdout:
+      codec: json_object

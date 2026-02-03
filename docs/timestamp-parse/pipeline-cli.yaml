@@ -1,0 +1,59 @@
+# Expanso Pipeline: timestamp-parse (CLI mode)
+# =============================================
+#
+# Usage:
+#   echo "" | expanso-edge run pipeline-cli.yaml                    # Current time
+#   echo "2024-01-15T10:30:00Z" | expanso-edge run pipeline-cli.yaml  # Parse ISO
+#   echo "1705315800" | expanso-edge run pipeline-cli.yaml           # Parse Unix
+#
+# No API key needed - runs entirely locally.
+
+name: "timestamp-parse-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1024
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let input = content().trim()
+
+          # Get current time or parse input
+          let ts = if $input.length() == 0 {
+            now()
+          } else {
+            # Try to parse as various formats
+            $input.ts_parse("2006-01-02T15:04:05Z07:00").catch(
+              $input.ts_parse("2006-01-02").catch(
+                now()
+              )
+            )
+          }
+
+          root.iso = $ts.ts_format("2006-01-02T15:04:05Z07:00")
+          root.date = $ts.ts_format("2006-01-02")
+          root.time = $ts.ts_format("15:04:05")
+          root.unix = $ts.ts_unix()
+          root.unix_ms = $ts.ts_unix_milli()
+          root.day_of_week = $ts.ts_format("Monday")
+          root.metadata = {
+            "skill": "timestamp-parse",
+            "mode": "cli",
+            "input": $input,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [timestamp-parse] Processed timestamp (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

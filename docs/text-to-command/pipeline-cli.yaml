@@ -1,0 +1,73 @@
+# Expanso Pipeline: text-to-command (CLI mode)
+# ==========================================
+#
+# Convert natural language to CLI commands.
+#
+# Usage:
+#   echo "find all python files modified today" | expanso-edge run pipeline-cli.yaml
+#
+#   # With shell context
+#   echo "compress this folder" | SHELL=bash expanso-edge run pipeline-cli.yaml
+
+name: text-to-command-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+      max_buffer: 65536
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta input_hash = content().hash("sha256").encode("hex")
+          meta trace_id = uuid_v4()
+
+          let shell = env("SHELL_TYPE").or("bash")
+          let context = env("CONTEXT").or("")
+
+          let context_section = if $context.length() > 0 {
+            "\nContext: " + $context
+          } else { "" }
+
+          root.messages = [
+            {
+              "role": "system",
+              "content": "You are a CLI command generator. Convert natural language to " + $shell + " commands. Return JSON with 'command' (the executable command) and 'explanation' (brief description). Be precise and safe - prefer non-destructive commands when ambiguous. Never include dangerous commands without explicit user request."
+            },
+            {
+              "role": "user",
+              "content": "Convert this to a " + $shell + " command:\n\n" + content() + $context_section + "\n\nReturn JSON: {\"command\": \"...\", \"explanation\": \"...\"}"
+            }
+          ]
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let raw = this.choices.0.message.content
+          let parsed = $raw.parse_json().catch({"command": "", "explanation": "Parse error"})
+
+          root.command = $parsed.command.or("")
+          root.explanation = $parsed.explanation.or("")
+          root.shell = env("SHELL_TYPE").or("bash")
+          root.metadata = {
+            "skill": "text-to-command",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "input_hash": meta("input_hash"),
+            "trace_id": meta("trace_id"),
+            "shell": env("SHELL_TYPE").or("bash"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [text-to-command] Generated: ${! root.command.slice(0, 50) }...
+
+  output:
+    stdout:
+      codec: json_object

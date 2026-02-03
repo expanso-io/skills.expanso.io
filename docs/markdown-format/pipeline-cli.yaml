@@ -1,0 +1,63 @@
+# Expanso Pipeline: markdown-format (CLI mode)
+# =============================================
+#
+# Usage:
+#   FORMAT=heading LEVEL=2 echo "My Title" | expanso-edge run pipeline-cli.yaml
+#   FORMAT=code LANG=python echo "print('hello')" | expanso-edge run pipeline-cli.yaml
+#   FORMAT=list echo "Item 1\nItem 2\nItem 3" | expanso-edge run pipeline-cli.yaml
+#
+# No API key needed - runs entirely locally.
+
+name: "markdown-format-cli"
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: all
+      max_buffer: 1048576
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          let text = content().trim()
+          let format = env("FORMAT").or("paragraph")
+          let level = env("LEVEL").or("1").number().or(1)
+          let lang = env("LANG").or("")
+
+          let result = match $format {
+            "heading" => "#".repeat($level) + " " + $text,
+            "h1" => "# " + $text,
+            "h2" => "## " + $text,
+            "h3" => "### " + $text,
+            "bold" => "**" + $text + "**",
+            "italic" => "_" + $text + "_",
+            "code" => "```" + $lang + "\n" + $text + "\n```",
+            "inline-code" => "`" + $text + "`",
+            "quote" => "> " + $text.re_replace_all("\n", "\n> "),
+            "list" => $text.split("\n").map_each(line -> "- " + line).join("\n"),
+            "numbered" => $text.split("\n").enumerate().map_each(item -> (item.index + 1).string() + ". " + item.value).join("\n"),
+            "link" => "[" + $text + "](" + env("URL").or("#") + ")",
+            _ => $text
+          }
+
+          root.markdown = $result
+          root.format = $format
+          root.original = $text
+          root.metadata = {
+            "skill": "markdown-format",
+            "mode": "cli",
+            "format_type": $format,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [markdown-format] Applied ${! root.format } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,7 @@
+tests:
+  - name: "Get length"
+    input: "[1, 2, 3]"
+    expected:
+      has_field: length
+      has_field: type
+      metadata_has: [skill, trace_id]

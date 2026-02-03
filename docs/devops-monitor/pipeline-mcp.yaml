@@ -1,0 +1,48 @@
+# Expanso Pipeline: devops-monitor (MCP mode)
+
+name: devops-monitor-mcp
+type: pipeline
+
+config:
+  http:
+    enabled: true
+    address: "0.0.0.0:${PORT:-8080}"
+
+  input:
+    http_server:
+      path: /monitor
+      allowed_verbs: [POST]
+      timeout: 120s
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          # Simulated monitoring data
+          let data = {
+            "workflows": [{"repo": "org/api", "status": "success"}],
+            "errors": [{"message": "Connection timeout", "count": 5}],
+            "metrics": {"cpu": 45, "memory": 72}
+          }
+
+          root.messages = [
+            {"role": "system", "content": "Analyze DevOps data. Return JSON with issues array and overall_health."},
+            {"role": "user", "content": "Data: " + $data.format_json()}
+          ]
+          meta data = $data
+
+      - openai_chat_completion:
+          api_key: "${OPENAI_API_KEY}"
+          model: gpt-4o-mini
+
+      - mapping: |
+          let analysis = this.choices.0.message.content.parse_json().catch({"issues": [], "overall_health": "unknown"})
+
+          root.status = {"overall_health": $analysis.overall_health}
+          root.issues = $analysis.issues.or([])
+          root.metrics = meta("data").metrics
+          root.metadata = {"skill": "devops-monitor", "mode": "mcp", "trace_id": meta("trace_id")}
+
+  output:
+    sync_response: {}

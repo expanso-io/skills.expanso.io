@@ -1,0 +1,8 @@
+# Test: meeting-notes
+tests:
+  - name: "Extracts action items from transcript"
+    skip: true  # Requires API key
+    input: "Alice: We need to finish the report by Friday. Bob: I'll handle the data analysis."
+    expected_output:
+      metadata:
+        skill: "meeting-notes"

@@ -1,0 +1,22 @@
+name: markdown-toc
+version: 1.0.0
+description: Extract table of contents from markdown
+
+inputs:
+  - name: markdown
+    type: string
+    required: true
+    description: Markdown content
+
+outputs:
+  - name: toc
+    type: array
+    description: Table of contents entries
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

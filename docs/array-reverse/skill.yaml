@@ -1,0 +1,22 @@
+name: array-reverse
+version: 1.0.0
+description: Reverse array order
+
+inputs:
+  - name: array
+    type: array
+    required: true
+    description: Array to reverse
+
+outputs:
+  - name: reversed
+    type: array
+    description: Reversed array
+
+backends:
+  - name: local
+    type: local
+    description: Local processing (no API required)
+
+author: expanso
+license: MIT

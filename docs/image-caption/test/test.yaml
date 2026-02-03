@@ -1,0 +1,7 @@
+tests:
+  - name: "Generate caption"
+    input: '{"image_url": "https://example.com/test.jpg"}'
+    expected:
+      has_field: alt_text
+      has_field: caption
+      metadata_has: [skill, trace_id]

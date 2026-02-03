@@ -1,0 +1,90 @@
+# Skill: stripe-reports
+# Version: 1.0.0
+#
+# Generate business intelligence reports from Stripe data.
+# Combines revenue metrics with AI-powered insights and quick wins.
+# Inspired by @mauricekleine's hourly report automation.
+#
+# Features:
+# - Fetch revenue, subscriptions, and churn metrics
+# - AI-generated insights and recommendations
+# - Identify quick wins and opportunities
+# - Send reports to Slack/email
+#
+# Security: Stripe API key stays local on Expanso Edge.
+
+name: stripe-reports
+version: 1.0.0
+description: Generate AI-powered business reports from Stripe with insights and quick wins
+
+credentials:
+  - name: STRIPE_API_KEY
+    required: true
+    description: Stripe secret API key (sk_live_... or sk_test_...)
+  - name: OPENAI_API_KEY
+    required: true
+    description: OpenAI API key for AI insights
+  - name: SLACK_WEBHOOK
+    required: false
+    description: Slack webhook URL for report delivery
+
+inputs:
+  - name: period
+    type: string
+    default: today
+    enum: [today, yesterday, week, month, quarter]
+    description: Reporting period
+  - name: metrics
+    type: array
+    default: [revenue, subscriptions, churn, refunds]
+    description: Metrics to include
+  - name: include_insights
+    type: boolean
+    default: true
+    description: Generate AI insights
+  - name: include_quick_wins
+    type: boolean
+    default: true
+    description: Identify actionable quick wins
+  - name: send_slack
+    type: boolean
+    default: false
+    description: Send report to Slack
+  - name: format
+    type: string
+    default: json
+    enum: [json, markdown, html]
+    description: Output format
+
+outputs:
+  - name: report
+    type: object
+    description: "Complete report: {period, metrics, insights, quick_wins}"
+  - name: metrics
+    type: object
+    description: "Raw metrics: {revenue, mrr, churn_rate, new_customers, ...}"
+  - name: insights
+    type: array
+    description: AI-generated insights and observations
+  - name: quick_wins
+    type: array
+    description: Actionable recommendations with potential impact
+  - name: metadata
+    type: object
+    description: Report metadata and audit trail
+
+backends:
+  - name: openai
+    type: remote
+    requires: [OPENAI_API_KEY]
+    description: OpenAI for insights generation
+
+components:
+  inputs: [http_client, http_server]
+  processors: [mapping, http, openai_chat_completion, branch, log]
+  outputs: [http_client, stdout, sync_response]
+
+rate_limits:
+  - label: stripe_api
+    count: 25
+    interval: 1s
