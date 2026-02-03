@@ -32,14 +32,10 @@ config:
           } else { [] }
 
           # Convert remaining lines to objects
-          let data = $lines.slice(1).map_each(line -> {
-            let values = line.split($delimiter).map_each(v -> v.trim())
-            $headers.enumerate().fold({}, item -> {
-              let key = item.value
-              let val = $values.index(item.index).or("")
-              this.merge({($key): $val})
-            })
-          })
+          let data = $lines.slice(1).map_each(line -> $headers.fold({"index": 0, "obj": {}}, pair -> {
+            "index": pair.tally.index + 1,
+            "obj": pair.tally.obj.merge({(pair.value): line.split($delimiter).index(pair.tally.index).or("").trim()})
+          }).obj)
 
           root.data = $data
           root.row_count = $data.length()
