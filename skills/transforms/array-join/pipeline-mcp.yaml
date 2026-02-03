@@ -23,10 +23,18 @@ config:
           let is_array = $parsed.type() == "array"
 
           let joined = if $is_array { $parsed.join($separator) } else { "" }
+          let by_comma = if $is_array { $parsed.join(", ") } else { "" }
+          let by_space = if $is_array { $parsed.join(" ") } else { "" }
+          let by_newline = if $is_array { $parsed.join("\n") } else { "" }
+          let by_pipe = if $is_array { $parsed.join(" | ") } else { "" }
 
           root.array = $parsed
           root.separator = $separator
           root.joined = $joined
+          root.by_comma = $by_comma
+          root.by_space = $by_space
+          root.by_newline = $by_newline
+          root.by_pipe = $by_pipe
           root.count = if $is_array { $parsed.length() } else { 0 }
           root.metadata = {"skill": "array-join", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
 
