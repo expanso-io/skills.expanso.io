@@ -496,27 +496,10 @@
         deployH3.textContent = 'Deploy to Expanso Cloud';
         deploySection.appendChild(deployH3);
 
-        var pipelineUrl = getSkillUrl(skillName, 'pipeline-cli.yaml');
-
         var deployDesc = document.createElement('p');
         deployDesc.className = 'deploy-description';
         deployDesc.textContent = 'Deploy this skill to your Expanso Cloud instance. It will run on your Expanso Edge nodes and be available to OpenClaw via MCP.';
         deploySection.appendChild(deployDesc);
-
-        // Pipeline URL (copyable)
-        var urlLabel = document.createElement('div');
-        urlLabel.className = 'field-label';
-        urlLabel.textContent = 'Pipeline URL';
-        deploySection.appendChild(urlLabel);
-
-        var urlBox = document.createElement('div');
-        urlBox.className = 'url-box';
-        var urlText = document.createElement('code');
-        urlText.textContent = pipelineUrl;
-        var urlCopyBtn = createCopyButton(pipelineUrl);
-        urlBox.appendChild(urlText);
-        urlBox.appendChild(urlCopyBtn);
-        deploySection.appendChild(urlBox);
 
         // CLI deploy command
         var cliLabel = document.createElement('div');
@@ -524,7 +507,7 @@
         cliLabel.textContent = 'Deploy via CLI';
         deploySection.appendChild(cliLabel);
 
-        var cliCommand = '# Set your Expanso Cloud endpoint\nexport EXPANSO_CLI_ENDPOINT="https://your-instance.us1.cloud.expanso.io"\n\n# Deploy the skill\nexpanso-cli job deploy ' + pipelineUrl;
+        var cliCommand = '# Set your Expanso Cloud endpoint\nexport EXPANSO_CLI_ENDPOINT="https://your-instance.us1.cloud.expanso.io"\n\n# Deploy the skill\nexpanso-cli job deploy ' + getSkillUrl(skillName, 'pipeline-cli.yaml');
 
         var cliCode = createCodeBlock(cliCommand, 'bash');
         deploySection.appendChild(cliCode);
@@ -617,29 +600,13 @@
         var actionsDiv = document.createElement('div');
         actionsDiv.className = 'modal-actions';
 
-        var cloudLink = document.createElement('a');
-        cloudLink.href = 'https://cloud.expanso.io';
-        cloudLink.target = '_blank';
-        cloudLink.rel = 'noopener';
-        cloudLink.className = 'btn btn-primary';
-        cloudLink.textContent = 'Open Expanso Cloud';
-
-        var copyUrlBtn = document.createElement('button');
-        copyUrlBtn.className = 'btn btn-secondary';
-        copyUrlBtn.textContent = 'Copy Pipeline URL';
-        copyUrlBtn.addEventListener('click', function() {
-            copyToClipboard(getSkillUrl(skillName, 'pipeline-cli.yaml'), copyUrlBtn);
-        });
-
         var githubLink = document.createElement('a');
         githubLink.href = 'https://github.com/expanso-io/expanso-skills/tree/main/skills/' + skill.category + '/' + skillName;
         githubLink.target = '_blank';
         githubLink.rel = 'noopener';
-        githubLink.className = 'btn btn-secondary';
+        githubLink.className = 'btn btn-primary';
         githubLink.textContent = 'View Source';
 
-        actionsDiv.appendChild(cloudLink);
-        actionsDiv.appendChild(copyUrlBtn);
         actionsDiv.appendChild(githubLink);
         modalContent.appendChild(actionsDiv);
     }
