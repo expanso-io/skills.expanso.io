@@ -15,8 +15,9 @@ config:
           let parsed = $input.parse_json().catch(null)
 
           # Slice first 3 elements by default
+          let slice_len = if $parsed.type() == "array" && $parsed.length() < 3 { $parsed.length() } else { 3 }
           let sliced = if $parsed.type() == "array" {
-            $parsed.slice(0, 3.min($parsed.length()))
+            $parsed.slice(0, $slice_len)
           } else {
             []
           }
