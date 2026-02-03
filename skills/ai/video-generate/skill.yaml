@@ -1,45 +1,39 @@
 # Skill: video-generate
 name: video-generate
-version: 1.0.0
-description: AI video generation pipeline with script, voiceover, and editing
+version: 2.0.0
+description: Generate short videos from text prompts using Replicate AI models
 
 credentials:
-  - name: OPENAI_API_KEY
+  - name: REPLICATE_API_TOKEN
     required: true
-  - name: ELEVENLABS_API_KEY
-    required: false
-  - name: RUNWAY_API_KEY
-    required: false
+    description: Replicate API token from replicate.com
 
 inputs:
-  - name: script
+  - name: prompt
     type: string
     required: true
-  - name: style
+    description: Text description of the video to generate
+  - name: duration
     type: string
-    default: professional
-  - name: duration_seconds
-    type: integer
-    default: 60
-  - name: voice
-    type: string
-    default: alloy
+    default: "5"
+    description: Video duration in seconds (model dependent, typically 2-5s)
 
 outputs:
   - name: video_url
     type: string
-  - name: audio_url
+    description: URL to the generated video
+  - name: status
     type: string
-  - name: script_enhanced
-    type: string
+    description: Generation status (succeeded, failed, processing)
   - name: metadata
     type: object
+    description: Generation metadata including model, timing, trace_id
 
 backends:
-  - name: openai
+  - name: replicate
     type: remote
 
 components:
   inputs: [stdin, http_server]
-  processors: [mapping, openai_chat_completion, openai_speech, http, log]
+  processors: [mapping, http, log, sleep]
   outputs: [http_client, stdout, sync_response]
