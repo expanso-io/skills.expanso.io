@@ -20,7 +20,7 @@ config:
           let parsed = $input.parse_json().catch(null)
 
           let sum = if $parsed.type() == "array" {
-            $parsed.fold(0, item, acc -> $acc + $item.number().catch(0))
+            $parsed.fold(0, pair -> pair.tally + pair.value.number().catch(0))
           } else {
             0
           }
