@@ -258,47 +258,14 @@
         }
 
         header.appendChild(nameSpan);
-        header.appendChild(badges);
 
         var desc = document.createElement('p');
         desc.className = 'skill-description';
         desc.textContent = skill.description;
 
-        var meta = document.createElement('div');
-        meta.className = 'skill-meta';
-
-        var inputs = document.createElement('div');
-        inputs.className = 'skill-inputs';
-        var displayInputs = skill.inputs.slice(0, 2);
-        displayInputs.forEach(function(input) {
-            var tag = document.createElement('span');
-            tag.className = 'input-tag';
-            tag.textContent = input.name;
-            inputs.appendChild(tag);
-        });
-        if (skill.inputs.length > 2) {
-            var moreTag = document.createElement('span');
-            moreTag.className = 'input-tag';
-            moreTag.textContent = '+' + (skill.inputs.length - 2);
-            inputs.appendChild(moreTag);
-        }
-
-        var backends = document.createElement('div');
-        backends.className = 'skill-backends';
-        skill.backends.forEach(function(b) {
-            var icon = document.createElement('span');
-            icon.className = 'backend-icon';
-            icon.title = b;
-            icon.textContent = getBackendIcon(b);
-            backends.appendChild(icon);
-        });
-
-        meta.appendChild(inputs);
-        meta.appendChild(backends);
-
         article.appendChild(header);
         article.appendChild(desc);
-        article.appendChild(meta);
+        article.appendChild(badges);
 
         article.addEventListener('click', function() {
             openModal(name);

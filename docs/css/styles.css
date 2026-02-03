@@ -283,6 +283,8 @@ body {
     padding: 1.25rem;
     cursor: pointer;
     transition: all var(--transition);
+    display: flex;
+    flex-direction: column;
 }
 
 .skill-card:hover {
@@ -292,9 +294,6 @@ body {
 }
 
 .skill-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
     margin-bottom: 0.5rem;
 }
 
@@ -309,6 +308,8 @@ body {
     display: flex;
     gap: 0.375rem;
     flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: 0.75rem;
 }
 
 .badge {
