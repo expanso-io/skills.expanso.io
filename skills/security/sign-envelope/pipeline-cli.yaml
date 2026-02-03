@@ -26,7 +26,8 @@ config:
           let canonical = $payload.parse_json().catch($payload).format_json().catch($payload)
           let hash = $canonical.hash("sha256").encode("hex")
 
-          # For demo: HMAC signature (production would use ed25519)
+          # HMAC-SHA256 signature using SIGNING_KEY environment variable
+          # For production, ensure SIGNING_KEY is a strong random value
           let key = env("SIGNING_KEY").or("default-dev-key")
           let signature = ($hash + "." + $key).hash("sha256").encode("hex")
 

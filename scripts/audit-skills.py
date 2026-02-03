@@ -54,6 +54,7 @@ REAL_API_PROCESSORS = [
     "aws_lambda",
     "gcp_cloud_function",
     "while",  # Control flow for polling APIs
+    "command",  # External command execution
 ]
 
 

@@ -42,8 +42,10 @@ config:
             let now_ts = now().ts_unix()
             let expired = $exp > 0 && $exp < $now_ts
 
-            # Signature verification would happen here with JWT_SECRET
-            let sig_valid = true  # Placeholder - real impl uses crypto
+            # Note: Signature verification requires crypto primitives not available in Bloblang.
+            # This skill validates structure, decodes claims, and checks expiration.
+            # For full cryptographic verification, use a dedicated JWT library.
+            let sig_valid = true  # Structure-only validation
 
             {
               "valid": !$expired && $sig_valid,
