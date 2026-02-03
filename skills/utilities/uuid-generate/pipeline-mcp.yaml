@@ -23,8 +23,9 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          let count = this.count.or(1)
+          let trace_id = uuid_v4()
+          meta trace_id = $trace_id
+          let count = this.count.or(1).number().catch(1)
           let count = if $count < 1 { 1 } else { if $count > 100 { 100 } else { $count } }
 
           let uuids = []
@@ -37,7 +38,7 @@ config:
           root.metadata = {
             "skill": "uuid-generate",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
+            "trace_id": $trace_id,
             "timestamp": now()
           }
 
