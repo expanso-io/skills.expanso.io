@@ -15,7 +15,7 @@ config:
 
           # Reverse by splitting into chars and joining
           let chars = $input.split("")
-          let reversed = $chars.reverse().join("")
+          let reversed = $chars.fold("", pair -> pair.value + pair.tally)
 
           root.reversed = $reversed
           root.input = $input
