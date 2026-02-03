@@ -132,7 +132,7 @@ body {
 }
 
 .install-box code {
-    color: #67e8f9; /* Bright cyan - readable on dark */
+    color: #f4f4f5; /* White text for maximum readability */
 }
 
 .copy-btn {
