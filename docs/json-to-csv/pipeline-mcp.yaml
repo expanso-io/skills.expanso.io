@@ -28,20 +28,12 @@ config:
           let data = this.data.or([])
           let data = if $data.type() == "array" { $data } else { [$data] }
 
-          let columns = $data.fold([], item -> {
-            let keys = item.keys().or([])
-            $keys.fold(this, k -> if this.contains(k) { this } else { this.append(k) })
-          })
+          let columns = $data.fold([], pair -> pair.value.keys().or([]).fold(pair.tally, kp -> if kp.tally.contains(kp.value) { kp.tally } else { kp.tally.append(kp.value) }))
 
           let header = $columns.join($delimiter)
-          let rows = $data.map_each(obj -> {
-            $columns.map_each(col -> {
-              let val = obj.get($col).or("").string()
-              if $val.contains($delimiter) || $val.contains("\"") {
-                "\"" + $val.re_replace_all("\"", "\"\"") + "\""
-              } else { $val }
-            }).join($delimiter)
-          })
+          let rows = $data.map_each(obj -> $columns.map_each(col -> if obj.get(col).or("").string().contains($delimiter) || obj.get(col).or("").string().contains("\"") {
+            "\"" + obj.get(col).or("").string().re_replace_all("\"", "\"\"") + "\""
+          } else { obj.get(col).or("").string() }).join($delimiter))
 
           root.csv = $header + "\n" + $rows.join("\n")
           root.row_count = $data.length()

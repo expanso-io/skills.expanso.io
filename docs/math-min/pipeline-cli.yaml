@@ -21,7 +21,7 @@ config:
           }
 
           let min_val = if $nums.length() > 0 {
-            $nums.fold($nums.index(0), item, acc -> if $item < $acc { $item } else { $acc })
+            $nums.fold($nums.index(0), pair -> if pair.value < pair.tally { pair.value } else { pair.tally })
           } else {
             null
           }

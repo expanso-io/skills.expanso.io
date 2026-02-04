@@ -33,17 +33,11 @@ config:
           let orig_words = $original.split(" ")
           let mod_words = $modified.split(" ")
 
-          # Calculate similarity (Jaccard-like)
-          let common = 0
+          # Calculate similarity (length-based)
           let total = ($orig_words.length() + $mod_words.length())
-          let similarity = if $identical { 1.0 } else {
-            if $total == 0 { 1.0 } else {
-              # Simplified similarity based on length difference
-              let max_len = if $orig_len > $mod_len { $orig_len } else { $mod_len }
-              let min_len = if $orig_len < $mod_len { $orig_len } else { $mod_len }
-              if $max_len == 0 { 1.0 } else { $min_len / $max_len }
-            }
-          }
+          let max_len = if $orig_len > $mod_len { $orig_len } else { $mod_len }
+          let min_len = if $orig_len < $mod_len { $orig_len } else { $mod_len }
+          let similarity = if $identical { 1.0 } else if $total == 0 { 1.0 } else if $max_len == 0 { 1.0 } else { $min_len / $max_len }
 
           root.identical = $identical
           root.changes = {

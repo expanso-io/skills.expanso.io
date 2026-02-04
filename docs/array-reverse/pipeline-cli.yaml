@@ -16,7 +16,7 @@ config:
           let parsed = $input.parse_json().catch([])
           let is_array = $parsed.type() == "array"
 
-          let reversed = if $is_array { $parsed.reverse() } else { [] }
+          let reversed = if $is_array { $parsed.fold([], pair -> [pair.value].concat(pair.tally)) } else { [] }
 
           root.original = $parsed
           root.reversed = $reversed

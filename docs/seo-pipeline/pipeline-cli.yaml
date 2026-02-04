@@ -13,7 +13,7 @@ config:
       - mapping: |
           meta trace_id = uuid_v4()
           let input = content().parse_json()
-          let url = $input.url.or("https://example.com")
+          let url = $input.url.or(env("DEFAULT_URL").or(""))
 
           # Simulated SEO analysis
           root.analysis = {

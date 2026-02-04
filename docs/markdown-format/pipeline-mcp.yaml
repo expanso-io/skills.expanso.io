@@ -26,9 +26,14 @@ config:
           meta trace_id = uuid_v4()
           let text = this.text.or(content())
           let format = this.format.or("paragraph")
-          let level = this.level.or(1)
+          let level = this.level.or(1).number().catch(1)
           let lang = this.lang.or("")
           let url = this.url.or("#")
+
+          let numbered = $text.split("\n").fold({"index": 1, "items": []}, pair -> {
+            "index": pair.tally.index + 1,
+            "items": pair.tally.items.append(pair.tally.index.string() + ". " + pair.value)
+          }).items.join("\n")
 
           let result = match $format {
             "heading" => "#".repeat($level) + " " + $text,
@@ -41,7 +46,7 @@ config:
             "inline-code" => "`" + $text + "`",
             "quote" => "> " + $text.re_replace_all("\n", "\n> "),
             "list" => $text.split("\n").map_each(line -> "- " + line).join("\n"),
-            "numbered" => $text.split("\n").enumerate().map_each(item -> (item.index + 1).string() + ". " + item.value).join("\n"),
+            "numbered" => $numbered,
             "link" => "[" + $text + "](" + $url + ")",
             _ => $text
           }

@@ -26,6 +26,19 @@ config:
           let parts = $token.split(".")
           let valid_structure = $parts.length() == 3
 
+          let header = if $valid_structure { $parts.index(0).decode("base64").parse_json().catch({}) } else { null }
+          let claims = if $valid_structure { $parts.index(1).decode("base64").parse_json().catch({}) } else { null }
+
+          # Check expiration
+          let exp = if $valid_structure { $claims.exp.or(0) } else { 0 }
+          let now_ts = now().ts_unix()
+          let expired = $exp > 0 && $exp < $now_ts
+
+          # Note: Signature verification requires crypto primitives not available in Bloblang.
+          # This skill validates structure, decodes claims, and checks expiration.
+          # For full cryptographic verification, use a dedicated JWT library.
+          let sig_valid = true  # Structure-only validation
+
           root = if !$valid_structure {
             {
               "valid": false,
@@ -34,17 +47,6 @@ config:
               "claims": null
             }
           } else {
-            let header = $parts.index(0).decode("base64").parse_json().catch({})
-            let claims = $parts.index(1).decode("base64").parse_json().catch({})
-
-            # Check expiration
-            let exp = $claims.exp.or(0)
-            let now_ts = now().ts_unix()
-            let expired = $exp > 0 && $exp < $now_ts
-
-            # Signature verification would happen here with JWT_SECRET
-            let sig_valid = true  # Placeholder - real impl uses crypto
-
             {
               "valid": !$expired && $sig_valid,
               "header": $header,

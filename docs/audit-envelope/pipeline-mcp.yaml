@@ -23,8 +23,10 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          meta timestamp = now()
+          let trace_id = uuid_v4()
+          let timestamp = now()
+          meta trace_id = $trace_id
+          meta timestamp = $timestamp
 
           let payload = this.data.or(content())
           let source = this.source.or("mcp")
@@ -34,8 +36,8 @@ config:
 
           # Create audit envelope
           root.envelope = {
-            "trace_id": meta("trace_id"),
-            "timestamp": meta("timestamp"),
+            "trace_id": $trace_id,
+            "timestamp": $timestamp,
             "source": $source,
             "actor": $actor,
             "payload": $payload,
@@ -45,14 +47,14 @@ config:
           }
 
           # Create signature
-          let sig_input = meta("trace_id") + "|" + meta("timestamp").string() + "|" + $payload_hash
+          let sig_input = $trace_id + "|" + $timestamp.string() + "|" + $payload_hash
           root.signature = $sig_input.hash("sha256").encode("hex")
 
           root.metadata = {
             "skill": "audit-envelope",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
-            "timestamp": meta("timestamp")
+            "trace_id": $trace_id,
+            "timestamp": $timestamp
           }
 
       - log:

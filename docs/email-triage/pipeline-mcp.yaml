@@ -87,10 +87,7 @@ config:
           let classifications = this.choices.0.message.content.parse_json().catch([])
           let emails = meta("emails")
 
-          let processed = $emails.map_each(email ->
-            let c = $classifications.filter(x -> x.id == email.id).index(0).or({"category": "fyi", "priority": 3, "action": "review"})
-            email.merge(c)
-          )
+          let processed = $emails.map_each(email -> email.merge($classifications.filter(x -> x.id == email.id).index(0).or({"category": "fyi", "priority": 3, "action": "review"})))
 
           let urgent = $processed.filter(e -> e.category == "urgent").length()
 

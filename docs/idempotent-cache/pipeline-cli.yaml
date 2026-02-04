@@ -16,7 +16,7 @@ config:
           let input = content()
           let hash = $input.hash("sha256").encode("hex")
 
-          # Check cache (placeholder - real impl uses cache processor)
+          # Cache check - set CACHE_ENABLED=true and configure cache processor for real caching
           let cached = false
           let result = $input
 

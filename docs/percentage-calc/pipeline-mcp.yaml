@@ -16,8 +16,15 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          let value = this.value.or(0).number()
-          let total = this.total.or(100).number()
+          let raw_value = this.value.or(content()).string().trim()
+          let total_input = this.total
+          let has_total = $total_input != null
+
+          let parts = $raw_value.split("/")
+          let parsed_from_input = $parts.length() >= 2
+
+          let value = if !$has_total && $parsed_from_input { $parts.index(0).trim().number().catch(0) } else { this.value.or(0).number().catch(0) }
+          let total = if !$has_total && $parsed_from_input { $parts.index(1).trim().number().catch(100) } else { this.total.or(100).number().catch(100) }
 
           let percentage = if $total > 0 { ($value / $total) * 100 } else { 0 }
           let ratio = if $total > 0 { $value / $total } else { 0 }

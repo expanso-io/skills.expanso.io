@@ -15,7 +15,22 @@ inputs:
 outputs:
   - name: joined
     type: string
-    description: Joined string
+    description: Joined string using custom separator
+  - name: by_comma
+    type: string
+    description: Joined with comma separator
+  - name: by_space
+    type: string
+    description: Joined with space separator
+  - name: by_newline
+    type: string
+    description: Joined with newline separator
+  - name: by_pipe
+    type: string
+    description: Joined with pipe separator
+  - name: count
+    type: number
+    description: Number of elements
 
 backends:
   - name: local

@@ -15,10 +15,10 @@ config:
           let format = env("FORMAT").or("standard")
 
           let formatted = match $format {
-            "currency" => "$" + $num.format("%.2f"),
-            "percent" => ($num * 100).format("%.1f") + "%",
-            "scientific" => $num.format("%e"),
-            _ => $num.format("%.2f")
+            "currency" => "$" + $num.string(),
+            "percent" => ($num * 100).string() + "%",
+            "scientific" => $num.string(),
+            _ => $num.string()
           }
 
           root.formatted = $formatted

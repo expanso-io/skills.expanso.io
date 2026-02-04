@@ -83,7 +83,7 @@ config:
           message: |
             [llm-router] Routing to ${! meta("selected_model") }: ${! meta("routing_reason") }
 
-      # Route to selected model (using OpenAI for demo)
+      # Route to selected model (configure via OPENAI_API_KEY)
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: "${! meta(\"selected_model\").re_replace(\"ollama/\", \"\") }"

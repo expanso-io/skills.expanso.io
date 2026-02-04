@@ -8,8 +8,10 @@ Build the skills catalog.json and organize skills into categories.
 
 Usage:
     uv run -s scripts/build-catalog.py
+    uv run -s scripts/build-catalog.py --source skills --target .
 """
 
+import argparse
 import json
 import shutil
 import sys
@@ -216,9 +218,41 @@ def load_skill_yaml(skill_path: Path) -> dict | None:
         return None
 
 
-def build_catalog(
-    source_dir: Path, target_dir: Path
-) -> tuple[dict, dict[str, list[str]]]:
+def detect_layout(source_dir: Path) -> str:
+    """Detect whether skills are in a flat or categorized directory layout."""
+    for child in source_dir.iterdir():
+        if child.is_dir() and (child / "skill.yaml").exists():
+            return "flat"
+    return "categorized"
+
+
+def iter_skill_dirs(source_dir: Path, layout: str) -> list[tuple[str | None, Path]]:
+    """Return a list of (category_hint, skill_dir) tuples."""
+    skills: list[tuple[str | None, Path]] = []
+    if layout == "flat":
+        for skill_dir in sorted(source_dir.iterdir()):
+            if skill_dir.is_dir() and (skill_dir / "skill.yaml").exists():
+                skills.append((None, skill_dir))
+        return skills
+
+    # categorized layout: source_dir/<category>/<skill>/
+    for category_dir in sorted(source_dir.iterdir()):
+        if not category_dir.is_dir():
+            continue
+        for skill_dir in sorted(category_dir.iterdir()):
+            if skill_dir.is_dir() and (skill_dir / "skill.yaml").exists():
+                skills.append((category_dir.name, skill_dir))
+    return skills
+
+
+def resolve_category(skill_name: str, category_hint: str | None) -> str:
+    """Resolve category using directory hint first, then name patterns."""
+    if category_hint and (category_hint in CATEGORY_RULES or category_hint == "utilities"):
+        return category_hint
+    return categorize_skill(skill_name)
+
+
+def build_catalog(source_dir: Path, layout: str) -> tuple[dict, dict[str, list[str]]]:
     """Build the skills catalog and organize into categories."""
     catalog = {
         "version": "1.0.0",
@@ -233,8 +267,8 @@ def build_catalog(
     category_skills["utilities"] = []
 
     # Process each skill
-    for skill_path in sorted(source_dir.iterdir()):
-        if not skill_path.is_dir() or skill_path.name.startswith("_"):
+    for category_hint, skill_path in iter_skill_dirs(source_dir, layout):
+        if skill_path.name.startswith("_"):
             continue
 
         skill_name = skill_path.name
@@ -245,7 +279,7 @@ def build_catalog(
             continue
 
         # Determine category
-        category = categorize_skill(skill_name)
+        category = resolve_category(skill_name, category_hint)
         category_skills[category].append(skill_name)
 
         # Extract metadata
@@ -349,10 +383,35 @@ def copy_skills_to_categories(
                 print(f"  {skill_name} -> {category}/")
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse CLI arguments."""
+    repo_root = Path(__file__).resolve().parents[1]
+    parser = argparse.ArgumentParser(description="Build Expanso skills catalogs.")
+    parser.add_argument(
+        "--source",
+        type=Path,
+        default=repo_root / "skills",
+        help="Path to skills directory (flat or categorized).",
+    )
+    parser.add_argument(
+        "--target",
+        type=Path,
+        default=repo_root,
+        help="Path to output catalog.json and catalog-minimal.json.",
+    )
+    parser.add_argument(
+        "--sync-categories",
+        action="store_true",
+        help="Copy flat skills into target skills/<category>/ (disabled by default).",
+    )
+    return parser.parse_args()
+
+
 def main():
     """Main entry point."""
-    source_dir = Path("/Users/daaronch/code/expanso-hearts-openclaw/skills")
-    target_dir = Path("/Users/daaronch/code/expanso-skills")
+    args = parse_args()
+    source_dir = args.source
+    target_dir = args.target
 
     print("Building Expanso Skills Catalog...")
     print(f"  Source: {source_dir}")
@@ -361,7 +420,8 @@ def main():
 
     # Build catalog
     print("Analyzing skills...")
-    catalog, category_skills = build_catalog(source_dir, target_dir)
+    layout = detect_layout(source_dir)
+    catalog, category_skills = build_catalog(source_dir, layout)
 
     # Print summary
     print(f"\nFound {catalog['total_skills']} skills in {len(category_skills)} categories:")
@@ -369,9 +429,13 @@ def main():
         if skills:
             print(f"  {cat}: {len(skills)} skills")
 
-    # Copy skills to category directories
-    print("\nCopying skills to categories...")
-    copy_skills_to_categories(source_dir, target_dir, category_skills)
+    # Copy skills to category directories (optional)
+    if args.sync_categories:
+        if layout != "flat":
+            print("\nSkipping category sync (source is categorized).")
+        else:
+            print("\nCopying skills to categories...")
+            copy_skills_to_categories(source_dir, target_dir, category_skills)
 
     # Write catalog.json
     from datetime import datetime, timezone

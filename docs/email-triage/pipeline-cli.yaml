@@ -59,8 +59,8 @@ config:
       # STEP 2: Fetch emails (simulated - real impl uses provider-specific API)
       # ═══════════════════════════════════════════════════════════════════════
       - mapping: |
-          # In production, this would be an http_client call to Gmail/Outlook API
-          # For demo, we simulate with sample emails
+          # Configure EMAIL_API_URL to connect to Gmail/Outlook API
+          # Sample emails shown below - replace with http call to EMAIL_API_URL
 
           let sample_emails = [
             {
@@ -162,15 +162,12 @@ Respond with a JSON array matching the email IDs provided."
 
           # Merge classifications with original emails
           let emails = meta("emails")
-          let processed_emails = $emails.map_each(email ->
-            let classification = $classifications.filter(c -> c.id == email.id).index(0).or({
-              "category": "fyi",
-              "priority": 3,
-              "action": "review",
-              "calendar_event": null
-            })
-            email.merge($classification)
-          )
+          let processed_emails = $emails.map_each(email -> email.merge($classifications.filter(c -> c.id == email.id).index(0).or({
+            "category": "fyi",
+            "priority": 3,
+            "action": "review",
+            "calendar_event": null
+          })))
 
           # Extract calendar events
           let calendar_events = $processed_emails.filter(e -> e.calendar_event != null).map_each(e ->

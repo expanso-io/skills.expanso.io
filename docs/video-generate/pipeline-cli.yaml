@@ -1,4 +1,14 @@
 # Expanso Pipeline: video-generate (CLI mode)
+# ============================================
+#
+# Generate short videos from text prompts using Replicate AI.
+# Uses minimax/video-01 model for text-to-video generation.
+#
+# Usage:
+#   echo '{"prompt": "A cat playing piano"}' | \
+#     REPLICATE_API_TOKEN=r8_xxx expanso-edge run pipeline-cli.yaml
+#
+# Note: Video generation takes 30-120 seconds. This pipeline polls for completion.
 
 name: video-generate-cli
 type: pipeline
@@ -10,22 +20,74 @@ config:
 
   pipeline:
     processors:
+      # 1. Parse input and set up request
       - mapping: |
           meta trace_id = uuid_v4()
+          meta start_time = now()
           let input = content().parse_json()
-          let script = $input.script.or("")
 
-          root.script_original = $script
-          root.script_enhanced = $script + " [Enhanced with B-roll suggestions]"
-          root.video_url = "https://storage.example.com/videos/" + meta("trace_id") + ".mp4"
-          root.audio_url = "https://storage.example.com/audio/" + meta("trace_id") + ".mp3"
-          root.status = "generated"
-          root.duration = $input.duration_seconds.or(60)
-          root.metadata = {"skill": "video-generate", "mode": "cli", "trace_id": meta("trace_id")}
+          root = {
+            "version": "5522017e7bc92c4b2d90cc09a65051d7ade8e26c2932444ba16ca0f7a9b5cbb2",
+            "input": {
+              "prompt": $input.prompt,
+              "prompt_optimizer": true
+            }
+          }
+
+      # 2. Submit to Replicate API
+      - http:
+          url: "https://api.replicate.com/v1/predictions"
+          verb: POST
+          headers:
+            Authorization: "Bearer ${REPLICATE_API_TOKEN}"
+            Content-Type: "application/json"
+
+      # 3. Extract prediction ID and poll URL
+      - mapping: |
+          meta prediction_id = this.id
+          meta poll_url = this.urls.get
+          meta status = this.status
+          root = this
+
+      # 4. Poll for completion (up to 60 attempts, 3s each = 3 min max)
+      - while:
+          at_least_once: true
+          max_loops: 60
+          check: 'meta("status") == "starting" || meta("status") == "processing"'
+          processors:
+            - sleep:
+                duration: "3s"
+            - http:
+                url: '${! meta("poll_url") }'
+                verb: GET
+                headers:
+                  Authorization: "Bearer ${REPLICATE_API_TOKEN}"
+            - mapping: |
+                meta status = this.status
+                root = this
+
+      # 5. Format final output
+      - mapping: |
+          let status = this.status
+          let output = this.output
+
+          root.video_url = if $status == "succeeded" { $output.index(0).or("") } else { "" }
+          root.status = $status
+          root.error = if $status == "failed" { this.error } else { null }
+          root.metadata = {
+            "skill": "video-generate",
+            "mode": "cli",
+            "model": "minimax/video-01",
+            "prediction_id": meta("prediction_id"),
+            "trace_id": meta("trace_id"),
+            "started_at": meta("start_time"),
+            "completed_at": now()
+          }
 
       - log:
           level: INFO
-          message: "[video-generate] Generated ${! this.duration }s video"
+          message: |
+            [video-generate] Status: ${! this.status } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     stdout:
