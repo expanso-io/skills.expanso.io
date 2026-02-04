@@ -64,10 +64,11 @@ class EdgeProcess:
     data_dir: Path
     log_file: Path
     env: dict[str, str] | None = None
+    edge_bin: str | None = None
     process: subprocess.Popen | None = None
 
     def start(self) -> None:
-        expanso_edge = shutil.which("expanso-edge")
+        expanso_edge = self.edge_bin or os.environ.get("EXPANSO_EDGE_BIN") or shutil.which("expanso-edge")
         if not expanso_edge:
             raise RuntimeError("expanso-edge not found in PATH")
 
@@ -203,7 +204,7 @@ def wait_for_port(port: int, timeout: float = 45.0) -> bool:
 
 
 def wait_for_api(endpoint: str, timeout: float = 10.0) -> bool:
-    expanso_cli = shutil.which("expanso-cli")
+    expanso_cli = os.environ.get("EXPANSO_CLI_BIN") or shutil.which("expanso-cli")
     if not expanso_cli:
         raise RuntimeError("expanso-cli not found in PATH")
     deadline = time.time() + timeout

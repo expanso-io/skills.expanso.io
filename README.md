@@ -198,6 +198,33 @@ OPENAI_API_KEY=sk-xxx expanso-edge run \
 # Using local backend (Ollama) - set in environment
 OPENAI_BASE_URL=http://localhost:11434/v1 \
 OPENAI_MODEL=llama3.2 \
+
+## Testing
+
+### Run the Skill Test Harness
+
+```bash
+uv run -s scripts/test-skills.py --report /tmp/test-report.json
+```
+
+The harness defaults to:
+- Reusing cached passing results when inputs and pipelines are unchanged
+- Rerunning failed tests up to 3 total attempts
+
+### Test a New Expanso CLI/Edge Cut
+
+If you have a locally built or pre-release binary, point the harness at it:
+
+```bash
+EXPANSO_CLI_BIN=/path/to/expanso-cli \
+EXPANSO_EDGE_BIN=/path/to/expanso-edge \
+uv run -s scripts/test-skills.py --report /tmp/test-report.json
+```
+
+Useful flags:
+- `--no-cache` to force a full run
+- `--no-rerun-failed` to disable retries
+- `--max-reruns 3` to change attempts per test
 expanso-edge run --config skills/text-summarize/pipeline-cli.yaml
 ```
 

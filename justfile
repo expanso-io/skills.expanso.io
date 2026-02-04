@@ -24,6 +24,10 @@ list-skills:
 search QUERY:
     uv run -s scripts/skill-lookup.py search {{QUERY}}
 
+# Run skill tests (pass through args)
+test-skills *ARGS:
+    uv run -s scripts/test-skills.py {{ARGS}}
+
 # Copy catalog and skills to docs (for local testing)
 # Uses flat structure: docs/<skill-name>/
 prep-docs:
