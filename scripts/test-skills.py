@@ -836,18 +836,20 @@ def main() -> int:
                 continue
 
             if not wait_for_port(port, timeout=45.0):
-                skill_result["tests"].append({
-                    "name": test.get("name"),
-                    "status": "failed",
-                    "reason": "http server did not start",
-                })
-                subprocess.run(
-                    [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-                print(f"    - {test.get('name')}: failed (http server)")
-                continue
+                # One more short wait to avoid flaky startup failures.
+                if not wait_for_port(port, timeout=20.0):
+                    skill_result["tests"].append({
+                        "name": test.get("name"),
+                        "status": "failed",
+                        "reason": "http server did not start",
+                    })
+                    subprocess.run(
+                        [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                    print(f"    - {test.get('name')}: failed (http server)")
+                    continue
 
             url = f"http://127.0.0.1:{port}{path}"
             response = None
