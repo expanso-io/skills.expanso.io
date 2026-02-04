@@ -713,6 +713,15 @@ def failure_signature(entry: dict[str, Any]) -> str:
     return json.dumps(payload, sort_keys=True, default=str)
 
 
+def is_permanent_failure(entry: dict[str, Any]) -> bool:
+    history = entry.get("history") or []
+    if len(history) < 2:
+        return False
+    last_sig = failure_signature(history[-1])
+    prev_sig = failure_signature(history[-2])
+    return last_sig == prev_sig
+
+
 def record_attempt(entry: dict[str, Any], result: dict[str, Any]) -> None:
     history = entry.setdefault("history", [])
     history.append({
@@ -723,6 +732,8 @@ def record_attempt(entry: dict[str, Any], result: dict[str, Any]) -> None:
     })
     entry.update(result)
     entry["attempts"] = len(history)
+    if entry.get("status") == "failed" and is_permanent_failure(entry):
+        entry["permanent_failure"] = True
 
 
 def execute_test(
@@ -1060,7 +1071,7 @@ def main() -> int:
                 print("      response:", json.dumps(result.get("output", {}), indent=2))
             total_tests_run += 1
 
-            if result["status"] == "failed" and is_transient_failure(test_entry):
+            if result["status"] == "failed" and args.rerun_failed:
                 rerun_candidates.append({
                     "category": category,
                     "skill_name": skill_name,
@@ -1097,6 +1108,8 @@ def main() -> int:
             print(f"\n==> Rerun failed tests (attempt {attempts}/{args.max_reruns})")
             next_remaining: list[dict[str, Any]] = []
             for ctx in remaining:
+                if ctx["test_entry"].get("permanent_failure"):
+                    continue
                 result, _ = execute_test(
                     skill_name=ctx["skill_name"],
                     pipeline_mcp_path=ctx["pipeline_mcp_path"],
@@ -1109,7 +1122,7 @@ def main() -> int:
                 )
                 record_attempt(ctx["test_entry"], result)
                 print(f"    - {ctx['category']}/{ctx['skill_name']} :: {ctx['test_name']}: {result['status']}")
-                if result["status"] == "failed" and is_transient_failure(ctx["test_entry"]):
+                if result["status"] == "failed" and not ctx["test_entry"].get("permanent_failure"):
                     next_remaining.append(ctx)
             remaining = next_remaining
 
