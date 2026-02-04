@@ -13,6 +13,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -122,6 +123,64 @@ def find_skills(names: list[str] | None) -> list[Path]:
                 continue
             skill_dirs.append(skill)
     return skill_dirs
+
+
+def cache_key(category: str, skill_name: str, test_name: str | None) -> str:
+    return f"{category}/{skill_name}:{test_name or ''}"
+
+
+def load_previous_report(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    try:
+        with open(path, "r") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def build_cache_index(report: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+    if not report:
+        return {}
+    index: dict[str, dict[str, Any]] = {}
+    for skill in report.get("skills", []) if isinstance(report, dict) else []:
+        category = skill.get("category") or ""
+        name = skill.get("name") or ""
+        for test in skill.get("tests", []) or []:
+            key = cache_key(category, name, test.get("name"))
+            index[key] = test
+    return index
+
+
+def hash_bytes(*parts: bytes) -> str:
+    h = hashlib.sha256()
+    for part in parts:
+        h.update(part)
+    return h.hexdigest()
+
+
+def compute_test_fingerprint(
+    skill_dir: Path,
+    test: dict[str, Any],
+    input_value: str,
+    env_overrides: dict[str, Any],
+    mock_openai: bool,
+    harness_hash: str,
+) -> str:
+    h = hashlib.sha256()
+    for path in (
+        skill_dir / "pipeline-mcp.yaml",
+        skill_dir / "skill.yaml",
+        skill_dir / "test" / "test.yaml",
+    ):
+        if path.exists():
+            h.update(path.read_bytes())
+    h.update(json.dumps(test, sort_keys=True, default=str).encode())
+    h.update(str(input_value).encode())
+    h.update(json.dumps(env_overrides, sort_keys=True, default=str).encode())
+    h.update(b"mock_openai=1" if mock_openai else b"mock_openai=0")
+    h.update(harness_hash.encode())
+    return h.hexdigest()
 
 
 def find_free_port() -> int:
@@ -632,6 +691,159 @@ def check_expectations(expected: dict[str, Any], output: dict[str, Any], status_
     return len(errors) == 0, errors
 
 
+def is_transient_failure(entry: dict[str, Any]) -> bool:
+    reason = (entry.get("reason") or "").lower()
+    if "http server did not start" in reason:
+        return True
+    if "request error" in reason:
+        return True
+    if "timeout" in reason:
+        return True
+    if "connection" in reason:
+        return True
+    return False
+
+
+def failure_signature(entry: dict[str, Any]) -> str:
+    payload = {
+        "reason": entry.get("reason"),
+        "errors": entry.get("errors") or [],
+        "status_code": entry.get("status_code"),
+    }
+    return json.dumps(payload, sort_keys=True, default=str)
+
+
+def record_attempt(entry: dict[str, Any], result: dict[str, Any]) -> None:
+    history = entry.setdefault("history", [])
+    history.append({
+        "status": result.get("status"),
+        "reason": result.get("reason"),
+        "errors": result.get("errors"),
+        "status_code": result.get("status_code"),
+    })
+    entry.update(result)
+    entry["attempts"] = len(history)
+
+
+def execute_test(
+    skill_name: str,
+    pipeline_mcp_path: Path,
+    input_value: str,
+    payload: dict[str, Any],
+    expected: dict[str, Any],
+    api_url: str,
+    expanso_cli: str,
+    mock_openai: bool,
+) -> tuple[dict[str, Any], bool]:
+    pipeline_spec = load_yaml(pipeline_mcp_path)
+    if not pipeline_spec:
+        return {
+            "status": "failed",
+            "reason": "failed to parse pipeline-mcp.yaml",
+            "errors": [],
+            "status_code": 0,
+            "output": {},
+        }, True
+
+    port = find_free_port()
+    config = pipeline_spec.setdefault("config", {})
+    input_cfg = config.get("input", {})
+    http_server = input_cfg.get("http_server") if isinstance(input_cfg, dict) else None
+    if not isinstance(http_server, dict):
+        return {
+            "status": "failed",
+            "reason": "pipeline-mcp has no http_server input",
+            "errors": [],
+            "status_code": 0,
+            "output": {},
+        }, True
+
+    http_server["address"] = f"127.0.0.1:{port}"
+    config.pop("http", None)
+    path = http_server.get("path", "/")
+    allowed = http_server.get("allowed_verbs", ["POST"])
+    method = allowed[0] if isinstance(allowed, list) and allowed else "POST"
+
+    if mock_openai:
+        processors = config.get("pipeline", {}).get("processors", [])
+        if isinstance(processors, list):
+            apply_openai_mocks(processors, skill_name, expected, str(input_value))
+
+    pipeline_spec["name"] = f"{skill_name}-mcp-test-{port}"
+
+    temp_job = Path(tempfile.mkdtemp(prefix="expanso-job-")) / "job.yaml"
+    with open(temp_job, "w") as f:
+        yaml.safe_dump(pipeline_spec, f, sort_keys=False)
+
+    deploy = subprocess.run(
+        [expanso_cli, "job", "deploy", str(temp_job), "--endpoint", api_url],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if deploy.returncode != 0:
+        return {
+            "status": "failed",
+            "reason": f"job deploy failed: {deploy.stderr.strip()}",
+            "errors": [],
+            "status_code": 0,
+            "output": {},
+        }, False
+
+    if not wait_for_port(port, timeout=45.0):
+        if not wait_for_port(port, timeout=20.0):
+            subprocess.run(
+                [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            return {
+                "status": "failed",
+                "reason": "http server did not start",
+                "errors": [],
+                "status_code": 0,
+                "output": {},
+            }, False
+
+    url = f"http://127.0.0.1:{port}{path}"
+    status_code = 0
+    output: dict[str, Any] = {}
+    try:
+        response = requests.request(method, url, json=payload, timeout=30)
+        status_code = response.status_code
+        if response.text:
+            output = response.json()
+    except Exception as exc:
+        subprocess.run(
+            [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        return {
+            "status": "failed",
+            "reason": f"request error: {exc}",
+            "errors": [],
+            "status_code": 0,
+            "output": {},
+        }, False
+
+    ok, errors = check_expectations(expected, output, status_code)
+    result = {
+        "status": "passed" if ok else "failed",
+        "errors": errors,
+        "status_code": status_code,
+        "output": output,
+    }
+
+    subprocess.run(
+        [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+    return result, False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run Expanso skill tests in local Edge mode")
     parser.add_argument("skills", nargs="*", help="Skill names to test")
@@ -643,6 +855,11 @@ def main() -> int:
     parser.add_argument("--allow-external", action="store_true", help="Run tests even if credentials are missing")
     parser.add_argument("--mock-openai", dest="mock_openai", action="store_true", default=True, help="Mock OpenAI processors (default)")
     parser.add_argument("--no-mock-openai", dest="mock_openai", action="store_false", help="Disable OpenAI mocking")
+    parser.add_argument("--rerun-failed", dest="rerun_failed", action="store_true", default=True, help="Automatically rerun failed tests (default)")
+    parser.add_argument("--no-rerun-failed", dest="rerun_failed", action="store_false", help="Disable automatic reruns")
+    parser.add_argument("--max-reruns", type=int, default=3, help="Maximum total attempts per test (default: 3)")
+    parser.add_argument("--use-cache", dest="use_cache", action="store_true", default=True, help="Reuse cached passing results when inputs are unchanged (default)")
+    parser.add_argument("--no-cache", dest="use_cache", action="store_false", help="Disable cached results")
     parser.add_argument("--respect-skip", action="store_true", help="Respect skip flags in test.yaml (default: run anyway)")
     parser.add_argument("--test-name", type=str, default=None, help="Run only tests whose name contains this string")
     parser.add_argument("--show-io", action="store_true", help="Print request/response for each executed test")
@@ -651,6 +868,11 @@ def main() -> int:
     skills = find_skills(args.skills or None)
     if args.limit_skills:
         skills = skills[: args.limit_skills]
+
+    report_path = Path(args.report)
+    previous_report = load_previous_report(report_path) if args.use_cache else None
+    cache_index = build_cache_index(previous_report)
+    harness_hash = hash_bytes(Path(__file__).read_bytes())
 
     report = {
         "started_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
@@ -672,7 +894,12 @@ def main() -> int:
             edge.stop()
             return 1
 
+    expanso_cli = shutil.which("expanso-cli")
+    if not expanso_cli:
+        raise RuntimeError("expanso-cli not found in PATH")
+
     total_tests_run = 0
+    rerun_candidates: list[dict[str, Any]] = []
 
     for skill_dir in skills:
         skill_name = skill_dir.name
@@ -696,7 +923,6 @@ def main() -> int:
             skill_result["status"] = "skipped"
             skill_result["reason"] = "no tests defined"
             report["skills"].append(skill_result)
-            report["summary"]["skipped"] += 1
             print("  - skipped (no tests)")
             continue
 
@@ -704,7 +930,6 @@ def main() -> int:
             skill_result["status"] = "manual"
             skill_result["reason"] = "missing pipeline-mcp.yaml"
             report["skills"].append(skill_result)
-            report["summary"]["manual"] += 1
             print("  - manual (missing pipeline-mcp.yaml)")
             continue
 
@@ -716,16 +941,13 @@ def main() -> int:
             skill_result["status"] = "skipped"
             skill_result["reason"] = "tests empty"
             report["skills"].append(skill_result)
-            report["summary"]["skipped"] += 1
             print("  - skipped (tests empty)")
             continue
 
-        # Skip if all tests are marked skip and we respect skip flags
         if args.respect_skip and all(t.get("skip") for t in tests):
             skill_result["status"] = "skipped"
             skill_result["reason"] = "tests skipped"
             report["skills"].append(skill_result)
-            report["summary"]["skipped"] += 1
             print("  - skipped (tests marked skip)")
             continue
 
@@ -735,11 +957,11 @@ def main() -> int:
             skill_result["status"] = "skipped"
             skill_result["reason"] = f"missing credentials: {', '.join(missing)}"
             report["skills"].append(skill_result)
-            report["summary"]["skipped"] += 1
             print(f"  - skipped (missing credentials: {', '.join(missing)})")
             continue
 
         skill_inputs = skill_yaml.get("inputs", []) if isinstance(skill_yaml, dict) else []
+        fatal_manual = False
 
         for test in tests:
             if args.limit_tests and total_tests_run >= args.limit_tests:
@@ -774,152 +996,145 @@ def main() -> int:
                         "reason": f"failed to read input_file: {exc}",
                     })
                     print(f"    - {test.get('name')}: failed (input_file read)")
+                    total_tests_run += 1
                     continue
 
             env_overrides = parse_env_overrides(test.get("env"), skill_inputs)
             payload = build_payload(str(input_value), skill_inputs, env_overrides)
-
-            # Prepare job spec with patched HTTP address + mocked processors
-            pipeline_spec = load_yaml(pipeline_mcp_path)
-            if not pipeline_spec:
-                skill_result["status"] = "manual"
-                skill_result["reason"] = "failed to parse pipeline-mcp.yaml"
-                report["skills"].append(skill_result)
-                report["summary"]["manual"] += 1
-                print("  - manual (failed to parse pipeline-mcp.yaml)")
-                break
-
-            port = find_free_port()
-            config = pipeline_spec.setdefault("config", {})
-            input_cfg = config.get("input", {})
-            http_server = input_cfg.get("http_server") if isinstance(input_cfg, dict) else None
-            if not isinstance(http_server, dict):
-                skill_result["status"] = "manual"
-                skill_result["reason"] = "pipeline-mcp has no http_server input"
-                report["skills"].append(skill_result)
-                report["summary"]["manual"] += 1
-                print("  - manual (no http_server input)")
-                break
-
-            http_server["address"] = f"127.0.0.1:{port}"
-            config.pop("http", None)
-            path = http_server.get("path", "/")
-            allowed = http_server.get("allowed_verbs", ["POST"])
-            method = allowed[0] if isinstance(allowed, list) and allowed else "POST"
-
             expected = test.get("expected", {}) or {}
-            if args.mock_openai:
-                processors = config.get("pipeline", {}).get("processors", [])
-                if isinstance(processors, list):
-                    apply_openai_mocks(processors, skill_name, expected, str(input_value))
 
-            pipeline_spec["name"] = f"{skill_name}-mcp-test-{port}"
-
-            temp_job = Path(tempfile.mkdtemp(prefix="expanso-job-")) / "job.yaml"
-            with open(temp_job, "w") as f:
-                yaml.safe_dump(pipeline_spec, f, sort_keys=False)
-
-            expanso_cli = shutil.which("expanso-cli")
-            deploy = subprocess.run(
-                [expanso_cli, "job", "deploy", str(temp_job), "--endpoint", api_url],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
+            fingerprint = compute_test_fingerprint(
+                skill_dir,
+                test,
+                str(input_value),
+                env_overrides,
+                args.mock_openai,
+                harness_hash,
             )
-            if deploy.returncode != 0:
-                skill_result["tests"].append({
-                    "name": test.get("name"),
-                    "status": "failed",
-                    "reason": f"job deploy failed: {deploy.stderr.strip()}",
-                })
-                print(f"    - {test.get('name')}: failed (job deploy)")
-                continue
 
-            if not wait_for_port(port, timeout=45.0):
-                # One more short wait to avoid flaky startup failures.
-                if not wait_for_port(port, timeout=20.0):
-                    skill_result["tests"].append({
-                        "name": test.get("name"),
-                        "status": "failed",
-                        "reason": "http server did not start",
-                    })
-                    subprocess.run(
-                        [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                    )
-                    print(f"    - {test.get('name')}: failed (http server)")
-                    continue
-
-            url = f"http://127.0.0.1:{port}{path}"
-            response = None
-            status_code = 0
-            output = {}
-            try:
-                response = requests.request(method, url, json=payload, timeout=30)
-                status_code = response.status_code
-                if response.text:
-                    output = response.json()
-            except Exception as exc:
-                skill_result["tests"].append({
-                    "name": test.get("name"),
-                    "status": "failed",
-                    "reason": f"request error: {exc}",
-                })
-                print(f"    - {test.get('name')}: failed (request error)")
-                subprocess.run(
-                    [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-                continue
-
-            ok, errors = check_expectations(expected, output, status_code)
             test_entry = {
                 "name": test.get("name"),
-                "status": "passed" if ok else "failed",
-                "errors": errors,
-                "status_code": status_code,
-                "output": output,
+                "fingerprint": fingerprint,
             }
             if test.get("skip") and not args.respect_skip:
                 test_entry["forced_run"] = True
-            skill_result["tests"].append(test_entry)
-            print(f"    - {test.get('name')}: {'passed' if ok else 'failed'}")
-            if args.show_io:
-                print("      request:", json.dumps(payload, indent=2))
-                print("      response:", json.dumps(output, indent=2))
-            total_tests_run += 1
 
-            subprocess.run(
-                [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+            cache_entry = cache_index.get(cache_key(category, skill_name, test.get("name")))
+            if args.use_cache and cache_entry and cache_entry.get("fingerprint") == fingerprint and cache_entry.get("status") == "passed":
+                test_entry.update({
+                    "status": "passed",
+                    "errors": cache_entry.get("errors", []),
+                    "status_code": cache_entry.get("status_code", 0),
+                    "output": cache_entry.get("output", {}),
+                    "cached": True,
+                    "attempts": cache_entry.get("attempts", 0),
+                })
+                skill_result["tests"].append(test_entry)
+                print(f"    - {test.get('name')}: passed (cached)")
+                total_tests_run += 1
+                continue
+
+            result, fatal_manual = execute_test(
+                skill_name=skill_name,
+                pipeline_mcp_path=pipeline_mcp_path,
+                input_value=str(input_value),
+                payload=payload,
+                expected=expected,
+                api_url=api_url,
+                expanso_cli=expanso_cli,
+                mock_openai=args.mock_openai,
             )
 
-        if args.limit_tests and total_tests_run >= args.limit_tests:
-            skill_result["status"] = "partial"
+            if fatal_manual:
+                skill_result["status"] = "manual"
+                skill_result["reason"] = result.get("reason")
+                print(f"  - manual ({result.get('reason')})")
+                fatal_manual = True
+                break
+
+            record_attempt(test_entry, result)
+            skill_result["tests"].append(test_entry)
+            print(f"    - {test.get('name')}: {result['status']}")
+            if args.show_io:
+                print("      request:", json.dumps(payload, indent=2))
+                print("      response:", json.dumps(result.get("output", {}), indent=2))
+            total_tests_run += 1
+
+            if result["status"] == "failed" and is_transient_failure(test_entry):
+                rerun_candidates.append({
+                    "category": category,
+                    "skill_name": skill_name,
+                    "test_name": test.get("name"),
+                    "pipeline_mcp_path": pipeline_mcp_path,
+                    "input_value": str(input_value),
+                    "payload": payload,
+                    "expected": expected,
+                    "test_entry": test_entry,
+                })
+
+        if fatal_manual:
+            report["skills"].append(skill_result)
+            continue
+
+        failed_tests = [t for t in skill_result["tests"] if t.get("status") == "failed"]
+        if failed_tests:
+            skill_result["status"] = "failed"
+            print("  - status: failed")
         else:
-            failed_tests = [t for t in skill_result["tests"] if t.get("status") == "failed"]
-            if failed_tests:
-                skill_result["status"] = "failed"
-                report["summary"]["failed"] += 1
-                print("  - status: failed")
-            else:
-                skill_result["status"] = "passed"
-                report["summary"]["passed"] += 1
-                print("  - status: passed")
+            skill_result["status"] = "passed"
+            print("  - status: passed")
 
         report["skills"].append(skill_result)
-        report["summary"]["total_skills"] += 1
 
         if args.limit_tests and total_tests_run >= args.limit_tests:
             break
 
+    if args.rerun_failed and rerun_candidates and args.max_reruns > 1:
+        attempts = 1
+        remaining = rerun_candidates
+        while attempts < args.max_reruns and remaining:
+            attempts += 1
+            print(f"\n==> Rerun failed tests (attempt {attempts}/{args.max_reruns})")
+            next_remaining: list[dict[str, Any]] = []
+            for ctx in remaining:
+                result, _ = execute_test(
+                    skill_name=ctx["skill_name"],
+                    pipeline_mcp_path=ctx["pipeline_mcp_path"],
+                    input_value=ctx["input_value"],
+                    payload=ctx["payload"],
+                    expected=ctx["expected"],
+                    api_url=api_url,
+                    expanso_cli=expanso_cli,
+                    mock_openai=args.mock_openai,
+                )
+                record_attempt(ctx["test_entry"], result)
+                print(f"    - {ctx['category']}/{ctx['skill_name']} :: {ctx['test_name']}: {result['status']}")
+                if result["status"] == "failed" and is_transient_failure(ctx["test_entry"]):
+                    next_remaining.append(ctx)
+            remaining = next_remaining
+
     if edge and not args.keep_edge:
         edge.stop()
 
-    report_path = Path(args.report)
+    def finalize_report(report_data: dict[str, Any]) -> None:
+        summary = {"total_skills": 0, "passed": 0, "failed": 0, "skipped": 0, "manual": 0}
+        for skill in report_data.get("skills", []):
+            summary["total_skills"] += 1
+            status = skill.get("status")
+            if status in {"skipped", "manual"}:
+                summary[status] += 1
+                continue
+            failed_tests = [t for t in skill.get("tests", []) if t.get("status") == "failed"]
+            if failed_tests:
+                skill["status"] = "failed"
+                summary["failed"] += 1
+            else:
+                skill["status"] = "passed"
+                summary["passed"] += 1
+        report_data["summary"] = summary
+
+    finalize_report(report)
+
     with open(report_path, "w") as f:
         json.dump(report, f, indent=2)
 
