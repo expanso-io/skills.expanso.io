@@ -16,9 +16,7 @@
     var filterLocal = false;
     var filterNoCreds = false;
 
-    // Base URL for skills - served directly from this site
     var SKILLS_BASE = window.location.origin;
-    // Fallback to GitHub for local development
     var GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/expanso-io/expanso-skills/main';
 
     // DOM Elements
@@ -31,7 +29,6 @@
     var filterLocalCheckbox = document.getElementById('filter-local');
     var filterNoCredsCheckbox = document.getElementById('filter-no-creds');
 
-    // Category colors for badges
     var categoryColors = {
         ai: 'badge-ai',
         security: 'badge-security',
@@ -40,15 +37,12 @@
         workflows: 'badge-workflows'
     };
 
-    // Initialize
     async function init() {
         try {
             await loadCatalog();
             bindEvents();
             filterAndRender();
 
-            // Handle deep link: /skill/<name>
-            // Check sessionStorage first (SPA redirect from 404.html)
             var redirectPath = sessionStorage.getItem('spa-redirect');
             if (redirectPath) {
                 sessionStorage.removeItem('spa-redirect');
@@ -64,14 +58,8 @@
         }
     }
 
-    // Load catalog from GitHub or local
     async function loadCatalog() {
-        var urls = [
-            'catalog.json',
-            '../catalog.json',
-            GITHUB_RAW_BASE + '/catalog.json'
-        ];
-
+        var urls = ['catalog.json', '../catalog.json', GITHUB_RAW_BASE + '/catalog.json'];
         for (var i = 0; i < urls.length; i++) {
             try {
                 var response = await fetch(urls[i]);
@@ -80,44 +68,29 @@
                     skillCountEl.textContent = String(catalog.total_skills);
                     return;
                 }
-            } catch (e) {
-                continue;
-            }
+            } catch (e) { continue; }
         }
-
         throw new Error('Could not load catalog from any source');
     }
 
-    // Fetch a file from the skill directory
-    // Flat structure: skills.expanso.io/<name>/<file>
-    // Fall back to GitHub (with category) for dev
     async function fetchSkillFile(skillName, filename, category) {
         var urls = [
             SKILLS_BASE + '/' + skillName + '/' + filename,
             GITHUB_RAW_BASE + '/skills/' + category + '/' + skillName + '/' + filename
         ];
-
         for (var i = 0; i < urls.length; i++) {
             try {
                 var response = await fetch(urls[i]);
-                if (response.ok) {
-                    return await response.text();
-                }
-            } catch (e) {
-                continue;
-            }
+                if (response.ok) return await response.text();
+            } catch (e) { continue; }
         }
-        console.warn('Could not fetch ' + filename + ' for ' + skillName);
         return null;
     }
 
-    // Get the public URL for a skill file (for users to copy/deploy)
-    // Flat structure: skills.expanso.io/<name>/<file>
     function getSkillUrl(skillName, filename) {
         return 'https://skills.expanso.io/' + skillName + '/' + filename;
     }
 
-    // Bind event listeners
     function bindEvents() {
         searchInput.addEventListener('input', debounce(function(e) {
             searchQuery = e.target.value.toLowerCase().trim();
@@ -159,7 +132,6 @@
             }
         });
 
-        // Handle browser back/forward
         window.addEventListener('popstate', function(e) {
             if (e.state && e.state.skill) {
                 openModal(e.state.skill, true);
@@ -172,58 +144,34 @@
             var copyBtn = e.target.closest('.copy-btn');
             if (copyBtn) {
                 var text = copyBtn.dataset.copy;
-                if (text) {
-                    copyToClipboard(text, copyBtn);
-                }
+                if (text) copyToClipboard(text, copyBtn);
             }
         });
     }
 
-    // Filter skills based on current state
     function filterAndRender() {
         if (!catalog) return;
-
         var skills = Object.entries(catalog.skills);
-
         filteredSkills = skills.filter(function(entry) {
-            var name = entry[0];
-            var skill = entry[1];
-
-            if (currentCategory !== 'all' && skill.category !== currentCategory) {
-                return false;
-            }
-
+            var name = entry[0], skill = entry[1];
+            if (currentCategory !== 'all' && skill.category !== currentCategory) return false;
             if (searchQuery) {
                 var searchStr = (name + ' ' + skill.description).toLowerCase();
-                if (!searchStr.includes(searchQuery)) {
-                    return false;
-                }
+                if (!searchStr.includes(searchQuery)) return false;
             }
-
             if (filterLocal) {
-                var hasLocal = skill.backends.some(function(b) {
-                    return b === 'local' || b === 'ollama';
-                });
-                if (!hasLocal) return false;
+                if (!skill.backends.some(function(b) { return b === 'local' || b === 'ollama'; })) return false;
             }
-
             if (filterNoCreds) {
-                var requiredCreds = skill.credentials.filter(function(c) {
-                    return c.required;
-                });
-                if (requiredCreds.length > 0) return false;
+                if (skill.credentials.filter(function(c) { return c.required; }).length > 0) return false;
             }
-
             return true;
         });
-
         renderSkills();
     }
 
     function showNoResults(message) {
-        while (skillsGrid.firstChild) {
-            skillsGrid.removeChild(skillsGrid.firstChild);
-        }
+        while (skillsGrid.firstChild) skillsGrid.removeChild(skillsGrid.firstChild);
         var div = document.createElement('div');
         div.className = 'no-results';
         div.textContent = message;
@@ -231,20 +179,13 @@
     }
 
     function renderSkills() {
-        while (skillsGrid.firstChild) {
-            skillsGrid.removeChild(skillsGrid.firstChild);
-        }
-
+        while (skillsGrid.firstChild) skillsGrid.removeChild(skillsGrid.firstChild);
         if (filteredSkills.length === 0) {
             showNoResults('No skills found matching your criteria.');
             return;
         }
-
         filteredSkills.forEach(function(entry) {
-            var name = entry[0];
-            var skill = entry[1];
-            var card = createSkillCard(name, skill);
-            skillsGrid.appendChild(card);
+            skillsGrid.appendChild(createSkillCard(entry[0], entry[1]));
         });
     }
 
@@ -255,109 +196,65 @@
 
         var header = document.createElement('div');
         header.className = 'skill-header';
-
         var nameSpan = document.createElement('span');
         nameSpan.className = 'skill-name';
         nameSpan.textContent = name;
-
-        var badges = document.createElement('div');
-        badges.className = 'skill-badges';
-
-        var categoryBadge = document.createElement('span');
-        categoryBadge.className = 'badge ' + (categoryColors[skill.category] || '');
-        categoryBadge.textContent = skill.category;
-        badges.appendChild(categoryBadge);
-
-        var isLocal = skill.backends.some(function(b) {
-            return b === 'local' || b === 'ollama';
-        });
-        if (isLocal) {
-            var localBadge = document.createElement('span');
-            localBadge.className = 'badge badge-local';
-            localBadge.textContent = 'local';
-            badges.appendChild(localBadge);
-        }
-
         header.appendChild(nameSpan);
 
         var desc = document.createElement('p');
         desc.className = 'skill-description';
         desc.textContent = skill.description;
 
+        var badges = document.createElement('div');
+        badges.className = 'skill-badges';
+        var categoryBadge = document.createElement('span');
+        categoryBadge.className = 'badge ' + (categoryColors[skill.category] || '');
+        categoryBadge.textContent = skill.category;
+        badges.appendChild(categoryBadge);
+
+        if (skill.backends.some(function(b) { return b === 'local' || b === 'ollama'; })) {
+            var localBadge = document.createElement('span');
+            localBadge.className = 'badge badge-local';
+            localBadge.textContent = 'local';
+            badges.appendChild(localBadge);
+        }
+
         article.appendChild(header);
         article.appendChild(desc);
         article.appendChild(badges);
-
-        article.addEventListener('click', function() {
-            openModal(name);
-        });
-
+        article.addEventListener('click', function() { openModal(name); });
         return article;
     }
 
-    function getBackendIcon(backend) {
-        var icons = {
-            openai: 'AI',
-            ollama: 'OL',
-            local: 'L',
-            remote: 'R'
-        };
-        return icons[backend] || backend.charAt(0).toUpperCase();
-    }
+    // ── Modal ──────────────────────────────────────────────
 
-    // Open modal with skill details and fetch documentation + pipelines
     async function openModal(skillName, skipPush) {
         var skill = catalog.skills[skillName];
         if (!skill) return;
 
-        // Update URL for deep linking
-        if (!skipPush) {
-            history.pushState({ skill: skillName }, '', '/skill/' + skillName);
-        }
+        if (!skipPush) history.pushState({ skill: skillName }, '', '/skill/' + skillName);
 
-        // Clear and show loading
-        while (modalContent.firstChild) {
-            modalContent.removeChild(modalContent.firstChild);
-        }
-
+        while (modalContent.firstChild) modalContent.removeChild(modalContent.firstChild);
         var loadingDiv = document.createElement('div');
         loadingDiv.className = 'modal-loading';
         loadingDiv.textContent = 'Loading skill details...';
         modalContent.appendChild(loadingDiv);
-
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
 
-        // Fetch files in parallel (pass category for GitHub fallback)
-        var fetchPromises = [
-            fetchSkillFile(skillName, 'README.md', skill.category),
+        var results = await Promise.all([
+            fetchSkillFile(skillName, 'skill.yaml', skill.category),
             fetchSkillFile(skillName, 'pipeline-cli.yaml', skill.category),
-            fetchSkillFile(skillName, 'pipeline-mcp.yaml', skill.category),
-            fetchSkillFile(skillName, 'skill.yaml', skill.category)
-        ];
+            fetchSkillFile(skillName, 'pipeline-mcp.yaml', skill.category)
+        ]);
 
-        var results = await Promise.all(fetchPromises);
-        var readme = results[0];
-        var pipelineCli = results[1];
-        var pipelineMcp = results[2];
-        var skillYaml = results[3];
-
-        // Clear loading
-        while (modalContent.firstChild) {
-            modalContent.removeChild(modalContent.firstChild);
-        }
-
-        // Build modal content
-        buildModalContent(skillName, skill, readme, pipelineCli, pipelineMcp, skillYaml);
-
-        // Apply syntax highlighting
-        if (window.Prism) {
-            Prism.highlightAllUnder(modalContent);
-        }
+        while (modalContent.firstChild) modalContent.removeChild(modalContent.firstChild);
+        buildModalContent(skillName, skill, results[0], results[1], results[2]);
+        if (window.Prism) Prism.highlightAllUnder(modalContent);
     }
 
-    function buildModalContent(skillName, skill, readme, pipelineCli, pipelineMcp, skillYaml) {
-        // Header
+    function buildModalContent(skillName, skill, skillYaml, pipelineCli, pipelineMcp) {
+        // ── Header ──
         var headerDiv = document.createElement('div');
         headerDiv.className = 'modal-header';
 
@@ -376,17 +273,15 @@
         var catBadge = document.createElement('span');
         catBadge.className = 'badge ' + (categoryColors[skill.category] || '');
         catBadge.textContent = skill.category;
+        badgesDiv.appendChild(catBadge);
 
         var verBadge = document.createElement('span');
         verBadge.className = 'badge';
         verBadge.style.background = 'var(--bg-tertiary)';
         verBadge.style.color = 'var(--text-secondary)';
         verBadge.textContent = 'v' + skill.version;
-
-        badgesDiv.appendChild(catBadge);
         badgesDiv.appendChild(verBadge);
 
-        // Add backend badges
         skill.backends.forEach(function(b) {
             var badge = document.createElement('span');
             badge.className = 'badge';
@@ -406,31 +301,25 @@
         headerDiv.appendChild(badgesDiv);
         modalContent.appendChild(headerDiv);
 
-        // Tab navigation for different views
+        // ── Tabs: Spec | Pipeline ──
         var tabNav = document.createElement('div');
         tabNav.className = 'modal-tabs';
 
-        var tabs = [
-            { id: 'overview', label: 'Overview' },
-            { id: 'cli-pipeline', label: 'CLI Pipeline' },
-            { id: 'mcp-pipeline', label: 'MCP Pipeline' }
+        var tabDefs = [
+            { id: 'spec', label: 'Spec' },
+            { id: 'pipeline', label: 'Pipeline' }
         ];
 
         var tabContents = {};
 
-        tabs.forEach(function(tab, index) {
+        tabDefs.forEach(function(tab, index) {
             var tabBtn = document.createElement('button');
             tabBtn.className = 'modal-tab' + (index === 0 ? ' active' : '');
             tabBtn.textContent = tab.label;
             tabBtn.dataset.tab = tab.id;
             tabBtn.addEventListener('click', function() {
-                // Update active tab
-                tabNav.querySelectorAll('.modal-tab').forEach(function(t) {
-                    t.classList.remove('active');
-                });
+                tabNav.querySelectorAll('.modal-tab').forEach(function(t) { t.classList.remove('active'); });
                 tabBtn.classList.add('active');
-
-                // Show corresponding content
                 Object.keys(tabContents).forEach(function(key) {
                     tabContents[key].style.display = key === tab.id ? 'block' : 'none';
                 });
@@ -440,156 +329,160 @@
 
         modalContent.appendChild(tabNav);
 
-        // Overview tab content
-        var overviewContent = document.createElement('div');
-        overviewContent.className = 'tab-content';
-        tabContents['overview'] = overviewContent;
+        // ── SPEC tab ──
+        var specContent = document.createElement('div');
+        specContent.className = 'tab-content';
+        tabContents['spec'] = specContent;
 
-        // Inputs section
+        // Inputs
         if (skill.inputs.length > 0) {
-            var inputsSection = createTableSection('Inputs', ['Name', 'Type', 'Required', 'Default'], skill.inputs.map(function(input) {
-                return [
-                    input.name,
-                    input.type || 'any',
-                    input.required ? 'Yes' : 'No',
-                    input.default !== undefined ? JSON.stringify(input.default) : '-'
-                ];
-            }), [true, false, false, true]);
-            overviewContent.appendChild(inputsSection);
+            specContent.appendChild(createTableSection('Inputs', ['Name', 'Type', 'Required', 'Default'], skill.inputs.map(function(input) {
+                return [input.name, input.type || 'any', input.required ? 'Yes' : 'No', input.default !== undefined ? JSON.stringify(input.default) : '-'];
+            }), [true, false, false, true]));
         }
 
-        // Outputs section
+        // Outputs
         if (skill.outputs.length > 0) {
-            var outputsSection = createTableSection('Outputs', ['Name', 'Type', 'Description'], skill.outputs.map(function(output) {
-                return [
-                    output.name,
-                    output.type || 'any',
-                    output.description || ''
-                ];
-            }), [true, false, false]);
-            overviewContent.appendChild(outputsSection);
+            specContent.appendChild(createTableSection('Outputs', ['Name', 'Type', 'Description'], skill.outputs.map(function(output) {
+                return [output.name, output.type || 'any', output.description || ''];
+            }), [true, false, false]));
         }
 
-        // Credentials section
+        // Credentials
         if (skill.credentials.length > 0) {
-            var credsSection = createTableSection('Credentials', ['Name', 'Required', 'Description'], skill.credentials.map(function(cred) {
-                return [
-                    cred.name,
-                    cred.required ? 'Yes' : 'No',
-                    cred.description || ''
-                ];
-            }), [true, false, false]);
-            overviewContent.appendChild(credsSection);
+            specContent.appendChild(createTableSection('Credentials', ['Name', 'Required', 'Description'], skill.credentials.map(function(cred) {
+                return [cred.name, cred.required ? 'Yes' : 'No', cred.description || ''];
+            }), [true, false, false]));
         }
 
-        // Deploy to Expanso Cloud section
-        var deploySection = document.createElement('div');
-        deploySection.className = 'modal-section';
-        var deployH3 = document.createElement('h3');
-        deployH3.textContent = 'Deploy to Expanso Cloud';
-        deploySection.appendChild(deployH3);
-
-        var deployDesc = document.createElement('p');
-        deployDesc.className = 'deploy-description';
-        deployDesc.textContent = 'Deploy this skill to your Expanso Cloud instance. It will run on your Expanso Edge nodes and be available to OpenClaw via MCP.';
-        deploySection.appendChild(deployDesc);
-
-        // CLI deploy command
-        var cliLabel = document.createElement('div');
-        cliLabel.className = 'field-label';
-        cliLabel.textContent = 'Deploy via CLI';
-        deploySection.appendChild(cliLabel);
-
-        var cliCommand = '# Set your Expanso Cloud endpoint\nexport EXPANSO_CLI_ENDPOINT="https://your-instance.us1.cloud.expanso.io"\n\n# Deploy the skill\nexpanso-cli job deploy ' + getSkillUrl(skillName, 'pipeline-cli.yaml');
-
-        var cliCode = createCodeBlock(cliCommand, 'bash');
-        deploySection.appendChild(cliCode);
-
-        // Cloud UI instructions
-        var cloudLabel = document.createElement('div');
-        cloudLabel.className = 'field-label';
-        cloudLabel.textContent = 'Deploy via Cloud UI';
-        deploySection.appendChild(cloudLabel);
-
-        var cloudInstructions = document.createElement('ol');
-        cloudInstructions.className = 'cloud-instructions';
-        var steps = [
-            'Open cloud.expanso.io and sign in',
-            'Navigate to Pipelines → Add Pipeline',
-            'Paste the Pipeline URL above',
-            'Configure any required credentials',
-            'Deploy to your Edge nodes'
-        ];
-        steps.forEach(function(step) {
-            var li = document.createElement('li');
-            li.textContent = step;
-            cloudInstructions.appendChild(li);
-        });
-        deploySection.appendChild(cloudInstructions);
-
-        overviewContent.appendChild(deploySection);
-
-        // Skill.yaml section
+        // skill.yaml source
         if (skillYaml) {
-            var skillYamlSection = document.createElement('div');
-            skillYamlSection.className = 'modal-section';
-            var skillYamlH3 = document.createElement('h3');
-            skillYamlH3.textContent = 'Skill Definition (skill.yaml)';
-            skillYamlSection.appendChild(skillYamlH3);
-            var skillYamlCode = createCodeBlock(skillYaml, 'yaml');
-            skillYamlSection.appendChild(skillYamlCode);
-            overviewContent.appendChild(skillYamlSection);
+            var yamlSection = document.createElement('div');
+            yamlSection.className = 'modal-section';
+            var yamlH3 = document.createElement('h3');
+            yamlH3.textContent = 'skill.yaml';
+            yamlSection.appendChild(yamlH3);
+            yamlSection.appendChild(createCodeBlock(skillYaml, 'yaml'));
+            specContent.appendChild(yamlSection);
         }
 
-        modalContent.appendChild(overviewContent);
+        modalContent.appendChild(specContent);
 
-        // CLI Pipeline tab content
-        var cliContent = document.createElement('div');
-        cliContent.className = 'tab-content';
-        cliContent.style.display = 'none';
-        tabContents['cli-pipeline'] = cliContent;
+        // ── PIPELINE tab ──
+        var pipelineContent = document.createElement('div');
+        pipelineContent.className = 'tab-content';
+        pipelineContent.style.display = 'none';
+        tabContents['pipeline'] = pipelineContent;
 
-        if (pipelineCli) {
-            var cliDesc = document.createElement('p');
-            cliDesc.className = 'pipeline-description';
-            cliDesc.textContent = 'Standalone CLI pipeline. Reads from stdin, processes data, outputs to stdout.';
-            cliContent.appendChild(cliDesc);
+        // Sub-tabs for CLI vs MCP within Pipeline tab
+        var hasCli = !!pipelineCli;
+        var hasMcp = !!pipelineMcp;
 
-            var cliCodeBlock = createCodeBlock(pipelineCli, 'yaml');
-            cliContent.appendChild(cliCodeBlock);
+        if (!hasCli && !hasMcp) {
+            var noMsg = document.createElement('p');
+            noMsg.className = 'no-content';
+            noMsg.textContent = 'No pipeline available for this skill.';
+            pipelineContent.appendChild(noMsg);
         } else {
-            var noCliMsg = document.createElement('p');
-            noCliMsg.className = 'no-content';
-            noCliMsg.textContent = 'CLI pipeline not available for this skill.';
-            cliContent.appendChild(noCliMsg);
+            // Pipeline sub-tab bar
+            var pipeSubNav = document.createElement('div');
+            pipeSubNav.className = 'pipeline-sub-tabs';
+
+            var pipeSubContents = {};
+            var pipeSubDefs = [];
+            if (hasCli) pipeSubDefs.push({ id: 'cli', label: 'CLI Pipeline', yaml: pipelineCli, file: 'pipeline-cli.yaml', desc: 'Standalone pipeline. Reads from stdin, processes data, outputs to stdout.' });
+            if (hasMcp) pipeSubDefs.push({ id: 'mcp', label: 'MCP Pipeline', yaml: pipelineMcp, file: 'pipeline-mcp.yaml', desc: 'HTTP server pipeline for MCP integration. Exposes an endpoint for AI assistants.' });
+
+            pipeSubDefs.forEach(function(sub, idx) {
+                var btn = document.createElement('button');
+                btn.className = 'pipeline-sub-tab' + (idx === 0 ? ' active' : '');
+                btn.textContent = sub.label;
+                btn.addEventListener('click', function() {
+                    pipeSubNav.querySelectorAll('.pipeline-sub-tab').forEach(function(t) { t.classList.remove('active'); });
+                    btn.classList.add('active');
+                    Object.keys(pipeSubContents).forEach(function(k) {
+                        pipeSubContents[k].style.display = k === sub.id ? 'block' : 'none';
+                    });
+                });
+                pipeSubNav.appendChild(btn);
+            });
+
+            pipelineContent.appendChild(pipeSubNav);
+
+            pipeSubDefs.forEach(function(sub, idx) {
+                var subDiv = document.createElement('div');
+                subDiv.style.display = idx === 0 ? 'block' : 'none';
+                pipeSubContents[sub.id] = subDiv;
+
+                // ── Copy banner ──
+                var banner = document.createElement('div');
+                banner.className = 'copy-pipeline-banner';
+
+                var bannerLeft = document.createElement('div');
+                bannerLeft.className = 'copy-banner-text';
+
+                var bannerIcon = document.createElement('span');
+                bannerIcon.className = 'copy-banner-icon';
+                bannerIcon.textContent = '📋';
+                bannerLeft.appendChild(bannerIcon);
+
+                var bannerInfo = document.createElement('div');
+                var bannerTitle = document.createElement('div');
+                bannerTitle.className = 'copy-banner-title';
+                bannerTitle.textContent = 'Ready to deploy?';
+                var bannerSub = document.createElement('div');
+                bannerSub.className = 'copy-banner-subtitle';
+                bannerSub.textContent = 'Copy this pipeline and paste it into Expanso Cloud.';
+                bannerInfo.appendChild(bannerTitle);
+                bannerInfo.appendChild(bannerSub);
+                bannerLeft.appendChild(bannerInfo);
+
+                var copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-pipeline-btn';
+                copyBtn.textContent = 'Copy Full Pipeline';
+                copyBtn.addEventListener('click', function() {
+                    copyToClipboard(sub.yaml, copyBtn).then(function() {
+                        copyBtn.textContent = '✅ Copied!';
+                        copyBtn.classList.add('copied-state');
+                        setTimeout(function() {
+                            copyBtn.textContent = 'Copy Full Pipeline';
+                            copyBtn.classList.remove('copied-state');
+                        }, 2500);
+                    });
+                });
+
+                banner.appendChild(bannerLeft);
+                banner.appendChild(copyBtn);
+                subDiv.appendChild(banner);
+
+                // Description
+                var descEl = document.createElement('p');
+                descEl.className = 'pipeline-description';
+                descEl.textContent = sub.desc;
+                subDiv.appendChild(descEl);
+
+                // Code block
+                subDiv.appendChild(createCodeBlock(sub.yaml, 'yaml'));
+
+                // Deploy section
+                var deployDiv = document.createElement('div');
+                deployDiv.className = 'modal-section';
+                var deployH3 = document.createElement('h3');
+                deployH3.textContent = 'Deploy';
+                deployDiv.appendChild(deployH3);
+
+                var deployCmd = 'expanso-cli job deploy ' + getSkillUrl(skillName, sub.file);
+                deployDiv.appendChild(createCodeBlock(deployCmd, 'bash'));
+
+                subDiv.appendChild(deployDiv);
+
+                pipelineContent.appendChild(subDiv);
+            });
         }
 
-        modalContent.appendChild(cliContent);
+        modalContent.appendChild(pipelineContent);
 
-        // MCP Pipeline tab content
-        var mcpContent = document.createElement('div');
-        mcpContent.className = 'tab-content';
-        mcpContent.style.display = 'none';
-        tabContents['mcp-pipeline'] = mcpContent;
-
-        if (pipelineMcp) {
-            var mcpDesc = document.createElement('p');
-            mcpDesc.className = 'pipeline-description';
-            mcpDesc.textContent = 'HTTP server pipeline for MCP integration. Exposes an endpoint for AI assistants.';
-            mcpContent.appendChild(mcpDesc);
-
-            var mcpCodeBlock = createCodeBlock(pipelineMcp, 'yaml');
-            mcpContent.appendChild(mcpCodeBlock);
-        } else {
-            var noMcpMsg = document.createElement('p');
-            noMcpMsg.className = 'no-content';
-            noMcpMsg.textContent = 'MCP pipeline not available for this skill.';
-            mcpContent.appendChild(noMcpMsg);
-        }
-
-        modalContent.appendChild(mcpContent);
-
-        // Actions
+        // ── Footer actions ──
         var actionsDiv = document.createElement('div');
         actionsDiv.className = 'modal-actions';
 
@@ -599,10 +492,12 @@
         githubLink.rel = 'noopener';
         githubLink.className = 'btn btn-primary';
         githubLink.textContent = 'View Source';
-
         actionsDiv.appendChild(githubLink);
+
         modalContent.appendChild(actionsDiv);
     }
+
+    // ── Helpers ──────────────────────────────────────────────
 
     function createCodeBlock(code, language) {
         var wrapper = document.createElement('div');
@@ -619,7 +514,6 @@
 
         wrapper.appendChild(pre);
         wrapper.appendChild(copyBtn);
-
         return wrapper;
     }
 
@@ -694,43 +588,46 @@
         svg.appendChild(rect);
         svg.appendChild(path);
         button.appendChild(svg);
-
         return button;
     }
 
     function closeModal(skipPush) {
         modalOverlay.classList.remove('active');
         document.body.style.overflow = '';
-        // Reset URL to homepage
-        if (!skipPush) {
-            history.pushState({}, '', '/');
-        }
+        if (!skipPush) history.pushState({}, '', '/');
     }
 
     async function copyToClipboard(text, button) {
         try {
             await navigator.clipboard.writeText(text);
-            button.classList.add('copied');
-            var originalTitle = button.title;
-            button.title = 'Copied!';
-            setTimeout(function() {
-                button.classList.remove('copied');
-                button.title = originalTitle;
-            }, 1500);
+            if (button) {
+                button.classList.add('copied');
+                var originalTitle = button.title;
+                button.title = 'Copied!';
+                setTimeout(function() {
+                    button.classList.remove('copied');
+                    button.title = originalTitle;
+                }, 1500);
+            }
         } catch (err) {
-            console.error('Failed to copy:', err);
+            // Fallback
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
         }
     }
 
     function debounce(fn, delay) {
         var timeoutId;
         return function() {
-            var context = this;
-            var args = arguments;
+            var context = this, args = arguments;
             clearTimeout(timeoutId);
-            timeoutId = setTimeout(function() {
-                fn.apply(context, args);
-            }, delay);
+            timeoutId = setTimeout(function() { fn.apply(context, args); }, delay);
         };
     }
 

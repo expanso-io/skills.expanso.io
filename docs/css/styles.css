@@ -805,6 +805,99 @@ code[class*="language-"] {
     color: #c5c8c6 !important;
 }
 
+/* Copy Pipeline Banner */
+.copy-pipeline-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    border-radius: var(--radius);
+    border: 2px solid var(--accent);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.02) 100%);
+}
+
+.copy-banner-text {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.copy-banner-icon {
+    font-size: 1.4rem;
+}
+
+.copy-banner-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.copy-banner-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.copy-pipeline-btn {
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.copy-pipeline-btn:hover {
+    background: var(--accent-hover, #5558e6);
+    transform: translateY(-1px);
+}
+
+.copy-pipeline-btn:active {
+    transform: translateY(0);
+}
+
+.copy-pipeline-btn.copied-state {
+    background: #2e7d32;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
+}
+
+/* Pipeline sub-tabs (CLI / MCP) */
+.pipeline-sub-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.pipeline-sub-tab {
+    padding: 0.5rem 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.pipeline-sub-tab:hover {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+.pipeline-sub-tab.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(99, 102, 241, 0.08);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .hero h1 {
