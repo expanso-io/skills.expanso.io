@@ -46,6 +46,18 @@
             await loadCatalog();
             bindEvents();
             filterAndRender();
+
+            // Handle deep link: /skill/<name>
+            // Check sessionStorage first (SPA redirect from 404.html)
+            var redirectPath = sessionStorage.getItem('spa-redirect');
+            if (redirectPath) {
+                sessionStorage.removeItem('spa-redirect');
+                history.replaceState(null, '', redirectPath);
+            }
+            var match = window.location.pathname.match(/^\/skill\/([^/]+)\/?$/);
+            if (match && catalog.skills[match[1]]) {
+                openModal(match[1], true);
+            }
         } catch (error) {
             console.error('Failed to initialize:', error);
             showNoResults('Failed to load skills. Please refresh the page.');
@@ -144,6 +156,15 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
                 closeModal();
+            }
+        });
+
+        // Handle browser back/forward
+        window.addEventListener('popstate', function(e) {
+            if (e.state && e.state.skill) {
+                openModal(e.state.skill, true);
+            } else {
+                closeModal(true);
             }
         });
 
@@ -285,9 +306,14 @@
     }
 
     // Open modal with skill details and fetch documentation + pipelines
-    async function openModal(skillName) {
+    async function openModal(skillName, skipPush) {
         var skill = catalog.skills[skillName];
         if (!skill) return;
+
+        // Update URL for deep linking
+        if (!skipPush) {
+            history.pushState({ skill: skillName }, '', '/skill/' + skillName);
+        }
 
         // Clear and show loading
         while (modalContent.firstChild) {
@@ -672,9 +698,13 @@
         return button;
     }
 
-    function closeModal() {
+    function closeModal(skipPush) {
         modalOverlay.classList.remove('active');
         document.body.style.overflow = '';
+        // Reset URL to homepage
+        if (!skipPush) {
+            history.pushState({}, '', '/');
+        }
     }
 
     async function copyToClipboard(text, button) {
