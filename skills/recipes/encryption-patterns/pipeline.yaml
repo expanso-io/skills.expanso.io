@@ -1,0 +1,199 @@
+name: encryption-patterns-complete
+type: pipeline
+description: Production-ready field-level encryption supporting PCI-DSS, GDPR, CCPA, HIPAA compliance.
+namespace: production
+labels:
+  category: data-security
+  pattern: encryption
+  compliance: pci-gdpr-hipaa
+
+config:
+  input:
+    http_server:
+      address: "0.0.0.0:8080"
+      path: "/encrypt"
+      allowed_verbs: ["POST"]
+      timeout: "30s"
+
+  pipeline:
+    processors:
+      # Input validation
+      - mapping: |
+          let required_fields = ["payment.card_number", "customer.email"]
+          let missing_fields = required_fields.filter(field -> this.get(field) == null)
+
+          root = if missing_fields.length() > 0 {
+            throw("Missing required fields: " + missing_fields.join(", "))
+          } else {
+            this
+          }
+
+          root.processing_metadata = {
+            "pipeline_version": env("PIPELINE_VERSION").or("2.1.0"),
+            "node_id": env("NODE_ID").or("unknown"),
+            "processing_start": now()
+          }
+
+      # PATTERN 1: Payment Card Encryption (PCI-DSS)
+      - mapping: |
+          root = this
+
+          root.payment.card_brand = if this.payment.card_number.exists() {
+            let card_num = this.payment.card_number.re_replace_all("[^0-9]", "")
+            match {
+              card_num.re_match("^4[0-9]{12,18}$") => "visa"
+              card_num.re_match("^5[1-5][0-9]{14}$") => "mastercard"
+              card_num.re_match("^3[47][0-9]{13}$") => "american_express"
+              card_num.re_match("^6011[0-9]{12}$") => "discover"
+              _ => "unknown"
+            }
+          }
+
+          let card_num = this.payment.card_number.re_replace_all("[^0-9]", "")
+          root.payment.card_last_four = if card_num.length() >= 8 { card_num.slice(-4) }
+          root.payment.card_bin = if card_num.length() >= 8 { card_num.slice(0, 6) }
+
+          root.payment.card_number_encrypted = if this.payment.card_number.exists() {
+            this.payment.card_number.encrypt_aes("gcm", env("PAYMENT_ENCRYPTION_KEY"))
+          }
+
+          root.payment.cvv_encrypted = if this.payment.cvv.exists() {
+            this.payment.cvv.encrypt_aes("gcm", env("PAYMENT_ENCRYPTION_KEY"))
+          }
+
+          root.payment = this.payment.without("card_number", "cvv", "cardholder_name")
+
+      # PATTERN 2: Personal Data Encryption (GDPR/CCPA)
+      - mapping: |
+          root = this
+
+          root.customer.email_domain = if this.customer.email.exists() {
+            let email = this.customer.email.lowercase()
+            if email.re_match("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") {
+              email.split("@").index(1)
+            }
+          }
+
+          root.customer.email_encrypted = if this.customer.email.exists() {
+            this.customer.email.encrypt_aes("gcm", env("PII_ENCRYPTION_KEY"))
+          }
+
+          root.customer.phone_encrypted = if this.customer.phone.exists() {
+            this.customer.phone.encrypt_aes("gcm", env("PII_ENCRYPTION_KEY"))
+          }
+
+          let ssn_normalized = if this.customer.ssn.exists() {
+            this.customer.ssn.re_replace_all("[^0-9]", "")
+          }
+
+          root.customer.ssn_last_four = if ssn_normalized.exists() && ssn_normalized.length() == 9 {
+            ssn_normalized.slice(-4)
+          }
+
+          root.customer.ssn_encrypted = if this.customer.ssn.exists() {
+            this.customer.ssn.encrypt_aes("gcm", env("PII_ENCRYPTION_KEY"))
+          }
+
+          root.customer = this.customer.without("email", "phone", "ssn", "first_name", "last_name")
+
+      # PATTERN 3: Address Encryption
+      - mapping: |
+          root = this
+
+          root.billing_address.zip_prefix = if this.billing_address.zip.exists() {
+            let zip_clean = this.billing_address.zip.re_replace_all("[^0-9]", "")
+            if zip_clean.length() >= 3 { zip_clean.slice(0, 3) }
+          }
+
+          root.billing_address.street_encrypted = if this.billing_address.street.exists() {
+            this.billing_address.street.encrypt_aes("gcm", env("ADDRESS_ENCRYPTION_KEY"))
+          }
+
+          root.billing_address.zip_encrypted = if this.billing_address.zip.exists() {
+            this.billing_address.zip.encrypt_aes("gcm", env("ADDRESS_ENCRYPTION_KEY"))
+          }
+
+          root.billing_address = this.billing_address.without("street", "zip")
+
+      # PATTERN 4: Temporal Data Encryption (HIPAA)
+      - mapping: |
+          root = this
+
+          let birth_date_parsed = if this.customer.date_of_birth.exists() {
+            this.customer.date_of_birth.parse_timestamp("2006-01-02")
+          }
+
+          root.customer.birth_year = if birth_date_parsed.exists() {
+            birth_date_parsed.ts_format("2006").number()
+          }
+
+          root.customer.age_range = if root.customer.birth_year.exists() {
+            let current_year = now().ts_format("2006").number()
+            let age = current_year - root.customer.birth_year
+            match {
+              age < 18 => "under_18"
+              age < 35 => "18_to_34"
+              age < 55 => "35_to_54"
+              age < 65 => "55_to_64"
+              _ => "65_plus"
+            }
+          }
+
+          root.customer.date_of_birth_encrypted = if this.customer.date_of_birth.exists() {
+            this.customer.date_of_birth.encrypt_aes("gcm", env("TEMPORAL_ENCRYPTION_KEY"))
+          }
+
+          root.customer.date_of_birth = deleted()
+
+      # Final validation
+      - mapping: |
+          root = this
+
+          let validation_errors = [
+            if this.payment.card_number.exists() { "payment.card_number still in plaintext" },
+            if this.customer.email.exists() { "customer.email still in plaintext" },
+            if this.customer.ssn.exists() { "customer.ssn still in plaintext" }
+          ].filter(v -> v != null)
+
+          root = if validation_errors.length() > 0 {
+            throw("Encryption validation failed: " + validation_errors.join(", "))
+          } else {
+            this
+          }
+
+          root.processing_metadata.processing_complete = now()
+          root.processing_metadata.encryption_status = "success"
+
+  output:
+    broker:
+      pattern: fan_out
+      outputs:
+        # Primary encrypted data
+        - file:
+            path: "./encrypted-data-${!timestamp_unix()}.jsonl"
+            codec: "lines"
+
+        # Audit trail
+        - file:
+            path: "./audit-trail-${!timestamp_unix()}.jsonl"
+            codec: "lines"
+            processors:
+              - mapping: |
+                  root = {
+                    "audit_id": "enc_" + uuid_v4(),
+                    "timestamp": now(),
+                    "event_type": "field_level_encryption_complete",
+                    "node_id": env("NODE_ID").or("unknown"),
+                    "encryption_summary": {
+                      "fields_encrypted": 8,
+                      "compliance_standards_met": ["PCI-DSS", "GDPR", "CCPA", "HIPAA"]
+                    }
+                  }
+
+logger:
+  level: "INFO"
+  format: json
+
+metrics:
+  prometheus:
+    path: "/metrics"

@@ -1,0 +1,134 @@
+# Nightly Database Backup Pipeline
+# Simple, reliable replication to cloud storage for DR
+#
+# Use case: Nightly backup of orders and inventory tables from
+# on-premise database to cloud cold storage (GCS Nearline/S3 Glacier)
+#
+# Key features:
+# - Full table extract via SQL
+# - Minimal transformation (just add metadata)
+# - Compressed Parquet format for cost efficiency
+# - Date-partitioned storage for easy recovery
+# - Checksum verification
+
+name: nightly-backup-orders
+description: Backup orders and inventory to cloud cold storage
+
+input:
+  # Sequence through multiple tables in one pipeline
+  sequence:
+    inputs:
+      # Orders table
+      - sql_select:
+          driver: postgres  # Or: mysql, odbc, mssql
+          dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=require"
+          table: orders
+          columns: ["*"]
+          where: "updated_at >= CURRENT_DATE - INTERVAL '1 day'"
+        processors:
+          - mapping: |
+              root = this
+              root._table = "orders"
+              root._backup_type = "incremental"
+      
+      # Inventory table (full backup - smaller table)
+      - sql_select:
+          driver: postgres
+          dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=require"
+          table: inventory
+          columns: ["*"]
+        processors:
+          - mapping: |
+              root = this
+              root._table = "inventory"
+              root._backup_type = "full"
+      
+      # Order line items
+      - sql_select:
+          driver: postgres
+          dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=require"
+          table: order_items
+          columns: ["*"]
+          where: "created_at >= CURRENT_DATE - INTERVAL '1 day'"
+        processors:
+          - mapping: |
+              root = this
+              root._table = "order_items"
+              root._backup_type = "incremental"
+
+pipeline:
+  processors:
+    # Step 1: Add backup metadata
+    - mapping: |
+        root = this
+        root._backup_metadata = {
+          "backup_date": now().format("2006-01-02"),
+          "backup_timestamp": now(),
+          "source_host": env("DB_HOST").or("unknown"),
+          "source_database": env("DB_NAME").or("unknown"),
+          "pipeline_version": "1.0.0",
+          "node_id": env("NODE_ID").or("unknown")
+        }
+
+    # Step 2: Calculate row checksum for integrity verification
+    - mapping: |
+        root = this
+        # Create checksum from all original fields (excluding metadata)
+        let data_fields = this.without("_table", "_backup_type", "_backup_metadata")
+        root._checksum = $data_fields.format_json().hash("md5")
+
+output:
+  # Route to different paths based on table
+  switch:
+    cases:
+      - check: this._table == "orders"
+        output:
+          gcp_cloud_storage:
+            bucket: "${GCS_BACKUP_BUCKET}"
+            path: "backups/orders/${!this._backup_metadata.backup_date}/orders-${!timestamp_unix()}.parquet"
+            content_type: application/octet-stream
+            # Use Nearline for backups (accessed < 1x/month)
+            storage_class: NEARLINE
+            batching:
+              count: 10000
+              period: 60s
+            # Enable Parquet encoding for compression
+            parquet_encoding:
+              compression: SNAPPY
+
+      - check: this._table == "inventory"
+        output:
+          gcp_cloud_storage:
+            bucket: "${GCS_BACKUP_BUCKET}"
+            path: "backups/inventory/${!this._backup_metadata.backup_date}/inventory-full.parquet"
+            content_type: application/octet-stream
+            storage_class: NEARLINE
+            batching:
+              count: 50000  # Inventory is full backup, larger batches
+              period: 120s
+            parquet_encoding:
+              compression: SNAPPY
+
+      - check: this._table == "order_items"
+        output:
+          gcp_cloud_storage:
+            bucket: "${GCS_BACKUP_BUCKET}"
+            path: "backups/order_items/${!this._backup_metadata.backup_date}/items-${!timestamp_unix()}.parquet"
+            content_type: application/octet-stream
+            storage_class: NEARLINE
+            batching:
+              count: 10000
+              period: 60s
+            parquet_encoding:
+              compression: SNAPPY
+
+      # Fallback for unknown tables
+      - output:
+          gcp_cloud_storage:
+            bucket: "${GCS_BACKUP_BUCKET}"
+            path: "backups/unknown/${!this._table}/${!this._backup_metadata.backup_date}/data-${!timestamp_unix()}.json"
+            content_type: application/json
+            storage_class: NEARLINE
+            batching:
+              count: 1000
+              period: 30s

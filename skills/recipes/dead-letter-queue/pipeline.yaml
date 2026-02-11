@@ -1,0 +1,61 @@
+# Dead Letter Queue Pipeline
+name: dead-letter-queue
+description: Handle failed messages with DLQ pattern
+
+input:
+  kafka:
+    addresses:
+      - ${KAFKA_BROKERS:localhost:9092}
+    topics:
+      - ${INPUT_TOPIC:events}
+    consumer_group: expanso-dlq-handler
+
+pipeline:
+  processors:
+    # Try processing with error handling
+    - try:
+        - mapping: |
+            # Simulate processing that might fail
+            root = if this.data == null {
+              throw("Missing required field: data")
+            } else {
+              this
+            }
+            root.processed_at = now()
+            root.status = "success"
+
+    # Catch errors and route to DLQ
+    - catch:
+        - mapping: |
+            root = this
+            root._error = @error
+            root._error_at = now()
+            root._original_topic = @kafka_topic
+            root._retry_count = this._retry_count.or(0) + 1
+            root.status = "failed"
+
+output:
+  switch:
+    cases:
+      # Success → output topic
+      - check: this.status == "success"
+        output:
+          kafka:
+            addresses:
+              - ${KAFKA_BROKERS:localhost:9092}
+            topic: ${OUTPUT_TOPIC:processed-events}
+
+      # Retry-able errors (< 3 retries) → retry topic
+      - check: this.status == "failed" && this._retry_count < 3
+        output:
+          kafka:
+            addresses:
+              - ${KAFKA_BROKERS:localhost:9092}
+            topic: ${RETRY_TOPIC:retry-events}
+
+      # Failed after retries → DLQ
+      - output:
+          kafka:
+            addresses:
+              - ${KAFKA_BROKERS:localhost:9092}
+            topic: ${DLQ_TOPIC:dead-letter-queue}

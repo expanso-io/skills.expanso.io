@@ -1,0 +1,35 @@
+# Rate Limiting Pipeline
+name: rate-limiting
+description: Apply rate limiting with backpressure
+
+input:
+  kafka:
+    addresses:
+      - ${KAFKA_BROKERS:localhost:9092}
+    topics:
+      - ${INPUT_TOPIC:input-events}
+    consumer_group: expanso-rate-limiter
+
+pipeline:
+  processors:
+    # Rate limit to N messages per second
+    - rate_limit:
+        resource: output-rate
+        count: ${RATE_LIMIT:1000}
+
+    # Add rate limit metadata
+    - mapping: |
+        root = this
+        root._rate_limited_at = now()
+
+output:
+  kafka:
+    addresses:
+      - ${KAFKA_BROKERS:localhost:9092}
+    topic: ${OUTPUT_TOPIC:rate-limited-events}
+
+rate_limit_resources:
+  - label: output-rate
+    local:
+      count: ${RATE_LIMIT:1000}
+      interval: 1s

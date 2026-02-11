@@ -1,0 +1,36 @@
+# CSV to JSON Pipeline
+name: csv-to-json
+description: Convert CSV files to JSON with schema inference
+
+input:
+  file:
+    paths:
+      - ${INPUT_DIR:./input}/*.csv
+    scanner:
+      csv:
+        parse_header_row: true
+        lazy_quotes: true
+
+pipeline:
+  processors:
+    # Add source file metadata
+    - mapping: |
+        root = this
+        root._source_file = @path
+        root._converted_at = now()
+
+    # Coerce numeric fields
+    - mapping: |
+        root = this.map_each(item -> match {
+          item.value.re_match("^-?[0-9]+$") => item.value.number(),
+          item.value.re_match("^-?[0-9]+\\.[0-9]+$") => item.value.number(),
+          item.value.lowercase() == "true" => true,
+          item.value.lowercase() == "false" => false,
+          item.value == "" => null,
+          _ => item.value
+        })
+
+output:
+  file:
+    path: "${OUTPUT_DIR:./output}/${!@path.re_replace(\"\\.csv$\", \".json\")}"
+    codec: lines

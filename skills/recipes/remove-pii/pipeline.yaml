@@ -1,0 +1,127 @@
+name: pii-complete-removal
+description: Complete 5-step PII removal pipeline (GDPR + PCI-DSS compliant)
+type: pipeline
+namespace: default
+priority: 100
+
+labels:
+  compliance: gdpr,pci-dss
+  category: data-security
+  example: remove-pii
+
+config:
+  # Accept events via HTTP POST
+  input:
+    http_server:
+      address: "0.0.0.0:8080"
+      path: /events/ingest
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  # 5-step PII removal transformations
+  pipeline:
+    processors:
+      # Step 1: Delete payment card data (PCI-DSS compliance)
+      - mapping: |
+          root = this
+
+          # Remove credit card number and expiry date
+          # Keep payment type and last 4 digits for analytics
+          root.payment_method = this.payment_method.without(
+            "full_number",
+            "expiry"
+          )
+
+      # Step 2: Hash IP address (GDPR compliance + abuse detection)
+      - mapping: |
+          # Hash IP address with SHA-256 and salt
+          # Preserves uniqueness for rate limiting and abuse detection
+          # while making data GDPR-compliant
+          root.ip_hash = this.ip_address.hash(
+            "sha256",
+            env("IP_SALT").or("")
+          )
+
+          # Remove original IP address
+          root = this.without("ip_address")
+
+      # Step 3: Hash email + extract domain (user counting + org analytics)
+      - mapping: |
+          # Hash the full email address for unique user counting
+          root.email_hash = this.email.hash(
+            "sha256",
+            env("EMAIL_SALT").or("")
+          )
+
+          # Extract domain for organizational analytics
+          # (e.g., "20% of users are @gmail.com")
+          root.email_domain = this.email.split("@").index(1)
+
+          # Remove original email address
+          root = this.without("email")
+
+      # Step 4: Pseudonymize user names (tracking without identity)
+      - mapping: |
+          # Create consistent pseudonymous user ID from name hash
+          # Same name always produces same ID for cross-session tracking
+          root.user_id = "user_" + this.user_name.hash(
+            "sha256",
+            env("USER_SALT").or("")
+          ).slice(0, 12)
+
+          # Remove original user name
+          root = this.without("user_name")
+
+      # Step 5: Generalize location (regional analytics without tracking)
+      - mapping: |
+          # Remove precise GPS coordinates (latitude, longitude)
+          # Keep city, state, country for regional analytics
+          # Achieves k-anonymity (millions share same city)
+          root.location = this.location.without("latitude", "longitude")
+
+  # Send PII-free events to analytics destination
+  output:
+    # Replace with your actual destination
+    # Option 1: File output (for testing)
+    file:
+      path: /var/log/expanso/pii-removed.jsonl
+      codec: lines
+
+    # Option 2: HTTP endpoint (for production)
+    # http_client:
+    #   url: ${ANALYTICS_ENDPOINT}
+    #   verb: POST
+    #   headers:
+    #     Content-Type: application/json
+    #     Authorization: "Bearer ${ANALYTICS_API_KEY}"
+    #   timeout: 10s
+    #   retry_period: 1s
+    #   max_retries: 3
+
+    # Option 3: Kafka (for production)
+    # kafka:
+    #   addresses:
+    #     - kafka-broker1.example.com:9092
+    #     - kafka-broker2.example.com:9092
+    #   topic: pii-removed-events
+    #   compression: snappy
+    #   max_in_flight: 1000
+
+logger:
+  level: INFO
+  format: json
+
+metrics:
+  type: prometheus
+  path: /metrics
+  address: 0.0.0.0:9090
+
+# Production notes:
+# 1. NEVER hardcode salts! Use environment variables or secret management
+# 2. Set IP_SALT, EMAIL_SALT, USER_SALT before deploying:
+#    export IP_SALT=$(openssl rand -hex 32)
+#    export EMAIL_SALT=$(openssl rand -hex 32)
+#    export USER_SALT=$(openssl rand -hex 32)
+# 3. Configure output destination for your analytics system
+# 4. Rotate salts every 90 days (use dual-hashing during transition)
+# 5. Test with sample data before production deployment
