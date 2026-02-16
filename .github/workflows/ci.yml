@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate Skills
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint YAML files
+        run: |
+          yamllint -d relaxed skills/ || true
+
+      - name: Validate skill structure
+        run: |
+          echo "Checking skill directory structure..."
+          ERRORS=0
+
+          for category_dir in skills/*/; do
+            for skill_dir in "$category_dir"*/; do
+              if [ -d "$skill_dir" ]; then
+                skill_name=$(basename "$skill_dir")
+
+                # Check for required files
+                if [ ! -f "$skill_dir/skill.yaml" ]; then
+                  echo "❌ Missing skill.yaml in $skill_dir"
+                  ERRORS=$((ERRORS + 1))
+                fi
+
+                if [ ! -f "$skill_dir/pipeline-cli.yaml" ] && [ ! -f "$skill_dir/pipeline-mcp.yaml" ]; then
+                  echo "❌ Missing pipeline YAML in $skill_dir"
+                  ERRORS=$((ERRORS + 1))
+                fi
+              fi
+            done
+          done
+
+          SKILL_COUNT=$(find skills -name "skill.yaml" | wc -l)
+          echo "✅ Validated $SKILL_COUNT skills"
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "Found $ERRORS structural errors"
+            exit 1
+          fi
+
+      - name: Validate catalog
+        run: |
+          if [ -f catalog.json ]; then
+            python3 -c "import json; data=json.load(open('catalog.json')); print(f'✅ catalog.json valid — {len(data.get(\"skills\", data) if isinstance(data, dict) else data)} entries')"
+          fi
+          if [ -f catalog-minimal.json ]; then
+            python3 -c "import json; json.load(open('catalog-minimal.json')); print('✅ catalog-minimal.json valid')"
+          fi
