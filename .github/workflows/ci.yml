@@ -29,15 +29,16 @@ jobs:
           for category_dir in skills/*/; do
             for skill_dir in "$category_dir"*/; do
               if [ -d "$skill_dir" ]; then
-                skill_name=$(basename "$skill_dir")
+                # Recipes use pipeline.yaml; standard skills use skill.yaml + pipeline-cli.yaml
+                HAS_SKILL_YAML=0
+                HAS_PIPELINE=0
 
-                # Check for required files
-                if [ ! -f "$skill_dir/skill.yaml" ]; then
-                  echo "❌ Missing skill.yaml in $skill_dir"
-                  ERRORS=$((ERRORS + 1))
-                fi
+                [ -f "$skill_dir/skill.yaml" ] && HAS_SKILL_YAML=1
+                [ -f "$skill_dir/pipeline-cli.yaml" ] && HAS_PIPELINE=1
+                [ -f "$skill_dir/pipeline-mcp.yaml" ] && HAS_PIPELINE=1
+                [ -f "$skill_dir/pipeline.yaml" ] && HAS_PIPELINE=1
 
-                if [ ! -f "$skill_dir/pipeline-cli.yaml" ] && [ ! -f "$skill_dir/pipeline-mcp.yaml" ]; then
+                if [ "$HAS_PIPELINE" -eq 0 ]; then
                   echo "❌ Missing pipeline YAML in $skill_dir"
                   ERRORS=$((ERRORS + 1))
                 fi
@@ -45,7 +46,7 @@ jobs:
             done
           done
 
-          SKILL_COUNT=$(find skills -name "skill.yaml" | wc -l)
+          SKILL_COUNT=$(find skills -name "skill.yaml" -o -name "pipeline.yaml" | wc -l)
           echo "✅ Validated $SKILL_COUNT skills"
 
           if [ "$ERRORS" -gt 0 ]; then
@@ -56,7 +57,12 @@ jobs:
       - name: Validate catalog
         run: |
           if [ -f catalog.json ]; then
-            python3 -c "import json; data=json.load(open('catalog.json')); print(f'✅ catalog.json valid — {len(data.get(\"skills\", data) if isinstance(data, dict) else data)} entries')"
+            python3 -c "
+import json
+data = json.load(open('catalog.json'))
+count = len(data) if isinstance(data, list) else len(data.get('skills', []))
+print(f'✅ catalog.json valid — {count} entries')
+"
           fi
           if [ -f catalog-minimal.json ]; then
             python3 -c "import json; json.load(open('catalog-minimal.json')); print('✅ catalog-minimal.json valid')"
