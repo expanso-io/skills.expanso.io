@@ -57,13 +57,8 @@ jobs:
       - name: Validate catalog
         run: |
           if [ -f catalog.json ]; then
-            python3 -c "
-import json
-data = json.load(open('catalog.json'))
-count = len(data) if isinstance(data, list) else len(data.get('skills', []))
-print(f'✅ catalog.json valid — {count} entries')
-"
+            python3 -c 'import json; data=json.load(open("catalog.json")); print("catalog.json valid —", len(data) if isinstance(data, list) else len(data.get("skills", [])), "entries")'
           fi
           if [ -f catalog-minimal.json ]; then
-            python3 -c "import json; json.load(open('catalog-minimal.json')); print('✅ catalog-minimal.json valid')"
+            python3 -c 'import json; json.load(open("catalog-minimal.json")); print("catalog-minimal.json valid")'
           fi
