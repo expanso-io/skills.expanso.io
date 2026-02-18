@@ -14,21 +14,15 @@ jobs:
           fetch-depth: 0
       - name: Check for AI-attributed commits
         run: |
-          # For PRs, check only new commits
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE="${{ github.event.pull_request.base.sha }}"
             HEAD="${{ github.event.pull_request.head.sha }}"
             RANGE="$BASE..$HEAD"
           else
-            # For pushes, if it's the first push of a new branch, before might be all zeros
-            if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-              RANGE="${{ github.sha }}"
-            else
-              RANGE="${{ github.event.before }}..${{ github.sha }}"
-            fi
+            RANGE="${{ github.event.before }}..${{ github.sha }}"
           fi
           echo "Checking commits in range: $RANGE"
-          AI_PATTERN="claude|copilot|gpt|openai|anthropic|github-actions\[bot\]|ai-agent|crusty-bot"
+          AI_PATTERN="claude|copilot|gpt|openai|anthropic|github-actions\[bot\]|ai-agent|crusty-bot|openclaw"
           VIOLATIONS=$(git log "$RANGE" --format="%H %an <%ae>" 2>/dev/null | grep -iE "($AI_PATTERN)" || true)
           COAUTHOR_VIOLATIONS=$(git log "$RANGE" --format="%B" 2>/dev/null | grep -iE "Co-authored-by:.*($AI_PATTERN)" || true)
           if [ -n "$VIOLATIONS" ] || [ -n "$COAUTHOR_VIOLATIONS" ]; then
