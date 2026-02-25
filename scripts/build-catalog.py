@@ -171,6 +171,22 @@ CATEGORY_RULES = {
         ],
         "tags": ["transform", "parse", "convert", "format"],
     },
+    "connectors": {
+        "description": "Integration connectors for SaaS, messaging, and data sources",
+        "patterns": [
+            "slack-",
+            "gmail-",
+            "github-",
+            "jira-",
+            "postgres-",
+            "s3-",
+            "webhook-",
+            "kafka-",
+            "redis-",
+            "mongo-",
+        ],
+        "tags": ["connector", "integration", "saas", "data-source"],
+    },
     "utilities": {
         "description": "General utilities and helper functions",
         "patterns": [

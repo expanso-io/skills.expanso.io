@@ -1,0 +1,69 @@
+# Skill: access-gate
+# Version: 1.0.0
+#
+# Check if the requesting agent or user has permission to access a resource.
+# Composable security skill — chain before any connector skill.
+#
+# Pipeline: access-gate → [connector] → data-fence → audit-log
+#
+# Runs locally without API calls.
+
+name: "access-gate"
+version: "1.0.0"
+description: "Permission check gateway for agent access to connectors and data sources"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials:
+  - name: ACCESS_POLICY_FILE
+    required: false
+    description: Path to JSON policy file defining agent permissions
+
+# Skill inputs
+inputs:
+  - name: agent
+    type: string
+    required: true
+    description: Agent or user identifier requesting access
+  - name: resource
+    type: string
+    required: true
+    description: Resource being accessed (e.g., slack-read, gmail-read)
+  - name: action
+    type: string
+    default: "read"
+    description: Action being performed (read, write, delete)
+
+# Skill outputs
+outputs:
+  - name: allowed
+    type: boolean
+    description: Whether access is permitted
+  - name: reason
+    type: string
+    description: Reason for allow/deny decision
+  - name: passthrough
+    type: any
+    description: Original request data passed through if allowed
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Local policy evaluation (no external calls)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - log
+  outputs:
+    - stdout
+    - sync_response

@@ -34,7 +34,8 @@
         security: 'badge-security',
         transforms: 'badge-transforms',
         utilities: 'badge-utilities',
-        workflows: 'badge-workflows'
+        workflows: 'badge-workflows',
+        connectors: 'badge-connectors'
     };
 
     async function init() {

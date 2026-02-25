@@ -1,0 +1,29 @@
+# Tests for webhook-receive
+# Run: expanso test skills/connectors/webhook-receive/test/test.yaml
+
+name: webhook-receive-tests
+
+tests:
+  - name: "processes raw webhook payload"
+    input: '{"action":"opened","pull_request":{"title":"Add feature"}}'
+    expected:
+      json_contains:
+        metadata:
+          skill: "webhook-receive"
+          mode: "cli"
+
+  - name: "processes wrapped webhook with headers"
+    input: '{"headers":{"X-GitHub-Event":"push"},"body":{"ref":"refs/heads/main"}}'
+    expected:
+      json_contains:
+        event:
+          type: "push"
+        metadata:
+          skill: "webhook-receive"
+
+  - name: "handles unknown event type"
+    input: '{"data":"test"}'
+    expected:
+      json_contains:
+        event:
+          type: "unknown"

@@ -2,7 +2,7 @@
 
 The official marketplace for Expanso skills - pre-built data processing pipelines that work with OpenClaw, Claude, and any MCP-compatible AI assistant.
 
-**172 skills** across **5 categories** - all open source and ready to use.
+**177 skills** across **6 categories** - all open source and ready to use.
 
 ## What Are Expanso Skills?
 
@@ -93,7 +93,16 @@ AI-powered processing for text, images, audio, and video.
 | `meeting-notes` | Transcribe and summarize meetings |
 | [View all...](skills/ai/) | |
 
-### Security (14 skills)
+### Connectors (3 skills)
+Integration connectors for SaaS services and messaging platforms.
+
+| Skill | Description |
+|-------|-------------|
+| `slack-read` | Read Slack channel messages via the Slack Web API |
+| `gmail-read` | Read Gmail messages via the Gmail API |
+| `webhook-receive` | Receive and verify webhook events from any service |
+
+### Security (16 skills)
 Security, compliance, and cryptographic operations.
 
 | Skill | Description |
@@ -104,6 +113,8 @@ Security, compliance, and cryptographic operations.
 | `sign-envelope` | Cryptographically sign data |
 | `secrets-scan` | Detect leaked secrets |
 | `sbom-generate` | Generate software bill of materials |
+| `access-gate` | Deny-by-default permission gateway for agent access |
+| `data-fence` | Field-level filtering to limit agent data exposure |
 | [View all...](skills/security/) | |
 
 ### Transforms (100 skills)
@@ -320,7 +331,7 @@ curl https://raw.githubusercontent.com/expanso-io/expanso-skills/main/catalog-mi
 ```json
 {
   "version": "1.0.0",
-  "total_skills": 172,
+  "total_skills": 177,
   "categories": {
     "ai": {
       "description": "AI-powered skills...",

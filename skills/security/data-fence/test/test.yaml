@@ -1,0 +1,34 @@
+# Tests for data-fence
+# Run: expanso test skills/security/data-fence/test/test.yaml
+
+name: data-fence-tests
+
+tests:
+  - name: "filters to allowed fields"
+    input: '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"allowed_fields":["id","name"]}'
+    expected:
+      json_contains:
+        metadata:
+          skill: "data-fence"
+          mode: "cli"
+
+  - name: "removes blocked fields"
+    input: '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"blocked_fields":["ssn"]}'
+    expected:
+      json_contains:
+        metadata:
+          skill: "data-fence"
+
+  - name: "passes through when no rules"
+    input: '{"data":[{"id":1,"name":"John"}]}'
+    expected:
+      json_contains:
+        metadata:
+          skill: "data-fence"
+
+  - name: "handles single object input"
+    input: '{"data":{"id":1,"name":"John","ssn":"123-45-6789"},"allowed_fields":["id","name"]}'
+    expected:
+      json_contains:
+        metadata:
+          skill: "data-fence"

@@ -18,6 +18,7 @@
     --category-transforms: #06b6d4;
     --category-utilities: #f59e0b;
     --category-workflows: #22c55e;
+    --category-connectors: #f97316;
     --radius: 8px;
     --radius-lg: 12px;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
@@ -328,6 +329,7 @@ body {
 .badge-transforms { background: var(--category-transforms); color: black; }
 .badge-utilities { background: var(--category-utilities); color: black; }
 .badge-workflows { background: var(--category-workflows); color: black; }
+.badge-connectors { background: var(--category-connectors); color: black; }
 
 .badge-local {
     background: transparent;

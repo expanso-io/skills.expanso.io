@@ -1,0 +1,236 @@
+name: secure-slack-pipeline
+type: pipeline
+description: >
+  Complete secure Slack reader pipeline demonstrating Expanso Edge composable
+  security. All stages run inside a single pipeline — auth, validation,
+  access control, data fetch, PII redaction, field fencing, and audit.
+namespace: production
+labels:
+  category: connectors
+  pattern: secure-pipeline
+
+config:
+  input:
+    http_server:
+      path: /secure-slack-read
+      allowed_verbs: [POST]
+
+  pipeline:
+    processors:
+      # ═══════════════════════════════════════════════════════════════════════
+      # STAGE 0: AUTH VERIFY — identify caller before any mutation
+      # ═══════════════════════════════════════════════════════════════════════
+      # Supports API key auth via X-Expanso-Api-Key header.
+      # Identity is derived from the verified credential, never from payload.
+      # EXPANSO_API_KEYS format: "key1:agent-name-1,key2:agent-name-2"
+      - mapping: |
+          meta raw_body = content()
+          meta trace_id = uuid_v4()
+          meta start_time = now()
+
+          let api_key_header = meta("http_header_x-expanso-api-key").or("")
+          let api_keys_env = env("EXPANSO_API_KEYS").or("")
+
+          if $api_keys_env == "" {
+            throw("no EXPANSO_API_KEYS configured — auth required")
+          }
+
+          if $api_key_header == "" {
+            throw("missing X-Expanso-Api-Key header — auth required")
+          }
+
+          let found = $api_keys_env.split(",").map_each(entry -> {
+            "key": entry.split(":").index(0),
+            "agent": entry.split(":").index(1)
+          }).filter(e -> e.key == $api_key_header)
+
+          if $found.length() == 0 {
+            throw("invalid API key — access denied")
+          }
+
+          meta agent = $found.index(0).agent
+          root = content().parse_json()
+
+      - log:
+          level: INFO
+          message: |
+            [secure-slack] Auth OK: agent=${! meta("agent") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STAGE 1: INPUT VALIDATION — reject malformed requests
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          let channel = this.channel.or("")
+          if $channel == "" {
+            throw("channel is required")
+          }
+          if !$channel.re_match("^[A-Z0-9]{1,15}$") {
+            throw("invalid channel ID format: must be alphanumeric")
+          }
+
+          let limit = this.limit.or(20)
+          if $limit < 1 || $limit > 100 {
+            throw("limit must be between 1 and 100")
+          }
+
+          meta channel = $channel
+          meta limit = $limit
+
+          root.channel = $channel
+          root.limit = $limit
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STAGE 2: ACCESS GATE — deny-by-default agent permissions
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          let agent = meta("agent")
+          let policy = env("ACCESS_POLICY").or("")
+          if $policy == "" {
+            throw("no ACCESS_POLICY configured — deny by default")
+          }
+
+          # Policy format: "agent:resource:action,agent:resource:action"
+          let rules = $policy.split(",")
+          let matched = $rules.any(r -> {
+            let parts = r.split(":")
+            (parts.index(0) == $agent || parts.index(0) == "*") &&
+            (parts.index(1) == "slack-read" || parts.index(1) == "*")
+          })
+
+          if !$matched {
+            throw("access denied for agent " + $agent + " on resource slack-read")
+          }
+          root = this
+
+      - log:
+          level: INFO
+          message: |
+            [secure-slack] Access granted: agent=${! meta("agent") } channel=${! meta("channel") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STAGE 3: CONNECTOR — read from Slack API
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          let api_url = env("SLACK_API_URL").or("https://slack.com/api")
+          root.url = $api_url + "/conversations.history?channel=" + this.channel + "&limit=" + this.limit.string()
+          root.channel = this.channel
+          root.limit = this.limit
+
+      - try:
+          - http:
+              url: "${! this.url}"
+              verb: GET
+              headers:
+                Authorization: "Bearer ${SLACK_BOT_TOKEN}"
+                Content-Type: "application/json"
+              rate_limit: slack_api
+        catch:
+          - mapping: |
+              root.source = "slack"
+              root.resource = "conversations.history"
+              root.schema_version = "1.0"
+              root.trace_id = meta("trace_id")
+              root.agent = meta("agent")
+              root.error = error()
+              root.data = []
+              root.count = 0
+              root.sensitivity = "redacted"
+              root.metadata = {
+                "skill": "secure-slack-pipeline",
+                "agent": meta("agent"),
+                "channel": meta("channel"),
+                "trace_id": meta("trace_id"),
+                "success": false,
+                "error": error(),
+                "timestamp": now()
+              }
+          - log:
+              level: ERROR
+              message: |
+                [secure-slack] HTTP error: ${! error() } agent=${! meta("agent") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STAGE 4: ERROR CHECK — verify upstream response
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          # Pass through error envelopes from catch
+          if this.exists("error") && this.exists("source") {
+            root = this
+          } else {
+            if this.ok.or(false) == false {
+              throw("Slack API error: " + this.error.or("unknown"))
+            }
+            root = this
+          }
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STAGE 5: PII REDACT — strip sensitive data before agent sees it
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          if this.exists("error") && this.exists("source") {
+            root = this
+          } else {
+            root.messages = this.messages.or([]).map_each(m -> m.merge({
+              "text": m.text.or("")
+                .re_replace_all("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}", "[EMAIL]")
+                .re_replace_all("\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b", "[PHONE]")
+                .re_replace_all("\\b\\d{3}-\\d{2}-\\d{4}\\b", "[SSN]")
+            }))
+          }
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STAGE 6: DATA FENCE — limit fields agent can see
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          if this.exists("error") && this.exists("source") {
+            root = this
+          } else {
+            root.messages = this.messages.map_each(m -> {
+              "id": m.ts,
+              "text": m.text.or(""),
+              "timestamp": m.ts
+            })
+          }
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STAGE 7: CANONICAL ENVELOPE — standard output format
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          if this.exists("error") && this.exists("source") {
+            root = this
+          } else {
+            root.source = "slack"
+            root.resource = "conversations.history"
+            root.schema_version = "1.0"
+            root.trace_id = meta("trace_id")
+            root.agent = meta("agent")
+            root.data = this.messages
+            root.count = this.messages.length()
+            root.sensitivity = "redacted"
+            root.metadata = {
+              "skill": "secure-slack-pipeline",
+              "agent": meta("agent"),
+              "channel": meta("channel"),
+              "trace_id": meta("trace_id"),
+              "message_count": this.messages.length(),
+              "success": true,
+              "timestamp": now()
+            }
+          }
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STAGE 8: AUDIT LOG — record access
+      # ═══════════════════════════════════════════════════════════════════════
+      - log:
+          level: INFO
+          message: |
+            [audit] agent=${! meta("agent") } resource=slack-read channel=${! meta("channel") } count=${! this.count.or(0) } trace=${! meta("trace_id") } sensitivity=${! this.sensitivity.or("unknown") }
+
+  output:
+    sync_response: {}
+
+rate_limit_resources:
+  - label: slack_api
+    local:
+      count: 10
+      interval: 1s

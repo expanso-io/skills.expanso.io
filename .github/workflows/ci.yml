@@ -54,6 +54,46 @@ jobs:
             exit 1
           fi
 
+      - name: Validate pipeline syntax (expanso-cli)
+        run: |
+          # Install expanso-cli if not present
+          if ! command -v expanso-cli &>/dev/null; then
+            echo "Installing expanso-cli..."
+            curl -fsSL https://get.expanso.io/cli | bash || {
+              echo "⚠️  expanso-cli not available — skipping pipeline validation"
+              exit 0
+            }
+          fi
+
+          echo "Validating pipeline YAML files with expanso-cli..."
+          ERRORS=0
+          VALIDATED=0
+
+          for pipeline in $(find skills -name "pipeline*.yaml" -type f); do
+            if expanso-cli job validate "$pipeline" --offline 2>&1; then
+              VALIDATED=$((VALIDATED + 1))
+            else
+              echo "❌ Validation failed: $pipeline"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          echo "✅ Validated $VALIDATED pipeline files"
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "Found $ERRORS pipeline validation errors"
+            exit 1
+          fi
+
+      - name: Run skills audit
+        run: |
+          if command -v uv &>/dev/null; then
+            uv run -s scripts/audit-skills.py
+          elif [ -f scripts/audit-skills.py ]; then
+            python3 scripts/audit-skills.py
+          else
+            echo "⚠️  Audit script not found — skipping"
+          fi
+
       - name: Validate catalog
         run: |
           if [ -f catalog.json ]; then
