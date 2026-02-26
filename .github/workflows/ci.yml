@@ -59,10 +59,15 @@ jobs:
           # Install expanso-cli if not present
           if ! command -v expanso-cli &>/dev/null; then
             echo "Installing expanso-cli..."
-            curl -fsSL https://get.expanso.io/cli | bash || {
-              echo "⚠️  expanso-cli not available — skipping pipeline validation"
-              exit 0
-            }
+            curl -fsSL https://get.expanso.io/cli | bash || true
+            # Installer may add to ~/.local/bin — ensure it's in PATH
+            export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
+          fi
+
+          # Re-check after install attempt; skip gracefully if still missing
+          if ! command -v expanso-cli &>/dev/null; then
+            echo "⚠️  expanso-cli not available — skipping pipeline validation"
+            exit 0
           fi
 
           echo "Validating pipeline YAML files with expanso-cli..."
