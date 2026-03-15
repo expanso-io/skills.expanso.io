@@ -234,6 +234,7 @@
         if (!skill) return;
 
         if (!skipPush) history.pushState({ skill: skillName }, '', '/skill/' + skillName);
+        updateMetaTags(skillName, skill);
 
         while (modalContent.firstChild) modalContent.removeChild(modalContent.firstChild);
         var loadingDiv = document.createElement('div');
@@ -498,6 +499,49 @@
         modalContent.appendChild(actionsDiv);
     }
 
+    // ── SEO Helpers ─────────────────────────────────────────
+
+    var defaultTitle = document.title;
+    var defaultDescription = document.querySelector('meta[name="description"]').getAttribute('content');
+
+    function updateMetaTags(skillName, skill) {
+        var prettyName = skillName.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+        var category = skill.category.charAt(0).toUpperCase() + skill.category.slice(1);
+        var title = prettyName + ' \u2013 ' + category + ' Skill | Expanso Skills';
+        var desc = skill.description || '';
+        var suffix = ' Install and deploy with Expanso.';
+        if (desc.length + suffix.length <= 160) desc = desc + suffix;
+        else if (desc.length > 160) desc = desc.substring(0, 157) + '...';
+        var canonical = 'https://skills.expanso.io/skill/' + skillName + '/';
+
+        document.title = title;
+        setMetaContent('name', 'description', desc);
+        setMetaContent('property', 'og:title', title);
+        setMetaContent('property', 'og:description', desc);
+        setMetaContent('property', 'og:url', canonical);
+        setMetaContent('name', 'twitter:title', title);
+        setMetaContent('name', 'twitter:description', desc);
+        var link = document.querySelector('link[rel="canonical"]');
+        if (link) link.setAttribute('href', canonical);
+    }
+
+    function resetMetaTags() {
+        document.title = defaultTitle;
+        setMetaContent('name', 'description', defaultDescription);
+        setMetaContent('property', 'og:title', defaultTitle);
+        setMetaContent('property', 'og:description', defaultDescription);
+        setMetaContent('property', 'og:url', 'https://skills.expanso.io/');
+        setMetaContent('name', 'twitter:title', defaultTitle);
+        setMetaContent('name', 'twitter:description', defaultDescription);
+        var link = document.querySelector('link[rel="canonical"]');
+        if (link) link.setAttribute('href', 'https://skills.expanso.io/');
+    }
+
+    function setMetaContent(attr, name, content) {
+        var el = document.querySelector('meta[' + attr + '="' + name + '"]');
+        if (el) el.setAttribute('content', content);
+    }
+
     // ── Helpers ──────────────────────────────────────────────
 
     function createCodeBlock(code, language) {
@@ -596,6 +640,7 @@
         modalOverlay.classList.remove('active');
         document.body.style.overflow = '';
         if (!skipPush) history.pushState({}, '', '/');
+        resetMetaTags();
     }
 
     async function copyToClipboard(text, button) {

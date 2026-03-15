@@ -29,6 +29,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
       - name: Build site with skills
         run: |
           # Copy catalog files
@@ -52,6 +60,9 @@ jobs:
           ls -d docs/*/pipeline-cli.yaml 2>/dev/null | head -20 || true
           echo ""
           echo "Total skills: $(ls -d docs/*/pipeline-cli.yaml 2>/dev/null | wc -l)"
+
+      - name: Generate SEO assets (sitemap, skill pages)
+        run: python scripts/build-seo.py --catalog catalog.json --output docs
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

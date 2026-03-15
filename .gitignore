@@ -38,3 +38,7 @@ secrets.yaml
 # Local config
 .expanso/
 *.local.yaml
+
+# Generated SEO assets (built in CI)
+docs/sitemap.xml
+docs/skill/
