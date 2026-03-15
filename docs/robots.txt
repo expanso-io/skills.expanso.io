@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /catalog.json
+Disallow: /catalog-minimal.json
+Disallow: /install.sh
+
+Sitemap: https://skills.expanso.io/sitemap.xml
