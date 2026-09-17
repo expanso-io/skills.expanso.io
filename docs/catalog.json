@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "generated": "2026-02-04T23:39:07.397063+00:00",
-  "total_skills": 172,
+  "generated": "2026-02-24T23:20:36.054655+00:00",
+  "total_skills": 177,
   "categories": {
     "workflows": {
       "description": "End-to-end automation workflows combining multiple services",
@@ -24,7 +24,7 @@
     },
     "security": {
       "description": "Security, compliance, and cryptographic operations",
-      "skill_count": 14,
+      "skill_count": 16,
       "tags": [
         "security",
         "compliance",
@@ -40,6 +40,16 @@
         "parse",
         "convert",
         "format"
+      ]
+    },
+    "connectors": {
+      "description": "Integration connectors for SaaS, messaging, and data sources",
+      "skill_count": 3,
+      "tags": [
+        "connector",
+        "integration",
+        "saas",
+        "data-source"
       ]
     },
     "utilities": {
@@ -1266,6 +1276,266 @@
         "remote"
       ]
     },
+    "gmail-read": {
+      "name": "gmail-read",
+      "version": "1.0.0",
+      "description": "Read emails from Gmail with filtering, search, and label support",
+      "category": "connectors",
+      "credentials": [
+        {
+          "name": "GMAIL_ACCESS_TOKEN",
+          "required": true,
+          "description": "Gmail OAuth2 access token"
+        },
+        {
+          "name": "GMAIL_REFRESH_TOKEN",
+          "required": false,
+          "description": "Gmail OAuth2 refresh token for long-lived access"
+        },
+        {
+          "name": "GMAIL_CLIENT_ID",
+          "required": false,
+          "description": "OAuth2 client ID (for token refresh)"
+        },
+        {
+          "name": "GMAIL_CLIENT_SECRET",
+          "required": false,
+          "description": "OAuth2 client secret (for token refresh)"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": false,
+          "default": "is:unread",
+          "description": "Gmail search query (same syntax as Gmail search bar)"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "default": "INBOX",
+          "description": "Gmail label to read from"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "default": 20,
+          "description": "Maximum emails to retrieve (1-100)"
+        },
+        {
+          "name": "include_body",
+          "type": "boolean",
+          "default": true,
+          "description": "Include email body content (set false for headers only)"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "emails",
+          "type": "array",
+          "description": "Array of emails: {id, subject, from, to, date, snippet, body, labels}"
+        },
+        {
+          "name": "metadata",
+          "type": "object",
+          "description": "Processing metadata: {skill, trace_id, email_count, query, timestamp}"
+        }
+      ],
+      "backends": [
+        "gmail-api"
+      ],
+      "tags": [
+        "connectors",
+        "remote"
+      ]
+    },
+    "slack-read": {
+      "name": "slack-read",
+      "version": "1.0.0",
+      "description": "Read messages from Slack channels and DMs with filtering and search",
+      "category": "connectors",
+      "credentials": [
+        {
+          "name": "SLACK_BOT_TOKEN",
+          "required": true,
+          "description": "Slack Bot User OAuth Token (xoxb-...)"
+        },
+        {
+          "name": "SLACK_CHANNEL_ID",
+          "required": false,
+          "description": "Default channel ID to read from"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "channel",
+          "type": "string",
+          "required": true,
+          "description": "Slack channel ID (e.g., C01234567)"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "default": 20,
+          "description": "Maximum messages to retrieve (1-100)"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "required": false,
+          "description": "Optional search query to filter messages"
+        },
+        {
+          "name": "since_hours",
+          "type": "integer",
+          "default": 24,
+          "description": "Retrieve messages from last N hours"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "messages",
+          "type": "array",
+          "description": "Array of messages: {id, user, text, timestamp, thread_ts, reactions}"
+        },
+        {
+          "name": "channel_info",
+          "type": "object",
+          "description": "Channel metadata: {id, name, topic, purpose, member_count}"
+        },
+        {
+          "name": "metadata",
+          "type": "object",
+          "description": "Processing metadata: {skill, trace_id, message_count, timestamp}"
+        }
+      ],
+      "backends": [
+        "slack-api"
+      ],
+      "tags": [
+        "connectors",
+        "remote",
+        "slack"
+      ]
+    },
+    "webhook-receive": {
+      "name": "webhook-receive",
+      "version": "1.0.0",
+      "description": "Receive, validate, and process webhook events from any service",
+      "category": "connectors",
+      "credentials": [
+        {
+          "name": "WEBHOOK_SECRET",
+          "required": false,
+          "description": "Shared secret for HMAC signature verification"
+        },
+        {
+          "name": "WEBHOOK_ALLOWED_IPS",
+          "required": false,
+          "description": "Comma-separated list of allowed source IPs"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "string",
+          "default": "/webhook",
+          "description": "HTTP path to listen on"
+        },
+        {
+          "name": "verify_signature",
+          "type": "boolean",
+          "default": false,
+          "description": "Verify HMAC signature (requires WEBHOOK_SECRET)"
+        },
+        {
+          "name": "signature_header",
+          "type": "string",
+          "default": "X-Hub-Signature-256",
+          "description": "Header containing the HMAC signature"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "event",
+          "type": "object",
+          "description": "Parsed webhook event with headers and body"
+        },
+        {
+          "name": "metadata",
+          "type": "object",
+          "description": "Processing metadata: {skill, trace_id, source_ip, timestamp}"
+        }
+      ],
+      "backends": [
+        "local"
+      ],
+      "tags": [
+        "connectors",
+        "local",
+        "offline"
+      ]
+    },
+    "access-gate": {
+      "name": "access-gate",
+      "version": "1.0.0",
+      "description": "Permission check gateway for agent access to connectors and data sources",
+      "category": "security",
+      "credentials": [
+        {
+          "name": "ACCESS_POLICY_FILE",
+          "required": false,
+          "description": "Path to JSON policy file defining agent permissions"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "agent",
+          "type": "string",
+          "required": true,
+          "description": "Agent or user identifier requesting access"
+        },
+        {
+          "name": "resource",
+          "type": "string",
+          "required": true,
+          "description": "Resource being accessed (e.g., slack-read, gmail-read)"
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "default": "read",
+          "description": "Action being performed (read, write, delete)"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "allowed",
+          "type": "boolean",
+          "description": "Whether access is permitted"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for allow/deny decision"
+        },
+        {
+          "name": "passthrough",
+          "type": "any",
+          "description": "Original request data passed through if allowed"
+        }
+      ],
+      "backends": [
+        "local"
+      ],
+      "tags": [
+        "local",
+        "offline",
+        "security"
+      ]
+    },
     "audit-envelope": {
       "name": "audit-envelope",
       "version": "1.0.0",
@@ -1370,6 +1640,59 @@
         "local",
         "offline",
         "remote",
+        "security"
+      ]
+    },
+    "data-fence": {
+      "name": "data-fence",
+      "version": "1.0.0",
+      "description": "Filter data to only allowed fields and rows before passing to agents",
+      "category": "security",
+      "credentials": [],
+      "inputs": [
+        {
+          "name": "data",
+          "type": "any",
+          "required": true,
+          "description": "Data to filter (object or array of objects)"
+        },
+        {
+          "name": "allowed_fields",
+          "type": "array",
+          "required": false,
+          "description": "List of field names to keep (e.g., ['id', 'text', 'timestamp'])"
+        },
+        {
+          "name": "blocked_fields",
+          "type": "array",
+          "required": false,
+          "description": "List of field names to remove (e.g., ['email', 'phone', 'ssn'])"
+        },
+        {
+          "name": "max_rows",
+          "type": "integer",
+          "default": 100,
+          "description": "Maximum number of rows/items to return"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "data",
+          "type": "any",
+          "description": "Filtered data with only allowed fields"
+        },
+        {
+          "name": "metadata",
+          "type": "object",
+          "description": "Filter metadata: {fields_removed, rows_truncated, trace_id}"
+        }
+      ],
+      "backends": [
+        "local"
+      ],
+      "tags": [
+        "local",
+        "offline",
         "security"
       ]
     },

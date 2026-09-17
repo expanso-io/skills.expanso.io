@@ -17,7 +17,7 @@
     var filterNoCreds = false;
 
     var SKILLS_BASE = window.location.origin;
-    var GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/expanso-io/expanso-skills/main';
+    var GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/expanso-io/skills.expanso.io/main';
 
     // DOM Elements
     var skillsGrid = document.getElementById('skills-grid');
@@ -473,7 +473,17 @@
                 deployH3.textContent = 'Deploy';
                 deployDiv.appendChild(deployH3);
 
-                var deployCmd = 'expanso-cli job deploy ' + getSkillUrl(skillName, sub.file);
+                var skillUrl = getSkillUrl(skillName, sub.file);
+                var deployCmd =
+                    '# Requires: a saved Cloud profile and a connected edge node.\n' +
+                    '# expanso-cli job deploy reads a FILE path or \'-\', not a URL.\n' +
+                    'curl -fsSL -O ' + skillUrl + '\n' +
+                    'expanso-cli job validate ' + sub.file + ' --offline\n' +
+                    'expanso-cli job deploy ' + sub.file + '\n\n' +
+                    '# Deploying stores the job; it does not prove it ran.\n' +
+                    '# Confirm the control plane actually scheduled and executed it:\n' +
+                    'expanso-cli job describe <job-name>\n' +
+                    'expanso-cli execution list --job-id <job-id>';
                 deployDiv.appendChild(createCodeBlock(deployCmd, 'bash'));
 
                 subDiv.appendChild(deployDiv);
@@ -489,7 +499,7 @@
         actionsDiv.className = 'modal-actions';
 
         var githubLink = document.createElement('a');
-        githubLink.href = 'https://github.com/expanso-io/expanso-skills/tree/main/skills/' + skill.category + '/' + skillName;
+        githubLink.href = 'https://github.com/expanso-io/skills.expanso.io/tree/main/skills/' + skill.category + '/' + skillName;
         githubLink.target = '_blank';
         githubLink.rel = 'noopener';
         githubLink.className = 'btn btn-primary';

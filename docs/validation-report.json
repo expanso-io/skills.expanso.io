@@ -1,0 +1,1127 @@
+{
+  "disclaimer": "Local validation only. It checks pipeline syntax, structure and component types. It does not run the orchestrator's submission validation and it is NOT evidence that a pipeline executes. No entry here may be promoted to verified-executed without a dated Expanso Cloud run record.",
+  "generated": "2026-09-17T23:14:49.813525+00:00",
+  "readiness_vocabulary": {
+    "invalid-does-not-validate": "Rejected by the local validator at the recorded version.",
+    "validated-not-executed": "Passes local validation. Never executed end to end.",
+    "verified-executed": "Reserved. Not in use; requires a Cloud run record."
+  },
+  "schema": "expanso-skills-validation/1",
+  "skills": {
+    "access-gate": {
+      "category": "security",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/security/access-gate/pipeline-cli.yaml: 2 error(s) - (line 44) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"age' instead) - (line 86) bloblang syntax error in pipeline.processors.2.mapping. Invalid syntax in call to filter(). filter() takes 1 argument(s): test (query expre",
+      "pipeline": "skills/security/access-gate/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "array-chunk": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-chunk/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-filter": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-filter/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-find": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-find/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-first": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-first/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-flatten": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-flatten/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-includes": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-includes/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-join": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-join/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-last": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-last/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-length": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-length/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-map": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-map/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-reduce": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-reduce/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-reverse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-reverse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-slice": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-slice/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-sort": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-sort/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "array-unique": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/array-unique/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "audio-duration": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/audio-duration/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "audio-transcribe": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/audio-transcribe/pipeline-cli.yaml: 1 error(s) - (line 24, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 inp",
+      "pipeline": "skills/ai/audio-transcribe/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "audit-envelope": {
+      "category": "security",
+      "pipeline": "skills/security/audit-envelope/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "auto-coder": {
+      "category": "workflows",
+      "pipeline": "skills/workflows/auto-coder/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "backup-verify": {
+      "category": "workflows",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/workflows/backup-verify/pipeline-cli.yaml: 1 error(s) - (line 23) bloblang syntax error in pipeline.processors.0.mapping. Field t2: parsing time \"2h\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"2h\" as \"2006\": , \" hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error ",
+      "pipeline": "skills/workflows/backup-verify/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "base64-codec": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/base64-codec/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "binary-encode": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/binary-encode/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "boolean-parse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/boolean-parse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "catalog-reconcile": {
+      "category": "workflows",
+      "pipeline": "skills/workflows/catalog-reconcile/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "code-explain": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/code-explain/pipeline-cli.yaml: 1 error(s) - (line 55, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s",
+      "pipeline": "skills/ai/code-explain/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "color-convert": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/color-convert/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "color-rgb": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/color-rgb/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "config-normalize": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/config-normalize/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "cron-explain": {
+      "category": "transforms",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/transforms/cron-explain/pipeline-cli.yaml: 1 error(s) - (line 37, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1",
+      "pipeline": "skills/transforms/cron-explain/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "csv-to-json": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/csv-to-json/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "cve-scan": {
+      "category": "security",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/security/cve-scan/pipeline-cli.yaml: 1 error(s) - (line 67) bloblang syntax error in pipeline.processors.3.mapping. Invalid syntax in call to map_each(). map_each() takes 1 argument(s): query (query expression). Example: root.new_nums = this.nums.map_each(num -> if num < 10 { deleted() } else { num - 10 }). See: ",
+      "pipeline": "skills/security/cve-scan/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "data-fence": {
+      "category": "security",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/security/data-fence/pipeline-cli.yaml: 1 error(s) - (line 92) bloblang syntax error in pipeline.processors.2.mapping. Invalid syntax in call to map_each(). map_each() takes 1 argument(s): query (query expression). Example: root.new_nums = this.nums.map_each(num -> if num < 10 { deleted() } else { num - 10 }). See",
+      "pipeline": "skills/security/data-fence/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "date-add": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/date-add/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "date-diff": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/date-diff/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "date-format": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/date-format/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "date-now": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/date-now/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "determinism-test": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/determinism-test/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "devops-monitor": {
+      "category": "workflows",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/workflows/devops-monitor/pipeline-cli.yaml: 3 error(s) - (line 44) bloblang syntax error in pipeline.processors.2.mapping. Field t2: parsing time \"30m\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"30m\" as \"2006\": }, - (line 107) bloblang syntax error in pipeline.processors.5.mapping. Invalid syntax in ",
+      "pipeline": "skills/workflows/devops-monitor/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "duration-format": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/duration-format/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "email-triage": {
+      "category": "workflows",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/workflows/email-triage/pipeline-cli.yaml: 1 error(s) - not valid YAML: yaml: line 143: could not find expected ':' Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
+      "pipeline": "skills/workflows/email-triage/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "email-validate": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/email-validate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "emoji-strip": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/emoji-strip/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "env-parse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/env-parse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "file-size": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/file-size/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "gmail-read": {
+      "category": "connectors",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/connectors/gmail-read/pipeline-cli.yaml: 2 error(s) - (line 43) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"lim' instead) - (line 75, col 9) [pipeline.processors.3]. Unknown component or field 'try'. Check that the component name is spelled correctly. hint: Check your Blo",
+      "pipeline": "skills/connectors/gmail-read/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "grammar-check": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/grammar-check/pipeline-cli.yaml: 1 error(s) - (line 36, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(",
+      "pipeline": "skills/ai/grammar-check/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "hash-digest": {
+      "category": "security",
+      "pipeline": "skills/security/hash-digest/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "health-integrate": {
+      "category": "workflows",
+      "pipeline": "skills/workflows/health-integrate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "hex-encode": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/hex-encode/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "html-strip": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/html-strip/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "http-status": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/http-status/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "idempotent-cache": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/idempotent-cache/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "image-alttext": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/image-alttext/pipeline-cli.yaml: 1 error(s) - (line 45, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(",
+      "pipeline": "skills/ai/image-alttext/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "image-analyze": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/image-analyze/pipeline-cli.yaml: 1 error(s) - (line 39, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(",
+      "pipeline": "skills/ai/image-analyze/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "image-caption": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/image-caption/pipeline-cli.yaml: 1 error(s) - (line 26, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(",
+      "pipeline": "skills/ai/image-caption/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "image-describe": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/image-describe/pipeline-cli.yaml: 1 error(s) - (line 26, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input",
+      "pipeline": "skills/ai/image-describe/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "image-dimensions": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/image-dimensions/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "image-metadata": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/image-metadata/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "image-moderate": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/image-moderate/pipeline-cli.yaml: 1 error(s) - (line 39, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input",
+      "pipeline": "skills/ai/image-moderate/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "image-resize-calc": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/image-resize-calc/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "ip-parse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/ip-parse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "jira-automate": {
+      "category": "workflows",
+      "pipeline": "skills/workflows/jira-automate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "json-canonicalize": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/json-canonicalize/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "json-compact": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/json-compact/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "json-diff": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/json-diff/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "json-extract": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/json-extract/pipeline-cli.yaml: 1 error(s) - (line 53, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s",
+      "pipeline": "skills/ai/json-extract/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "json-flatten": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/json-flatten/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "json-merge": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/json-merge/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "json-pretty": {
+      "category": "transforms",
+      "cloud_variant": {
+        "pipeline": "skills/transforms/json-pretty/pipeline-cloud.yaml",
+        "readiness": "validated-not-executed",
+        "validates": true
+      },
+      "pipeline": "skills/transforms/json-pretty/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "json-to-csv": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/json-to-csv/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "json-to-yaml": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/json-to-yaml/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "json-validate": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/json-validate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "jwt-decode": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/jwt-decode/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "jwt-verify": {
+      "category": "security",
+      "pipeline": "skills/security/jwt-verify/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "keyword-extract": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/keyword-extract/pipeline-cli.yaml: 1 error(s) - (line 37, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 inpu",
+      "pipeline": "skills/ai/keyword-extract/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "language-detect": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/language-detect/pipeline-cli.yaml: 1 error(s) - (line 19, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 inpu",
+      "pipeline": "skills/ai/language-detect/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "line-numbers": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/line-numbers/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "llm-router": {
+      "category": "workflows",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/workflows/llm-router/pipeline-cli.yaml: 1 error(s) - (line 87, col 9) [pipeline.processors.2.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 in",
+      "pipeline": "skills/workflows/llm-router/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "log-sanitize": {
+      "category": "security",
+      "pipeline": "skills/security/log-sanitize/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "lorem-ipsum": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/lorem-ipsum/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "markdown-format": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/markdown-format/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "markdown-toc": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/markdown-toc/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "marketing-auto": {
+      "category": "workflows",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/workflows/marketing-auto/pipeline-cli.yaml: 1 error(s) - (line 21) bloblang syntax error in pipeline.processors.0.mapping. Unrecognised method 'ts_add': }, hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
+      "pipeline": "skills/workflows/marketing-auto/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "math-abs": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/math-abs/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "math-ceil": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/math-ceil/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "math-floor": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/math-floor/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "math-max": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/math-max/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "math-min": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/math-min/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "math-mod": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/math-mod/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "math-pow": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/math-pow/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "math-sqrt": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/math-sqrt/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "meal-planner": {
+      "category": "workflows",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/workflows/meal-planner/pipeline-cli.yaml: 1 error(s) - (line 24, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 ",
+      "pipeline": "skills/workflows/meal-planner/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "media-info": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/media-info/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "media-type-detect": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/media-type-detect/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "meeting-notes": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/meeting-notes/pipeline-cli.yaml: 1 error(s) - (line 40, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(",
+      "pipeline": "skills/ai/meeting-notes/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "mime-type": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/mime-type/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "morning-briefing": {
+      "category": "workflows",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/workflows/morning-briefing/pipeline-cli.yaml: 1 error(s) - (line 79, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 o",
+      "pipeline": "skills/workflows/morning-briefing/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "multi-platform-chat": {
+      "category": "workflows",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/workflows/multi-platform-chat/pipeline-cli.yaml: 1 error(s) - (line 27, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = ",
+      "pipeline": "skills/workflows/multi-platform-chat/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "number-format": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/number-format/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "number-round": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/number-round/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "object-keys": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/object-keys/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "object-merge": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/object-merge/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "object-pick": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/object-pick/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "object-values": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/object-values/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "openapi-validate": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/openapi-validate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "password-generate": {
+      "category": "security",
+      "pipeline": "skills/security/password-generate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "path-parse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/path-parse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "percentage-calc": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/percentage-calc/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "pii-detect": {
+      "category": "security",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/security/pii-detect/pipeline-cli.yaml: 1 error(s) - (line 42, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 inp",
+      "pipeline": "skills/security/pii-detect/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "pii-redact": {
+      "category": "security",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/security/pii-redact/pipeline-cli.yaml: 1 error(s) - (line 37, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 inp",
+      "pipeline": "skills/security/pii-redact/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "policy-check": {
+      "category": "security",
+      "pipeline": "skills/security/policy-check/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "query-string": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/query-string/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "random-number": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/random-number/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "regex-extract": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/regex-extract/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "retry-wrapper": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/retry-wrapper/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "sbom-generate": {
+      "category": "security",
+      "pipeline": "skills/security/sbom-generate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "secrets-scan": {
+      "category": "security",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/security/secrets-scan/pipeline-cli.yaml: 1 error(s) - (line 39, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 i",
+      "pipeline": "skills/security/secrets-scan/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "semver-parse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/semver-parse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "sentiment-score": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/sentiment-score/pipeline-cli.yaml: 1 error(s) - (line 19, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 inpu",
+      "pipeline": "skills/ai/sentiment-score/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "seo-pipeline": {
+      "category": "workflows",
+      "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "sign-envelope": {
+      "category": "security",
+      "pipeline": "skills/security/sign-envelope/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "site-migrate": {
+      "category": "workflows",
+      "pipeline": "skills/workflows/site-migrate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "slack-read": {
+      "category": "connectors",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/connectors/slack-read/pipeline-cli.yaml: 2 error(s) - (line 44) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"cha' instead) - (line 81, col 9) [pipeline.processors.3]. Unknown component or field 'try'. Check that the component name is spelled correctly. hint: Check your Blo",
+      "pipeline": "skills/connectors/slack-read/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "slug-generate": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/slug-generate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "speaker-diarize": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/speaker-diarize/pipeline-cli.yaml: 1 error(s) - (line 37, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 inpu",
+      "pipeline": "skills/ai/speaker-diarize/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "sql-generate": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/sql-generate/pipeline-cli.yaml: 1 error(s) - (line 42, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s",
+      "pipeline": "skills/ai/sql-generate/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "string-case": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/string-case/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "string-contains": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/string-contains/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "string-ends-with": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/string-ends-with/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "string-pad": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/string-pad/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "string-repeat": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/string-repeat/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "string-replace": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/string-replace/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "string-reverse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/string-reverse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "string-split": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/string-split/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "string-starts-with": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/string-starts-with/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "string-trim": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/string-trim/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "stripe-reports": {
+      "category": "workflows",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/workflows/stripe-reports/pipeline-cli.yaml: 2 error(s) - (line 40) bloblang syntax error in pipeline.processors.0.mapping. Field t2: parsing time \"24h\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"24h\" as \"2006\": .ts_s - (line 127, col 15) [pipeline.processors.4.branch.processors.0.openai_chat_completi",
+      "pipeline": "skills/workflows/stripe-reports/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "task-dashboard": {
+      "category": "workflows",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/workflows/task-dashboard/pipeline-cli.yaml: 1 error(s) - (line 24) bloblang syntax error in pipeline.processors.0.mapping. Field t2: parsing time \"2h\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"2h\" as \"2006\": } ] r hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Err",
+      "pipeline": "skills/workflows/task-dashboard/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "terminal-services": {
+      "category": "workflows",
+      "pipeline": "skills/workflows/terminal-services/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-analyze": {
+      "category": "transforms",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/transforms/text-analyze/pipeline-cli.yaml: 1 error(s) - (line 41, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1",
+      "pipeline": "skills/transforms/text-analyze/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "text-capitalize": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/text-capitalize/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-diff": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/text-diff/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-embed": {
+      "category": "ai",
+      "pipeline": "skills/ai/text-embed/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-escape": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/text-escape/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-format": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/text-format/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-indent": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/text-indent/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-lines": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/text-lines/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-reverse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/text-reverse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-stats": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/text-stats/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-summarize": {
+      "category": "ai",
+      "pipeline": "skills/ai/text-summarize/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-to-command": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/text-to-command/pipeline-cli.yaml: 1 error(s) - (line 45, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 inpu",
+      "pipeline": "skills/ai/text-to-command/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "text-to-image": {
+      "category": "ai",
+      "pipeline": "skills/ai/text-to-image/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-to-speech": {
+      "category": "ai",
+      "pipeline": "skills/ai/text-to-speech/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-translate": {
+      "category": "ai",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/ai/text-translate/pipeline-cli.yaml: 1 error(s) - (line 27, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input",
+      "pipeline": "skills/ai/text-translate/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "text-truncate": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/text-truncate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "text-wrap": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/text-wrap/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "time-parse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/time-parse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "timestamp-parse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/timestamp-parse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "timezone-convert": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/timezone-convert/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "tls-inspect": {
+      "category": "security",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/security/tls-inspect/pipeline-cli.yaml: 10 error(s) - (line 28) bloblang syntax error in pipeline.processors.0.mapping. Statement keyword `meta` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `meta` statement above the `root = .",
+      "pipeline": "skills/security/tls-inspect/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "todoist-automate": {
+      "category": "workflows",
+      "pipeline": "skills/workflows/todoist-automate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "type-check": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/type-check/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "url-encode": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/url-encode/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "url-parse": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/url-parse/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "url-to-article": {
+      "category": "ai",
+      "pipeline": "skills/ai/url-to-article/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "uuid-generate": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/uuid-generate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "verify-signature": {
+      "category": "security",
+      "pipeline": "skills/security/verify-signature/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "video-generate": {
+      "category": "ai",
+      "pipeline": "skills/ai/video-generate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "video-thumbnail": {
+      "category": "utilities",
+      "pipeline": "skills/utilities/video-thumbnail/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "voice-admin": {
+      "category": "workflows",
+      "pipeline": "skills/workflows/voice-admin/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "webhook-receive": {
+      "category": "connectors",
+      "error": "[FAIL] /Users/daaronch/.treehouse/skills.expanso.io-5f2499/1/skills.expanso.io/skills/connectors/webhook-receive/pipeline-cli.yaml: 2 error(s) - (line 47) bloblang syntax error in pipeline.processors.0.mapping. Invalid syntax in call to or(). or() takes 1 argument(s): fallback (query expression). Example: root.doc.id = this.thing.id.or(uuid_v4()). See: https://docs.expanso.io/guides/bloblang/metho",
+      "pipeline": "skills/connectors/webhook-receive/pipeline-cli.yaml",
+      "readiness": "invalid-does-not-validate",
+      "validates": false
+    },
+    "whitespace-normalize": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/whitespace-normalize/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "word-count": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/word-count/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "xml-to-json": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/xml-to-json/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "yaml-to-json": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/yaml-to-json/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    },
+    "yaml-validate": {
+      "category": "transforms",
+      "pipeline": "skills/transforms/yaml-validate/pipeline-cli.yaml",
+      "readiness": "validated-not-executed",
+      "validates": true
+    }
+  },
+  "totals": {
+    "fails_validation": 39,
+    "skills": 177,
+    "validates": 138
+  },
+  "validator": {
+    "tool": "expanso-edge validate",
+    "version": "v2.1.21"
+  }
+}

@@ -39,9 +39,17 @@ jobs:
 
       - name: Build site with skills
         run: |
-          # Copy catalog files
+          # Copy catalog files. Root is authoritative; the committed docs/
+          # copies are build leftovers and are overwritten here.
           cp catalog.json docs/
           cp catalog-minimal.json docs/
+
+          # Machine-readable per-skill validation status. Generated locally by
+          # scripts/validate-skills.py against a recorded expanso-edge version,
+          # so the report always names the version it was produced against.
+          if [ -f validation-report.json ]; then
+            cp validation-report.json docs/
+          fi
 
           # Flatten skills structure: skills.expanso.io/<name>/ (no categories in URL)
           for category_dir in skills/*/; do

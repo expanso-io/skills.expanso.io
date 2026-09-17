@@ -665,12 +665,29 @@ body {
     background: #1d1f21 !important;
     border: 1px solid var(--border);
     border-radius: var(--radius);
+    /* Wrap rather than scroll sideways. Matches .modal-code pre above and keeps
+       long YAML values and URLs inside the viewport at phone widths. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .code-block pre code {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Fira Code', monospace;
     background: none !important;
     padding: 0;
+    white-space: inherit;
+    overflow-wrap: inherit;
+    word-break: inherit;
+}
+
+/* Prism sets white-space on the language-* elements; inherit the wrapping above
+   so it applies to highlighted blocks too. */
+.code-block pre[class*="language-"],
+.code-block code[class*="language-"] {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .code-copy-btn {

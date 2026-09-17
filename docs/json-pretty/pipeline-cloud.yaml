@@ -1,0 +1,62 @@
+# Expanso Pipeline: json-pretty (Cloud-scheduled mode)
+# ====================================================
+#
+# WHY THIS FILE EXISTS
+#   pipeline-cli.yaml reads `stdin`. Once a job is scheduled onto a remote edge
+#   node, that node's process has no connection to your terminal, so a `stdin`
+#   input has no way to receive your data. This variant replaces `stdin` with an
+#   input the node can satisfy entirely on its own, so it is the one to use for a
+#   first run against Expanso Cloud.
+#
+# WHAT IT DOES
+#   Emits a small, bounded, synthetic batch (3 records, one per second, then
+#   stops), formats each as pretty JSON, and writes to the node's stdout where it
+#   is visible via `expanso-cli job logs`.
+#
+# DEPENDENCIES
+#   None. No credentials, no third-party API, no network egress from the node
+#   beyond its existing control-plane connection. Nothing leaves the host.
+#
+# USE
+#   expanso-edge validate pipeline-cloud.yaml
+#   expanso-cli job validate pipeline-cloud.yaml --offline
+#   expanso-cli job deploy pipeline-cloud.yaml
+#
+#   Then confirm it actually ran -- deploying only stores the job:
+#   expanso-cli job describe json-pretty-cloud
+#   expanso-cli execution list --job-id <job-id>
+#   expanso-cli job logs json-pretty-cloud
+#
+#   Every record carries "skill": "json-pretty", so the log output is the
+#   verifiable receipt that the pipeline executed.
+#
+# SELECTOR
+#   As written this job has no selector, so the scheduler may place it on any
+#   connected node. Add a selector to pin it to nodes you intend:
+#     selector:
+#       match_labels:
+#         role: my-label
+
+name: "json-pretty-cloud"
+type: pipeline
+
+config:
+  input:
+    generate:
+      count: 3
+      interval: 1s
+      mapping: |
+        root.sample = {"hello": "expanso", "nested": {"a": 1, "b": [1, 2, 3]}}
+        root.seq = count("json_pretty_cloud_seq")
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+          root.formatted = this.sample.format_json()
+          root.seq = this.seq
+          root.valid = true
+          root.metadata = {"skill": "json-pretty", "mode": "cloud", "trace_id": meta("trace_id"), "timestamp": now()}
+
+  output:
+    stdout: {}
