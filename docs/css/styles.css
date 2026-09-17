@@ -1,6 +1,33 @@
-/* Expanso Skills - Dark Theme */
+/* Expanso Skills - light by default, dark via [data-theme="dark"] */
 
 :root {
+    color-scheme: light;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f4f4f5;
+    --bg-tertiary: #e4e4e7;
+    --bg-hover: #d4d4d8;
+    --border: #d4d4d8;
+    --text-primary: #18181b;
+    --text-secondary: #52525b;
+    --text-muted: #71717a;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --category-ai: #8b5cf6;
+    --category-security: #ef4444;
+    --category-transforms: #06b6d4;
+    --category-utilities: #f59e0b;
+    --category-workflows: #22c55e;
+    --category-connectors: #f97316;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --transition: 150ms ease;
+}
+
+[data-theme="dark"] {
+    color-scheme: dark;
     --bg-primary: #0a0a0b;
     --bg-secondary: #141416;
     --bg-tertiary: #1c1c1f;
@@ -22,7 +49,6 @@
     --radius: 8px;
     --radius-lg: 12px;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    --transition: 150ms ease;
 }
 
 * {
@@ -57,6 +83,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .logo {
@@ -83,6 +111,29 @@ body {
 .header-stats {
     color: var(--text-secondary);
     font-size: 0.875rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.theme-toggle {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.25rem 0.625rem;
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.theme-toggle:hover {
+    background: var(--bg-hover);
 }
 
 #skill-count {
@@ -134,7 +185,7 @@ body {
 }
 
 .install-box code {
-    color: #f4f4f5; /* White text for maximum readability */
+    color: var(--text-primary);
 }
 
 .copy-btn {
@@ -663,6 +714,7 @@ body {
     font-size: 0.8rem;
     line-height: 1.5;
     background: #1d1f21 !important;
+    color: #c5c8c6;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     /* Wrap rather than scroll sideways. Matches .modal-code pre above and keeps

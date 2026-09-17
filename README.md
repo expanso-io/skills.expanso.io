@@ -631,7 +631,7 @@ see [Known issues](#known-issues).
 
 `dependencies` is copied verbatim from `skill.yaml` and is present only for
 audited skills. The `offline` tag is set only when a skill declares
-`dependencies.offline_capable: true`, or declares no remote backend.
+`dependencies.offline_capable: true`, or declares only local backends.
 
 ## Related Resources
 

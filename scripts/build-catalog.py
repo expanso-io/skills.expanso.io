@@ -373,7 +373,9 @@ def extract_tags(skill_name: str, skill_data: dict, category: str) -> list[str]:
         tags.add("remote")
     declared = (skill_data.get("dependencies") or {}).get("offline_capable")
     if declared is True or (
-        declared is None and backend_types and "remote" not in backend_types
+        declared is None
+        and backend_types
+        and all(t == "local" for t in backend_types)
     ):
         tags.add("offline")
 

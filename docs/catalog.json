@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-09-17T23:46:57.356293+00:00",
+  "generated": "2026-09-17T23:52:04.345514+00:00",
   "total_skills": 177,
   "categories": {
     "workflows": {
@@ -7379,7 +7379,6 @@
         "multi"
       ],
       "tags": [
-        "offline",
         "openai",
         "workflows"
       ]

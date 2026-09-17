@@ -68,7 +68,7 @@ site-wide.
   inspect the pipeline's components: a third-party API component sends its
   credential and your data to that provider.
 - The catalog `offline` tag is set only when a skill declares
-  `dependencies.offline_capable: true`, or declares no remote backend.
+  `dependencies.offline_capable: true`, or declares only local backends.
 
 ## Readiness
 
@@ -94,3 +94,14 @@ readiness vocabulary caps at `validated-not-executed`.
 
 - Expanso documentation: https://docs.expanso.io
 - Expanso Cloud: https://cloud.expanso.io
+
+## Discovery
+
+Other Expanso surfaces for agents. These are discovery links only; this
+repository does not verify that they are live.
+
+- Expanso site llms.txt: https://expanso.io/llms.txt
+- Expanso documentation llms.txt: https://docs.expanso.io/llms.txt
+- Expanso examples: https://examples.expanso.io
+- Expanso MCP endpoint (JSON-RPC over HTTP): https://mcp.expanso.io/mcp
+  (the bare https://mcp.expanso.io root is an HTML page, not the MCP endpoint)

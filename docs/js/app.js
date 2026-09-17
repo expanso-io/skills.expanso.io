@@ -39,7 +39,27 @@
         connectors: 'badge-connectors'
     };
 
+    function initThemeToggle() {
+        var button = document.getElementById('theme-toggle');
+        if (!button) return;
+        var root = document.documentElement;
+        function render() {
+            var dark = root.getAttribute('data-theme') === 'dark';
+            button.textContent = dark ? 'Light' : 'Dark';
+            button.setAttribute('aria-pressed', dark ? 'true' : 'false');
+            button.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+        }
+        button.addEventListener('click', function() {
+            var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', next);
+            try { localStorage.setItem('theme', next); } catch (e) {}
+            render();
+        });
+        render();
+    }
+
     async function init() {
+        initThemeToggle();
         try {
             await loadCatalog();
             await loadValidationReport();
