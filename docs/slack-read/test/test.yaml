@@ -1,0 +1,32 @@
+# Tests for slack-read
+# Run: expanso test skills/connectors/slack-read/test/test.yaml
+
+name: slack-read-tests
+skip: true  # Requires SLACK_BOT_TOKEN
+
+tests:
+  - name: "reads channel messages"
+    input: '{"channel":"C01234567","limit":5}'
+    env:
+      SLACK_BOT_TOKEN: "test-token"
+    expected:
+      json_contains:
+        metadata:
+          skill: "slack-read"
+          mode: "cli"
+
+  - name: "filters by query"
+    input: '{"channel":"C01234567","query":"deploy","limit":10}'
+    env:
+      SLACK_BOT_TOKEN: "test-token"
+    expected:
+      json_contains:
+        metadata:
+          skill: "slack-read"
+
+  - name: "errors without channel"
+    input: '{}'
+    env:
+      SLACK_BOT_TOKEN: "test-token"
+    expected:
+      error_contains: "channel is required"

@@ -1,0 +1,159 @@
+# Expanso Pipeline: slack-read (MCP mode)
+# ==========================================
+#
+# HTTP server endpoint for MCP integration.
+# Accepts POST requests with channel/query parameters.
+#
+# Usage:
+#   SLACK_BOT_TOKEN=xoxb-... expanso-edge run pipeline-mcp.yaml
+#   curl -X POST http://localhost:4195/slack-read \
+#     -d '{"channel":"C01234567","limit":10}'
+
+name: slack-read-mcp
+type: pipeline
+
+config:
+  input:
+    http_server:
+      path: /slack-read
+      allowed_verbs: [POST]
+
+  pipeline:
+    processors:
+      # Validate input
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta start_time = now()
+
+          let input = content().parse_json()
+          let channel = $input.channel.or(env("SLACK_CHANNEL_ID").or(""))
+
+          if $channel == "" {
+            throw("channel is required")
+          }
+
+          if !$channel.re_match("^[A-Z0-9]{1,15}$") {
+            throw("invalid channel ID format: must be alphanumeric")
+          }
+
+          let limit = $input.limit.or(20)
+          if $limit < 1 || $limit > 200 {
+            throw("limit must be between 1 and 200")
+          }
+
+          meta channel = $channel
+          meta limit = $limit
+          meta query = $input.query.or("")
+          meta since_hours = $input.since_hours.or(24)
+
+          root.status = "initializing"
+
+      # Build URL from validated params
+      - mapping: |
+          let api_url = env("SLACK_API_URL").or("https://slack.com/api")
+          let oldest = now().ts_sub(meta("since_hours") + "h").ts_unix()
+          let channel = meta("channel")
+          let limit = meta("limit")
+
+          root.url = $api_url + "/conversations.history?channel=" + $channel + "&limit=" + $limit.string() + "&oldest=" + $oldest.string()
+
+      - try:
+          - http:
+              url: "${! this.url}"
+              verb: GET
+              headers:
+                Authorization: "Bearer ${SLACK_BOT_TOKEN}"
+                Content-Type: "application/json"
+              rate_limit: slack_api
+        catch:
+          - mapping: |
+              root.source = "slack"
+              root.resource = "conversations.history"
+              root.schema_version = "1.0"
+              root.trace_id = meta("trace_id")
+              root.error = error()
+              root.data = []
+              root.count = 0
+              root.sensitivity = "none"
+              root.metadata = {
+                "skill": "slack-read",
+                "mode": "mcp",
+                "trace_id": meta("trace_id"),
+                "success": false,
+                "error": error(),
+                "timestamp": now()
+              }
+
+      # Structure output with canonical envelope
+      - mapping: |
+          if this.exists("error") && this.exists("source") {
+            root = this
+          } else {
+            let response = this
+            let ok = $response.ok.or(false)
+
+            if !$ok {
+              root.source = "slack"
+              root.resource = "conversations.history"
+              root.schema_version = "1.0"
+              root.trace_id = meta("trace_id")
+              root.error = $response.error.or("unknown_error")
+              root.data = []
+              root.count = 0
+              root.sensitivity = "raw"
+              root.metadata = {
+                "skill": "slack-read",
+                "mode": "mcp",
+                "channel": meta("channel"),
+                "trace_id": meta("trace_id"),
+                "success": false,
+                "error": $response.error.or("unknown_error"),
+                "timestamp": now()
+              }
+            } else {
+              let messages = $response.messages.or([])
+              let query = meta("query")
+              let filtered = if $query != "" {
+                $messages.filter(m -> m.text.or("").lowercase().contains($query.lowercase()))
+              } else {
+                $messages
+              }
+
+              let structured = $filtered.map_each(m -> {
+                "id": m.ts,
+                "user": m.user.or("unknown"),
+                "text": m.text.or(""),
+                "timestamp": m.ts,
+                "thread_ts": m.thread_ts.or(null),
+                "reactions": m.reactions.or([]).map_each(r -> {
+                  "name": r.name,
+                  "count": r.count
+                })
+              })
+
+              root.source = "slack"
+              root.resource = "conversations.history"
+              root.schema_version = "1.0"
+              root.trace_id = meta("trace_id")
+              root.data = $structured
+              root.count = $structured.length()
+              root.sensitivity = "raw"
+              root.metadata = {
+                "skill": "slack-read",
+                "mode": "mcp",
+                "channel": meta("channel"),
+                "trace_id": meta("trace_id"),
+                "message_count": $structured.length(),
+                "timestamp": now()
+              }
+            }
+          }
+
+  output:
+    sync_response: {}
+
+rate_limit_resources:
+  - label: slack_api
+    local:
+      count: 10
+      interval: 1s

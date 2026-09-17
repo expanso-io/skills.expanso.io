@@ -1,0 +1,73 @@
+# Complete Fan-Out Pipeline
+# Sends sensor data to multiple destinations simultaneously
+
+name: fan-out-pattern-complete
+description: Complete fan-out pipeline with all destinations and fallbacks
+type: pipeline
+namespace: default
+labels:
+  pattern: fan-out
+  version: "1.0"
+
+config:
+  input:
+    http_server:
+      address: 0.0.0.0:8080
+      path: /events
+      allowed_verbs: ["POST"]
+
+  pipeline:
+    processors:
+      # Add processing metadata
+      - mapping: |
+          root = this
+          root.processed_at = now()
+          root.node_id = env("NODE_ID").or("edge-001")
+
+  output:
+    broker:
+      pattern: fan_out
+      outputs:
+        # Local file for debugging
+        - file:
+            path: /tmp/events.jsonl
+            codec: lines
+
+        # Kafka for real-time streaming (with fallback)
+        - fallback:
+            - kafka:
+                addresses: ["${KAFKA_BROKERS}"]
+                topic: sensor-events
+                key: "${!this.sensor_id}"
+                batching:
+                  count: 100
+                  period: 5s
+            - file:
+                path: /tmp/kafka-fallback.jsonl
+                codec: lines
+
+        # S3 for long-term archival (with fallback)
+        - fallback:
+            - aws_s3:
+                bucket: "${S3_BUCKET}"
+                region: "${AWS_REGION}"
+                path: "events/${!timestamp_unix()}/${!uuid_v4()}.json"
+                batching:
+                  count: 100
+                  period: 30s
+            - file:
+                path: /tmp/s3-fallback.jsonl
+                codec: lines
+
+        # Elasticsearch for search (with fallback)
+        - fallback:
+            - elasticsearch:
+                urls: ["${ES_ENDPOINT}"]
+                index: "sensor-events-${!timestamp_unix()}"
+                id: "${!this.event_id.or(uuid_v4())}"
+                batching:
+                  count: 50
+                  period: 10s
+            - file:
+                path: /tmp/es-fallback.jsonl
+                codec: lines

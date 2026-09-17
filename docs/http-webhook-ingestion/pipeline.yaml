@@ -1,0 +1,41 @@
+# HTTP Webhook Ingestion Pipeline
+# Accept webhooks and forward to Kafka
+
+name: http-webhook-ingestion
+description: Ingest HTTP webhooks with validation and forward to Kafka
+
+input:
+  http_server:
+    address: 0.0.0.0:8080
+    path: /webhook
+    allowed_verbs:
+      - POST
+    timeout: 5s
+
+pipeline:
+  processors:
+    # Add request metadata
+    - mapping: |
+        root = this
+        root._received_at = now()
+        root._source_ip = @http_client_ip.or("unknown")
+        root._request_id = uuid_v4()
+
+    # Validate required fields
+    - mapping: |
+        root = if this.event == null {
+          throw("Missing required field: event")
+        } else {
+          this
+        }
+
+    # Add event type for routing
+    - mapping: |
+        root._event_type = this.event.type.or(this.event).string()
+
+output:
+  kafka:
+    addresses:
+      - ${KAFKA_BROKERS:localhost:9092}
+    topic: "webhooks-${!_event_type}"
+    key: "${!_request_id}"

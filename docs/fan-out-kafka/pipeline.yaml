@@ -1,0 +1,28 @@
+name: fan-out-kafka
+description: Fan-out pipeline with file and Kafka destinations
+type: pipeline
+namespace: default
+labels:
+  pattern: fan-out
+  step: "2"
+
+config:
+  input:
+    http_server:
+      address: 0.0.0.0:8080
+      path: /events
+
+  output:
+    broker:
+      pattern: fan_out
+      outputs:
+        # Local file for debugging
+        - file:
+            path: /tmp/events.jsonl
+            codec: lines
+
+        # Kafka for real-time streaming
+        - kafka:
+            addresses: ["${KAFKA_BROKERS}"]
+            topic: sensor-events
+            key: "${!this.sensor_id}"

@@ -1,0 +1,122 @@
+# Expanso Pipeline: access-gate (CLI mode)
+# ==========================================
+#
+# Permission check gateway for agent access to resources.
+# Chain before any connector skill to enforce access control.
+# DENY-BY-DEFAULT: throws on no policy, no match, or explicit denial.
+#
+# Usage:
+#   echo '{"agent":"marketing-bot","resource":"slack-read","action":"read"}' | \
+#     ACCESS_POLICY="marketing-bot:slack-read:read" \
+#     expanso-edge run pipeline-cli.yaml
+#
+# Policy format (ACCESS_POLICY env var):
+#   "agent:resource:action,agent:resource:action"
+#   Example: "marketing-bot:slack-read:read,data-analyst:postgres-query:read"
+#
+# Compose inside a single pipeline:
+#   access-gate → slack-read → pii-redact → data-fence → audit-log
+
+name: access-gate-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 1: Parse request and validate required fields
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta start_time = now()
+
+          let input = content().parse_json()
+
+          let agent = $input.agent.or("")
+          let resource = $input.resource.or("")
+          let action = $input.action.or("read")
+
+          if $agent == "" {
+            throw("agent is required: identify the requesting agent or user")
+          }
+          if $resource == "" {
+            throw("resource is required: specify the resource being accessed")
+          }
+
+          meta agent = $agent
+          meta resource = $resource
+          meta action = $action
+
+          # Load policy — DENY if not configured
+          let policy_env = env("ACCESS_POLICY").or("")
+          if $policy_env == "" {
+            throw("no ACCESS_POLICY configured — deny by default")
+          }
+
+          # Parse policy rules: "agent:resource:action,agent:resource:action"
+          let policy_rules = $policy_env.split(",").map_each(rule ->
+            rule.split(":").map_each(p -> p.trim())
+          )
+
+          root.agent = $agent
+          root.resource = $resource
+          root.action = $action
+          root.policy_rules = $policy_rules
+          root.passthrough = $input
+
+      - log:
+          level: INFO
+          message: |
+            [access-gate] Checking: agent=${! meta("agent") } resource=${! meta("resource") } action=${! meta("action") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 2: Evaluate policy — throw on no match (deny-by-default)
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          let agent = this.agent
+          let resource = this.resource
+          let action = this.action
+          let rules = this.policy_rules
+
+          # Check each rule for a match
+          let matching_rules = $rules.filter(rule ->
+            (rule.index(0) == $agent || rule.index(0) == "*") &&
+            (rule.index(1) == $resource || rule.index(1) == "*") &&
+            (rule.index(2).or("read") == $action || rule.index(2).or("read") == "*")
+          )
+
+          if $matching_rules.length() == 0 {
+            throw("access denied for agent " + $agent + " on resource " + $resource + " action " + $action)
+          }
+
+          # Access granted — pass through with metadata
+          root.allowed = true
+          root.reason = "Matched policy rule for agent=" + $agent + " resource=" + $resource
+          root.agent = $agent
+          root.resource = $resource
+          root.action = $action
+          root.passthrough = this.passthrough
+
+          root.metadata = {
+            "skill": "access-gate",
+            "mode": "cli",
+            "agent": $agent,
+            "resource": $resource,
+            "action": $action,
+            "allowed": true,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [access-gate] Decision: ALLOW agent=${! meta("agent") } resource=${! meta("resource") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

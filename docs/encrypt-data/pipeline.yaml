@@ -1,0 +1,100 @@
+name: encrypt-data-complete
+type: pipeline
+description: Complete Field Encryption Pipeline - Encrypts payment, PII, and address data while preserving analytics-safe fields.
+namespace: production
+labels:
+  category: data-security
+  pattern: field-encryption
+
+config:
+  input:
+    http_server:
+      address: "0.0.0.0:8080"
+      path: /transactions
+      allowed_verbs: ["POST"]
+
+  pipeline:
+    processors:
+      # Step 1: Encrypt payment card data (PCI-DSS)
+      - mapping: |
+          root = this
+
+          root.payment = if this.payment.exists() {
+            let p = this.payment
+            let key = env("CARD_KEY")
+
+            # Encrypt card number, preserve last 4 and brand
+            let clean_card = p.card_number.or("").re_replace_all("[^0-9]", "")
+
+            {
+              "card_number_encrypted": p.card_number.encrypt_aes_gcm(key),
+              "card_last_four": clean_card.slice(-4),
+              "card_brand": match {
+                clean_card.has_prefix("4") => "visa",
+                clean_card.re_match("^5[1-5]") => "mastercard",
+                clean_card.re_match("^3[47]") => "amex",
+                _ => "other"
+              },
+              "cvv_encrypted": p.cvv.encrypt_aes_gcm(key),
+              "cardholder_encrypted": p.cardholder_name.encrypt_aes_gcm(key),
+              "expiration": p.expiration
+            }
+          } else { deleted() }
+
+      # Step 2: Encrypt customer PII (GDPR/CCPA)
+      - mapping: |
+          root = this
+
+          root.customer = if this.customer.exists() {
+            let c = this.customer
+            let key = env("PII_KEY")
+
+            {
+              "ssn_encrypted": c.ssn.encrypt_aes_gcm(key),
+              "ssn_last_four": c.ssn.re_replace_all("[^0-9]", "").slice(-4),
+              "email_encrypted": c.email.encrypt_aes_gcm(key),
+              "email_domain": c.email.split("@").index(1),
+              "phone_encrypted": c.phone.encrypt_aes_gcm(key),
+              "phone_area_code": c.phone.re_find("\\d{3}").index(0)
+            }
+          } else { deleted() }
+
+      # Step 3: Encrypt address data
+      - mapping: |
+          root = this
+
+          root.address = if this.address.exists() {
+            let a = this.address
+            let key = env("ADDR_KEY")
+
+            {
+              "street_encrypted": a.street.encrypt_aes_gcm(key),
+              "zip_encrypted": a.zip.encrypt_aes_gcm(key),
+              "zip_prefix": a.zip.string().slice(0, 3),
+              "city": a.city,
+              "state": a.state,
+              "country": a.country.or("US")
+            }
+          } else { deleted() }
+
+      # Step 4: Add encryption metadata
+      - mapping: |
+          root = this
+          root.encryption_metadata = {
+            "encrypted": true,
+            "timestamp": now(),
+            "algorithm": "AES-256-GCM",
+            "key_version": env("KEY_VERSION").or("v1"),
+            "pipeline": "field-encryption"
+          }
+
+  output:
+    stdout: {}
+
+logger:
+  level: INFO
+  format: json
+
+metrics:
+  prometheus:
+    path: /metrics

@@ -1,0 +1,128 @@
+# Expanso Pipeline: gmail-read (MCP mode)
+# ==========================================
+#
+# HTTP server endpoint for MCP integration.
+# Accepts POST requests with query/label parameters.
+#
+# Usage:
+#   GMAIL_ACCESS_TOKEN=ya29... expanso-edge run pipeline-mcp.yaml
+#   curl -X POST http://localhost:4195/gmail-read \
+#     -d '{"query":"is:unread","limit":10}'
+
+name: gmail-read-mcp
+type: pipeline
+
+config:
+  input:
+    http_server:
+      path: /gmail-read
+      allowed_verbs: [POST]
+
+  pipeline:
+    processors:
+      # Validate input
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta start_time = now()
+
+          let input = content().parse_json()
+          let query = $input.query.or("is:unread")
+          let label = $input.label.or("INBOX")
+          let limit = $input.limit.or(20)
+
+          # Validate limit range
+          if $limit < 1 || $limit > 500 {
+            throw("limit must be between 1 and 500")
+          }
+
+          # Validate label format (alphanumeric, underscores, common labels)
+          if !$label.re_match("^[A-Za-z0-9_-]{1,50}$") {
+            throw("invalid label format")
+          }
+
+          meta query = $query
+          meta label = $label
+          meta limit = $limit
+          meta include_body = $input.include_body.or(true)
+
+          root.status = "initializing"
+
+      # Build URL from validated params and list messages
+      - mapping: |
+          let api_url = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1")
+          let q = meta("query")
+          let label = meta("label")
+          let limit = meta("limit")
+
+          root.url = $api_url + "/users/me/messages?q=" + $q + "&labelIds=" + $label + "&maxResults=" + $limit.string()
+
+      - try:
+          - http:
+              url: "${! this.url}"
+              verb: GET
+              headers:
+                Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
+                Content-Type: "application/json"
+              rate_limit: gmail_api
+        catch:
+          - mapping: |
+              root.source = "gmail"
+              root.resource = "messages.list"
+              root.schema_version = "1.0"
+              root.trace_id = meta("trace_id")
+              root.error = error()
+              root.data = []
+              root.count = 0
+              root.sensitivity = "raw"
+              root.metadata = {
+                "skill": "gmail-read",
+                "mode": "mcp",
+                "trace_id": meta("trace_id"),
+                "success": false,
+                "error": error(),
+                "timestamp": now()
+              }
+
+      # Structure output with canonical envelope
+      - mapping: |
+          # If we already have an error envelope from catch, pass through
+          if this.exists("error") && this.exists("source") {
+            root = this
+          } else {
+            let response = this
+            let message_ids = $response.messages.or([]).map_each(m -> m.id)
+            let api_url = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1")
+
+            let emails = $message_ids.map_each(id -> {
+              "id": id,
+              "fetch_url": $api_url + "/users/me/messages/" + id
+            })
+
+            # Canonical output envelope
+            root.source = "gmail"
+            root.resource = "messages.list"
+            root.schema_version = "1.0"
+            root.trace_id = meta("trace_id")
+            root.data = $emails
+            root.count = $emails.length()
+            root.sensitivity = "raw"
+            root.metadata = {
+              "skill": "gmail-read",
+              "mode": "mcp",
+              "query": meta("query"),
+              "label": meta("label"),
+              "trace_id": meta("trace_id"),
+              "email_count": $message_ids.length(),
+              "total_estimated": $response.resultSizeEstimate.or(0),
+              "timestamp": now()
+            }
+          }
+
+  output:
+    sync_response: {}
+
+rate_limit_resources:
+  - label: gmail_api
+    local:
+      count: 10
+      interval: 1s

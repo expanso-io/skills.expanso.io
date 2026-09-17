@@ -1,0 +1,67 @@
+# Skill: data-fence
+# Version: 1.0.0
+#
+# Filter output to only allowed fields and rows.
+# Composable security skill — chain after any connector skill.
+#
+# Pipeline: access-gate → [connector] → pii-redact → data-fence → audit-log
+#
+# Runs locally without API calls.
+
+name: "data-fence"
+version: "1.0.0"
+description: "Filter data to only allowed fields and rows before passing to agents"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+credentials: []  # No API key needed
+
+# Skill inputs
+inputs:
+  - name: data
+    type: any
+    required: true
+    description: Data to filter (object or array of objects)
+  - name: allowed_fields
+    type: array
+    required: false
+    description: "List of field names to keep (e.g., ['id', 'text', 'timestamp'])"
+  - name: blocked_fields
+    type: array
+    required: false
+    description: "List of field names to remove (e.g., ['email', 'phone', 'ssn'])"
+  - name: max_rows
+    type: integer
+    default: 100
+    description: Maximum number of rows/items to return
+
+# Skill outputs
+outputs:
+  - name: data
+    type: any
+    description: Filtered data with only allowed fields
+  - name: metadata
+    type: object
+    description: "Filter metadata: {fields_removed, rows_truncated, trace_id}"
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Local field and row filtering (no external calls)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - log
+  outputs:
+    - stdout
+    - sync_response

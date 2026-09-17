@@ -1,0 +1,70 @@
+# Skill: webhook-receive
+# Version: 1.0.0
+#
+# Receive and process webhook events from any service.
+# Universal connector — works with GitHub, Stripe, Slack, and any webhook source.
+# No external credentials needed — runs entirely on Expanso Edge.
+#
+# Compose with security skills:
+#   webhook-receive → sign-envelope → policy-check → data-fence → audit-log
+
+name: "webhook-receive"
+version: "1.0.0"
+description: "Receive, validate, and process webhook events from any service"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+# Credentials (stored locally on Expanso Edge, never transmitted)
+credentials:
+  - name: WEBHOOK_SECRET
+    required: false
+    description: Shared secret for HMAC signature verification
+  - name: WEBHOOK_ALLOWED_IPS
+    required: false
+    description: Comma-separated list of allowed source IPs
+
+# Skill inputs
+inputs:
+  - name: path
+    type: string
+    default: "/webhook"
+    description: HTTP path to listen on
+  - name: verify_signature
+    type: boolean
+    default: false
+    description: Verify HMAC signature (requires WEBHOOK_SECRET)
+  - name: signature_header
+    type: string
+    default: "X-Hub-Signature-256"
+    description: Header containing the HMAC signature
+
+# Skill outputs
+outputs:
+  - name: event
+    type: object
+    description: "Parsed webhook event with headers and body"
+  - name: metadata
+    type: object
+    description: "Processing metadata: {skill, trace_id, source_ip, timestamp}"
+
+# Backend options
+backends:
+  - name: local
+    type: local
+    requires: []
+    description: Local HTTP server (no external dependencies)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - log
+  outputs:
+    - stdout
+    - sync_response

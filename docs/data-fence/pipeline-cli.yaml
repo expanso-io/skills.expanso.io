@@ -1,0 +1,135 @@
+# Expanso Pipeline: data-fence (CLI mode)
+# ==========================================
+#
+# Filter data to only allowed fields and rows before passing to agents.
+# Chain after any connector skill to limit what the agent can see.
+#
+# Usage:
+#   # Keep only specific fields
+#   echo '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"allowed_fields":["id","name"]}' | \
+#     expanso-edge run pipeline-cli.yaml
+#
+#   # Block specific fields
+#   echo '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"blocked_fields":["ssn"]}' | \
+#     expanso-edge run pipeline-cli.yaml
+#
+#   # Via environment variable
+#   echo '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}]}' | \
+#     FENCE_ALLOWED_FIELDS="id,name" expanso-edge run pipeline-cli.yaml
+#
+# Compose: access-gate → slack-read → pii-redact → data-fence → audit-log
+
+name: data-fence-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 1: Parse input and configure fence rules
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let input = content().parse_json()
+
+          # Get the data to filter — could be nested in the input
+          let data = $input.data.or($input)
+
+          # Get field rules from input or environment
+          let allowed_env = env("FENCE_ALLOWED_FIELDS").or("")
+          let blocked_env = env("FENCE_BLOCKED_FIELDS").or("")
+
+          let allowed_fields = $input.allowed_fields.or(
+            if $allowed_env != "" { $allowed_env.split(",").map_each(f -> f.trim()) } else { [] }
+          )
+          let blocked_fields = $input.blocked_fields.or(
+            if $blocked_env != "" { $blocked_env.split(",").map_each(f -> f.trim()) } else { [] }
+          )
+
+          let max_rows = $input.max_rows.or(
+            env("FENCE_MAX_ROWS").or("100").number()
+          )
+
+          meta allowed_fields = $allowed_fields
+          meta blocked_fields = $blocked_fields
+          meta max_rows = $max_rows
+
+          root.data = $data
+          root.allowed_fields = $allowed_fields
+          root.blocked_fields = $blocked_fields
+          root.max_rows = $max_rows
+
+      - log:
+          level: INFO
+          message: |
+            [data-fence] Filtering: allowed=${! meta("allowed_fields") }, blocked=${! meta("blocked_fields") }, max_rows=${! meta("max_rows") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 2: Apply field and row filters
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          let data = this.data
+          let allowed = this.allowed_fields
+          let blocked = this.blocked_fields
+          let max_rows = this.max_rows
+
+          # Determine if data is an array or single object
+          let is_array = $data.type() == "array"
+
+          let items = if $is_array { $data } else { [$data] }
+
+          # Apply row limit
+          let original_count = $items.length()
+          let truncated = $items.slice(0, $max_rows)
+          let rows_removed = $original_count - $truncated.length()
+
+          # Apply field filtering to each item
+          let filtered = $truncated.map_each(item ->
+            if $allowed.length() > 0 {
+              # Allowlist mode: only keep specified fields
+              $allowed.fold({}, pair ->
+                pair.value.merge(
+                  if item.exists($allowed.index(pair.key)) {
+                    { ($allowed.index(pair.key)): item.index($allowed.index(pair.key)) }
+                  } else {
+                    {}
+                  }
+                )
+              )
+            } else if $blocked.length() > 0 {
+              # Blocklist mode: remove specified fields
+              item.without($blocked.index(0).or("")).without($blocked.index(1).or("")).without($blocked.index(2).or("")).without($blocked.index(3).or("")).without($blocked.index(4).or(""))
+            } else {
+              # No filtering rules — pass through
+              item
+            }
+          )
+
+          # Return as array or single object based on input type
+          root.data = if $is_array { $filtered } else { $filtered.index(0) }
+
+          root.metadata = {
+            "skill": "data-fence",
+            "mode": "cli",
+            "trace_id": meta("trace_id"),
+            "original_row_count": $original_count,
+            "filtered_row_count": $filtered.length(),
+            "rows_removed": $rows_removed,
+            "allowed_fields": $allowed,
+            "blocked_fields": $blocked,
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [data-fence] Filtered: ${! this.metadata.filtered_row_count } rows, ${! this.metadata.rows_removed } removed (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout:
+      codec: json_object

@@ -1,0 +1,100 @@
+name: content-splitting-complete
+type: pipeline
+description: Complete Content Splitting Pipeline - Splits batch payloads (arrays, CSVs) into individual records for processing.
+namespace: production
+labels:
+  category: data-routing
+  pattern: content-splitting
+
+config:
+  input:
+    http_server:
+      address: "0.0.0.0:8080"
+      path: /batch
+      allowed_verbs: ["POST"]
+
+  pipeline:
+    processors:
+      # Step 1: Detect content type and validate
+      - mapping: |
+          root = this
+          root.batch_id = uuid_v4()
+          root.received_at = now()
+
+          # Determine data type
+          root.data_type = if this.items.exists() && this.items.type() == "array" {
+            "json_array"
+          } else if this.records.exists() {
+            "records"
+          } else if this.type() == "array" {
+            "raw_array"
+          } else {
+            "single"
+          }
+
+          meta data_type = root.data_type
+          meta batch_id = root.batch_id
+
+      # Step 2: Extract items to split
+      - mapping: |
+          root = match meta("data_type") {
+            "json_array" => this.items,
+            "records" => this.records,
+            "raw_array" => this,
+            _ => [this]
+          }
+
+          # Preserve batch context
+          meta item_count = root.length()
+
+      # Step 3: Split array into individual messages
+      - unarchive:
+          format: json_array
+
+      # Step 4: Enrich each item with batch context
+      - mapping: |
+          root = this
+          root.batch_context = {
+            "batch_id": meta("batch_id"),
+            "item_index": count("items"),
+            "total_items": meta("item_count"),
+            "split_at": now()
+          }
+
+      # Step 5: Validate individual items
+      - mapping: |
+          root = if this.type() == "object" && this.keys().length() > 0 {
+            this
+          } else {
+            root.invalid = true
+            root.original = this
+            this
+          }
+
+          meta is_valid = !this.invalid.or(false)
+
+  output:
+    switch:
+      # Valid items → processing queue
+      - check: 'meta("is_valid") == true'
+        output:
+          kafka:
+            addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+            topic: processed-items
+            batching:
+              count: 100
+              period: 5s
+
+      # Invalid items → DLQ
+      - output:
+          file:
+            path: "/var/expanso/dlq/${!timestamp_unix_date('2006-01-02')}/invalid-items.jsonl"
+            codec: lines
+
+logger:
+  level: INFO
+  format: json
+
+metrics:
+  prometheus:
+    path: /metrics

@@ -1,0 +1,45 @@
+# Kafka to S3 Pipeline
+# Stream Kafka topics to S3 with partitioning and batching
+
+name: kafka-to-s3
+description: Stream Kafka messages to S3 with intelligent partitioning
+
+input:
+  kafka:
+    addresses:
+      - ${KAFKA_BROKERS:localhost:9092}
+    topics:
+      - ${KAFKA_TOPIC:events}
+    consumer_group: expanso-kafka-to-s3
+    start_from_oldest: true
+
+pipeline:
+  processors:
+    # Add ingestion metadata
+    - mapping: |
+        root = this
+        root._ingested_at = now()
+        root._partition_hour = now().format("2006-01-02-15")
+        root._partition_day = now().format("2006-01-02")
+
+    # Add message key if present
+    - mapping: |
+        root._kafka_key = @kafka_key.or("none")
+        root._kafka_topic = @kafka_topic
+        root._kafka_partition = @kafka_partition
+        root._kafka_offset = @kafka_offset
+
+output:
+  aws_s3:
+    bucket: ${S3_BUCKET}
+    path: "data/${!_kafka_topic}/${!_partition_day}/${!_partition_hour}/${!uuid_v4()}.json.gz"
+    content_type: application/json
+    content_encoding: gzip
+    batching:
+      count: 1000
+      period: 60s
+      processors:
+        - archive:
+            format: lines
+        - compress:
+            algorithm: gzip

@@ -1,0 +1,82 @@
+# Skill: gmail-read
+# Version: 1.0.0
+#
+# Read emails from Gmail via the Gmail API or IMAP.
+# Credentials stay local on Expanso Edge — never transmitted.
+#
+# Compose with security skills for safe agent access:
+#   access-gate → gmail-read → pii-redact → data-fence → audit-log
+
+name: "gmail-read"
+version: "1.0.0"
+description: "Read emails from Gmail with filtering, search, and label support"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+# Credentials (stored locally on Expanso Edge, never transmitted)
+credentials:
+  - name: GMAIL_ACCESS_TOKEN
+    required: true
+    description: Gmail OAuth2 access token
+  - name: GMAIL_REFRESH_TOKEN
+    required: false
+    description: Gmail OAuth2 refresh token for long-lived access
+  - name: GMAIL_CLIENT_ID
+    required: false
+    description: OAuth2 client ID (for token refresh)
+  - name: GMAIL_CLIENT_SECRET
+    required: false
+    description: OAuth2 client secret (for token refresh)
+
+# Skill inputs
+inputs:
+  - name: query
+    type: string
+    required: false
+    default: "is:unread"
+    description: Gmail search query (same syntax as Gmail search bar)
+  - name: label
+    type: string
+    required: false
+    default: "INBOX"
+    description: Gmail label to read from
+  - name: limit
+    type: integer
+    default: 20
+    description: Maximum emails to retrieve (1-100)
+  - name: include_body
+    type: boolean
+    default: true
+    description: Include email body content (set false for headers only)
+
+# Skill outputs
+outputs:
+  - name: emails
+    type: array
+    description: "Array of emails: {id, subject, from, to, date, snippet, body, labels}"
+  - name: metadata
+    type: object
+    description: "Processing metadata: {skill, trace_id, email_count, query, timestamp}"
+
+# Backend options
+backends:
+  - name: gmail-api
+    type: remote
+    requires: [GMAIL_ACCESS_TOKEN]
+    description: Gmail API via OAuth2 (requires gmail.readonly scope)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - http
+    - log
+  outputs:
+    - stdout
+    - sync_response

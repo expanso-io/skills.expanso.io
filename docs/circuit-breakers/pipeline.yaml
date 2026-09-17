@@ -1,0 +1,100 @@
+name: circuit-breakers-complete
+type: pipeline
+description: Complete Circuit Breaker Pipeline - Demonstrates fallback chain with Primary API, Secondary API, Local storage, and DLQ.
+namespace: production
+labels:
+  category: data-routing
+  pattern: circuit-breaker
+
+config:
+  input:
+    http_server:
+      address: "0.0.0.0:8080"
+      path: /events
+      allowed_verbs: ["POST"]
+
+  pipeline:
+    processors:
+      # Initialize request tracking
+      - mapping: |
+          root = this
+          root.request_id = uuid_v4()
+          root.received_at = now()
+
+      # Enrich from API with circuit breaker protection
+      - try:
+          - http:
+              url: "${PRIMARY_API:http://api:8080}/enrich/${!this.event_id}"
+              verb: GET
+              timeout: 3s
+              retries: 2
+              retry_period: 1s
+          - mapping: |
+              root = this
+              root.enrichment = content().parse_json()
+              root.enrichment_source = "primary_api"
+        catch:
+          # Primary failed, try secondary
+          - try:
+              - http:
+                  url: "${SECONDARY_API:http://backup-api:8080}/enrich/${!this.event_id}"
+                  verb: GET
+                  timeout: 5s
+                  retries: 1
+              - mapping: |
+                  root = this
+                  root.enrichment = content().parse_json()
+                  root.enrichment_source = "secondary_api"
+            catch:
+              # Both APIs failed, continue without enrichment
+              - mapping: |
+                  root = this
+                  root.enrichment = null
+                  root.enrichment_source = "none"
+                  root.enrichment_failed = true
+
+      # Add processing metadata
+      - mapping: |
+          root = this
+          root.processed_at = now()
+
+  output:
+    # Multi-level fallback for output
+    fallback:
+      # Level 1: Primary destination (Elasticsearch)
+      - http_client:
+          url: "${ELASTICSEARCH:http://es:9200}/events/_doc"
+          verb: POST
+          timeout: 5s
+          max_retries: 2
+          headers:
+            Content-Type: application/json
+
+      # Level 2: Secondary destination (Kafka)
+      - kafka:
+          addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+          topic: events-fallback
+          max_retries: 3
+
+      # Level 3: Local buffer (filesystem)
+      - file:
+          path: "/var/expanso/buffer/${!timestamp_unix_date('2006-01-02')}/events.jsonl"
+          codec: lines
+
+      # Level 4: Dead letter queue (last resort)
+      - file:
+          path: "/var/expanso/dlq/${!timestamp_unix_date('2006-01-02')}/failed.jsonl"
+          codec: lines
+          processors:
+            - mapping: |
+                root = this
+                root.dlq_reason = "all_destinations_failed"
+                root.dlq_time = now()
+
+logger:
+  level: INFO
+  format: json
+
+metrics:
+  prometheus:
+    path: /metrics

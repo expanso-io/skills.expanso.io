@@ -1,0 +1,34 @@
+# Tests for gmail-read
+# Run: expanso test skills/connectors/gmail-read/test/test.yaml
+
+name: gmail-read-tests
+skip: true  # Requires GMAIL_ACCESS_TOKEN
+
+tests:
+  - name: "reads inbox emails"
+    input: '{"query":"is:unread","limit":5}'
+    env:
+      GMAIL_ACCESS_TOKEN: "test-token"
+    expected:
+      json_contains:
+        metadata:
+          skill: "gmail-read"
+          mode: "cli"
+
+  - name: "searches by sender"
+    input: '{"query":"from:test@example.com","limit":10}'
+    env:
+      GMAIL_ACCESS_TOKEN: "test-token"
+    expected:
+      json_contains:
+        metadata:
+          skill: "gmail-read"
+
+  - name: "defaults to is:unread query"
+    input: '{}'
+    env:
+      GMAIL_ACCESS_TOKEN: "test-token"
+    expected:
+      json_contains:
+        metadata:
+          query: "is:unread"

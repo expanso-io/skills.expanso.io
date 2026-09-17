@@ -1,0 +1,136 @@
+name: priority-queues-complete
+type: pipeline
+description: Complete Priority Queue Pipeline - Routes events to different queues based on severity, customer tier, and event type.
+namespace: production
+labels:
+  category: data-routing
+  pattern: priority-routing
+
+config:
+  input:
+    http_server:
+      address: "0.0.0.0:8080"
+      path: /events
+      allowed_verbs: ["POST"]
+
+  pipeline:
+    processors:
+      # Step 1: Parse and validate
+      - json_documents:
+          parts: []
+
+      - mapping: |
+          root = this
+          root.event_id = this.event_id.or(uuid_v4())
+          root.received_at = now()
+
+      # Step 2: Normalize priority factors
+      - mapping: |
+          root = this
+
+          # Normalize severity (0-100)
+          root.severity_score = match this.severity.or("INFO").uppercase() {
+            "CRITICAL" | "FATAL" => 100,
+            "ERROR" => 80,
+            "WARN" | "WARNING" => 50,
+            "INFO" => 30,
+            "DEBUG" => 10,
+            _ => 30
+          }
+
+          # Customer tier multiplier
+          root.tier_multiplier = match this.customer_tier.or("free").lowercase() {
+            "enterprise" => 2.0,
+            "premium" => 1.5,
+            "pro" => 1.2,
+            _ => 1.0
+          }
+
+          # Event type boost
+          root.type_boost = match this.event_type.or("").lowercase() {
+            x if x.contains("payment") => 20,
+            x if x.contains("security") => 15,
+            x if x.contains("auth") => 10,
+            _ => 0
+          }
+
+      # Step 3: Calculate final priority score
+      - mapping: |
+          root = this
+          root.priority_score = (this.severity_score * this.tier_multiplier + this.type_boost).round()
+
+          root.priority_queue = if this.priority_score >= 150 {
+            "critical"
+          } else if this.priority_score >= 100 {
+            "high"
+          } else if this.priority_score >= 50 {
+            "normal"
+          } else {
+            "low"
+          }
+
+          meta priority_queue = root.priority_queue
+
+      # Step 4: Apply anti-starvation (age boost)
+      - mapping: |
+          root = this
+
+          # Boost priority for older events to prevent starvation
+          let age_seconds = if this.timestamp.exists() {
+            (now().ts_unix() - this.timestamp.parse_timestamp().ts_unix()).or(0)
+          } else { 0 }
+
+          # Add 1 priority point per minute of age (max 30)
+          let age_boost = (age_seconds / 60).floor().min(30)
+          root.final_score = this.priority_score + age_boost
+          root.age_boost_applied = age_boost
+
+  output:
+    switch:
+      # Critical → immediate processing
+      - check: 'meta("priority_queue") == "critical"'
+        output:
+          kafka:
+            addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+            topic: events-critical
+            ack_replicas: true
+            batching:
+              count: 1
+              period: 0s
+
+      # High priority → fast processing
+      - check: 'meta("priority_queue") == "high"'
+        output:
+          kafka:
+            addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+            topic: events-high
+            batching:
+              count: 10
+              period: 2s
+
+      # Normal priority → standard processing
+      - check: 'meta("priority_queue") == "normal"'
+        output:
+          kafka:
+            addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+            topic: events-normal
+            batching:
+              count: 50
+              period: 10s
+
+      # Low priority → batch processing
+      - output:
+          kafka:
+            addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+            topic: events-low
+            batching:
+              count: 200
+              period: 60s
+
+logger:
+  level: INFO
+  format: json
+
+metrics:
+  prometheus:
+    path: /metrics

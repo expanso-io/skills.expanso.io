@@ -1,0 +1,102 @@
+# Expanso Pipeline: webhook-receive (MCP mode)
+# ==========================================
+#
+# HTTP server endpoint that receives webhook events.
+# This is the primary mode — listens for incoming webhook POSTs.
+#
+# Usage:
+#   expanso-edge run pipeline-mcp.yaml
+#   # Then configure your service to send webhooks to:
+#   # http://your-edge-node:4195/webhook
+#
+#   # With signature verification:
+#   WEBHOOK_SECRET=mysecret expanso-edge run pipeline-mcp.yaml
+
+name: webhook-receive-mcp
+type: pipeline
+
+config:
+  input:
+    http_server:
+      path: /webhook
+      allowed_verbs: [POST]
+
+  pipeline:
+    processors:
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 1: Parse and extract event metadata
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          meta trace_id = uuid_v4()
+          meta start_time = now()
+          meta raw_body = content()
+
+          let body = content().parse_json()
+
+          meta event_type = meta("http_header_x-github-event").or(
+            meta("http_header_x-stripe-event").or(
+              meta("http_header_x-event-type").or("unknown")
+            )
+          )
+
+          root.event = {
+            "type": meta("event_type"),
+            "body": $body,
+            "source_ip": meta("http_remote_addr").or("unknown"),
+            "received_at": now()
+          }
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 2: Signature verification (fail-closed)
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          let secret = env("WEBHOOK_SECRET").or("")
+          let sig_header_name = env("WEBHOOK_SIGNATURE_HEADER").or("x-hub-signature-256")
+
+          if $secret != "" {
+            # MCP mode: headers come via meta("http_header_<name>")
+            let provided_sig = meta("http_header_" + $sig_header_name).or("")
+            if $provided_sig == "" {
+              throw("webhook rejected: missing signature header " + $sig_header_name)
+            }
+
+            # Compute HMAC-SHA256 and compare against raw body
+            let expected = "sha256=" + hash("hmac_sha256", $secret, meta("raw_body")).encode("hex")
+            if $expected != $provided_sig {
+              throw("webhook rejected: invalid signature")
+            }
+
+            meta signature_status = "verified"
+          } else {
+            meta signature_status = "unverified_no_secret"
+          }
+          root = this
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 3: Structure output with canonical envelope
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          root.source = "webhook"
+          root.resource = "event." + meta("event_type")
+          root.schema_version = "1.0"
+          root.trace_id = meta("trace_id")
+          root.data = [this.event]
+          root.count = 1
+          root.sensitivity = "raw"
+          root.metadata = {
+            "skill": "webhook-receive",
+            "mode": "mcp",
+            "event_type": meta("event_type"),
+            "signature_status": meta("signature_status"),
+            "source_ip": this.event.source_ip,
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [webhook-receive] Processed event type=${! meta("event_type") } sig=${! meta("signature_status") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    sync_response: {}

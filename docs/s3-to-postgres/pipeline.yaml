@@ -1,0 +1,53 @@
+# S3 to PostgreSQL Pipeline
+name: s3-to-postgres
+description: Load JSON files from S3 into PostgreSQL
+
+input:
+  aws_s3:
+    bucket: ${S3_BUCKET}
+    prefix: ${S3_PREFIX:data/}
+    scanner:
+      to_the_end: {}
+    sqs:
+      url: ${SQS_URL:}  # Optional: use SQS for new file notifications
+
+pipeline:
+  processors:
+    # Parse JSON lines
+    - unarchive:
+        format: lines
+
+    # Add load metadata
+    - mapping: |
+        root = this
+        root._loaded_at = now()
+        root._source_bucket = "${S3_BUCKET}"
+        root._source_key = @s3_key
+
+    # Map to PostgreSQL columns
+    - mapping: |
+        root.id = this.id.or(uuid_v4())
+        root.data = this.without("_loaded_at", "_source_bucket", "_source_key").string()
+        root.source_key = this._source_key
+        root.loaded_at = this._loaded_at
+
+output:
+  sql_insert:
+    driver: postgres
+    dsn: ${POSTGRES_DSN}
+    table: ${TABLE_NAME:imported_data}
+    columns:
+      - id
+      - data
+      - source_key
+      - loaded_at
+    args_mapping: |
+      root = [
+        this.id,
+        this.data,
+        this.source_key,
+        this.loaded_at
+      ]
+    batching:
+      count: 100
+      period: 5s

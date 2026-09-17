@@ -1,0 +1,85 @@
+# Expanso Pipeline: data-fence (MCP mode)
+# ==========================================
+#
+# HTTP server endpoint for MCP integration.
+#
+# Usage:
+#   expanso-edge run pipeline-mcp.yaml
+#   curl -X POST http://localhost:4195/data-fence \
+#     -d '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"allowed_fields":["id","name"]}'
+
+name: data-fence-mcp
+type: pipeline
+
+config:
+  input:
+    http_server:
+      path: /data-fence
+      allowed_verbs: [POST]
+
+  pipeline:
+    processors:
+      - mapping: |
+          meta trace_id = uuid_v4()
+
+          let input = content().parse_json()
+          let data = $input.data.or($input)
+
+          let allowed_env = env("FENCE_ALLOWED_FIELDS").or("")
+          let blocked_env = env("FENCE_BLOCKED_FIELDS").or("")
+
+          let allowed_fields = $input.allowed_fields.or(
+            if $allowed_env != "" { $allowed_env.split(",").map_each(f -> f.trim()) } else { [] }
+          )
+          let blocked_fields = $input.blocked_fields.or(
+            if $blocked_env != "" { $blocked_env.split(",").map_each(f -> f.trim()) } else { [] }
+          )
+          let max_rows = $input.max_rows.or(
+            env("FENCE_MAX_ROWS").or("100").number()
+          )
+
+          root.data = $data
+          root.allowed_fields = $allowed_fields
+          root.blocked_fields = $blocked_fields
+          root.max_rows = $max_rows
+
+      - mapping: |
+          let data = this.data
+          let allowed = this.allowed_fields
+          let blocked = this.blocked_fields
+          let max_rows = this.max_rows
+
+          let is_array = $data.type() == "array"
+          let items = if $is_array { $data } else { [$data] }
+
+          let truncated = $items.slice(0, $max_rows)
+
+          let filtered = $truncated.map_each(item ->
+            if $allowed.length() > 0 {
+              $allowed.fold({}, pair ->
+                pair.value.merge(
+                  if item.exists($allowed.index(pair.key)) {
+                    { ($allowed.index(pair.key)): item.index($allowed.index(pair.key)) }
+                  } else {
+                    {}
+                  }
+                )
+              )
+            } else if $blocked.length() > 0 {
+              item.without($blocked.index(0).or("")).without($blocked.index(1).or("")).without($blocked.index(2).or("")).without($blocked.index(3).or("")).without($blocked.index(4).or(""))
+            } else {
+              item
+            }
+          )
+
+          root.data = if $is_array { $filtered } else { $filtered.index(0) }
+          root.metadata = {
+            "skill": "data-fence",
+            "mode": "mcp",
+            "trace_id": meta("trace_id"),
+            "filtered_row_count": $filtered.length(),
+            "timestamp": now()
+          }
+
+  output:
+    sync_response: {}

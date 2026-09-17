@@ -1,0 +1,43 @@
+# Tests for access-gate
+# Run: expanso test skills/security/access-gate/test/test.yaml
+
+name: access-gate-tests
+
+tests:
+  - name: "denies by default when no policy configured"
+    input: '{"agent":"unknown-bot","resource":"slack-read","action":"read"}'
+    expected:
+      error_contains: "no ACCESS_POLICY configured"
+
+  - name: "denies when no matching rule"
+    input: '{"agent":"unknown-bot","resource":"slack-read","action":"read"}'
+    env:
+      ACCESS_POLICY: "marketing-bot:slack-read:read"
+    expected:
+      error_contains: "access denied for agent unknown-bot"
+
+  - name: "allows matching policy rule"
+    input: '{"agent":"marketing-bot","resource":"slack-read","action":"read"}'
+    env:
+      ACCESS_POLICY: "marketing-bot:slack-read:read"
+    expected:
+      json_contains:
+        allowed: true
+
+  - name: "allows wildcard agent rule"
+    input: '{"agent":"any-bot","resource":"webhook-receive","action":"read"}'
+    env:
+      ACCESS_POLICY: "*:webhook-receive:read"
+    expected:
+      json_contains:
+        allowed: true
+
+  - name: "errors without agent"
+    input: '{"resource":"slack-read"}'
+    expected:
+      error_contains: "agent is required"
+
+  - name: "errors without resource"
+    input: '{"agent":"marketing-bot"}'
+    expected:
+      error_contains: "resource is required"
