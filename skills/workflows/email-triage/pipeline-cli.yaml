@@ -13,8 +13,9 @@
 #     OUTLOOK_TOKEN=... expanso-edge run pipeline-cli.yaml
 #
 # Why Expanso Edge?
-#   Your email credentials and OAuth tokens stay on YOUR machine.
-#   The AI only sees email content - never your authentication.
+#   Credentials are read from the executing node's environment, not sent to
+#   Expanso Cloud. Each is sent to its own provider's API. The AI provider
+#   receives email content, not your mail credentials.
 #   Full audit trail of what was processed and why.
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json

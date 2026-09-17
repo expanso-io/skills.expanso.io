@@ -2,7 +2,9 @@
 # Version: 1.0.0
 #
 # Read emails from Gmail via the Gmail API or IMAP.
-# Credentials stay local on Expanso Edge — never transmitted.
+# Gmail OAuth tokens are read from the executing node's environment and sent to
+# the Gmail API (Google) as the bearer credential. They are not sent to Expanso
+# Cloud and are not exposed to the calling agent. Mail data is fetched from Google.
 #
 # Compose with security skills for safe agent access:
 #   access-gate → gmail-read → pii-redact → data-fence → audit-log
@@ -16,7 +18,7 @@ author:
   url: "https://expanso.io"
   avatar: "EX"
 
-# Credentials (stored locally on Expanso Edge, never transmitted)
+# Credentials (read from the executing node's environment; sent to Google only)
 credentials:
   - name: GMAIL_ACCESS_TOKEN
     required: true

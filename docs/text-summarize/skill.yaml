@@ -1,29 +1,14 @@
 # Skill: text-summarize
 # Version: 1.0.0
 #
-# Summarize any text into concise bullet points using an AI model.
-#
-# NETWORK AND DATA TRANSFER -- read before deploying:
-#   With the default (openai) backend this skill is NOT offline and NOT local-only.
-#   * It makes an outbound HTTPS call to the OpenAI API (api.openai.com).
-#   * OPENAI_API_KEY is transmitted to OpenAI as the bearer credential. It is not
-#     sent to Expanso Cloud and is not stored in this file -- but it does leave the
-#     host, to OpenAI.
-#   * The ENTIRE input text is transmitted to OpenAI and is subject to their data
-#     handling terms. Do not feed it data you may not send to a third party.
-#   Only the ollama backend, pointed at a model you host, avoids this egress.
-#
-#   The credential is read from the environment of whichever node runs the
-#   pipeline. For a Cloud-scheduled job that is the edge node, not your laptop.
+# Summarize any text into concise bullet points while keeping your API keys local.
+# This is the "Hello World" of Expanso + OpenClaw skills.
 
 name: text-summarize
 version: 1.0.0
 description: Summarize text into 3-5 bullet points using AI
 
-# Credentials
-# Resolved from the runtime environment of the node executing the pipeline; not
-# embedded in the pipeline definition and not sent to Expanso Cloud. With the
-# openai backend the key IS transmitted to OpenAI to authenticate the request.
+# Credentials (stored locally on Expanso Edge, never transmitted)
 credentials:
   - name: OPENAI_API_KEY
     required: false  # Not required if using Ollama
@@ -64,34 +49,6 @@ backends:
     type: local
     models: [llama3.2, mistral, phi3]
     description: Local Ollama (private, free, slower)
-
-# Declared runtime dependencies (task 3.5)
-dependencies:
-  network_egress:
-    required: true
-    scope: "Required for the default openai backend; not required for a locally hosted ollama backend."
-    endpoints:
-      - host: api.openai.com
-        protocol: https
-        purpose: chat completion request
-  third_party_apis:
-    - name: OpenAI Chat Completions
-      component: openai_chat_completion
-      credential: OPENAI_API_KEY
-      data_sent: "The full input text, plus the system and user prompt."
-      data_returned: "Model-generated summary text."
-  credentials_transmitted:
-    - name: OPENAI_API_KEY
-      to: api.openai.com
-      not_to: [Expanso Cloud, pipeline definition]
-  data_leaving_host:
-    - what: "Entire stdin input text"
-      to: api.openai.com
-      when: "Every invocation using the openai backend"
-  offline_capable: false
-  offline_capable_with:
-    backend: ollama
-    note: "Requires a self-hosted model endpoint reachable from the executing node."
 
 # Expanso components used
 components:

@@ -85,7 +85,7 @@ dependencies:
       to: api.openai.com
       not_to: [Expanso Cloud, pipeline definition]
   data_leaving_host:
-    - what: "Entire stdin input text"
+    - what: "Entire input text (stdin for CLI mode, HTTP request body for MCP mode)"
       to: api.openai.com
       when: "Every invocation using the openai backend"
   offline_capable: false

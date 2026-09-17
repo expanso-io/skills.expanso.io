@@ -112,4 +112,4 @@ This skill runs entirely locally with no external API calls. Your data never lea
 
 ---
 
-*Built with [Expanso Edge](https://expanso.io) - Your keys, your machine.*
+*Built with [Expanso Edge](https://expanso.io).*

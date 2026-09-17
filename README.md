@@ -24,8 +24,10 @@ What that means in practice:
   that node's environment and are not embedded in the pipeline definition.
   **This is not the same as "credentials never leave your machine".** A skill that
   calls a third-party API (OpenAI, Slack, Gmail, ...) transmits its credential to
-  *that provider*, along with whatever data you send it. Per-skill details are in
-  each skill's README.
+  *that provider*, along with whatever data you send it. Only skills whose
+  `skill.yaml` has a `dependencies` block (currently `text-summarize`) have been
+  audited for what leaves the host; for any other skill, check its pipeline's
+  components rather than relying on its README.
 - **Some skills run without network egress; many do not.** Only skills whose
   components are entirely local are offline-capable. Any skill listing a
   third-party API component is **not** offline. Check the skill, not this page.
@@ -391,8 +393,11 @@ Two things this does **not** mean:
   the edge node's environment. Exporting it in your own shell does not make it
   available to a remote node.
 
-Each skill's `skill.yaml` lists the credentials it references, and each skill's
-README states what leaves the host.
+Each skill's `skill.yaml` lists the credentials it references. Only skills with a
+`dependencies` block in `skill.yaml` (currently `text-summarize`) have been audited
+for what leaves the host, and the catalog publishes that block. For any other
+skill, check the pipeline's components: any third-party API component sends its
+credential and your data to that provider.
 
 ## Pipeline shape & readiness
 
@@ -433,66 +438,71 @@ unproven for every row.
 
 Open items affecting published skills, recorded rather than silently patched.
 
-### 39 of 177 skills are rejected by the local validator
+### 40 of 177 skills have a pipeline the local validator rejects
 
-Settled, offline evidence: `expanso-edge validate` at **v2.1.21** rejects these
-39 pipelines. They are labelled `invalid-does-not-validate` in
-[`validation-report.json`](https://skills.expanso.io/validation-report.json) and
-are **excluded from any "ready" promotion**. Regenerate with
-`uv run -s scripts/validate-skills.py`.
+Settled, offline evidence: `expanso-edge validate` at **v2.1.21** rejects at
+least one published pipeline variant (`pipeline-cli.yaml`, `pipeline-mcp.yaml`
+or `pipeline-cloud.yaml`) of each of these 40 skills. Every variant is
+validated separately. A skill is labelled `invalid-does-not-validate` in
+[`validation-report.json`](https://skills.expanso.io/validation-report.json)
+if **any** of its variants is rejected, and is **excluded from any "ready"
+promotion**. Regenerate with `uv run -s scripts/validate-skills.py`.
 
 Two causes account for nearly all of them:
 
-- **`Missing required field 'tools'` in `openai_chat_completion`** (27 remaining).
+- **`Missing required field 'tools'` in `openai_chat_completion`** (29 skills).
   The component schema at v2.1.21 requires a `tools` field. Adding `tools: []`
   (no tool calling) was verified to satisfy the validator. This repair has been
-  applied **only** to the promoted `text-summarize` skill; the rest are left
-  untouched and labelled, so the fix can be applied deliberately rather than
-  swept across the catalog.
-- **Bloblang mapping syntax errors** (11), plus one file
-  (`email-triage`) that is not valid YAML at all.
+  applied **only** to both pipelines of the promoted `text-summarize` skill; the
+  rest are left untouched and labelled, so the fix can be applied deliberately
+  rather than swept across the catalog.
+- **Bloblang mapping syntax errors** (13 skills), plus one file
+  (`email-triage/pipeline-cli.yaml`) that is not valid YAML at all.
 
-| Skill | Category |
-|---|---|
-| `access-gate` | security |
-| `audio-transcribe` | ai |
-| `backup-verify` | workflows |
-| `code-explain` | ai |
-| `cron-explain` | transforms |
-| `cve-scan` | security |
-| `data-fence` | security |
-| `devops-monitor` | workflows |
-| `email-triage` | workflows |
-| `gmail-read` | connectors |
-| `grammar-check` | ai |
-| `image-alttext` | ai |
-| `image-analyze` | ai |
-| `image-caption` | ai |
-| `image-describe` | ai |
-| `image-moderate` | ai |
-| `json-extract` | ai |
-| `keyword-extract` | ai |
-| `language-detect` | ai |
-| `llm-router` | workflows |
-| `marketing-auto` | workflows |
-| `meal-planner` | workflows |
-| `meeting-notes` | ai |
-| `morning-briefing` | workflows |
-| `multi-platform-chat` | workflows |
-| `pii-detect` | security |
-| `pii-redact` | security |
-| `secrets-scan` | security |
-| `sentiment-score` | ai |
-| `slack-read` | connectors |
-| `speaker-diarize` | ai |
-| `sql-generate` | ai |
-| `stripe-reports` | workflows |
-| `task-dashboard` | workflows |
-| `text-analyze` | transforms |
-| `text-to-command` | ai |
-| `text-translate` | ai |
-| `tls-inspect` | security |
-| `webhook-receive` | connectors |
+Some skills have both causes, one per variant.
+
+| Skill | Category | Rejected variants |
+|---|---|---|
+| `access-gate` | security | cli, mcp |
+| `audio-transcribe` | ai | cli, mcp |
+| `backup-verify` | workflows | cli |
+| `code-explain` | ai | cli, mcp |
+| `cron-explain` | transforms | cli, mcp |
+| `cve-scan` | security | cli |
+| `data-fence` | security | cli, mcp |
+| `devops-monitor` | workflows | cli, mcp |
+| `email-triage` | workflows | cli, mcp |
+| `gmail-read` | connectors | cli, mcp |
+| `grammar-check` | ai | cli, mcp |
+| `image-alttext` | ai | cli, mcp |
+| `image-analyze` | ai | cli, mcp |
+| `image-caption` | ai | cli, mcp |
+| `image-describe` | ai | cli, mcp |
+| `image-moderate` | ai | cli, mcp |
+| `json-extract` | ai | cli, mcp |
+| `keyword-extract` | ai | cli, mcp |
+| `language-detect` | ai | cli, mcp |
+| `llm-router` | workflows | cli, mcp |
+| `marketing-auto` | workflows | cli |
+| `meal-planner` | workflows | cli, mcp |
+| `meeting-notes` | ai | cli, mcp |
+| `morning-briefing` | workflows | cli, mcp |
+| `multi-platform-chat` | workflows | cli, mcp |
+| `pii-detect` | security | cli, mcp |
+| `pii-redact` | security | cli, mcp |
+| `secrets-scan` | security | cli, mcp |
+| `sentiment-score` | ai | cli, mcp |
+| `slack-read` | connectors | cli, mcp |
+| `speaker-diarize` | ai | cli, mcp |
+| `sql-generate` | ai | cli, mcp |
+| `stripe-reports` | workflows | cli, mcp |
+| `task-dashboard` | workflows | cli |
+| `text-analyze` | transforms | cli, mcp |
+| `text-to-command` | ai | cli, mcp |
+| `text-translate` | ai | cli, mcp |
+| `tls-inspect` | security | cli |
+| `video-generate` | ai | mcp |
+| `webhook-receive` | connectors | cli, mcp |
 
 ### `codec: json_object` on `stdout` outputs
 
@@ -585,7 +595,8 @@ uv run -s scripts/validate-skills.py --check   # fail if results drifted
 
 Its `readiness` vocabulary caps at `validated-not-executed`. Nothing reaches
 `verified-executed` without a dated Expanso Cloud run record. At expanso-edge
-v2.1.21, **138 of 177 skills pass local validation and 39 are rejected by it** --
+v2.1.21, **137 of 177 skills pass local validation for every pipeline variant
+and 40 have at least one variant rejected by it** --
 see [Known issues](#known-issues).
 
 ### Catalog Structure
@@ -611,11 +622,16 @@ see [Known issues](#known-issues).
       "inputs": [...],
       "outputs": [...],
       "backends": ["openai", "ollama"],
-      "tags": ["ai", "text", "openai", "local"]
+      "tags": ["ai", "local", "openai", "remote", "text"],
+      "dependencies": {"offline_capable": false, "...": "..."}
     }
   }
 }
 ```
+
+`dependencies` is copied verbatim from `skill.yaml` and is present only for
+audited skills. The `offline` tag is set only when a skill declares
+`dependencies.offline_capable: true`, or declares no remote backend.
 
 ## Related Resources
 

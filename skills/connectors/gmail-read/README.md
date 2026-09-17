@@ -1,12 +1,12 @@
 # gmail-read
 
-Read emails from Gmail through Expanso Edge. Your OAuth tokens stay on your machine — AI agents get clean email data without access to your credentials.
+Read emails from Gmail through Expanso Edge. Your OAuth tokens stay with the edge node that runs the pipeline — AI agents get clean email data without access to your credentials. The tokens and your requests are still sent to the Gmail API (Google), which is how the skill reads mail.
 
 ## Why Use This Instead of Direct Gmail API Access?
 
 When an AI agent connects directly to Gmail, it gets your OAuth token — and with it, full access to your inbox. With Expanso Edge:
 
-- **Credentials stay local** — Your `GMAIL_ACCESS_TOKEN` never leaves your machine
+- **The agent never holds the token** — `GMAIL_ACCESS_TOKEN` is read from the executing node's environment and sent only to Google as the API credential; it is not given to the agent or sent to Expanso Cloud
 - **Data isolation** — Compose with `pii-redact` to strip personal info before the agent sees it
 - **Scoped access** — Use `data-fence` to limit which email fields the agent can read
 - **Audit trail** — Every access is logged with trace IDs

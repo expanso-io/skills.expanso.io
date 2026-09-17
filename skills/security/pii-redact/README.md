@@ -11,7 +11,8 @@ This skill uses AI to detect and redact PII from text. Unlike `pii-detect` which
 ### CLI Mode
 
 ```bash
-# Set your API key (stays local!)
+# Set your API key on the node that runs the pipeline. It is sent to OpenAI,
+# along with the text being redacted.
 export OPENAI_API_KEY=sk-...
 
 # Redact PII from text

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-02-24T23:20:36.054655+00:00",
+  "generated": "2026-09-17T23:46:57.356293+00:00",
   "total_skills": 177,
   "categories": {
     "workflows": {
@@ -143,7 +143,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -192,7 +191,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -248,7 +246,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -303,7 +300,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -430,7 +426,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -487,7 +482,6 @@
         "ai",
         "json",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -542,7 +536,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -586,7 +579,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -640,7 +632,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -683,7 +674,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -738,7 +728,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -799,7 +788,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote"
       ]
@@ -849,7 +837,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote",
         "text"
@@ -911,11 +898,54 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote",
         "text"
-      ]
+      ],
+      "dependencies": {
+        "network_egress": {
+          "required": true,
+          "scope": "Required for the default openai backend; not required for a locally hosted ollama backend.",
+          "endpoints": [
+            {
+              "host": "api.openai.com",
+              "protocol": "https",
+              "purpose": "chat completion request"
+            }
+          ]
+        },
+        "third_party_apis": [
+          {
+            "name": "OpenAI Chat Completions",
+            "component": "openai_chat_completion",
+            "credential": "OPENAI_API_KEY",
+            "data_sent": "The full input text, plus the system and user prompt.",
+            "data_returned": "Model-generated summary text."
+          }
+        ],
+        "credentials_transmitted": [
+          {
+            "name": "OPENAI_API_KEY",
+            "to": "api.openai.com",
+            "not_to": [
+              "Expanso Cloud",
+              "pipeline definition"
+            ]
+          }
+        ],
+        "data_leaving_host": [
+          {
+            "what": "Entire input text (stdin for CLI mode, HTTP request body for MCP mode)",
+            "to": "api.openai.com",
+            "when": "Every invocation using the openai backend"
+          }
+        ],
+        "offline_capable": false,
+        "offline_capable_with": {
+          "backend": "ollama",
+          "note": "Requires a self-hosted model endpoint reachable from the executing node."
+        }
+      }
     },
     "text-to-command": {
       "name": "text-to-command",
@@ -973,7 +1003,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote",
         "text"
@@ -1178,7 +1207,6 @@
       "tags": [
         "ai",
         "local",
-        "offline",
         "openai",
         "remote",
         "text"
@@ -1638,7 +1666,6 @@
       ],
       "tags": [
         "local",
-        "offline",
         "remote",
         "security"
       ]
@@ -1930,7 +1957,6 @@
       ],
       "tags": [
         "local",
-        "offline",
         "openai",
         "remote",
         "security"
@@ -1985,7 +2011,6 @@
       ],
       "tags": [
         "local",
-        "offline",
         "openai",
         "remote",
         "security"
@@ -2131,7 +2156,6 @@
       ],
       "tags": [
         "local",
-        "offline",
         "openai",
         "remote",
         "security"
@@ -3028,7 +3052,6 @@
       ],
       "tags": [
         "local",
-        "offline",
         "openai",
         "remote",
         "transforms"
@@ -5121,7 +5144,6 @@
       ],
       "tags": [
         "local",
-        "offline",
         "openai",
         "remote",
         "text",
@@ -7071,7 +7093,6 @@
       ],
       "tags": [
         "local",
-        "offline",
         "openai",
         "remote",
         "workflows"
@@ -7358,6 +7379,7 @@
         "multi"
       ],
       "tags": [
+        "offline",
         "openai",
         "workflows"
       ]

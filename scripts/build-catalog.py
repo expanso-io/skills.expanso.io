@@ -317,6 +317,8 @@ def build_catalog(source_dir: Path, layout: str) -> tuple[dict, dict[str, list[s
             "backends": [b.get("name") for b in skill_data.get("backends", [])],
             "tags": extract_tags(skill_name, skill_data, category),
         }
+        if "dependencies" in skill_data:
+            skill_meta["dependencies"] = skill_data["dependencies"]
 
         catalog["skills"][skill_name] = skill_meta
         catalog["total_skills"] += 1
@@ -361,14 +363,19 @@ def extract_tags(skill_name: str, skill_data: dict, category: str) -> list[str]:
         if "jira" in cred_name:
             tags.add("jira")
 
-    # Add backend-based tags
-    for backend in skill_data.get("backends", []):
-        backend_type = backend.get("type", "")
-        if backend_type == "local":
-            tags.add("local")
-            tags.add("offline")
-        if backend_type == "remote":
-            tags.add("remote")
+    # Add backend-based tags. `offline` means the skill as shipped needs no
+    # third-party egress: a declared `dependencies.offline_capable` decides it,
+    # otherwise every declared backend must be local.
+    backend_types = [b.get("type", "") for b in skill_data.get("backends", [])]
+    if "local" in backend_types:
+        tags.add("local")
+    if "remote" in backend_types:
+        tags.add("remote")
+    declared = (skill_data.get("dependencies") or {}).get("offline_capable")
+    if declared is True or (
+        declared is None and backend_types and "remote" not in backend_types
+    ):
+        tags.add("offline")
 
     # Add name-based tags
     name_parts = skill_name.split("-")

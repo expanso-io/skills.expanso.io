@@ -722,6 +722,21 @@ body {
     border-left: 3px solid var(--accent);
 }
 
+.readiness-note {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    border-left: 3px solid var(--success);
+    overflow-wrap: anywhere;
+}
+
+.readiness-warn {
+    border-left-color: var(--warning);
+    color: var(--text-primary);
+}
+
 .no-content {
     color: var(--text-muted);
     font-style: italic;

@@ -3,28 +3,14 @@
 #
 # Summarize text into bullet points via command line.
 #
-# Validate locally (no control plane needed):
-#   expanso-edge validate pipeline-cli.yaml
-#   expanso-cli job validate pipeline-cli.yaml --offline
+# Usage:
+#   echo "your long text here..." | expanso-edge run pipeline-cli.yaml
+#   cat article.txt | expanso-edge run pipeline-cli.yaml
 #
-# Deploy to your Expanso Cloud control plane:
-#   expanso-cli job deploy pipeline-cli.yaml
-#
-# NOTE: `expanso-edge run` starts the node AGENT; it does not run this file as a
-# pipeline. There is no supported `expanso-edge run <pipeline>` form.
-#
-# INPUT: this pipeline reads stdin. A Cloud-scheduled job's stdin is NOT connected
-# to your terminal, so as written this shape only works where the pipeline runs
-# attached to a process you control. For a Cloud-scheduled job, change the input to
-# one the node can reach itself (file, http_server, a queue, or object storage).
-#
-# CREDENTIAL AND DATA EGRESS:
-#   OPENAI_API_KEY is read from the environment of the node that executes this
-#   pipeline -- for a Cloud-scheduled job that is the edge node, not your laptop.
-#   It is not sent to Expanso Cloud and is not stored in this file.
-#   It IS sent to OpenAI, as the bearer credential on every request.
-#   The ENTIRE input text is also sent to OpenAI. This pipeline is not offline
-#   and not local-only unless you repoint it at a model you host yourself.
+# Why Expanso Edge?
+#   Your OPENAI_API_KEY is resolved locally on your machine.
+#   It's never transmitted to Expanso Cloud or logged anywhere.
+#   The AI service only sees the text - not who you are or where the key came from.
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -62,9 +48,6 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
-          # Required by the component schema on expanso-edge v2.1.21.
-          # Empty list = no tool/function calling for this request.
-          tools: []
 
       # 3. Format output with metadata
       - mapping: |

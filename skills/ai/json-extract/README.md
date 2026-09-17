@@ -1,10 +1,10 @@
 # json-extract
 
-> Extract structured JSON from natural language text while keeping your API keys local.
+> Extract structured JSON from natural language text using an AI model.
 
 This skill demonstrates structured output extraction with Expanso + OpenClaw:
 
-- **Your API keys stay local** - `${OPENAI_API_KEY}` is resolved on your machine
+- **Not offline** - `${OPENAI_API_KEY}` is read on the node that runs the pipeline and sent to OpenAI, along with the full input text
 - **Flexible field extraction** - Specify exactly what fields to extract
 - **Schema validation ready** - Output can be validated against JSON Schema
 - **Full audit trail** - Every invocation is logged with input hash and trace ID
@@ -222,4 +222,4 @@ Using Ollama: **Free** (runs locally)
 
 ---
 
-*Built with [Expanso Edge](https://expanso.io) - Your keys, your machine.*
+*Built with [Expanso Edge](https://expanso.io).*

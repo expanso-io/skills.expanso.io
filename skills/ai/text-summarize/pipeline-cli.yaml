@@ -58,7 +58,7 @@ config:
             }
           ]
 
-      # 2. Call OpenAI (credentials resolved locally by Expanso Edge)
+      # 2. Call OpenAI (key read from the executing node's environment, sent to OpenAI)
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini

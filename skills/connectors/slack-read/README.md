@@ -1,12 +1,12 @@
 # slack-read
 
-Read messages from Slack channels and DMs through Expanso Edge. Your Slack bot token stays on your machine — AI agents get clean message data without access to your credentials.
+Read messages from Slack channels and DMs through Expanso Edge. Your Slack bot token stays with the edge node that runs the pipeline — AI agents get clean message data without access to your credentials. The token and your requests are still sent to the Slack API (`slack.com`), which is how the skill reads messages.
 
 ## Why Use This Instead of Direct Slack API Access?
 
 When an AI agent connects directly to Slack, it gets your bot token. With Expanso Edge:
 
-- **Credentials stay local** — Your `SLACK_BOT_TOKEN` never leaves your machine
+- **The agent never holds the token** — `SLACK_BOT_TOKEN` is read from the executing node's environment and sent only to Slack as the API credential; it is not given to the agent or sent to Expanso Cloud
 - **Data isolation** — Compose with `pii-redact` to strip sensitive data before the agent sees it
 - **Audit trail** — Every access is logged with trace IDs
 - **Rate limiting** — Prevent agents from hammering the Slack API

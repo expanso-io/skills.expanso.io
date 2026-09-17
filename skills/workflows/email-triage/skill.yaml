@@ -10,13 +10,15 @@
 # - Draft response suggestions
 # - Create follow-up reminders
 #
-# Security: All credentials stay local on Expanso Edge.
+# Security: credentials are read from the executing node's environment and are
+# not sent to Expanso Cloud. Each one IS sent to its own provider (mail,
+# calendar and AI APIs) as that API's credential, along with the email content.
 
 name: email-triage
 version: 1.0.0
 description: AI-powered email triage with calendar sync and response drafting
 
-# Credentials (stored locally, never transmitted)
+# Credentials (read from the executing node's environment; each sent to its provider)
 credentials:
   - name: GMAIL_TOKEN
     required: false

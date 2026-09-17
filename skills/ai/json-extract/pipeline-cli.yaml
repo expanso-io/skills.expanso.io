@@ -11,8 +11,9 @@
 #     EXTRACT_FIELDS="email,phone" expanso-edge run pipeline-cli.yaml
 #
 # Why Expanso Edge?
-#   Your OPENAI_API_KEY stays on your machine.
-#   The AI service only sees the text - not your identity or key source.
+#   OPENAI_API_KEY is read from the executing node's environment and sent to
+#   OpenAI as the API credential, with the full input text. It is not sent to
+#   Expanso Cloud.
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -49,7 +50,7 @@ config:
             }
           ]
 
-      # 2. Call OpenAI with JSON mode (credentials resolved locally)
+      # 2. Call OpenAI with JSON mode (key read on this node, sent to OpenAI)
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini

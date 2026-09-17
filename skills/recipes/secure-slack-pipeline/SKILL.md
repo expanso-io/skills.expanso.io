@@ -69,4 +69,4 @@ Traditional integrations give AI agents raw credentials and unrestricted data ac
 - **Permissions are enforced** — deny-by-default, explicit policy required
 - **Sensitive data is stripped** — before the agent ever sees it
 - **Every access is logged** — with agent identity and trace ID
-- **Credentials stay local** — SLACK_BOT_TOKEN never leaves the edge node
+- **The agent never holds the token** — SLACK_BOT_TOKEN is read on the edge node and sent only to the Slack API

@@ -62,8 +62,13 @@ site-wide.
   provider**, along with whatever data you send. For example `text-summarize`
   sends the entire input text and `OPENAI_API_KEY` to `api.openai.com`. It is not
   offline and not local-only.
-- Each skill's `skill.yaml` carries a `dependencies` block where it has been
-  filled in, and each skill's README states what leaves the host.
+- Only skills whose `skill.yaml` carries a `dependencies` block (currently
+  `text-summarize`) have been audited for what leaves the host; `catalog.json`
+  publishes that block as `skills.<name>.dependencies`. For any other skill,
+  inspect the pipeline's components: a third-party API component sends its
+  credential and your data to that provider.
+- The catalog `offline` tag is set only when a skill declares
+  `dependencies.offline_capable: true`, or declares no remote backend.
 
 ## Readiness
 
@@ -72,8 +77,9 @@ Expanso Cloud. Machine-readable per-skill validation status:
 
 - https://skills.expanso.io/validation-report.json
 
-At expanso-edge v2.1.21, 138 of 177 skills pass local validation and 39 are
-rejected by it. Local validation is not execution evidence; the report's
+At expanso-edge v2.1.21, 137 of 177 skills pass local validation for
+every pipeline variant (CLI, MCP and, where present, Cloud) and 40 have at
+least one variant rejected by it. Local validation is not execution evidence; the report's
 readiness vocabulary caps at `validated-not-executed`.
 
 ## Machine-readable indexes
