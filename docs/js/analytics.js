@@ -29,7 +29,8 @@
 
     var host = window.location.hostname;
     var params = new URLSearchParams(window.location.search);
-    var debug = (host === 'localhost' || host === '127.0.0.1') && params.get('analytics_debug') === '1';
+    var debug = (host === 'localhost' || host === '127.0.0.1') &&
+        params.get('analytics_debug') === '1';
     if (host !== SITE_HOST && !debug) return;
 
     function dntEnabled() {
@@ -54,7 +55,8 @@
 
     function trafficClass() {
         var ua = navigator.userAgent;
-        if (/bot|crawler|spider|headless|puppeteer|playwright|selenium|webdriver/i.test(ua) || navigator.webdriver) {
+        var automation = /bot|crawler|spider|headless|puppeteer|playwright|selenium|webdriver/i;
+        if (automation.test(ua) || navigator.webdriver) {
             return 'known_automation';
         }
         return 'browser_unclassified';
@@ -88,7 +90,8 @@
     function capture(event, props) {
         var payload = Object.assign({}, props || {}, context());
         if (debug) {
-            (window.__expansoAnalyticsEvents = window.__expansoAnalyticsEvents || []).push({ event: event, properties: payload });
+            (window.__expansoAnalyticsEvents = window.__expansoAnalyticsEvents || [])
+                .push({ event: event, properties: payload });
             return;
         }
         if (sdk) sdk.capture(event, payload); else queue.push([event, payload]);
@@ -174,16 +177,26 @@
         if (tab) { capture('skills_category_tab', { category: tab.dataset.category }); return; }
 
         var sub = target.closest('.pipeline-sub-tab');
-        if (sub) { capture('skills_spec_tab', { skill: openSkill(), spec: sub.textContent.trim() }); return; }
+        if (sub) {
+            capture('skills_spec_tab', { skill: openSkill(), spec: sub.textContent.trim() });
+            return;
+        }
 
         var full = target.closest('.copy-pipeline-btn');
-        if (full) { capture('skills_copy', { surface: 'pipeline_full', skill: openSkill(), spec: activeSpecLabel() }); return; }
+        if (full) {
+            capture('skills_copy', {
+                surface: 'pipeline_full', skill: openSkill(), spec: activeSpecLabel()
+            });
+            return;
+        }
 
         var copy = target.closest('.copy-btn');
         if (copy) {
             var surface = copy.closest('.install-box') ? 'install_command'
                 : copy.classList.contains('code-copy-btn') ? 'code_block' : 'other';
-            capture('skills_copy', { surface: surface, skill: surface === 'install_command' ? null : openSkill() });
+            capture('skills_copy', {
+                surface: surface, skill: surface === 'install_command' ? null : openSkill()
+            });
             return;
         }
 
@@ -192,7 +205,11 @@
             try {
                 var url = new URL(link.href);
                 if (/^https?:$/.test(url.protocol) && url.hostname !== window.location.hostname) {
-                    capture('skills_outbound_click', { destination_host: url.hostname, destination_path: url.pathname, skill: openSkill() });
+                    capture('skills_outbound_click', {
+                        destination_host: url.hostname,
+                        destination_path: url.pathname,
+                        skill: openSkill()
+                    });
                 } else if (/\.(ya?ml|md|json|txt|sh)$/.test(url.pathname)) {
                     capture('skills_file_link', { file_path: url.pathname });
                 }
@@ -213,7 +230,8 @@
                     var skill = openSkill();
                     if (skill || tries++ > 40) {
                         var badge = document.querySelector('#skill-modal .skill-badges .badge');
-                        var deep = !!(landing && skill && landing.replace(/\/$/, '').split('/').pop() === skill);
+                        var deep = !!(landing && skill &&
+                            landing.replace(/\/$/, '').split('/').pop() === skill);
                         capture('skill_modal_open', {
                             skill: skill,
                             category: badge ? badge.textContent.trim() : null,
@@ -239,7 +257,9 @@
                 if (!search.value.trim()) return;
                 var shown = Array.prototype.filter.call(document.querySelectorAll('.skill-card'),
                     function (c) { return c.offsetParent !== null; }).length;
-                capture('skills_search', { query_length: search.value.trim().length, result_count: shown });
+                capture('skills_search', {
+                    query_length: search.value.trim().length, result_count: shown
+                });
             }, 800);
         });
     }
