@@ -46,8 +46,9 @@ Complete user jobs (RSS engine, migration, notifications, RAG, ...), each run
 end to end. Their `skill.yaml` carries a `proof` block (where it ran, what was
 and was not proved) that `build-catalog.py` publishes only for skills with a
 `job` field. The job specs have the same structure as the proven runs; only
-the values in each header comment differ (exception: the RSS fetch-error
-guard, newer than its Cloud run). Do not add a job here without a run
+the values in each header comment differ (exceptions, newer than the Cloud
+runs and listed in each header: the RSS fetch-error guard, the RAG URL-based
+chunk id, `restart_policy: never` on bounded jobs). Do not add a job here without a run
 record, and keep `proof.status` honest (`executed-local-only` is not Cloud).
 
 ## Skills run on Cloud-scheduled nodes

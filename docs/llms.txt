@@ -24,7 +24,7 @@ https://github.com/expanso-io/skills.expanso.io/blob/main/skills/jobs/PROOF-2026
 | RSS feed engine: poll, parse, never emit an item twice | `generate` > `http` > `mapping` (throw on `errored()`) > `xml` > `mapping` > `unarchive` > `mapping` > `dedupe` (`file` cache) > `file` | Cloud + local, 14/14 checks; live NASA and BBC feeds; the fetch-error guard after `http` was added later and run on a local-mode node only | https://skills.expanso.io/rss-feed-engine/ |
 | Data migration engine: legacy table into a new schema | `sql_select` > `mapping` > `switch` output: `sql_insert` + `file` rejects | Cloud + local, 7/7; 994 rows matched an independent SQL transform, 6 rejects | https://skills.expanso.io/data-migration-engine/ |
 | Notification engine: message when an event matters | `http_server` > `dedupe` > `mapping` > `mapping` > `http_client` with retries | Cloud + local, 7/7, to a local test receiver only | https://skills.expanso.io/notification-engine/ |
-| RAG: fetch documents, chunk, embed, store, search | ingest: `generate` > `http` > `unarchive` > `http` > `mapping` > `unarchive` > `branch` + `ollama_embeddings` > `mapping` > `http_client` (Qdrant REST); search: `file` > `branch` + `ollama_embeddings` > `branch` + `qdrant` processor > `mapping` > `file` | Cloud + local, 12/12; real embeddings, right chunk first for 4/4 questions | https://skills.expanso.io/rag-embed-retrieve/ |
+| RAG: fetch documents, chunk, embed, store, search | ingest: `generate` > `http` > `unarchive` > `http` > `mapping` > `unarchive` > `branch` + `ollama_embeddings` > `mapping` > `http_client` (Qdrant REST); search: `file` > `branch` + `ollama_embeddings` > `branch` + `qdrant` processor > `mapping` > `file` | Cloud + local, 12/12; real embeddings, right chunk first for 4/4 questions; the URL-based chunk id was added later and run on a local-mode node only | https://skills.expanso.io/rag-embed-retrieve/ |
 | Webhook fan-out: every event to several endpoints | `http_server` > `mapping` > `broker` (`fan_out`) over `http_client` outputs | Local only, 6/6 | https://skills.expanso.io/webhook-fan-out/ |
 | Log reduction: cut volume, keep every error | `broker` over `file` > `mapping` > `switch` (errors kept; successes `group_by_value` > `archive` > `mapping`) > `file` | Local only, 5/5; 92.7% fewer bytes on a synthetic log only | https://skills.expanso.io/log-reduction/ |
 | Sensor telemetry over MQTT: subscribe, normalize, alert | `mqtt` > `mapping` > `switch` output to `file`s | Local only, 6/6; MQTT with a synthetic publisher, not OPC UA or hardware | https://skills.expanso.io/sensor-telemetry-mqtt/ |
@@ -35,8 +35,10 @@ Each directory holds the job spec (`pipeline.yaml`; RAG also
 checks, the sample inputs used in the run, and a `skill.yaml` whose `proof`
 block records where it ran, what was proved and what was not. Each job
 spec has the same structure as the job that ran; only the values listed in
-its header comment differ, and long mappings are rewrapped. The one
-exception is the RSS fetch-error guard, which is newer than its Cloud run.
+its header comment differ, and long mappings are rewrapped. Three changes
+are newer than the runs and were not re-run on Cloud: the RSS fetch-error
+guard and the RAG URL-based chunk id (each validated on a local-mode node
+only), and `restart_policy: never` on the six bounded job specs.
 
 Run one (download first; `job deploy` does not fetch URLs):
 
@@ -64,7 +66,10 @@ splits it into paragraph chunks that carry `source_uri`, `doc`,
 `chunk_index` and `chunk_id`, embeds each chunk with `ollama_embeddings`
 (`nomic-embed-text`, 768 dimensions), and upserts into Qdrant through its
 REST API with a deterministic point id, so re-ingesting overwrites rather
-than duplicates. The search job embeds each question and uses the `qdrant`
+than duplicates. `chunk_id` is built from the source URL, so documents
+with the same filename on different paths do not overwrite each other;
+the Cloud runs used an earlier filename-based id, and the URL-based id was
+validated on a local-mode node only. The search job embeds each question and uses the `qdrant`
 processor. Tested with Ollama 0.33.2 and Qdrant 1.19.1 on the node's host;
 the collection must exist first with the model's vector size. Stored
 vectors equalled a direct Ollama embedding of the same text (cosine
@@ -116,7 +121,8 @@ boundary: the jobs above work the same way wherever the node runs.
   throw on `errored()` right after an `http` processor.
 - For a one-shot job on Cloud set `restart_policy: never` at the top level;
   with the default, a failing bounded job was re-run every few seconds and
-  read `running`.
+  read `running`. The bounded job specs here set it; it was added after
+  their Cloud runs.
 - Use underscores, not hyphens, in label keys you select on; a hyphenated
   key made the pipeline fail to build on the node.
 - Output order is only stable with `pipeline.threads: 1`.

@@ -1,8 +1,11 @@
 # pipeline.yaml: the ci-fixtures job, as run on 2026-09-18
-# on a local-mode node with expanso-edge v2.1.21.
+# on a local-mode node with expanso-edge v2.1.21. The top-level
+# restart_policy: never was added after that run and has not been
+# re-run with this spec. See skills/jobs/PROOF-2026-09-18.md.
 # Body copied from expanso-io/docs.expanso.io commit f6eab2b,
-# docs/recipes/ci-fixtures.mdx (draft), byte for byte. Its structure
-# matches the proven run's config; long mappings are only rewrapped.
+# docs/recipes/ci-fixtures.mdx (draft), byte for byte except
+# restart_policy. Otherwise its structure matches the proven run's
+# config; long mappings are only rewrapped.
 # Set these values for your environment:
 #   .input.generate.mapping = string literal "fixtures_RUN_ID" (one
 #     per run)
@@ -12,6 +15,7 @@
 #
 name: ci-fixtures
 type: pipeline
+restart_policy: never
 selector:
   match_labels:
     pipeline_role: ci

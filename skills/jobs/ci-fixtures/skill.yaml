@@ -41,9 +41,12 @@ proof:
     a CI gate.
   not_proved:
   - Any run through Cloud.
+  - The top-level restart_policy never with this spec; it was added
+    after the run and has not been re-run.
   note: The job spec has the same structure as the job that ran. Only
     the values listed in its header comment differ, and long mappings
-    are rewrapped. Inputs in the runs were synthetic fixtures unless
+    are rewrapped. The top-level restart_policy never is newer than
+    the run. Inputs in the runs were synthetic fixtures unless
     a proved line says otherwise.
 dependencies:
   network_egress:

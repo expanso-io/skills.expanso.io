@@ -1,9 +1,12 @@
 # pipeline-query.yaml: the rag-query job, as run on 2026-09-18
-# on Expanso Cloud with expanso-edge v2.1.21.
+# on Expanso Cloud with expanso-edge v2.1.21. The top-level
+# restart_policy: never was added after that run and has not been
+# re-run on Cloud with this spec. See skills/jobs/PROOF-2026-09-18.md.
 # Body copied from expanso-io/docs.expanso.io commit f6eab2b,
 # docs/recipes/rag-embed-retrieve.mdx (draft); 1 wrapped flow
-# list(s) rewritten as block lists, same parsed YAML. Its structure
-# matches the proven run's config; long mappings are only rewrapped.
+# list(s) rewritten as block lists, and restart_policy added.
+# Otherwise its structure matches the proven run's config; long
+# mappings are only rewrapped.
 # Set these values for your environment:
 #   .input.file.paths[0] = /var/tmp/expanso-rag/questions.jsonl
 #   .output.file.path = /var/tmp/expanso-rag/out/answers.jsonl
@@ -14,6 +17,7 @@
 #
 name: rag-query
 type: pipeline
+restart_policy: never
 selector:
   match_labels:
     pipeline_role: rag

@@ -50,6 +50,15 @@ proof:
     detail: Submitted to a local-mode node (expanso-edge run --local).
       Not run through Cloud.
     checks_passed: 12/12
+  - where: local-mode-node
+    detail: The URL-based chunk_id, added after the runs above, run
+      against fixture documents a/guide.md, b/guide.md (same filename,
+      different content) and c/unique.md. The earlier filename-based
+      id stored 3 points for 5 chunks (b/guide.md overwrote
+      a/guide.md); the URL-based id stored all 5 with distinct
+      source_uri and chunk_id, re-ingest kept 5, and each test
+      question's top hit came from the right URL.
+    checks_passed: 3/3
   proved:
   - 4 documents fetched over HTTP became 16 chunks, each carrying its
     source URL through storage and retrieval.
@@ -62,9 +71,15 @@ proof:
     could not read message fields or metadata, and the job still reported
     completed with 0 points. Vectors are written with http_client to
     the Qdrant REST upsert API instead.
+  - The URL-based chunk_id on Expanso Cloud. The Cloud runs used the
+    earlier filename-based id; the URL-based id ran on a local-mode
+    node only.
+  - The top-level restart_policy never on Expanso Cloud with this spec;
+    it was added after the Cloud run.
   note: The job spec has the same structure as the job that ran. Only
     the values listed in its header comment differ, and long mappings
-    are rewrapped. Inputs in the runs were synthetic fixtures unless
+    are rewrapped. The URL-based chunk_id and the top-level
+    restart_policy never are newer than the Cloud run. Inputs in the runs were synthetic fixtures unless
     a proved line says otherwise.
 dependencies:
   network_egress:

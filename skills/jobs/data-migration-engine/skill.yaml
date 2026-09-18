@@ -50,9 +50,12 @@ proof:
   not_proved:
   - Change data capture. This is a batch copy; a CDC job (postgres_cdc)
     did not initialize in testing and is unproven.
+  - The top-level restart_policy never on Expanso Cloud with this spec;
+    it was added after the Cloud run.
   note: The job spec has the same structure as the job that ran. Only
     the values listed in its header comment differ, and long mappings
-    are rewrapped. Inputs in the runs were synthetic fixtures unless
+    are rewrapped. The top-level restart_policy never is newer than
+    the Cloud run. Inputs in the runs were synthetic fixtures unless
     a proved line says otherwise.
 dependencies:
   network_egress:

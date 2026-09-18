@@ -16,6 +16,7 @@ Proved:
 Not proved:
 
 - Any run through Cloud; streaming (unbounded) logs. The whole bounded file is read as one batch.
+- `restart_policy: never` with this spec; it was added after the run and has not been re-run.
 
 ## Components
 
@@ -61,5 +62,5 @@ wc -l /var/tmp/expanso-logs/out/reduced.jsonl
 ## Running it on Expanso Cloud
 
 - The spec pins itself with an example `selector`. Label the node that can reach the job's dependencies to match, or change the selector. Use underscores, not hyphens, in label keys: a hyphenated key made the pipeline fail to build on the node.
-- For a one-shot job, add `restart_policy: never` at the top level. With the default policy a failing bounded job was re-run every few seconds and read `running`; with `never` it ended `failed` after one execution.
+- This spec sets `restart_policy: never` at the top level because its input is bounded. With the default policy a failing bounded job was re-run on Cloud every few seconds and read `running`; with `never` it ended `failed` after one execution. The field was added after this job's run and has not been re-run with this spec.
 - Paths, hosts and credentials resolve on the node that executes the job, not on the machine that deployed it.

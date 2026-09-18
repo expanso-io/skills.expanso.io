@@ -20,7 +20,7 @@ The dated, sanitized run record with the Cloud job and execution ids is
 | RSS feed engine | Cloud + local; live NASA and BBC feeds; fetch-error guard local only | [`rss-feed-engine`](skills/jobs/rss-feed-engine/) |
 | Data migration engine (batch) | Cloud + local | [`data-migration-engine`](skills/jobs/data-migration-engine/) |
 | Notification engine | Cloud + local, to a local test receiver only | [`notification-engine`](skills/jobs/notification-engine/) |
-| RAG: fetch, chunk, embed, store, search | Cloud + local; Ollama + Qdrant | [`rag-embed-retrieve`](skills/jobs/rag-embed-retrieve/) |
+| RAG: fetch, chunk, embed, store, search | Cloud + local; Ollama + Qdrant; URL-based chunk id local only | [`rag-embed-retrieve`](skills/jobs/rag-embed-retrieve/) |
 | Webhook fan-out | Local only | [`webhook-fan-out`](skills/jobs/webhook-fan-out/) |
 | Log reduction | Local only | [`log-reduction`](skills/jobs/log-reduction/) |
 | Sensor telemetry over MQTT | Local only; synthetic publisher | [`sensor-telemetry-mqtt`](skills/jobs/sensor-telemetry-mqtt/) |
@@ -30,8 +30,10 @@ The dated, sanitized run record with the Cloud job and execution ids is
 operator-registered node chosen by label, with the job's dependencies on
 that host; it is not a hosted runner. "Local" means a local-mode node only.
 Each job spec has the same structure as the job that ran; only the values
-listed in its header comment differ, and long mappings are rewrapped. The one
-exception is the RSS fetch-error guard, which is newer than its Cloud run.
+listed in its header comment differ, and long mappings are rewrapped. Three
+changes are newer than the runs and were not re-run on Cloud: the RSS
+fetch-error guard and the RAG URL-based chunk id (each validated on a
+local-mode node only), and `restart_policy: never` on the bounded jobs.
 Not proven, and not published as working jobs:
 live X (Twitter) ingestion, change data capture, delivery into Slack or
 email, and the native `qdrant` output (the RAG job writes through Qdrant's

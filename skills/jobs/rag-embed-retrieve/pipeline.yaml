@@ -1,9 +1,16 @@
 # pipeline.yaml: the rag-ingest job, as run on 2026-09-18
-# on Expanso Cloud with expanso-edge v2.1.21.
+# on Expanso Cloud with expanso-edge v2.1.21. Two changes are newer
+# than that run and have not been re-run on Cloud with this spec:
+# chunk_id is built from the source URL, not the filename (the
+# Cloud run used the filename, which lets same-named documents
+# overwrite each other; the URL-based id was validated on a
+# local-mode node only), and the top-level restart_policy: never. See
+# skills/jobs/PROOF-2026-09-18.md.
 # Body copied from expanso-io/docs.expanso.io commit f6eab2b,
-# docs/recipes/rag-embed-retrieve.mdx (draft), byte for byte. Its
-# structure matches the proven run's config; long mappings are only
-# rewrapped. Set these values for your environment:
+# docs/recipes/rag-embed-retrieve.mdx (draft), byte for byte except
+# those two changes. Otherwise its structure matches the proven run's
+# config; long mappings are only rewrapped. Set these values for
+# your environment:
 #   .output.http_client.url =
 #     http://127.0.0.1:6333/collections/docs/points?wait=true
 #   .pipeline.processors[0].http.url =
@@ -13,6 +20,7 @@
 #
 name: rag-ingest
 type: pipeline
+restart_policy: never
 selector:
   match_labels:
     pipeline_role: rag
@@ -64,7 +72,7 @@ config:
             "doc": $doc,
             "title": $title,
             "chunk_index": e.index,
-            "chunk_id": $doc + "#" + e.index.string(),
+            "chunk_id": $src + "#" + e.index.string(),
             "text": e.value
           })
       - unarchive:
