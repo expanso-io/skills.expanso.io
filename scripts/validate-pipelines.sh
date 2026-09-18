@@ -18,7 +18,9 @@ SKILLS_DIR="${1:-skills}"
 if ! command -v expanso-cli >/dev/null 2>&1; then
   echo "Installing expanso-cli..."
   # Authoritative route, matching README.md and docs/install.sh.
-  curl -fsSL https://get.expanso.io/cli/install.sh | sh
+  # Pipe to bash, not sh: the installer is a bash script and fails under
+  # dash (/bin/sh on Debian/Ubuntu) with a syntax error at its first array.
+  curl -fsSL https://get.expanso.io/cli/install.sh | bash
   export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 fi
 

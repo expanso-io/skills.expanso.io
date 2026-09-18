@@ -49,7 +49,7 @@ curl -fsSL https://get.expanso.io/edge/install.sh | bash
 expanso-edge version
 
 # Install Expanso CLI (for job management)
-curl -fsSL https://get.expanso.io/cli/install.sh | sh
+curl -fsSL https://get.expanso.io/cli/install.sh | bash
 expanso-cli version
 ```
 

@@ -41,7 +41,7 @@ if command -v expanso-cli &> /dev/null; then
     success "Expanso CLI already installed"
 else
     info "Installing Expanso CLI..."
-    if curl -fsSL https://get.expanso.io/cli/install.sh | sh; then
+    if curl -fsSL https://get.expanso.io/cli/install.sh | bash; then
         success "Expanso CLI installed"
     else
         warn "Could not install automatically"
