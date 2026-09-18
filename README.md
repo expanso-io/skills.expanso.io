@@ -438,6 +438,25 @@ unproven for every row.
 
 Open items affecting published skills, recorded rather than silently patched.
 
+### Two validators, two different questions
+
+This distinction matters more than any count, so it is stated first:
+
+| Command | Question it answers | Used by |
+|---|---|---|
+| `expanso-cli job validate --offline` | Is this a well-formed **job spec**? | the repository CI gate |
+| `expanso-edge validate` | Is the inner **pipeline config** valid? | `validation-report.json` |
+
+The first does **not** check component configuration. A pipeline can be accepted
+as a job spec and still be rejected by the strict validator for unknown
+component fields, bloblang arity errors or wrong value types. In
+`validation-report.json` those two answers are recorded separately, as
+`job_spec_accepted` and `validates`; a substantial number of skills are
+`job_spec_accepted: true` **and** `validates: false`.
+
+**A green CI run therefore does not mean the catalog is semantically valid.** It
+means every file was accepted as a job spec.
+
 ### Some skills have a pipeline the local validator rejects
 
 Settled, offline evidence: `expanso-edge validate` at **v2.1.21** rejects at

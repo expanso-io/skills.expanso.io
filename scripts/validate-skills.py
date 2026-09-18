@@ -33,6 +33,14 @@ REPO = Path(__file__).resolve().parents[1]
 READY_VALIDATED = "validated-not-executed"
 READY_INVALID = "invalid-does-not-validate"
 
+# Two validators, two different questions. Keep them apart: a pipeline can be
+# accepted as a job spec and still be semantically invalid.
+#   expanso-cli job validate --offline  -> is this a well-formed JOB SPEC?
+#   expanso-edge validate               -> is the inner PIPELINE CONFIG valid?
+# The repository CI gate runs the first. Only the second catches unknown
+# component fields, bloblang arity and type errors, so `job_spec_accepted`
+# must never be reported as semantic validity.
+
 # Every published pipeline variant is validated. A skill is only
 # `validated-not-executed` when all of its variants validate. `cloud` is the
 # input path a remotely scheduled node can satisfy on its own.
@@ -40,6 +48,9 @@ VARIANTS = {
     "cli": "pipeline-cli.yaml",
     "mcp": "pipeline-mcp.yaml",
     "cloud": "pipeline-cloud.yaml",
+    # Recipes ship a single `pipeline.yaml` instead of the cli/mcp pair. They
+    # were invisible to this report until this entry was added.
+    "recipe": "pipeline.yaml",
 }
 
 
@@ -57,6 +68,61 @@ def tool_version(binary: str) -> str:
         return "unavailable"
 
 
+def _normalise_errors(detail: str) -> str:
+    """Make a validator message byte-stable without dropping any of it.
+
+    The validator reports the same error SET every run (verified: identical
+    hash over five runs) but in varying ORDER. The trailing "hint:" / "Error ="
+    text follows whichever fragment happened to come last, so naively sorting
+    the fragments moved that tail around and the message still differed run to
+    run. Detach the tail, sort the fragments, then re-attach it.
+
+    Every fragment and the tail are preserved; only their order is fixed.
+    """
+    marker = " - ("
+    if marker not in detail:
+        return detail
+
+    head, _, rest = detail.partition(marker)
+    fragments = rest.split(marker)
+
+    # The tail belongs to the message, not to the last fragment.
+    tail = ""
+    for cue in (" hint: ", " Error = "):
+        idx = fragments[-1].find(cue)
+        if idx != -1:
+            tail = fragments[-1][idx:] + tail
+            fragments[-1] = fragments[-1][:idx]
+            break
+
+    return head + marker + marker.join(sorted(fragments)) + tail
+
+
+def job_spec_accepted(path: Path) -> bool | None:
+    """Job-spec acceptance via the validator the repository CI gate runs.
+
+    This answers a DIFFERENT question from `validate()` above. It checks that the
+    file is a well-formed job spec; it does NOT check the inner component
+    configuration, so acceptance here is never semantic validity. Returns None
+    when expanso-cli is unavailable, so a missing tool is never silently
+    reported as acceptance.
+    """
+    cli = shutil.which("expanso-cli")
+    if cli is None:
+        return None
+    try:
+        res = subprocess.run(
+            [cli, "job", "validate", str(path.relative_to(REPO)), "--offline"],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            cwd=REPO,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return res.returncode == 0
+
+
 def validate(binary: str, path: Path) -> tuple[bool, str]:
     try:
         res = subprocess.run(
@@ -71,7 +137,15 @@ def validate(binary: str, path: Path) -> tuple[bool, str]:
     if res.returncode == 0 and "[OK]" in res.stdout:
         return True, ""
     detail = " ".join((res.stdout + res.stderr).split())
-    return False, detail[:400]
+    # The validator emits its individual errors in nondeterministic order, so
+    # two runs over identical files produce different strings. Sort the error
+    # fragments to make the stored report stable; otherwise `--check` reports
+    # drift that is only reordering, and a flaky gate gets ignored.
+    detail = _normalise_errors(detail)
+    # Keep the whole diagnostic. Truncating here silently dropped error
+    # fragments from files with several problems, which is the opposite of
+    # what this report is for. The cap only guards against a runaway message.
+    return False, detail[:4000]
 
 
 def main() -> int:
@@ -95,9 +169,9 @@ def main() -> int:
 
     version = tool_version(binary)
     skills: dict[str, dict] = {}
-    for skill_dir in sorted(
-        p.parent for p in args.source.glob("*/*/pipeline-cli.yaml")
-    ):
+    skill_dirs = {p.parent for p in args.source.glob("*/*/pipeline-cli.yaml")}
+    skill_dirs |= {p.parent for p in args.source.glob("*/*/pipeline.yaml")}
+    for skill_dir in sorted(skill_dirs):
         variants: dict[str, dict] = {}
         for variant, filename in VARIANTS.items():
             pipeline = skill_dir / filename
@@ -107,6 +181,7 @@ def main() -> int:
             result = {
                 "pipeline": str(pipeline.relative_to(REPO)),
                 "validates": ok,
+                "job_spec_accepted": job_spec_accepted(pipeline),
                 "readiness": READY_VALIDATED if ok else READY_INVALID,
             }
             if not ok:
@@ -148,6 +223,16 @@ def main() -> int:
                 }
                 for variant in VARIANTS
             },
+        },
+        "validators": {
+            "pipeline_config": (
+                "expanso-edge validate -- strict; decides `validates` and `readiness`"
+            ),
+            "job_spec": (
+                "expanso-cli job validate --offline -- what the repository CI gate "
+                "runs; decides `job_spec_accepted`. Acceptance here is NOT semantic "
+                "validity: it does not check inner component configuration."
+            ),
         },
         "readiness_vocabulary": {
             READY_VALIDATED: (

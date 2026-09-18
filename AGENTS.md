@@ -29,8 +29,13 @@ wrong here before.
 - Both binaries use a `version` **subcommand**; there is no `--version` flag.
 - `expanso-cli execution list --job-id`; `--job` is rejected despite appearing in
   the CLI's own help text.
-- The two validators disagree: `expanso-cli job validate --offline` accepts files
-  that `expanso-edge validate` rejects. Run both.
+- The two validators answer different questions, and the difference is load
+  bearing. `expanso-cli job validate --offline` checks JOB SPEC structure and is
+  what CI gates on; `expanso-edge validate` checks the inner PIPELINE CONFIG and
+  catches unknown component fields, bloblang arity and type errors. Many files
+  are accepted by the first and rejected by the second, so a green CI run is not
+  evidence of semantic validity. `validation-report.json` records both, as
+  `job_spec_accepted` and `validates`. Run both.
 - A successful deploy only **stores** the job. Assignment and execution follow
   asynchronously and can still fail; confirm with `job describe` /
   `execution list --job-id`. Passing validation is not execution evidence.

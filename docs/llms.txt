@@ -77,7 +77,15 @@ Expanso Cloud. Machine-readable per-skill validation status:
 
 - https://skills.expanso.io/validation-report.json
 
-Every pipeline variant (CLI, MCP and, where present, Cloud) is validated
+Two validators answer different questions. `expanso-cli job validate --offline`
+checks job-spec structure and is what this repository's CI gates on;
+`expanso-edge validate` checks the inner pipeline config and catches unknown
+component fields, bloblang arity and type errors. Many skills are accepted by
+the first and rejected by the second, so a green CI run is not evidence of
+semantic validity. The report records both, as `job_spec_accepted` and
+`validates`.
+
+Every pipeline variant (CLI, MCP, recipe, and where present Cloud) is validated
 separately, and a skill is only labelled ready-to-validate when all of its
 variants pass. The report carries the current totals, the per-skill readiness
 and the validator version they were produced against; those numbers are not

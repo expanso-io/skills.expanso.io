@@ -54,40 +54,17 @@ jobs:
             exit 1
           fi
 
-      - name: Validate pipeline syntax (expanso-cli)
-        run: |
-          # Install expanso-cli if not present
-          if ! command -v expanso-cli &>/dev/null; then
-            echo "Installing expanso-cli..."
-            curl -fsSL https://get.expanso.io/cli | bash || true
-            # Installer may add to ~/.local/bin — ensure it's in PATH
-            export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
-          fi
-
-          # Re-check after install attempt; skip gracefully if still missing
-          if ! command -v expanso-cli &>/dev/null; then
-            echo "⚠️  expanso-cli not available — skipping pipeline validation"
-            exit 0
-          fi
-
-          echo "Validating pipeline YAML files with expanso-cli..."
-          ERRORS=0
-          VALIDATED=0
-
-          for pipeline in $(find skills -name "pipeline*.yaml" -type f); do
-            if expanso-cli job validate "$pipeline" --offline 2>&1; then
-              VALIDATED=$((VALIDATED + 1))
-            else
-              echo "❌ Validation failed: $pipeline"
-              ERRORS=$((ERRORS + 1))
-            fi
-          done
-
-          echo "✅ Validated $VALIDATED pipeline files"
-          if [ "$ERRORS" -gt 0 ]; then
-            echo "Found $ERRORS pipeline validation errors"
-            exit 1
-          fi
+      - name: Validate pipeline job specs (expanso-cli)
+        # Repository-owned command lives in scripts/validate-pipelines.sh so it
+        # can be reproduced locally before pushing. Fail-closed: if the
+        # validator cannot be installed or run, this FAILS rather than passing
+        # by skipping. It previously skipped silently because its installer URL
+        # 404'd, so no pipeline was ever actually validated on a green run.
+        #
+        # Scope: job-spec structure only. It does not prove a pipeline's inner
+        # component configuration is valid; `expanso-edge validate` is stricter
+        # and still rejects several recipes.
+        run: ./scripts/validate-pipelines.sh
 
       - name: Run skills audit
         run: |
