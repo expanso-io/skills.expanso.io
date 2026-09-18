@@ -22,25 +22,10 @@ Agent Request → access-gate → [connector] → data-fence → audit-log
 
 ## Quick Start
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)).
+
 ```bash
-# Install Expanso Edge
-curl -fsSL https://get.expanso.io/edge/install.sh | bash
-
-# Default deny (no policy configured)
-echo '{"agent":"unknown-bot","resource":"slack-read"}' | \
-  expanso-edge run pipeline-cli.yaml
-# → {"allowed": false, "reason": "No policy rules configured, default=deny"}
-
-# Allow specific agent
-echo '{"agent":"marketing-bot","resource":"slack-read"}' | \
-  ACCESS_POLICY="marketing-bot:slack-read:read" \
-  expanso-edge run pipeline-cli.yaml
-# → {"allowed": true, "reason": "Matched policy rule..."}
-
-# Wildcard rules
-echo '{"agent":"any-agent","resource":"webhook-receive"}' | \
-  ACCESS_POLICY="*:webhook-receive:read" \
-  expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ## Policy Format
@@ -86,17 +71,4 @@ ACCESS_DEFAULT="deny"  # or "allow"
 
 ## Composable Security Chain
 
-```bash
-# Full security chain:
-# 1. Check permission
-# 2. Read Slack messages
-# 3. Redact PII
-# 4. Filter allowed fields
-# 5. Log access
-echo '{"agent":"marketing-bot","resource":"slack-read","channel":"C01234567"}' | \
-  ACCESS_POLICY="marketing-bot:slack-read:read" \
-  expanso-edge run access-gate.yaml | \
-  SLACK_BOT_TOKEN=xoxb-... expanso-edge run slack-read.yaml | \
-  expanso-edge run pii-redact.yaml | \
-  expanso-edge run data-fence.yaml
-```
+Each skill in this chain is a separate job, and `expanso-edge run` cannot pipe one pipeline into the next, so this chain has no verified run form.

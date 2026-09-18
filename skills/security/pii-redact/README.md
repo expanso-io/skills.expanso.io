@@ -10,33 +10,16 @@ This skill uses AI to detect and redact PII from text. Unlike `pii-detect` which
 
 ### CLI Mode
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
+
 ```bash
-# Set your API key on the node that runs the pipeline. It is sent to OpenAI,
-# along with the text being redacted.
-export OPENAI_API_KEY=sk-...
-
-# Redact PII from text
-echo "Contact John Smith at john.smith@company.com or 555-123-4567" | \
-  expanso-edge run pipeline-cli.yaml
-
-# Custom placeholder
-PLACEHOLDER="***" echo "Contact John at john@example.com" | \
-  expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-# Start server
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-# Make request
-curl -X POST http://localhost:8080/redact \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Contact John Smith at john.smith@company.com",
-    "placeholder": "[HIDDEN]"
-  }'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Output

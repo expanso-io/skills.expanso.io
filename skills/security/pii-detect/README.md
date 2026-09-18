@@ -12,29 +12,16 @@ Scan text for sensitive personal data before processing, logging, or sharing. Es
 
 ### CLI Mode
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
+
 ```bash
-export OPENAI_API_KEY=sk-...
-
-# Scan text for all PII types
-echo "Contact John Smith at john@example.com or 555-123-4567" | \
-  expanso-edge run pipeline-cli.yaml
-
-# Scan for specific types only
-echo "SSN: 123-45-6789, Card: 4111-1111-1111-1111" | \
-  PII_TYPES="ssn,credit_card" expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-curl -X POST http://localhost:8080/detect \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Please contact jane.doe@company.com or call 555-987-6543",
-    "types": ["email", "phone"]
-  }'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Configuration
@@ -98,17 +85,12 @@ My date of birth is March 15, 1985.
 
 ### Pre-Logging Check
 ```bash
-# Check logs before shipping to external service
-cat application.log | expanso-edge run pipeline-cli.yaml | jq '.has_pii'
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### Compliance Scanning
 ```bash
-# Scan all customer data files
-for f in customer_*.json; do
-  echo "Scanning $f..."
-  cat "$f" | expanso-edge run pipeline-cli.yaml
-done
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### Pipeline Integration

@@ -13,34 +13,16 @@ This skill demonstrates structured output extraction with Expanso + OpenClaw:
 
 ### CLI Mode (for shell scripting)
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
+
 ```bash
-# Set your API key
-export OPENAI_API_KEY=sk-...
-
-# Extract from stdin (uses default fields)
-echo "John Smith, 35 years old, lives in NYC" | \
-  expanso-edge run pipeline-cli.yaml
-
-# With custom fields
-echo "Contact: jane@example.com, Phone: 555-1234" | \
-  EXTRACT_FIELDS="email,phone" expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode (for OpenClaw integration)
 
 ```bash
-# Start the skill server
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-# Call from curl (or OpenClaw MCP)
-curl -X POST http://localhost:8080/extract \
-  -H "Content-Type: application/json" \
-  -d '{"text": "John Smith, 35 years old, lives in NYC"}'
-
-# With custom fields
-curl -X POST http://localhost:8080/extract \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Contact: jane@example.com", "fields": ["email", "phone"]}'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Configuration
@@ -104,14 +86,7 @@ Budget approved: $50,000.
 You can request specific fields for your use case:
 
 ```bash
-# Extract only contact info
-echo "..." | EXTRACT_FIELDS="email,phone,address" expanso-edge run pipeline-cli.yaml
-
-# Extract financial data
-echo "..." | EXTRACT_FIELDS="amount,currency,account_number,date" expanso-edge run pipeline-cli.yaml
-
-# Extract product info
-echo "..." | EXTRACT_FIELDS="product_name,sku,price,quantity" expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ## Using with Ollama (Local, No API Key)
