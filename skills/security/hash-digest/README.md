@@ -12,31 +12,16 @@ Pure local processing - no external API calls, no credentials needed. Perfect fo
 
 ### CLI Mode
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
+
 ```bash
-# SHA256 (default)
-echo "Hello, World!" | expanso-edge run pipeline-cli.yaml
-
-# SHA512
-echo "Hello, World!" | ALGORITHM=sha512 expanso-edge run pipeline-cli.yaml
-
-# MD5 (legacy compatibility)
-echo "Hello, World!" | ALGORITHM=md5 expanso-edge run pipeline-cli.yaml
-
-# XXHash64 (fast, non-cryptographic)
-echo "Hello, World!" | ALGORITHM=xxhash64 expanso-edge run pipeline-cli.yaml
-
-# Hash a file
-cat large_file.bin | expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-curl -X POST http://localhost:8080/hash \
-  -H "Content-Type: application/json" \
-  -d '{"data": "Hello, World!", "algorithm": "sha256"}'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Configuration
@@ -81,23 +66,17 @@ Hello, World!
 
 ### Content Deduplication
 ```bash
-# Generate hash for dedup key
-cat document.pdf | ALGORITHM=xxhash64 expanso-edge run pipeline-cli.yaml | jq -r '.hash'
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### Audit Trail
 ```bash
-# Hash input before processing for audit
-INPUT_HASH=$(echo "$DATA" | expanso-edge run pipeline-cli.yaml | jq -r '.hash')
-echo "Processing data with hash: $INPUT_HASH"
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### File Integrity
 ```bash
-# Verify file hasn't changed
-EXPECTED="dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f"
-ACTUAL=$(cat file.txt | expanso-edge run pipeline-cli.yaml | jq -r '.hash')
-[ "$EXPECTED" = "$ACTUAL" ] && echo "OK" || echo "MISMATCH"
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ## No Credentials Required
@@ -112,4 +91,4 @@ This skill runs entirely locally with no external API calls. Your data never lea
 
 ---
 
-*Built with [Expanso Edge](https://expanso.io) - Your keys, your machine.*
+*Built with [Expanso Edge](https://expanso.io).*

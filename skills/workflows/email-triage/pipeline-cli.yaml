@@ -13,8 +13,9 @@
 #     OUTLOOK_TOKEN=... expanso-edge run pipeline-cli.yaml
 #
 # Why Expanso Edge?
-#   Your email credentials and OAuth tokens stay on YOUR machine.
-#   The AI only sees email content - never your authentication.
+#   Credentials are read from the executing node's environment, not sent to
+#   Expanso Cloud. Each is sent to its own provider's API. The AI provider
+#   receives email content, not your mail credentials.
 #   Full audit trail of what was processed and why.
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
@@ -134,13 +135,7 @@ config:
           root.messages = [
             {
               "role": "system",
-              "content": "You are an expert email triage assistant. Analyze emails and classify each one. For each email, determine:
-1. category: urgent, action-required, meeting, fyi, newsletter, or spam
-2. priority: 1 (highest) to 5 (lowest)
-3. action: what the recipient should do (e.g., 'respond immediately', 'schedule meeting', 'review document', 'archive', 'unsubscribe')
-4. calendar_event: if it's a meeting request, extract {title, proposed_date, proposed_time, duration_minutes}
-
-Respond with a JSON array matching the email IDs provided."
+              "content": "You are an expert email triage assistant. Analyze emails and classify each one. For each email, determine:\n1. category: urgent, action-required, meeting, fyi, newsletter, or spam\n2. priority: 1 (highest) to 5 (lowest)\n3. action: what the recipient should do (e.g., 'respond immediately', 'schedule meeting', 'review document', 'archive', 'unsubscribe')\n4. calendar_event: if it's a meeting request, extract {title, proposed_date, proposed_time, duration_minutes}\n\nRespond with a JSON array matching the email IDs provided."
             },
             {
               "role": "user",

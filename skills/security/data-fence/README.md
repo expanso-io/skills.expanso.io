@@ -17,21 +17,10 @@ After:   {"id": 1, "name": "John"}
 
 ## Quick Start
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)).
+
 ```bash
-# Install Expanso Edge
-curl -fsSL https://get.expanso.io/edge/install.sh | bash
-
-# Allowlist mode — keep only these fields
-echo '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"allowed_fields":["id","name"]}' | \
-  expanso-edge run pipeline-cli.yaml
-
-# Blocklist mode — remove these fields
-echo '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"blocked_fields":["ssn"]}' | \
-  expanso-edge run pipeline-cli.yaml
-
-# Via environment variable
-echo '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}]}' | \
-  FENCE_ALLOWED_FIELDS="id,name" expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ## Inputs
@@ -70,13 +59,4 @@ echo '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}]}' | \
 
 ## Composable Security Chain
 
-```bash
-# Full chain: gate → read → redact PII → fence fields → log
-echo '{"agent":"marketing-bot","resource":"slack-read","channel":"C01234567"}' | \
-  ACCESS_POLICY="marketing-bot:slack-read:read" \
-  expanso-edge run access-gate.yaml | \
-  SLACK_BOT_TOKEN=xoxb-... expanso-edge run slack-read.yaml | \
-  expanso-edge run pii-redact.yaml | \
-  FENCE_ALLOWED_FIELDS="id,text,timestamp" \
-  expanso-edge run data-fence.yaml
-```
+Each skill in this chain is a separate job, and `expanso-edge run` cannot pipe one pipeline into the next, so this chain has no verified run form.

@@ -10,26 +10,16 @@ This skill converts text to URL-safe slugs by lowercasing, replacing spaces with
 
 ### CLI Mode
 
-```bash
-# Generate slug
-echo "Hello World! This is a Test" | expanso-edge run pipeline-cli.yaml
-# Output: hello-world-this-is-a-test
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
 
-# Custom separator
-SEPARATOR=_ echo "Hello World" | expanso-edge run pipeline-cli.yaml
-# Output: hello_world
+```bash
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-# Start server
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-# Make request
-curl -X POST http://localhost:8080/slugify \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Hello World! This is a Test"}'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Output

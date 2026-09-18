@@ -11,7 +11,8 @@
 # - Identify quick wins and opportunities
 # - Send reports to Slack/email
 #
-# Security: Stripe API key stays local on Expanso Edge.
+# Security: the Stripe API key is read from the executing node's environment and
+# sent to the Stripe API as its credential. It is not sent to Expanso Cloud.
 
 name: stripe-reports
 version: 1.0.0

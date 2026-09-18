@@ -10,29 +10,16 @@ This skill truncates text to a maximum length, optionally appending a suffix (li
 
 ### CLI Mode
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
+
 ```bash
-# Truncate to 100 chars (default)
-echo "This is a long text..." | expanso-edge run pipeline-cli.yaml
-
-# Truncate to 20 chars
-LENGTH=20 echo "This is a very long text that will be truncated" | \
-  expanso-edge run pipeline-cli.yaml
-
-# Custom suffix
-LENGTH=20 SUFFIX="[more]" echo "This is a very long text" | \
-  expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-# Start server
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-# Make request
-curl -X POST http://localhost:8080/truncate \
-  -H "Content-Type: application/json" \
-  -d '{"text": "This is a very long text", "length": 15, "suffix": "..."}'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Output

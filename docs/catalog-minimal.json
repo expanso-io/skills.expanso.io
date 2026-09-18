@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "total_skills": 172,
+  "total_skills": 177,
   "categories": {
     "workflows": {
       "skill_count": 19,
@@ -55,10 +55,12 @@
       ]
     },
     "security": {
-      "skill_count": 14,
+      "skill_count": 16,
       "skills": [
+        "access-gate",
         "audit-envelope",
         "cve-scan",
+        "data-fence",
         "hash-digest",
         "jwt-verify",
         "log-sanitize",
@@ -176,6 +178,14 @@
         "xml-to-json",
         "yaml-to-json",
         "yaml-validate"
+      ]
+    },
+    "connectors": {
+      "skill_count": 3,
+      "skills": [
+        "gmail-read",
+        "slack-read",
+        "webhook-receive"
       ]
     },
     "utilities": {

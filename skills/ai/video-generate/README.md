@@ -4,13 +4,10 @@ Generate short videos from text prompts using Replicate AI.
 
 ## Quick Start
 
-```bash
-# Set your Replicate API token
-export REPLICATE_API_TOKEN=r8_...
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)).
 
-# Generate a video
-echo '{"prompt": "A cat playing piano in a jazz club"}' | \
-  expanso-edge run pipeline-cli.yaml
+```bash
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ## Configuration
@@ -97,11 +94,7 @@ The skill polls for up to 3 minutes. Some complex prompts may take longer. Check
 Make sure you're sending valid JSON with a `prompt` field:
 
 ```bash
-# Correct
-echo '{"prompt": "A sunset over mountains"}' | expanso-edge run pipeline-cli.yaml
-
-# Wrong - missing quotes
-echo '{prompt: A sunset}' | expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ## Related Skills

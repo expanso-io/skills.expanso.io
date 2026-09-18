@@ -4,7 +4,8 @@
 # Usage:
 #   echo "Contact John at john@example.com" | expanso-edge run pipeline-cli.yaml
 #
-# Credentials stay local - ${OPENAI_API_KEY} is resolved on your edge node.
+# ${OPENAI_API_KEY} is resolved on your edge node and sent to OpenAI as the API
+# credential, together with the input text. It is not sent to Expanso Cloud.
 
 name: "pii-redact-cli"
 type: pipeline

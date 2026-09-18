@@ -10,6 +10,7 @@
 
     // State
     var catalog = null;
+    var validationReport = null;
     var filteredSkills = [];
     var currentCategory = 'all';
     var searchQuery = '';
@@ -17,7 +18,7 @@
     var filterNoCreds = false;
 
     var SKILLS_BASE = window.location.origin;
-    var GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/expanso-io/expanso-skills/main';
+    var GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/expanso-io/skills.expanso.io/main';
 
     // DOM Elements
     var skillsGrid = document.getElementById('skills-grid');
@@ -38,9 +39,30 @@
         connectors: 'badge-connectors'
     };
 
+    function initThemeToggle() {
+        var button = document.getElementById('theme-toggle');
+        if (!button) return;
+        var root = document.documentElement;
+        function render() {
+            var dark = root.getAttribute('data-theme') === 'dark';
+            button.textContent = dark ? 'Light' : 'Dark';
+            button.setAttribute('aria-pressed', dark ? 'true' : 'false');
+            button.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+        }
+        button.addEventListener('click', function() {
+            var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', next);
+            try { localStorage.setItem('theme', next); } catch (e) {}
+            render();
+        });
+        render();
+    }
+
     async function init() {
+        initThemeToggle();
         try {
             await loadCatalog();
+            await loadValidationReport();
             bindEvents();
             filterAndRender();
 
@@ -72,6 +94,30 @@
             } catch (e) { continue; }
         }
         throw new Error('Could not load catalog from any source');
+    }
+
+    // Best effort: without the report the modal says status is unknown rather
+    // than implying a pipeline validates.
+    async function loadValidationReport() {
+        var urls = ['validation-report.json', '../validation-report.json', GITHUB_RAW_BASE + '/validation-report.json'];
+        for (var i = 0; i < urls.length; i++) {
+            try {
+                var response = await fetch(urls[i]);
+                if (response.ok) {
+                    validationReport = await response.json();
+                    return;
+                }
+            } catch (e) { continue; }
+        }
+    }
+
+    function variantStatus(skillName, variant) {
+        var entry = validationReport && validationReport.skills && validationReport.skills[skillName];
+        return entry && entry.variants ? entry.variants[variant] || null : null;
+    }
+
+    function isOffline(skill) {
+        return (skill.tags || []).indexOf('offline') !== -1;
     }
 
     async function fetchSkillFile(skillName, filename, category) {
@@ -161,7 +207,7 @@
                 if (!searchStr.includes(searchQuery)) return false;
             }
             if (filterLocal) {
-                if (!skill.backends.some(function(b) { return b === 'local' || b === 'ollama'; })) return false;
+                if (!isOffline(skill)) return false;
             }
             if (filterNoCreds) {
                 if (skill.credentials.filter(function(c) { return c.required; }).length > 0) return false;
@@ -213,10 +259,10 @@
         categoryBadge.textContent = skill.category;
         badges.appendChild(categoryBadge);
 
-        if (skill.backends.some(function(b) { return b === 'local' || b === 'ollama'; })) {
+        if (isOffline(skill)) {
             var localBadge = document.createElement('span');
             localBadge.className = 'badge badge-local';
-            localBadge.textContent = 'local';
+            localBadge.textContent = 'offline';
             badges.appendChild(localBadge);
         }
 
@@ -244,18 +290,20 @@
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
 
+        var hasCloudVariant = !!variantStatus(skillName, 'cloud');
         var results = await Promise.all([
             fetchSkillFile(skillName, 'skill.yaml', skill.category),
             fetchSkillFile(skillName, 'pipeline-cli.yaml', skill.category),
-            fetchSkillFile(skillName, 'pipeline-mcp.yaml', skill.category)
+            fetchSkillFile(skillName, 'pipeline-mcp.yaml', skill.category),
+            hasCloudVariant ? fetchSkillFile(skillName, 'pipeline-cloud.yaml', skill.category) : null
         ]);
 
         while (modalContent.firstChild) modalContent.removeChild(modalContent.firstChild);
-        buildModalContent(skillName, skill, results[0], results[1], results[2]);
+        buildModalContent(skillName, skill, results[0], results[1], results[2], results[3]);
         if (window.Prism) Prism.highlightAllUnder(modalContent);
     }
 
-    function buildModalContent(skillName, skill, skillYaml, pipelineCli, pipelineMcp) {
+    function buildModalContent(skillName, skill, skillYaml, pipelineCli, pipelineMcp, pipelineCloud) {
         // ── Header ──
         var headerDiv = document.createElement('div');
         headerDiv.className = 'modal-header';
@@ -379,8 +427,9 @@
         // Sub-tabs for CLI vs MCP within Pipeline tab
         var hasCli = !!pipelineCli;
         var hasMcp = !!pipelineMcp;
+        var hasCloud = !!pipelineCloud;
 
-        if (!hasCli && !hasMcp) {
+        if (!hasCli && !hasMcp && !hasCloud) {
             var noMsg = document.createElement('p');
             noMsg.className = 'no-content';
             noMsg.textContent = 'No pipeline available for this skill.';
@@ -392,7 +441,8 @@
 
             var pipeSubContents = {};
             var pipeSubDefs = [];
-            if (hasCli) pipeSubDefs.push({ id: 'cli', label: 'CLI Pipeline', yaml: pipelineCli, file: 'pipeline-cli.yaml', desc: 'Standalone pipeline. Reads from stdin, processes data, outputs to stdout.' });
+            if (hasCloud) pipeSubDefs.push({ id: 'cloud', label: 'Cloud Pipeline', yaml: pipelineCloud, file: 'pipeline-cloud.yaml', desc: 'Cloud-scheduled pipeline. Its input needs nothing from your terminal, so it can run on a remote edge node. Start here for a first run against Expanso Cloud.' });
+            if (hasCli) pipeSubDefs.push({ id: 'cli', label: 'CLI Pipeline', yaml: pipelineCli, file: 'pipeline-cli.yaml', desc: 'Standalone pipeline. Reads from stdin, processes data, outputs to stdout. A Cloud-scheduled job has no stdin connected to your terminal, so this variant cannot receive your input on a remote node as written.' });
             if (hasMcp) pipeSubDefs.push({ id: 'mcp', label: 'MCP Pipeline', yaml: pipelineMcp, file: 'pipeline-mcp.yaml', desc: 'HTTP server pipeline for MCP integration. Exposes an endpoint for AI assistants.' });
 
             pipeSubDefs.forEach(function(sub, idx) {
@@ -431,10 +481,14 @@
                 var bannerInfo = document.createElement('div');
                 var bannerTitle = document.createElement('div');
                 bannerTitle.className = 'copy-banner-title';
-                bannerTitle.textContent = 'Ready to deploy?';
+                var status = variantStatus(skillName, sub.id);
+                var rejected = !!status && !status.validates;
+                bannerTitle.textContent = rejected ? 'Rejected by the local validator' : 'Deploy to Expanso Cloud';
                 var bannerSub = document.createElement('div');
                 bannerSub.className = 'copy-banner-subtitle';
-                bannerSub.textContent = 'Copy this pipeline and paste it into Expanso Cloud.';
+                bannerSub.textContent = rejected
+                    ? 'Fix the validation error below before deploying this pipeline.'
+                    : 'Copy this pipeline, validate it, then deploy it to your control plane.';
                 bannerInfo.appendChild(bannerTitle);
                 bannerInfo.appendChild(bannerSub);
                 bannerLeft.appendChild(bannerInfo);
@@ -463,6 +517,19 @@
                 descEl.textContent = sub.desc;
                 subDiv.appendChild(descEl);
 
+                // Readiness, from validation-report.json
+                var readinessEl = document.createElement('p');
+                readinessEl.className = 'readiness-note' + (status && status.validates ? '' : ' readiness-warn');
+                var validatorVersion = validationReport && validationReport.validator ? validationReport.validator.version : '';
+                if (!status) {
+                    readinessEl.textContent = 'Validation status unknown. Run both validators below before deploying. Not confirmed by an end-to-end run.';
+                } else if (status.validates) {
+                    readinessEl.textContent = 'Passes local validation (expanso-edge validate ' + validatorVersion + '). Not confirmed by an end-to-end run on Expanso Cloud.';
+                } else {
+                    readinessEl.textContent = 'Rejected by expanso-edge validate ' + validatorVersion + ': ' + (status.error || 'see validation-report.json');
+                }
+                subDiv.appendChild(readinessEl);
+
                 // Code block
                 subDiv.appendChild(createCodeBlock(sub.yaml, 'yaml'));
 
@@ -473,8 +540,27 @@
                 deployH3.textContent = 'Deploy';
                 deployDiv.appendChild(deployH3);
 
-                var deployCmd = 'expanso-cli job deploy ' + getSkillUrl(skillName, sub.file);
-                deployDiv.appendChild(createCodeBlock(deployCmd, 'bash'));
+                if (rejected) {
+                    var blocked = document.createElement('p');
+                    blocked.className = 'readiness-note readiness-warn';
+                    blocked.textContent = 'No deploy command is shown for this pipeline because the local validator rejects it. A deploy could still be accepted and stored, but the job is known not to be valid.';
+                    deployDiv.appendChild(blocked);
+                } else {
+                    var skillUrl = getSkillUrl(skillName, sub.file);
+                    var deployCmd =
+                        '# Requires: a saved Cloud profile and a connected edge node.\n' +
+                        '# expanso-cli job deploy reads a FILE path or \'-\', not a URL.\n' +
+                        'curl -fsSL -O ' + skillUrl + '\n' +
+                        '# Run both validators; job validate accepts files edge rejects.\n' +
+                        'expanso-edge validate ' + sub.file + '\n' +
+                        'expanso-cli job validate ' + sub.file + ' --offline\n' +
+                        'expanso-cli job deploy ' + sub.file + '\n\n' +
+                        '# Deploying stores the job; it does not prove it ran.\n' +
+                        '# Confirm the control plane actually scheduled and executed it:\n' +
+                        'expanso-cli job describe <job-name>\n' +
+                        'expanso-cli execution list --job-id <job-id>';
+                    deployDiv.appendChild(createCodeBlock(deployCmd, 'bash'));
+                }
 
                 subDiv.appendChild(deployDiv);
 
@@ -489,7 +575,7 @@
         actionsDiv.className = 'modal-actions';
 
         var githubLink = document.createElement('a');
-        githubLink.href = 'https://github.com/expanso-io/expanso-skills/tree/main/skills/' + skill.category + '/' + skillName;
+        githubLink.href = 'https://github.com/expanso-io/skills.expanso.io/tree/main/skills/' + skill.category + '/' + skillName;
         githubLink.target = '_blank';
         githubLink.rel = 'noopener';
         githubLink.className = 'btn btn-primary';

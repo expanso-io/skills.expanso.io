@@ -263,7 +263,9 @@ def iter_skill_dirs(source_dir: Path, layout: str) -> list[tuple[str | None, Pat
 
 def resolve_category(skill_name: str, category_hint: str | None) -> str:
     """Resolve category using directory hint first, then name patterns."""
-    if category_hint and (category_hint in CATEGORY_RULES or category_hint == "utilities"):
+    if category_hint and (
+        category_hint in CATEGORY_RULES or category_hint == "utilities"
+    ):
         return category_hint
     return categorize_skill(skill_name)
 
@@ -317,6 +319,8 @@ def build_catalog(source_dir: Path, layout: str) -> tuple[dict, dict[str, list[s
             "backends": [b.get("name") for b in skill_data.get("backends", [])],
             "tags": extract_tags(skill_name, skill_data, category),
         }
+        if "dependencies" in skill_data:
+            skill_meta["dependencies"] = skill_data["dependencies"]
 
         catalog["skills"][skill_name] = skill_meta
         catalog["total_skills"] += 1
@@ -361,14 +365,19 @@ def extract_tags(skill_name: str, skill_data: dict, category: str) -> list[str]:
         if "jira" in cred_name:
             tags.add("jira")
 
-    # Add backend-based tags
-    for backend in skill_data.get("backends", []):
-        backend_type = backend.get("type", "")
-        if backend_type == "local":
-            tags.add("local")
-            tags.add("offline")
-        if backend_type == "remote":
-            tags.add("remote")
+    # Add backend-based tags. `offline` means the skill as shipped needs no
+    # third-party egress: a declared `dependencies.offline_capable` decides it,
+    # otherwise every declared backend must be local.
+    backend_types = [b.get("type", "") for b in skill_data.get("backends", [])]
+    if "local" in backend_types:
+        tags.add("local")
+    if "remote" in backend_types:
+        tags.add("remote")
+    declared = (skill_data.get("dependencies") or {}).get("offline_capable")
+    if declared is True or (
+        declared is None and backend_types and all(t == "local" for t in backend_types)
+    ):
+        tags.add("offline")
 
     # Add name-based tags
     name_parts = skill_name.split("-")
@@ -440,7 +449,9 @@ def main():
     catalog, category_skills = build_catalog(source_dir, layout)
 
     # Print summary
-    print(f"\nFound {catalog['total_skills']} skills in {len(category_skills)} categories:")
+    print(
+        f"\nFound {catalog['total_skills']} skills in {len(category_skills)} categories:"
+    )
     for cat, skills in sorted(category_skills.items()):
         if skills:
             print(f"  {cat}: {len(skills)} skills")

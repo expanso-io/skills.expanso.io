@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        (function () {
+            // Light on first visit. Dark only when the viewer explicitly chose it
+            // and we stored that choice; OS preference deliberately does not apply.
+            var theme = null;
+            try { theme = localStorage.getItem('theme'); } catch (e) {}
+            document.documentElement.setAttribute(
+                'data-theme', theme === 'dark' ? 'dark' : 'light');
+        })();
+    </script>
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -11,21 +21,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expanso Skills Marketplace – Pre-Built Data Pipelines for AI Agents</title>
-    <meta name="description" content="Browse 177+ pre-built data pipelines for AI agents. Install skills for Claude, LangChain, CrewAI, and any MCP-compatible tool. Works offline.">
+    <meta name="description" content="Browse 177 pre-built Expanso pipeline definitions for AI agents. Deploy to your own Expanso Cloud control plane and run them on edge nodes you control.">
     <meta name="keywords" content="AI pipelines, data processing, MCP skills, AI agents, LangChain, CrewAI, OpenClaw, Expanso, data connectors">
     <link rel="canonical" href="https://skills.expanso.io/">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Expanso Skills Marketplace – Pre-Built Data Pipelines for AI Agents">
-    <meta property="og:description" content="Browse 177+ pre-built data processing pipelines and integration connectors for AI agents. Works offline, keeps credentials local, runs anywhere.">
+    <meta property="og:description" content="Browse 177 pre-built Expanso pipeline definitions and integration connectors for AI agents. Runs on edge nodes you own; per-skill dependencies are declared.">
     <meta property="og:url" content="https://skills.expanso.io/">
     <meta property="og:site_name" content="Expanso Skills Marketplace">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Expanso Skills Marketplace – Data Pipelines for AI Agents">
-    <meta name="twitter:description" content="177+ pre-built data processing pipelines and integration connectors for AI agents. Works offline, keeps credentials local.">
+    <meta name="twitter:description" content="177 pre-built Expanso pipeline definitions and integration connectors for AI agents. Runs on edge nodes you own.">
 
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
@@ -42,8 +52,11 @@
                 <img src="https://expanso.io/images/logos/expanso-logo-nav.avif" alt="Expanso" class="logo-img">
                 <span class="logo-text">Skills</span>
             </a>
-            <div class="header-stats">
-                <span id="skill-count">177</span> skills
+            <div class="header-actions">
+                <div class="header-stats">
+                    <span id="skill-count">177</span> skills
+                </div>
+                <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">Dark</button>
             </div>
         </div>
     </header>
@@ -51,7 +64,7 @@
     <main class="main">
         <section class="hero">
             <h1>Data Processing Pipelines for AI</h1>
-            <p class="hero-subtitle">Pre-built skills that keep credentials local, work offline, and run anywhere.</p>
+            <p class="hero-subtitle">Pre-built pipeline definitions you deploy to your own Expanso Cloud control plane and run on edge nodes you control. Offline and credential handling vary by skill &mdash; each one declares what it needs and what leaves your host.</p>
             <div class="install-box">
                 <code>curl -fsSL https://skills.expanso.io/install.sh | bash</code>
                 <button class="copy-btn" data-copy="curl -fsSL https://skills.expanso.io/install.sh | bash" title="Copy">
@@ -86,7 +99,7 @@
                 <div class="filter-toggles">
                     <label class="toggle">
                         <input type="checkbox" id="filter-local">
-                        <span>Local only</span>
+                        <span>Offline-capable</span>
                     </label>
                     <label class="toggle">
                         <input type="checkbox" id="filter-no-creds">

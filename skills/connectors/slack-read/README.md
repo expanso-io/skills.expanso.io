@@ -1,12 +1,12 @@
 # slack-read
 
-Read messages from Slack channels and DMs through Expanso Edge. Your Slack bot token stays on your machine — AI agents get clean message data without access to your credentials.
+Read messages from Slack channels and DMs through Expanso Edge. Your Slack bot token stays with the edge node that runs the pipeline — AI agents get clean message data without access to your credentials. The token and your requests are still sent to the Slack API (`slack.com`), which is how the skill reads messages.
 
 ## Why Use This Instead of Direct Slack API Access?
 
 When an AI agent connects directly to Slack, it gets your bot token. With Expanso Edge:
 
-- **Credentials stay local** — Your `SLACK_BOT_TOKEN` never leaves your machine
+- **The agent never holds the token** — `SLACK_BOT_TOKEN` is read from the executing node's environment and sent only to Slack as the API credential; it is not given to the agent or sent to Expanso Cloud
 - **Data isolation** — Compose with `pii-redact` to strip sensitive data before the agent sees it
 - **Audit trail** — Every access is logged with trace IDs
 - **Rate limiting** — Prevent agents from hammering the Slack API
@@ -14,13 +14,10 @@ When an AI agent connects directly to Slack, it gets your bot token. With Expans
 
 ## Quick Start
 
-```bash
-# Install Expanso Edge
-curl -fsSL https://get.expanso.io/edge/install.sh | bash
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)).
 
-# Read messages from a channel
-echo '{"channel":"C01234567"}' | \
-  SLACK_BOT_TOKEN=xoxb-your-token expanso-edge run pipeline-cli.yaml
+```bash
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ## Inputs
@@ -65,15 +62,7 @@ access-gate → slack-read → pii-redact → data-fence → audit-log
 ```
 
 Example pipeline composition:
-```bash
-# Agent requests Slack messages → gate checks permission →
-# read messages → redact PII → filter to allowed fields → log access
-echo '{"channel":"C01234567","agent":"marketing-bot"}' | \
-  expanso-edge run access-gate.yaml | \
-  expanso-edge run pipeline-cli.yaml | \
-  expanso-edge run pii-redact.yaml | \
-  expanso-edge run data-fence.yaml
-```
+Each skill in this chain is a separate job, and `expanso-edge run` cannot pipe one pipeline into the next, so this chain has no verified run form.
 
 ## Credentials
 

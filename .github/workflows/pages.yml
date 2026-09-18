@@ -39,9 +39,17 @@ jobs:
 
       - name: Build site with skills
         run: |
-          # Copy catalog files
+          # Copy catalog files. Root is authoritative; the committed docs/
+          # copies are build leftovers and are overwritten here.
           cp catalog.json docs/
           cp catalog-minimal.json docs/
+
+          # Machine-readable per-skill validation status. Generated locally by
+          # scripts/validate-skills.py against a recorded expanso-edge version,
+          # so the report always names the version it was produced against.
+          if [ -f validation-report.json ]; then
+            cp validation-report.json docs/
+          fi
 
           # Flatten skills structure: skills.expanso.io/<name>/ (no categories in URL)
           for category_dir in skills/*/; do
@@ -57,9 +65,9 @@ jobs:
           # List what we're deploying
           echo ""
           echo "Skills deployed (flat structure):"
-          ls -d docs/*/pipeline-cli.yaml 2>/dev/null | head -20 || true
+          find docs -mindepth 2 -maxdepth 2 -name pipeline-cli.yaml -print | sort | head -20
           echo ""
-          echo "Total skills: $(ls -d docs/*/pipeline-cli.yaml 2>/dev/null | wc -l)"
+          echo "Total skills: $(find docs -mindepth 2 -maxdepth 2 -name pipeline-cli.yaml -print | wc -l)"
 
       - name: Generate SEO assets (sitemap, skill pages)
         run: python scripts/build-seo.py --catalog catalog.json --output docs

@@ -2,7 +2,10 @@
 # Version: 1.0.0
 #
 # Read messages from Slack channels and DMs via the Slack API.
-# Credentials stay local on Expanso Edge — never transmitted.
+# SLACK_BOT_TOKEN is read from the executing node's environment and sent to the
+# Slack API (slack.com) as the bearer credential. It is not sent to Expanso
+# Cloud
+# and is not exposed to the calling agent. Message data is fetched from Slack.
 #
 # Compose with security skills for safe agent access:
 #   access-gate → slack-read → pii-redact → data-fence → audit-log
@@ -16,7 +19,7 @@ author:
   url: "https://expanso.io"
   avatar: "EX"
 
-# Credentials (stored locally on Expanso Edge, never transmitted)
+# Credentials (read from the executing node's environment; sent to Slack only)
 credentials:
   - name: SLACK_BOT_TOKEN
     required: true

@@ -1,0 +1,118 @@
+# Expanso Skills Marketplace
+
+> Published Expanso pipeline definitions ("skills") for AI agents and MCP clients.
+> A skill is a job spec you submit to YOUR Expanso Cloud control plane; the
+> scheduler assigns it to an edge node you own. Expanso does not run it for you.
+
+## Read this before you generate a command
+
+- `expanso-cli job deploy FILE` takes a **local file path**, or `-` for stdin.
+  It does **not** fetch an HTTPS URL. Passing a URL fails with
+  `failed to read job specification file`. Download the file first, or pipe it in.
+- `expanso-edge run` starts the node **agent**. Its `--config`/`-c` flag takes
+  agent configuration files. There is no supported `expanso-edge run <pipeline>`
+  form; passing a pipeline to it does not run that pipeline.
+- `expanso-edge validate FILE...` is the local, offline pipeline validator. It
+  reads stdin when given `-`.
+- Both binaries take a `version` **subcommand**. There is no `--version` flag.
+- Listing executions uses `--job-id`. `--job` is not a valid flag.
+- Passing validation and a successful deploy are **not** evidence a pipeline ran.
+  A deploy stores the job; assignment and execution happen afterwards and can
+  still fail. Confirm with `job describe` and `execution list --job-id`.
+
+## Prerequisites a first run actually needs
+
+1. `expanso-cli` and `expanso-edge` installed.
+2. A saved control-plane profile:
+   `expanso-cli profile save NAME --endpoint https://NETWORK.us2.cloud.expanso.io:9010 --api-key exp_ak_... --select`
+3. At least one **connected** node: `expanso-edge bootstrap --token ...`, then
+   `expanso-edge run`, confirmed with `expanso-cli node list`.
+   With no connected node a deploy still succeeds, but the job is only stored --
+   the scheduler has nothing to assign it to.
+
+## Working first run, no credentials required
+
+```
+curl -fsSL -O https://skills.expanso.io/json-pretty/pipeline-cloud.yaml
+expanso-cli job validate pipeline-cloud.yaml --offline
+expanso-cli job deploy pipeline-cloud.yaml
+expanso-cli job describe json-pretty-cloud
+expanso-cli job logs json-pretty-cloud
+```
+
+`pipeline-cloud.yaml` uses a bounded `generate` input, so the node produces its
+own input and needs no credentials and no network egress.
+
+## Input delivery: why `stdin` skills are not a first run
+
+Most `pipeline-cli.yaml` files in this marketplace declare a `stdin` input. Once
+a job is scheduled onto a remote node, that node's process has no connection to
+your terminal, so `stdin` has no way to receive your data. For a Cloud-scheduled
+job use an input the node can reach on its own: `file` (a path on the node),
+`http_server`, `generate`, or a queue or object-store input.
+
+## Honest dependency statement
+
+Claims like "works offline" and "keeps credentials local" are **per skill**, not
+site-wide.
+
+- Credentials are read from the environment of the node that executes the
+  pipeline, and are not embedded in the pipeline file or sent to Expanso Cloud.
+- A skill that calls a third-party API transmits its credential to **that
+  provider**, along with whatever data you send. For example `text-summarize`
+  sends the entire input text and `OPENAI_API_KEY` to `api.openai.com`. It is not
+  offline and not local-only.
+- Only skills whose `skill.yaml` carries a `dependencies` block (currently
+  `text-summarize`) have been audited for what leaves the host; `catalog.json`
+  publishes that block as `skills.<name>.dependencies`. For any other skill,
+  inspect the pipeline's components: a third-party API component sends its
+  credential and your data to that provider.
+- The catalog `offline` tag is set only when a skill declares
+  `dependencies.offline_capable: true`, or declares only local backends.
+
+## Readiness
+
+No skill in this marketplace is confirmed by an end-to-end run on current
+Expanso Cloud. Machine-readable per-skill validation status:
+
+- https://skills.expanso.io/validation-report.json
+
+Two validators answer different questions. `expanso-cli job validate --offline`
+checks job-spec structure and is what this repository's CI gates on;
+`expanso-edge validate` checks the inner pipeline config and catches unknown
+component fields, bloblang arity and type errors. Many skills are accepted by
+the first and rejected by the second, so a green CI run is not evidence of
+semantic validity. The report records both, as `job_spec_accepted` and
+`validates`.
+
+Every pipeline variant (CLI, MCP, recipe, and where present Cloud) is validated
+separately, and a skill is only labelled ready-to-validate when all of its
+variants pass. The report carries the current totals, the per-skill readiness
+and the validator version they were produced against; those numbers are not
+duplicated here, because a prose copy goes stale silently while the report is
+drift-checked. Local validation is not execution evidence; the report's
+readiness vocabulary caps at `validated-not-executed`.
+
+## Machine-readable indexes
+
+- Full catalog: https://skills.expanso.io/catalog.json
+- Minimal catalog: https://skills.expanso.io/catalog-minimal.json
+- Validation report: https://skills.expanso.io/validation-report.json
+- Installer: https://skills.expanso.io/install.sh
+- Source: https://github.com/expanso-io/skills.expanso.io
+
+## Related
+
+- Expanso documentation: https://docs.expanso.io
+- Expanso Cloud: https://cloud.expanso.io
+
+## Discovery
+
+Other Expanso surfaces for agents. These are discovery links only; this
+repository does not verify that they are live.
+
+- Expanso site llms.txt: https://expanso.io/llms.txt
+- Expanso documentation llms.txt: https://docs.expanso.io/llms.txt
+- Expanso examples: https://examples.expanso.io
+- Expanso MCP endpoint (JSON-RPC over HTTP): https://mcp.expanso.io/mcp
+  (the bare https://mcp.expanso.io root is an HTML page, not the MCP endpoint)

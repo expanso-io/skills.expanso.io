@@ -17,7 +17,8 @@ author:
   url: "https://expanso.io"
   avatar: "EX"
 
-# Credentials (stored locally on Expanso Edge, never transmitted)
+# Credentials (read from the executing node's environment; used for local
+# verification only, not transmitted)
 credentials:
   - name: WEBHOOK_SECRET
     required: false

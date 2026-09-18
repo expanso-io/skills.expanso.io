@@ -1,12 +1,12 @@
 # gmail-read
 
-Read emails from Gmail through Expanso Edge. Your OAuth tokens stay on your machine — AI agents get clean email data without access to your credentials.
+Read emails from Gmail through Expanso Edge. Your OAuth tokens stay with the edge node that runs the pipeline — AI agents get clean email data without access to your credentials. The tokens and your requests are still sent to the Gmail API (Google), which is how the skill reads mail.
 
 ## Why Use This Instead of Direct Gmail API Access?
 
 When an AI agent connects directly to Gmail, it gets your OAuth token — and with it, full access to your inbox. With Expanso Edge:
 
-- **Credentials stay local** — Your `GMAIL_ACCESS_TOKEN` never leaves your machine
+- **The agent never holds the token** — `GMAIL_ACCESS_TOKEN` is read from the executing node's environment and sent only to Google as the API credential; it is not given to the agent or sent to Expanso Cloud
 - **Data isolation** — Compose with `pii-redact` to strip personal info before the agent sees it
 - **Scoped access** — Use `data-fence` to limit which email fields the agent can read
 - **Audit trail** — Every access is logged with trace IDs
@@ -14,17 +14,10 @@ When an AI agent connects directly to Gmail, it gets your OAuth token — and wi
 
 ## Quick Start
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)).
+
 ```bash
-# Install Expanso Edge
-curl -fsSL https://get.expanso.io/edge/install.sh | bash
-
-# Read unread emails
-echo '{"query":"is:unread","limit":10}' | \
-  GMAIL_ACCESS_TOKEN=ya29... expanso-edge run pipeline-cli.yaml
-
-# Search for specific emails
-echo '{"query":"from:boss@company.com subject:Q1 review"}' | \
-  GMAIL_ACCESS_TOKEN=ya29... expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ## Inputs
