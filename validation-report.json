@@ -1,6 +1,6 @@
 {
   "disclaimer": "Local validation only. It checks pipeline syntax, structure and component types. It does not run the orchestrator's submission validation and it is NOT evidence that a pipeline executes. No entry here may be promoted to verified-executed without a dated Expanso Cloud run record.",
-  "generated": "2026-09-18T00:55:39.353943+00:00",
+  "generated": "2026-09-18T01:09:18.731657+00:00",
   "readiness_vocabulary": {
     "invalid-does-not-validate": "At least one pipeline variant is rejected by the local validator at the recorded version; see `variants`.",
     "validated-not-executed": "Every pipeline variant passes local validation. Never executed end to end.",
@@ -2562,6 +2562,19 @@
         }
       }
     },
+    "recipes/csv-to-json": {
+      "category": "recipes",
+      "readiness": "validated-not-executed",
+      "validates": true,
+      "variants": {
+        "recipe": {
+          "job_spec_accepted": true,
+          "pipeline": "skills/recipes/csv-to-json/pipeline.yaml",
+          "readiness": "validated-not-executed",
+          "validates": true
+        }
+      }
+    },
     "regex-extract": {
       "category": "transforms",
       "readiness": "validated-not-executed",
@@ -3853,8 +3866,8 @@
   },
   "totals": {
     "fails_validation": 62,
-    "skills": 206,
-    "validates": 144,
+    "skills": 207,
+    "validates": 145,
     "variants": {
       "cli": {
         "pipelines": 177,
@@ -3869,8 +3882,8 @@
         "validates": 142
       },
       "recipe": {
-        "pipelines": 29,
-        "validates": 7
+        "pipelines": 30,
+        "validates": 8
       }
     }
   },

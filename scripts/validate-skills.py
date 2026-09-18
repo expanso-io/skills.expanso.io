@@ -22,6 +22,7 @@ import json
 import shutil
 import subprocess
 import sys
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -171,7 +172,17 @@ def main() -> int:
     skills: dict[str, dict] = {}
     skill_dirs = {p.parent for p in args.source.glob("*/*/pipeline-cli.yaml")}
     skill_dirs |= {p.parent for p in args.source.glob("*/*/pipeline.yaml")}
+    name_counts = Counter(d.name for d in skill_dirs)
     for skill_dir in sorted(skill_dirs):
+        key = skill_dir.name
+        if name_counts[key] > 1 and skill_dir.parent.name == "recipes":
+            key = f"recipes/{key}"
+        if key in skills:
+            print(
+                f"report key collision: {key} ({skill_dir.relative_to(REPO)})",
+                file=sys.stderr,
+            )
+            return 1
         variants: dict[str, dict] = {}
         for variant, filename in VARIANTS.items():
             pipeline = skill_dir / filename
@@ -188,7 +199,7 @@ def main() -> int:
                 result["error"] = detail
             variants[variant] = result
         all_ok = all(v["validates"] for v in variants.values())
-        skills[skill_dir.name] = {
+        skills[key] = {
             "category": skill_dir.parent.name,
             "validates": all_ok,
             "readiness": READY_VALIDATED if all_ok else READY_INVALID,
