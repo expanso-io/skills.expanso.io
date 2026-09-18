@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-09-18T06:38:26.398967+00:00",
+  "generated": "2026-09-18T06:45:37.697134+00:00",
   "total_skills": 185,
   "categories": {
     "jobs": {
@@ -1653,7 +1653,7 @@
         ],
         "proved": [
           "1,000 synthetic legacy rows became 994 target rows plus 6 rejects, each with its reason.",
-          "The target matched an independent SQL statement of the transform (expected.sql); a second run changed nothing."
+          "The target matched an independent SQL statement of the transform (expected.sql); a second run left the target table unchanged."
         ],
         "not_proved": [
           "Change data capture. This is a batch copy; a CDC job (postgres_cdc) did not initialize in testing and is unproven.",

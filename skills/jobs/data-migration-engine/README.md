@@ -13,7 +13,7 @@ The sign-aware `balance` formula was added after those runs and validated on a l
 Proved:
 
 - 1,000 synthetic legacy rows became 994 target rows plus 6 rejects, each with its reason.
-- The target matched an independent SQL statement of the transform (expected.sql); a second run changed nothing.
+- The target matched an independent SQL statement of the transform (expected.sql); a second run left the target table unchanged.
 
 Not proved:
 
@@ -61,7 +61,8 @@ expanso-cli execution list --job-id <job-id>
 A deploy only stores the job. Count the output where it lands:
 
 ```bash
-# 994 rows, and 6 rejects each with a reason:
+# First run: 994 rows, and 6 rejects each with a reason
+# (a re-run appends the 6 rejects again):
 psql -d modern -Atc 'select count(*) from customers'
 wc -l /var/tmp/expanso-migration/out/rejects.jsonl
 ```
