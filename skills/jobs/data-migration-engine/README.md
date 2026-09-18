@@ -1,6 +1,6 @@
 # Data migration engine
 
-Copy a legacy PostgreSQL table into a new schema in batches, reshaping each row, rejecting invalid rows with a reason, idempotently.
+Copy a legacy PostgreSQL table into a new schema in batches, reshaping each row and rejecting invalid rows with a reason. Re-running leaves the target table unchanged; the rejects file is appended again.
 
 **Use it when you are asked to build:** A data migration engine: move a legacy table into a new schema.
 
@@ -8,7 +8,7 @@ Copy a legacy PostgreSQL table into a new schema in batches, reshaping each row,
 
 Run on 2026-09-18 with `expanso-edge v2.1.21`, on Expanso Cloud (7/7 checks) and on a local-mode node (7/7). The Cloud run was scheduled by label onto one operator-registered node, not a hosted runner, with its dependencies on the same host.
 
-The sign-aware `balance` formula was added after those runs and validated on a local-mode node only, never on Cloud. The Cloud and 994/6 runs used the earlier formula, and their fixture had only non-negative balances. Against a separate synthetic signed fixture (cents -150, -5, -100, -99999, 0, 7, 99, 100, 12345 and one invalid-email row) the job completed after 1 execution and wrote -1.50, -0.05, -1.00, -999.99, 0.00, 0.07, 0.99, 1.00, 123.45, all 9 rows identical to the independent SQL transform; the invalid email went to rejects and a second run was idempotent. With the old formula Postgres rejected `-1.-5`, only 6 of 9 rows were written and the job stayed `running`, retrying the output.
+The sign-aware `balance` formula was added after those runs and validated on a local-mode node only, never on Cloud. The Cloud and 994/6 runs used the earlier formula, and their fixture had only non-negative balances. Against a separate synthetic signed fixture (cents -150, -5, -100, -99999, 0, 7, 99, 100, 12345 and one invalid-email row) the job completed after 1 execution and wrote -1.50, -0.05, -1.00, -999.99, 0.00, 0.07, 0.99, 1.00, 123.45, all 9 rows identical to the independent SQL transform; the invalid email went to rejects, and a second run left the target table unchanged (the rejects file was appended again). With the old formula Postgres rejected `-1.-5`, only 6 of 9 rows were written and the job stayed `running`, retrying the output.
 
 Proved:
 

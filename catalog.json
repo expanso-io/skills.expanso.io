@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-09-18T06:25:00.928163+00:00",
+  "generated": "2026-09-18T06:38:26.398967+00:00",
   "total_skills": 185,
   "categories": {
     "jobs": {
@@ -1579,7 +1579,7 @@
     "data-migration-engine": {
       "name": "data-migration-engine",
       "version": "1.0.0",
-      "description": "Copy a legacy PostgreSQL table into a new schema in batches, reshaping each row, rejecting invalid rows with a reason, idempotently.",
+      "description": "Copy a legacy PostgreSQL table into a new schema in batches, reshaping each row and rejecting invalid rows with a reason. Re-running leaves the target table unchanged; the rejects file is appended again.",
       "category": "jobs",
       "credentials": [],
       "inputs": [],
@@ -1647,7 +1647,7 @@
           },
           {
             "where": "local-mode-node",
-            "detail": "The signed balance formula, added after the runs above, run against a separate synthetic signed fixture (cents -150, -5, -100, -99999, 0, 7, 99, 100, 12345 and one invalid-email row). The job completed after 1 execution; all 9 target rows matched the independent SQL transform (expected.sql), the invalid email went to rejects, and a second run was idempotent. With the old formula Postgres rejected -1.-5, only 6 of 9 rows were written and the job stayed running, retrying the output.",
+            "detail": "The signed balance formula, added after the runs above, run against a separate synthetic signed fixture (cents -150, -5, -100, -99999, 0, 7, 99, 100, 12345 and one invalid-email row). The job completed after 1 execution; all 9 target rows matched the independent SQL transform (expected.sql), the invalid email went to rejects, and a second run left the target table unchanged (the rejects file was appended again). With the old formula Postgres rejected -1.-5, only 6 of 9 rows were written and the job stayed running, retrying the output.",
             "checks_passed": "3/3"
           }
         ],
