@@ -33,8 +33,7 @@ config:
           url: "https://www.nasa.gov/news-release/feed/"
           verb: GET
           retries: 3
-      # A failed fetch (401, 5xx, ...) only flags the message; without
-      # this the job can end `completed` with nothing written.
+      # Stop here with the fetch error before XML parsing.
       - mapping: |
           root = if errored() {
             throw("feed fetch failed: " + error().or("unknown"))
