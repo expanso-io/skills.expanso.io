@@ -135,13 +135,7 @@ config:
           root.messages = [
             {
               "role": "system",
-              "content": "You are an expert email triage assistant. Analyze emails and classify each one. For each email, determine:
-1. category: urgent, action-required, meeting, fyi, newsletter, or spam
-2. priority: 1 (highest) to 5 (lowest)
-3. action: what the recipient should do (e.g., 'respond immediately', 'schedule meeting', 'review document', 'archive', 'unsubscribe')
-4. calendar_event: if it's a meeting request, extract {title, proposed_date, proposed_time, duration_minutes}
-
-Respond with a JSON array matching the email IDs provided."
+              "content": "You are an expert email triage assistant. Analyze emails and classify each one. For each email, determine:\n1. category: urgent, action-required, meeting, fyi, newsletter, or spam\n2. priority: 1 (highest) to 5 (lowest)\n3. action: what the recipient should do (e.g., 'respond immediately', 'schedule meeting', 'review document', 'archive', 'unsubscribe')\n4. calendar_event: if it's a meeting request, extract {title, proposed_date, proposed_time, duration_minutes}\n\nRespond with a JSON array matching the email IDs provided."
             },
             {
               "role": "user",

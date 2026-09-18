@@ -13,14 +13,17 @@
 # NOTE: `expanso-edge run` starts the node AGENT; it does not run this file as a
 # pipeline. There is no supported `expanso-edge run <pipeline>` form.
 #
-# INPUT: this pipeline reads stdin. A Cloud-scheduled job's stdin is NOT connected
+# INPUT: this pipeline reads stdin. A Cloud-scheduled job's stdin is NOT
+# connected
 # to your terminal, so as written this shape only works where the pipeline runs
-# attached to a process you control. For a Cloud-scheduled job, change the input to
+# attached to a process you control. For a Cloud-scheduled job, change the
+# input to
 # one the node can reach itself (file, http_server, a queue, or object storage).
 #
 # CREDENTIAL AND DATA EGRESS:
 #   OPENAI_API_KEY is read from the environment of the node that executes this
-#   pipeline -- for a Cloud-scheduled job that is the edge node, not your laptop.
+#   pipeline -- for a Cloud-scheduled job that is the edge node, not your
+#   laptop.
 #   It is not sent to Expanso Cloud and is not stored in this file.
 #   It IS sent to OpenAI, as the bearer credential on every request.
 #   The ENTIRE input text is also sent to OpenAI. This pipeline is not offline
@@ -58,7 +61,8 @@ config:
             }
           ]
 
-      # 2. Call OpenAI (key read from the executing node's environment, sent to OpenAI)
+      # 2. Call OpenAI (key read from the executing node's environment,
+      #    then sent to OpenAI)
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini

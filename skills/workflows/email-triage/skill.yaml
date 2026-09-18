@@ -18,7 +18,8 @@ name: email-triage
 version: 1.0.0
 description: AI-powered email triage with calendar sync and response drafting
 
-# Credentials (read from the executing node's environment; each sent to its provider)
+# Credentials (read from the executing node's environment; each sent to its
+# provider)
 credentials:
   - name: GMAIL_TOKEN
     required: false

@@ -20,7 +20,8 @@
 #
 # CREDENTIAL AND DATA EGRESS:
 #   OPENAI_API_KEY is read from the environment of the node that executes this
-#   pipeline -- for a Cloud-scheduled job that is the edge node, not your laptop.
+#   pipeline -- for a Cloud-scheduled job that is the edge node, not your
+#   laptop.
 #   It is not sent to Expanso Cloud and is not stored in this file.
 #   It IS sent to OpenAI, as the bearer credential on every request.
 #   The ENTIRE request text is also sent to OpenAI. This pipeline is not offline
@@ -76,7 +77,8 @@ config:
           meta input_length = $text_length
           meta trace_id = uuid_v4()
 
-      # 2. Call OpenAI (key read from the executing node's environment, sent to OpenAI)
+      # 2. Call OpenAI (key read from the executing node's environment,
+      #    then sent to OpenAI)
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini

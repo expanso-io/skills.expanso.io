@@ -5,12 +5,14 @@
 #   pipeline-cli.yaml reads `stdin`. Once a job is scheduled onto a remote edge
 #   node, that node's process has no connection to your terminal, so a `stdin`
 #   input has no way to receive your data. This variant replaces `stdin` with an
-#   input the node can satisfy entirely on its own, so it is the one to use for a
+#   input the node can satisfy entirely on its own, so it is the one to use
+#   for a
 #   first run against Expanso Cloud.
 #
 # WHAT IT DOES
 #   Emits a small, bounded, synthetic batch (3 records, one per second, then
-#   stops), formats each as pretty JSON, and writes to the node's stdout where it
+#   stops), formats each as pretty JSON, and writes to the node's stdout
+#   where it
 #   is visible via `expanso-cli job logs`.
 #
 # DEPENDENCIES
@@ -56,7 +58,12 @@ config:
           root.formatted = this.sample.format_json()
           root.seq = this.seq
           root.valid = true
-          root.metadata = {"skill": "json-pretty", "mode": "cloud", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {
+            "skill": "json-pretty",
+            "mode": "cloud",
+            "trace_id": meta("trace_id"),
+            "timestamp": now()
+          }
 
   output:
     stdout: {}

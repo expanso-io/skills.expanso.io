@@ -4,12 +4,15 @@
 # Summarize any text into concise bullet points using an AI model.
 #
 # NETWORK AND DATA TRANSFER -- read before deploying:
-#   With the default (openai) backend this skill is NOT offline and NOT local-only.
+#   With the default (openai) backend this skill is NOT offline and NOT
+#   local-only.
 #   * It makes an outbound HTTPS call to the OpenAI API (api.openai.com).
-#   * OPENAI_API_KEY is transmitted to OpenAI as the bearer credential. It is not
-#     sent to Expanso Cloud and is not stored in this file -- but it does leave the
+#   * OPENAI_API_KEY is transmitted to OpenAI as the bearer credential. It
+#     is not sent to Expanso Cloud and is not stored in this file -- but it
+#     does leave the
 #     host, to OpenAI.
-#   * The ENTIRE input text is transmitted to OpenAI and is subject to their data
+#   * The ENTIRE input text is transmitted to OpenAI and is subject to
+#     their data
 #     handling terms. Do not feed it data you may not send to a third party.
 #   Only the ollama backend, pointed at a model you host, avoids this egress.
 #
@@ -69,7 +72,9 @@ backends:
 dependencies:
   network_egress:
     required: true
-    scope: "Required for the default openai backend; not required for a locally hosted ollama backend."
+    scope: >-
+      Required for the default openai backend; not required for a locally
+      hosted ollama backend.
     endpoints:
       - host: api.openai.com
         protocol: https
@@ -85,13 +90,17 @@ dependencies:
       to: api.openai.com
       not_to: [Expanso Cloud, pipeline definition]
   data_leaving_host:
-    - what: "Entire input text (stdin for CLI mode, HTTP request body for MCP mode)"
+    - what: >-
+        Entire input text (stdin for CLI mode, HTTP request body for MCP
+        mode)
       to: api.openai.com
       when: "Every invocation using the openai backend"
   offline_capable: false
   offline_capable_with:
     backend: ollama
-    note: "Requires a self-hosted model endpoint reachable from the executing node."
+    note: >-
+      Requires a self-hosted model endpoint reachable from the executing
+      node.
 
 # Expanso components used
 components:

@@ -77,9 +77,12 @@ Expanso Cloud. Machine-readable per-skill validation status:
 
 - https://skills.expanso.io/validation-report.json
 
-At expanso-edge v2.1.21, 137 of 177 skills pass local validation for
-every pipeline variant (CLI, MCP and, where present, Cloud) and 40 have at
-least one variant rejected by it. Local validation is not execution evidence; the report's
+Every pipeline variant (CLI, MCP and, where present, Cloud) is validated
+separately, and a skill is only labelled ready-to-validate when all of its
+variants pass. The report carries the current totals, the per-skill readiness
+and the validator version they were produced against; those numbers are not
+duplicated here, because a prose copy goes stale silently while the report is
+drift-checked. Local validation is not execution evidence; the report's
 readiness vocabulary caps at `validated-not-executed`.
 
 ## Machine-readable indexes

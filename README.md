@@ -438,71 +438,37 @@ unproven for every row.
 
 Open items affecting published skills, recorded rather than silently patched.
 
-### 40 of 177 skills have a pipeline the local validator rejects
+### Some skills have a pipeline the local validator rejects
 
 Settled, offline evidence: `expanso-edge validate` at **v2.1.21** rejects at
 least one published pipeline variant (`pipeline-cli.yaml`, `pipeline-mcp.yaml`
-or `pipeline-cloud.yaml`) of each of these 40 skills. Every variant is
-validated separately. A skill is labelled `invalid-does-not-validate` in
+or `pipeline-cloud.yaml`) of a number of skills. Every variant is validated
+separately. A skill is labelled `invalid-does-not-validate` in
 [`validation-report.json`](https://skills.expanso.io/validation-report.json)
 if **any** of its variants is rejected, and is **excluded from any "ready"
-promotion**. Regenerate with `uv run -s scripts/validate-skills.py`.
+promotion**.
+
+**The report is the only source for which skills and how many.** Counts and the
+affected list are deliberately not repeated here, because prose copies go stale
+silently while the report is drift-checked:
+
+```bash
+uv run -s scripts/validate-skills.py           # regenerate
+uv run -s scripts/validate-skills.py --check   # fails if the report is stale
+```
 
 Two causes account for nearly all of them:
 
-- **`Missing required field 'tools'` in `openai_chat_completion`** (29 skills).
-  The component schema at v2.1.21 requires a `tools` field. Adding `tools: []`
-  (no tool calling) was verified to satisfy the validator. This repair has been
+- **`Missing required field 'tools'` in `openai_chat_completion`.** The
+  component schema at v2.1.21 requires a `tools` field. Adding `tools: []` (no
+  tool calling) was verified to satisfy the validator. This repair has been
   applied **only** to both pipelines of the promoted `text-summarize` skill; the
   rest are left untouched and labelled, so the fix can be applied deliberately
   rather than swept across the catalog.
-- **Bloblang mapping syntax errors** (13 skills), plus one file
+- **Bloblang mapping syntax errors**, plus one file
   (`email-triage/pipeline-cli.yaml`) that is not valid YAML at all.
 
 Some skills have both causes, one per variant.
-
-| Skill | Category | Rejected variants |
-|---|---|---|
-| `access-gate` | security | cli, mcp |
-| `audio-transcribe` | ai | cli, mcp |
-| `backup-verify` | workflows | cli |
-| `code-explain` | ai | cli, mcp |
-| `cron-explain` | transforms | cli, mcp |
-| `cve-scan` | security | cli |
-| `data-fence` | security | cli, mcp |
-| `devops-monitor` | workflows | cli, mcp |
-| `email-triage` | workflows | cli, mcp |
-| `gmail-read` | connectors | cli, mcp |
-| `grammar-check` | ai | cli, mcp |
-| `image-alttext` | ai | cli, mcp |
-| `image-analyze` | ai | cli, mcp |
-| `image-caption` | ai | cli, mcp |
-| `image-describe` | ai | cli, mcp |
-| `image-moderate` | ai | cli, mcp |
-| `json-extract` | ai | cli, mcp |
-| `keyword-extract` | ai | cli, mcp |
-| `language-detect` | ai | cli, mcp |
-| `llm-router` | workflows | cli, mcp |
-| `marketing-auto` | workflows | cli |
-| `meal-planner` | workflows | cli, mcp |
-| `meeting-notes` | ai | cli, mcp |
-| `morning-briefing` | workflows | cli, mcp |
-| `multi-platform-chat` | workflows | cli, mcp |
-| `pii-detect` | security | cli, mcp |
-| `pii-redact` | security | cli, mcp |
-| `secrets-scan` | security | cli, mcp |
-| `sentiment-score` | ai | cli, mcp |
-| `slack-read` | connectors | cli, mcp |
-| `speaker-diarize` | ai | cli, mcp |
-| `sql-generate` | ai | cli, mcp |
-| `stripe-reports` | workflows | cli, mcp |
-| `task-dashboard` | workflows | cli |
-| `text-analyze` | transforms | cli, mcp |
-| `text-to-command` | ai | cli, mcp |
-| `text-translate` | ai | cli, mcp |
-| `tls-inspect` | security | cli |
-| `video-generate` | ai | mcp |
-| `webhook-receive` | connectors | cli, mcp |
 
 ### `codec: json_object` on `stdout` outputs
 
@@ -594,10 +560,9 @@ uv run -s scripts/validate-skills.py --check   # fail if results drifted
 ```
 
 Its `readiness` vocabulary caps at `validated-not-executed`. Nothing reaches
-`verified-executed` without a dated Expanso Cloud run record. At expanso-edge
-v2.1.21, **137 of 177 skills pass local validation for every pipeline variant
-and 40 have at least one variant rejected by it** --
-see [Known issues](#known-issues).
+`verified-executed` without a dated Expanso Cloud run record. The report itself
+carries the current totals and the validator version they were produced against;
+they are not duplicated in this prose -- see [Known issues](#known-issues).
 
 ### Catalog Structure
 

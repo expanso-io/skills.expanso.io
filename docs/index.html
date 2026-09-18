@@ -3,12 +3,12 @@
 <head>
     <script>
         (function () {
+            // Light on first visit. Dark only when the viewer explicitly chose it
+            // and we stored that choice; OS preference deliberately does not apply.
             var theme = null;
             try { theme = localStorage.getItem('theme'); } catch (e) {}
-            if (theme !== 'dark' && theme !== 'light') {
-                theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            }
-            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute(
+                'data-theme', theme === 'dark' ? 'dark' : 'light');
         })();
     </script>
     <!-- Google Tag Manager -->
