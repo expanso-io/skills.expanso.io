@@ -36,7 +36,7 @@ echo "Validating pipeline job specs under ${SKILLS_DIR}/ ..."
 # NOTE ON SCOPE. This gate checks JOB SPEC structure only, with
 # `expanso-cli job validate --offline`. It does NOT check that a pipeline's
 # inner component configuration is valid: `expanso-edge validate` is stricter
-# and still rejects several recipes for real component-config errors (unknown
+# and still rejects most recipes for real component-config errors (unknown
 # fields, bloblang arity, numeric fields written as env interpolations).
 # Passing this gate therefore means "accepted as a job spec", NOT "the pipeline
 # is semantically correct". Do not read a green run as the latter.

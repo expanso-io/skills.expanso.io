@@ -107,6 +107,8 @@ def job_spec_accepted(path: Path) -> bool | None:
     configuration, so acceptance here is never semantic validity. Returns None
     when expanso-cli is unavailable, so a missing tool is never silently
     reported as acceptance.
+    Timeouts and launch failures also return None: an unknown result is not a
+    rejection.
     """
     cli = shutil.which("expanso-cli")
     if cli is None:
@@ -120,7 +122,7 @@ def job_spec_accepted(path: Path) -> bool | None:
             cwd=REPO,
         )
     except (OSError, subprocess.SubprocessError):
-        return False
+        return None
     return res.returncode == 0
 
 
@@ -169,6 +171,15 @@ def main() -> int:
         return 0
 
     version = tool_version(binary)
+    cli = shutil.which("expanso-cli")
+    if cli is None and not args.check:
+        print(
+            "expanso-cli not found on PATH; refusing to write a report without "
+            "job-spec results",
+            file=sys.stderr,
+        )
+        return 1
+    cli_version = tool_version(cli) if cli else "unavailable"
     skills: dict[str, dict] = {}
     skill_dirs = {p.parent for p in args.source.glob("*/*/pipeline-cli.yaml")}
     skill_dirs |= {p.parent for p in args.source.glob("*/*/pipeline.yaml")}
@@ -214,6 +225,10 @@ def main() -> int:
         "schema": "expanso-skills-validation/2",
         "generated": datetime.now(timezone.utc).isoformat(),
         "validator": {"tool": "expanso-edge validate", "version": version},
+        "job_spec_validator": {
+            "tool": "expanso-cli job validate --offline",
+            "version": cli_version,
+        },
         "disclaimer": (
             "Local validation only. It checks pipeline syntax, structure and component "
             "types. It does not run the orchestrator's submission validation and it is "
@@ -269,8 +284,18 @@ def main() -> int:
             return 1
         existing = json.loads(args.output.read_text())
         existing.pop("generated", None)
-        current = dict(report)
+        current = json.loads(rendered)
         current.pop("generated")
+        if cli is None:
+            print(
+                "expanso-cli not found on PATH; job-spec results not checked",
+                file=sys.stderr,
+            )
+            for side in (existing, current):
+                side.pop("job_spec_validator", None)
+                for entry in side.get("skills", {}).values():
+                    for result in entry.get("variants", {}).values():
+                        result.pop("job_spec_accepted", None)
         if existing != current:
             print(f"{args.output} is out of date; regenerate it", file=sys.stderr)
             return 1

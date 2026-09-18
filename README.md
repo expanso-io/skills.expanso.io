@@ -460,8 +460,8 @@ means every file was accepted as a job spec.
 ### Some skills have a pipeline the local validator rejects
 
 Settled, offline evidence: `expanso-edge validate` at **v2.1.21** rejects at
-least one published pipeline variant (`pipeline-cli.yaml`, `pipeline-mcp.yaml`
-or `pipeline-cloud.yaml`) of a number of skills. Every variant is validated
+least one published pipeline variant (`pipeline-cli.yaml`, `pipeline-mcp.yaml`,
+`pipeline-cloud.yaml`, or a recipe's `pipeline.yaml`) of a number of skills. Every variant is validated
 separately. A skill is labelled `invalid-does-not-validate` in
 [`validation-report.json`](https://skills.expanso.io/validation-report.json)
 if **any** of its variants is rejected, and is **excluded from any "ready"
@@ -476,7 +476,7 @@ uv run -s scripts/validate-skills.py           # regenerate
 uv run -s scripts/validate-skills.py --check   # fails if the report is stale
 ```
 
-Two causes account for nearly all of them:
+For the cli/mcp skills, two causes account for nearly all of them:
 
 - **`Missing required field 'tools'` in `openai_chat_completion`.** The
   component schema at v2.1.21 requires a `tools` field. Adding `tools: []` (no
@@ -488,6 +488,18 @@ Two causes account for nearly all of them:
   (`email-triage/pipeline-cli.yaml`) that is not valid YAML at all.
 
 Some skills have both causes, one per variant.
+
+Recipes (`skills/recipes/*/pipeline.yaml`) fail for different reasons, mostly
+component-configuration errors:
+
+- **Unknown component fields**, such as `max_retries`, `batching`, `backoff`,
+  `compression`, `storage_class` or `time_partitioning`.
+- **Unknown processors**: `try`, `catch` and `json_documents` are not
+  components at v2.1.21.
+- **Wrong value types**, where a string (often an env interpolation) is given
+  for a numeric field such as a rate limit `count` or `batching.count`.
+- **Bloblang errors**, including `let` inside an expression-position
+  `if`/`else`/`match` body and wrong method arity.
 
 ### `codec: json_object` on `stdout` outputs
 
