@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-09-18T05:39:06.779481+00:00",
+  "generated": "2026-09-18T06:25:00.928163+00:00",
   "total_skills": 185,
   "categories": {
     "jobs": {
@@ -1644,6 +1644,11 @@
             "where": "local-mode-node",
             "detail": "Submitted to a local-mode node (expanso-edge run --local). Not run through Cloud.",
             "checks_passed": "7/7"
+          },
+          {
+            "where": "local-mode-node",
+            "detail": "The signed balance formula, added after the runs above, run against a separate synthetic signed fixture (cents -150, -5, -100, -99999, 0, 7, 99, 100, 12345 and one invalid-email row). The job completed after 1 execution; all 9 target rows matched the independent SQL transform (expected.sql), the invalid email went to rejects, and a second run was idempotent. With the old formula Postgres rejected -1.-5, only 6 of 9 rows were written and the job stayed running, retrying the output.",
+            "checks_passed": "3/3"
           }
         ],
         "proved": [
@@ -1652,9 +1657,10 @@
         ],
         "not_proved": [
           "Change data capture. This is a batch copy; a CDC job (postgres_cdc) did not initialize in testing and is unproven.",
-          "The top-level restart_policy never on Expanso Cloud with this spec; it was added after the Cloud run."
+          "The top-level restart_policy never on Expanso Cloud with this spec; it was added after the Cloud run.",
+          "Negative balances on Expanso Cloud. The Cloud and 994/6 runs used the earlier formula and had only non-negative balances; the signed formula ran on a local-mode node only."
         ],
-        "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. The top-level restart_policy never is newer than the Cloud run. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
+        "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. The top-level restart_policy never and the signed balance formula are newer than the Cloud run. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
       }
     },
     "log-reduction": {
@@ -1922,7 +1928,7 @@
     "rss-feed-engine": {
       "name": "rss-feed-engine",
       "version": "1.0.0",
-      "description": "Poll an RSS feed, emit one normalized JSON record per item, never emit the same GUID twice (even across restarts).",
+      "description": "Poll an RSS feed and emit one normalized JSON record per item. Emits each item once per GUID, even across restarts, for feeds whose items carry a GUID. Every item must carry a stable, non-empty <guid>; feeds whose items lack a GUID are not supported.",
       "category": "jobs",
       "credentials": [],
       "inputs": [],
@@ -2005,6 +2011,7 @@
         ],
         "not_proved": [
           "Feeds other than RSS 2.0 (Atom was not tested).",
+          "Feeds whose items lack a GUID. Every item must carry a stable, non-empty <guid>; GUID-less feeds are not supported and were not tested.",
           "The fetch-error guard on Expanso Cloud; it ran on a local-mode node only.",
           "The top-level restart_policy never on Expanso Cloud with this spec; it was added after the Cloud run."
         ],

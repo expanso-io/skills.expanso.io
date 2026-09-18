@@ -1,6 +1,8 @@
 # RSS feed engine
 
-Poll an RSS feed, emit one normalized JSON record per item, never emit the same GUID twice (even across restarts).
+Poll an RSS feed and emit one normalized JSON record per item. Emits each item once per GUID, even across restarts, for feeds whose items carry a GUID.
+
+**Requirement:** every feed item must carry a stable, non-empty `<guid>`. Feeds whose items lack a GUID are not supported and were not tested.
 
 **Use it when you are asked to build:** An RSS or news feed engine: poll feeds, parse items, deduplicate, store.
 
@@ -18,6 +20,7 @@ Proved:
 Not proved:
 
 - Feeds other than RSS 2.0 (Atom was not tested).
+- Feeds whose items lack a GUID. Every item must carry a stable, non-empty `<guid>`; GUID-less feeds are not supported and were not tested.
 - The fetch-error guard on Expanso Cloud.
 - `restart_policy: never` on Expanso Cloud with this spec; it was added after the Cloud run.
 

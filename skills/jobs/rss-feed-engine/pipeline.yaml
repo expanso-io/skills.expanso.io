@@ -17,6 +17,9 @@
 #   the `http` processor's url, and the `root.feed` literal in the
 #     normalize mapping. Change both together to the same feed
 #     URL, otherwise records misstate their source.
+# Every feed item must carry a stable, non-empty <guid>: the dedupe
+# key is the GUID. Feeds whose items lack a GUID are not supported
+# and were not tested.
 # The selector pipeline_role: feeds is an example; label your node to
 # match or change it. Use underscores in label keys.
 #
@@ -30,7 +33,10 @@ config:
   input:
     generate:
       # One bounded poll. For a standing engine, drop `count` and set
-      # `interval` to the feed's polling period, e.g. "5m".
+      # `interval` to the feed's polling period, e.g. "5m". Also
+      # remove `restart_policy: never` above: one transient fetch
+      # error would stop a long-running job for good. The default
+      # policy restarts it on failure.
       count: 1
       interval: 1s
       mapping: root = {}

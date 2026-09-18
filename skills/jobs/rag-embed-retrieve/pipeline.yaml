@@ -28,7 +28,9 @@ config:
   input:
     generate:
       # One fetch pass. For continuous ingestion set an interval and
-      # drop count.
+      # drop count. Also remove `restart_policy: never` above: one
+      # transient fetch error would stop a long-running job for
+      # good. The default policy restarts it on failure.
       count: 1
       interval: ""
       mapping: root = {}

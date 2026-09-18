@@ -1,8 +1,10 @@
 # Skill: rss-feed-engine
 name: rss-feed-engine
 version: 1.0.0
-description: Poll an RSS feed, emit one normalized JSON record per item,
-  never emit the same GUID twice (even across restarts).
+description: Poll an RSS feed and emit one normalized JSON record per
+  item. Emits each item once per GUID, even across restarts, for feeds
+  whose items carry a GUID. Every item must carry a stable, non-empty
+  <guid>; feeds whose items lack a GUID are not supported.
 author:
   name: Expanso Team
   url: https://expanso.io
@@ -62,6 +64,9 @@ proof:
     it had already seen (file-backed dedupe cache).
   not_proved:
   - Feeds other than RSS 2.0 (Atom was not tested).
+  - Feeds whose items lack a GUID. Every item must carry a stable,
+    non-empty <guid>; GUID-less feeds are not supported and were not
+    tested.
   - The fetch-error guard on Expanso Cloud; it ran on a local-mode
     node only.
   - The top-level restart_policy never on Expanso Cloud with this spec;

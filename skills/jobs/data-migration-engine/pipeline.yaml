@@ -1,10 +1,15 @@
 # pipeline.yaml: the data-migration job, as run on 2026-09-18
 # on Expanso Cloud with expanso-edge v2.1.21. The top-level
 # restart_policy: never was added after that run and has not been
-# re-run on Cloud with this spec. See skills/jobs/PROOF-2026-09-18.md.
+# re-run on Cloud with this spec. The signed balance formula is
+# also newer: the Cloud and 994/6 runs used the earlier formula
+# (their fixture had only non-negative balances); the signed one
+# was validated on a local-mode node only. See
+# skills/jobs/PROOF-2026-09-18.md.
 # Body copied from expanso-io/docs.expanso.io commit f6eab2b,
 # docs/recipes/data-migration.mdx (draft); 2 wrapped flow list(s)
-# rewritten as block lists, and restart_policy added. Otherwise its
+# rewritten as block lists, restart_policy added, and the balance
+# formula made sign-aware. Otherwise its
 # structure matches the proven run's config; long mappings are only
 # rewrapped. Set
 # these values for your environment:
@@ -54,8 +59,12 @@ config:
             "S" => "suspended"
             _ => throw("unknown status code " + this.status_code)
           }
-          root.balance = "%d.%02d".format(
-            ($cents / 100).floor().int64(), ($cents % 100).int64()
+          # Signed cents: format the absolute value, then prefix the
+          # sign, so -150 becomes -1.50 and -5 becomes -0.05.
+          let sign = if $cents < 0 { "-" } else { "" }
+          let abs = if $cents < 0 { 0 - $cents } else { $cents }
+          root.balance = "%s%d.%02d".format(
+            $sign, ($abs / 100).floor().int64(), ($abs % 100).int64()
           )
           root.reject_reason = if !$email.contains("@") {
             "invalid email"

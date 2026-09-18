@@ -17,7 +17,7 @@ The dated, sanitized run record with the Cloud job and execution ids is
 
 | Job | Proven | Directory |
 |---|---|---|
-| RSS feed engine | Cloud + local; live NASA and BBC feeds; fetch-error guard local only | [`rss-feed-engine`](skills/jobs/rss-feed-engine/) |
+| RSS feed engine | Cloud + local; live NASA and BBC feeds; fetch-error guard local only; items must carry a stable, non-empty `<guid>` (GUID-less feeds unsupported, untested) | [`rss-feed-engine`](skills/jobs/rss-feed-engine/) |
 | Data migration engine (batch) | Cloud + local | [`data-migration-engine`](skills/jobs/data-migration-engine/) |
 | Notification engine | Cloud + local, to a local test receiver only | [`notification-engine`](skills/jobs/notification-engine/) |
 | RAG: fetch, chunk, embed, store, search | Cloud + local; Ollama + Qdrant; URL-based chunk id local only | [`rag-embed-retrieve`](skills/jobs/rag-embed-retrieve/) |
@@ -30,10 +30,10 @@ The dated, sanitized run record with the Cloud job and execution ids is
 operator-registered node chosen by label, with the job's dependencies on
 that host; it is not a hosted runner. "Local" means a local-mode node only.
 Each job spec has the same structure as the job that ran; only the values
-listed in its header comment differ, and long mappings are rewrapped. Three
+listed in its header comment differ, and long mappings are rewrapped. Four
 changes are newer than the runs and were not re-run on Cloud: the RSS
-fetch-error guard and the RAG URL-based chunk id (each validated on a
-local-mode node only), and `restart_policy: never` on the bounded jobs.
+fetch-error guard, the RAG URL-based chunk id and the migration's signed
+balance formula (each validated on a local-mode node only), and `restart_policy: never` on the bounded jobs.
 Not proven, and not published as working jobs:
 live X (Twitter) ingestion, change data capture, delivery into Slack or
 email, and the native `qdrant` output (the RAG job writes through Qdrant's

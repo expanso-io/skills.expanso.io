@@ -21,8 +21,8 @@ https://github.com/expanso-io/skills.expanso.io/blob/main/skills/jobs/PROOF-2026
 
 | Job | Components | Proven | Files |
 |---|---|---|---|
-| RSS feed engine: poll, parse, never emit an item twice | `generate` > `http` > `mapping` (throw on `errored()`) > `xml` > `mapping` > `unarchive` > `mapping` > `dedupe` (`file` cache) > `file` | Cloud + local, 14/14 checks; live NASA and BBC feeds; the fetch-error guard after `http` was added later and run on a local-mode node only | https://skills.expanso.io/rss-feed-engine/ |
-| Data migration engine: legacy table into a new schema | `sql_select` > `mapping` > `switch` output: `sql_insert` + `file` rejects | Cloud + local, 7/7; 994 rows matched an independent SQL transform, 6 rejects | https://skills.expanso.io/data-migration-engine/ |
+| RSS feed engine: poll, parse, emit each item once per GUID, even across restarts (every item must carry a stable, non-empty `<guid>`; GUID-less feeds are unsupported and untested) | `generate` > `http` > `mapping` (throw on `errored()`) > `xml` > `mapping` > `unarchive` > `mapping` > `dedupe` (`file` cache) > `file` | Cloud + local, 14/14 checks; live NASA and BBC feeds; the fetch-error guard after `http` was added later and run on a local-mode node only | https://skills.expanso.io/rss-feed-engine/ |
+| Data migration engine: legacy table into a new schema | `sql_select` > `mapping` > `switch` output: `sql_insert` + `file` rejects | Cloud + local, 7/7; 994 rows matched an independent SQL transform, 6 rejects; signed (negative) balance formula local only | https://skills.expanso.io/data-migration-engine/ |
 | Notification engine: message when an event matters | `http_server` > `dedupe` > `mapping` > `mapping` > `http_client` with retries | Cloud + local, 7/7, to a local test receiver only | https://skills.expanso.io/notification-engine/ |
 | RAG: fetch documents, chunk, embed, store, search | ingest: `generate` > `http` > `unarchive` > `http` > `mapping` > `unarchive` > `branch` + `ollama_embeddings` > `mapping` > `http_client` (Qdrant REST); search: `file` > `branch` + `ollama_embeddings` > `branch` + `qdrant` processor > `mapping` > `file` | Cloud + local, 12/12; real embeddings, right chunk first for 4/4 questions; the URL-based chunk id was added later and run on a local-mode node only | https://skills.expanso.io/rag-embed-retrieve/ |
 | Webhook fan-out: every event to several endpoints | `http_server` > `mapping` > `broker` (`fan_out`) over `http_client` outputs | Local only, 6/6 | https://skills.expanso.io/webhook-fan-out/ |
@@ -35,10 +35,10 @@ Each directory holds the job spec (`pipeline.yaml`; RAG also
 checks, the sample inputs used in the run, and a `skill.yaml` whose `proof`
 block records where it ran, what was proved and what was not. Each job
 spec has the same structure as the job that ran; only the values listed in
-its header comment differ, and long mappings are rewrapped. Three changes
+its header comment differ, and long mappings are rewrapped. Four changes
 are newer than the runs and were not re-run on Cloud: the RSS fetch-error
-guard and the RAG URL-based chunk id (each validated on a local-mode node
-only), and `restart_policy: never` on the six bounded job specs.
+guard, the RAG URL-based chunk id and the data migration's signed balance
+formula (each validated on a local-mode node only), and `restart_policy: never` on the six bounded job specs.
 
 Run one (download first; `job deploy` does not fetch URLs):
 

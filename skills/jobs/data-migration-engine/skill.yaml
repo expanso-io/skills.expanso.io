@@ -42,6 +42,16 @@ proof:
     detail: Submitted to a local-mode node (expanso-edge run --local).
       Not run through Cloud.
     checks_passed: 7/7
+  - where: local-mode-node
+    detail: The signed balance formula, added after the runs above, run
+      against a separate synthetic signed fixture (cents -150, -5,
+      -100, -99999, 0, 7, 99, 100, 12345 and one invalid-email row).
+      The job completed after 1 execution; all 9 target rows matched
+      the independent SQL transform (expected.sql), the invalid email
+      went to rejects, and a second run was idempotent. With the old
+      formula Postgres rejected -1.-5, only 6 of 9 rows were written
+      and the job stayed running, retrying the output.
+    checks_passed: 3/3
   proved:
   - 1,000 synthetic legacy rows became 994 target rows plus 6 rejects,
     each with its reason.
@@ -52,11 +62,14 @@ proof:
     did not initialize in testing and is unproven.
   - The top-level restart_policy never on Expanso Cloud with this spec;
     it was added after the Cloud run.
+  - Negative balances on Expanso Cloud. The Cloud and 994/6 runs used
+    the earlier formula and had only non-negative balances; the signed
+    formula ran on a local-mode node only.
   note: The job spec has the same structure as the job that ran. Only
     the values listed in its header comment differ, and long mappings
-    are rewrapped. The top-level restart_policy never is newer than
-    the Cloud run. Inputs in the runs were synthetic fixtures unless
-    a proved line says otherwise.
+    are rewrapped. The top-level restart_policy never and the signed
+    balance formula are newer than the Cloud run. Inputs in the runs
+    were synthetic fixtures unless a proved line says otherwise.
 dependencies:
   network_egress:
     required: false
