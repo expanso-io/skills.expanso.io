@@ -57,12 +57,11 @@ a third-party API transmits its credential and data to that provider. Record rea
 requirements in the skill's `dependencies` block (see
 `skills/ai/text-summarize/skill.yaml`).
 
-## Known-failing gates (pre-existing, do not report as green)
+## Validation gates
 
-`expanso-cli job validate --offline` over `skills/**/pipeline*.yaml` fails on **11
-files** at `origin/main`: 10 `skills/recipes/*/pipeline.yaml` are bare pipeline
-configs with no `type:` field, so a job-spec validator rejects them, plus
-`skills/workflows/email-triage/pipeline-cli.yaml`, which is not valid YAML.
+`scripts/validate-pipelines.sh` is the CI gate. It is fail-closed: a missing
+validator or an empty file list fails rather than skipping. Every recipe
+`pipeline.yaml` must be a full job spec (`type: pipeline` plus a `config:` block).
 
 Per-skill validation status: `uv run -s scripts/validate-skills.py` writes
 `validation-report.json` (`--check` fails on drift). Readiness vocabulary caps at

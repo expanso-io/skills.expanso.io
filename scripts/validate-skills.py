@@ -13,6 +13,10 @@ Usage:
     uv run -s scripts/validate-skills.py
     uv run -s scripts/validate-skills.py --output validation-report.json
     uv run -s scripts/validate-skills.py --check   # exit 1 if results changed
+
+Regenerating needs both expanso-edge and expanso-cli on PATH; it refuses to write
+a report without job-spec results. `--check` tolerates a missing expanso-cli by
+comparing everything except the job-spec fields.
 """
 
 from __future__ import annotations

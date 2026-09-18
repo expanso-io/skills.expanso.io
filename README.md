@@ -461,8 +461,8 @@ means every file was accepted as a job spec.
 
 Settled, offline evidence: `expanso-edge validate` at **v2.1.21** rejects at
 least one published pipeline variant (`pipeline-cli.yaml`, `pipeline-mcp.yaml`,
-`pipeline-cloud.yaml`, or a recipe's `pipeline.yaml`) of a number of skills. Every variant is validated
-separately. A skill is labelled `invalid-does-not-validate` in
+`pipeline-cloud.yaml`, or a recipe's `pipeline.yaml`) of a number of skills.
+Every variant is validated separately. A skill is labelled `invalid-does-not-validate` in
 [`validation-report.json`](https://skills.expanso.io/validation-report.json)
 if **any** of its variants is rejected, and is **excluded from any "ready"
 promotion**.

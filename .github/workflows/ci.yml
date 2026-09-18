@@ -61,7 +61,7 @@ jobs:
         #
         # Scope: job-spec structure only. It does not prove a pipeline's inner
         # component configuration is valid; `expanso-edge validate` is stricter
-        # and still rejects several recipes.
+        # and still rejects most recipes.
         run: ./scripts/validate-pipelines.sh
 
       - name: Run skills audit
