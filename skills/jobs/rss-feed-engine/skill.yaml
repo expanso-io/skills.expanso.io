@@ -69,7 +69,8 @@ proof:
   note: The job spec has the same structure as the job that ran. Only
     the values listed in its header comment differ, and long mappings
     are rewrapped. The fetch-error guard and the top-level
-    restart_policy never are newer than the Cloud run. Inputs in the runs were synthetic fixtures unless
+    restart_policy never are newer than the Cloud run. Inputs in the
+    runs were synthetic fixtures unless
     a proved line says otherwise.
 dependencies:
   network_egress:
