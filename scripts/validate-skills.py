@@ -174,6 +174,9 @@ def main() -> int:
     skill_dirs |= {p.parent for p in args.source.glob("*/*/pipeline.yaml")}
     name_counts = Counter(d.name for d in skill_dirs)
     for skill_dir in sorted(skill_dirs):
+        # Keys stay bare skill names because docs/js/app.js looks entries up
+        # that way; only a recipe sharing a name with a skill gets a
+        # `recipes/` prefix. Any remaining clash fails rather than overwrites.
         key = skill_dir.name
         if name_counts[key] > 1 and skill_dir.parent.name == "recipes":
             key = f"recipes/{key}"
