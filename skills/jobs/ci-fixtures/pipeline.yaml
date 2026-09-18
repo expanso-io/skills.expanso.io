@@ -1,0 +1,50 @@
+# pipeline.yaml: the ci-fixtures job, as run on 2026-09-18
+# on a local-mode node with expanso-edge v2.1.21.
+# Body copied from docs.expanso.io recipes/ci-fixtures (f6eab2b), byte
+# for byte. Its structure matches the proven run's config; long
+# mappings are only rewrapped. Set these values for your environment:
+#   .input.generate.mapping = string literal "fixtures_RUN_ID" (one
+#     per run)
+#   .output.file.path = /var/tmp/expanso-fixtures/fixtures.jsonl
+# The selector pipeline_role: ci is an example; label your node to
+# match or change it. Use underscores in label keys.
+#
+name: ci-fixtures
+type: pipeline
+selector:
+  match_labels:
+    pipeline_role: ci
+config:
+  input:
+    generate:
+      count: 200
+      interval: ""
+      mapping: |
+        let n = count("fixtures_RUN_ID")
+        let first = [
+          "Ada", "Grace", "Alan", "Edsger", "Barbara", "Ken",
+          "Frances", "Donald"
+        ]
+        root.id = "cust-%05d".format($n)
+        root.name = "%s Tester%d".format($first.index($n % 8), $n)
+        root.email = "tester%d@example.invalid".format($n)
+        root.tier = ["gold", "silver", "bronze"].index($n % 3)
+        root.balance = "%d.%02d".format(
+          ($n * 7919 % 100000 / 100).floor().int64(),
+          ($n * 7919 % 100).int64()
+        )
+        root.created_at = (1767225600 + $n * 86400).ts_format(
+          "2006-01-02T15:04:05Z", "UTC"
+        )
+        root.active = $n % 7 != 0
+  pipeline:
+    # One processing thread keeps output order equal to generation
+    # order. With the default parallelism the same records came out
+    # in a different order on each run, so the file was not
+    # byte-identical.
+    threads: 1
+    processors: []
+  output:
+    file:
+      path: "/var/tmp/expanso-fixtures/fixtures.jsonl"
+      codec: lines

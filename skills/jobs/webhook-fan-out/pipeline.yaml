@@ -1,0 +1,53 @@
+# pipeline.yaml: the webhook-fan-out job, as run on 2026-09-18
+# on a local-mode node with expanso-edge v2.1.21.
+# Body copied from docs.expanso.io recipes/webhook-fan-out (f6eab2b),
+# byte for byte. Its structure matches the proven run's config; long
+# mappings are only rewrapped. Set these values for your environment:
+#   .input.http_server.address = 127.0.0.1:8089
+#   .output.broker.outputs[0].http_client.url =
+#     https://RECEIVER_A_HOST/notify
+#   .output.broker.outputs[1].http_client.url =
+#     https://RECEIVER_B_HOST/notify
+#   .output.broker.outputs[2].http_client.url =
+#     https://RECEIVER_C_HOST/notify
+# The selector pipeline_role: webhooks is an example; label your node
+# to match or change it. Use underscores in label keys.
+#
+name: webhook-fan-out
+type: pipeline
+selector:
+  match_labels:
+    pipeline_role: webhooks
+config:
+  input:
+    http_server:
+      address: "127.0.0.1:8089"
+      path: /webhook
+      allowed_verbs: [POST]
+  pipeline:
+    processors:
+      - mapping: |
+          root = this
+          root.received_at = now()
+  output:
+    broker:
+      pattern: fan_out
+      outputs:
+        - http_client:
+            url: "https://RECEIVER_A_HOST/notify"
+            verb: POST
+            headers: {Content-Type: application/json}
+            retries: 5
+            retry_period: 200ms
+        - http_client:
+            url: "https://RECEIVER_B_HOST/notify"
+            verb: POST
+            headers: {Content-Type: application/json}
+            retries: 5
+            retry_period: 200ms
+        - http_client:
+            url: "https://RECEIVER_C_HOST/notify"
+            verb: POST
+            headers: {Content-Type: application/json}
+            retries: 5
+            retry_period: 200ms

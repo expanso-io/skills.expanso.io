@@ -1,8 +1,128 @@
 # Expanso Skills Marketplace
 
-> Published Expanso pipeline definitions ("skills") for AI agents and MCP clients.
-> A skill is a job spec you submit to YOUR Expanso Cloud control plane; the
-> scheduler assigns it to an edge node you own. Expanso does not run it for you.
+> Complete Expanso jobs for the data work you are asked to build: an RSS feed
+> engine, a data migration, a notification engine, document embedding for
+> retrieval (RAG), webhook fan-out, log reduction, MQTT telemetry, CI test
+> fixtures. Each job below was run end to end; the rest of the catalog is
+> single-purpose pipeline skills. A job is a spec you submit to YOUR Expanso
+> Cloud control plane; the scheduler assigns it to a node you own. Expanso
+> does not run it for you.
+
+## If you are asked to build...
+
+Every job here was run on 2026-09-18 with `expanso-edge` v2.1.21 and its
+output counted at the destination. "Cloud" means submitted to an Expanso
+Cloud workspace and executed by one operator-registered node chosen by label
+(not a hosted runner; the job's dependencies ran on that same host).
+"Local" means a local-mode node (`expanso-edge run --local`) only, never run
+through Cloud. Inputs were synthetic fixtures unless the row says otherwise.
+
+| Job | Components | Proven | Files |
+|---|---|---|---|
+| RSS feed engine: poll, parse, never emit an item twice | `generate` > `http` > `xml` > `mapping` > `unarchive` > `mapping` > `dedupe` (`file` cache) > `file` | Cloud + local, 14/14 checks; live NASA and BBC feeds | https://skills.expanso.io/rss-feed-engine/ |
+| Data migration engine: legacy table into a new schema | `sql_select` > `mapping` > `switch` output: `sql_insert` + `file` rejects | Cloud + local, 7/7; 994 rows matched an independent SQL transform, 6 rejects | https://skills.expanso.io/data-migration-engine/ |
+| Notification engine: message when an event matters | `http_server` > `dedupe` > `mapping` > `mapping` > `http_client` with retries | Cloud + local, 7/7, to a local test receiver only | https://skills.expanso.io/notification-engine/ |
+| RAG: fetch documents, chunk, embed, store, search | ingest: `generate` > `http` > `unarchive` > `http` > `mapping` > `unarchive` > `branch` + `ollama_embeddings` > `mapping` > `http_client` (Qdrant REST); search: `file` > `branch` + `ollama_embeddings` > `branch` + `qdrant` processor > `mapping` > `file` | Cloud + local, 12/12; real embeddings, right chunk first for 4/4 questions | https://skills.expanso.io/rag-embed-retrieve/ |
+| Webhook fan-out: every event to several endpoints | `http_server` > `mapping` > `broker` (`fan_out`) over `http_client` outputs | Local only, 6/6 | https://skills.expanso.io/webhook-fan-out/ |
+| Log reduction: cut volume, keep every error | `broker` over `file` > `mapping` > `switch` (errors kept; successes `group_by_value` > `archive` > `mapping`) > `file` | Local only, 5/5; 92.7% fewer bytes on a synthetic log only | https://skills.expanso.io/log-reduction/ |
+| Sensor telemetry over MQTT: subscribe, normalize, alert | `mqtt` > `mapping` > `switch` output to `file`s | Local only, 6/6; MQTT with a synthetic publisher, not OPC UA or hardware | https://skills.expanso.io/sensor-telemetry-mqtt/ |
+| CI test fixtures: same dataset every run | `generate` > `file`, `pipeline.threads: 1` | Local only, 6/6; byte-identical runs | https://skills.expanso.io/ci-fixtures/ |
+
+Each directory holds the job spec (`pipeline.yaml`; RAG also
+`pipeline-query.yaml`), a `README.md` with dependency setup and output
+checks, the sample inputs used in the run, and a `skill.yaml` whose `proof`
+block records where it ran, what was proved and what was not. Each job
+spec has the same structure as the job that ran; only the values listed in
+its header comment differ, and long mappings are rewrapped.
+
+Run one (download first; `job deploy` does not fetch URLs):
+
+```
+B=https://skills.expanso.io/rss-feed-engine
+curl -fsSL -O "$B/pipeline.yaml"
+curl -fsSL -O "$B/README.md"
+expanso-edge validate pipeline.yaml
+expanso-cli job validate pipeline.yaml --offline
+expanso-cli job deploy pipeline.yaml
+expanso-cli job describe rss-feed-engine
+```
+
+Machine-readable: `catalog.json` lists these under category `jobs`, each
+with `job`, `components`, `job_specs` and `proof`.
+
+Longer write-ups of the same jobs are being prepared for
+https://docs.expanso.io/recipes/ (not yet published); the files above are
+complete without them.
+
+### RAG in detail
+
+The RAG job fetches a JSON index of document URLs, fetches each document,
+splits it into paragraph chunks that carry `source_uri`, `doc`,
+`chunk_index` and `chunk_id`, embeds each chunk with `ollama_embeddings`
+(`nomic-embed-text`, 768 dimensions), and upserts into Qdrant through its
+REST API with a deterministic point id, so re-ingesting overwrites rather
+than duplicates. The search job embeds each question and uses the `qdrant`
+processor. Tested with Ollama 0.33.2 and Qdrant 1.19.1 on the node's host;
+the collection must exist first with the model's vector size. Stored
+vectors equalled a direct Ollama embedding of the same text (cosine
+1.000000), and every retrieval hit carried the URL it came from.
+
+It writes with `http_client`, not the native `qdrant` output: on v2.1.21
+that output's `id` mapping could not read message fields or metadata, every
+write failed, and the job still reported `completed` with 0 points.
+
+## One component library, many jobs
+
+The same job format covers far more than the rows above. The component
+reference lists 50 inputs, 80 processors and 55 outputs (plus buffers,
+caches, rate limits and scanners), including `http_client`,
+`http_server`, `kafka` output, `mqtt`, `nats`, `aws_sqs`, `aws_s3`,
+`gcp_cloud_storage`, `azure_blob_storage`, `sql_select`, `sql_insert`,
+`sql_raw`, `postgres_cdc`, `mysql_cdc`, `opcua`, `opensearch`, `qdrant`,
+`ollama_chat`, `ollama_embeddings`, `aws_bedrock_embeddings` and
+`gcp_vertex_ai_embeddings`. A name in the reference is not a claim that a
+combination was run; some components are beta or deprecated. Index:
+https://docs.expanso.io/llms/components/inputs.txt (also `processors.txt`,
+`outputs.txt`).
+
+## Running near the data
+
+Jobs run on nodes you choose by label, so a pipeline can sit next to the
+data it reads and filter, reduce, redact or embed records before they cross
+a network. That is where Expanso is distinctively strong. It is not a
+boundary: the jobs above work the same way wherever the node runs.
+
+## Where Expanso is not the right answer (or is unproven)
+
+- Not a workflow orchestrator, batch query engine or data warehouse.
+- No email, Slack, Discord or PagerDuty component; use `http_client`.
+  Delivery into Slack or email was not tested.
+- X (Twitter) ingestion is unproven. A job reading the X API over `http`
+  was built, but the live API refused it for lack of X API credits, so it
+  is not published as a working job.
+- Change data capture is unproven: `postgres_cdc` failed to initialize
+  ("unable to access license service") in the configuration tested.
+- There is no hosted, dependency-free runner: a job needs a node you run,
+  and that node must reach the job's databases, model server or broker.
+
+## Lessons the runs forced
+
+- A `completed` job is not proof that data arrived. An HTTP 401 from a
+  source, or failed writes to the native `qdrant` output, still ended as
+  `completed` with nothing written. Count records at the destination, and
+  throw on `errored()` right after an `http` processor.
+- For a one-shot job on Cloud set `restart_policy: never` at the top level;
+  with the default, a failing bounded job was re-run every few seconds and
+  read `running`.
+- Use underscores, not hyphens, in label keys you select on; a hyphenated
+  key made the pipeline fail to build on the node.
+- Output order is only stable with `pipeline.threads: 1`.
+
+## Cost
+
+The first five nodes are free. Validating a job needs no account:
+`expanso-edge validate` and `expanso-cli job validate --offline` run
+locally and contact nothing.
 
 ## Read this before you generate a command
 
@@ -33,7 +153,8 @@
 ## Working first run, no credentials required
 
 ```
-curl -fsSL -O https://skills.expanso.io/json-pretty/pipeline-cloud.yaml
+B=https://skills.expanso.io/json-pretty
+curl -fsSL -O "$B/pipeline-cloud.yaml"
 expanso-cli job validate pipeline-cloud.yaml --offline
 expanso-cli job deploy pipeline-cloud.yaml
 expanso-cli job describe json-pretty-cloud
@@ -62,8 +183,8 @@ site-wide.
   provider**, along with whatever data you send. For example `text-summarize`
   sends the entire input text and `OPENAI_API_KEY` to `api.openai.com`. It is not
   offline and not local-only.
-- Only skills whose `skill.yaml` carries a `dependencies` block (currently
-  `text-summarize`) have been audited for what leaves the host; `catalog.json`
+- Only skills whose `skill.yaml` carries a `dependencies` block
+  (`text-summarize` and the eight jobs) have been audited for what leaves the host; `catalog.json`
   publishes that block as `skills.<name>.dependencies`. For any other skill,
   inspect the pipeline's components: a third-party API component sends its
   credential and your data to that provider.
@@ -72,8 +193,10 @@ site-wide.
 
 ## Readiness
 
-No skill in this marketplace is confirmed by an end-to-end run on current
-Expanso Cloud. Machine-readable per-skill validation status:
+Only the jobs in "If you are asked to build..." above were run end to end,
+as each one's `proof` block records (four through Cloud, four local-only).
+No other skill in this marketplace is confirmed by an end-to-end run on
+current Expanso Cloud. Machine-readable per-skill validation status:
 
 - https://skills.expanso.io/validation-report.json
 

@@ -1,0 +1,95 @@
+# pipeline.yaml: the data-migration job, as run on 2026-09-18
+# on Expanso Cloud with expanso-edge v2.1.21.
+# Body copied from docs.expanso.io recipes/data-migration (f6eab2b); 2
+# wrapped flow list(s) rewritten as block lists, same parsed YAML. Its
+# structure matches the proven run's config; long mappings are only
+# rewrapped. Set these values for your environment:
+#   .input.sql_select.dsn = postgres://USER:PASS@SRC_HOST:5432/SRC_DB
+#   .output.switch.cases[0].output.file.path =
+#     /var/tmp/expanso-migration/out/rejects.jsonl
+#   ...sql_insert.dsn = postgres://USER:PASS@DST_HOST:5432/DST_DB
+# The selector pipeline_role: migration is an example; label your node
+# to match or change it. Use underscores in label keys.
+#
+name: data-migration
+type: pipeline
+selector:
+  match_labels:
+    pipeline_role: migration
+config:
+  input:
+    sql_select:
+      driver: postgres
+      dsn: "postgres://USER:PASS@SRC_HOST:5432/SRC_DB"
+      table: customers
+      columns:
+        - cust_no
+        - full_name
+        - email
+        - signup
+        - status_code
+        - balance_cents
+      suffix: ORDER BY cust_no
+  pipeline:
+    processors:
+      - mapping: |
+          let parts = this.full_name.split(",")
+          let email = this.email.trim().lowercase()
+          let cents = this.balance_cents.number().int64()
+          root.id = this.cust_no
+          root.last_name = $parts.index(0).trim()
+          root.first_name = $parts.index(1).trim()
+          root.email = $email
+          root.signed_up_on = this.signup.ts_strptime(
+            "%m/%d/%Y"
+          ).ts_format("2006-01-02", "UTC")
+          root.status = match this.status_code {
+            "A" => "active"
+            "I" => "inactive"
+            "S" => "suspended"
+            _ => throw("unknown status code " + this.status_code)
+          }
+          root.balance = "%d.%02d".format(
+            ($cents / 100).floor().int64(), ($cents % 100).int64()
+          )
+          root.reject_reason = if !$email.contains("@") {
+            "invalid email"
+          } else { null }
+  output:
+    switch:
+      cases:
+        - check: errored() || this.reject_reason != null
+          output:
+            file:
+              path: "/var/tmp/expanso-migration/out/rejects.jsonl"
+              codec: lines
+            processors:
+              - mapping: |
+                  root = this
+                  root.error = if errored() { error() } else { null }
+        - output:
+            sql_insert:
+              driver: postgres
+              dsn: "postgres://USER:PASS@DST_HOST:5432/DST_DB"
+              table: customers
+              columns:
+                - id
+                - first_name
+                - last_name
+                - email
+                - signed_up_on
+                - status
+                - balance
+                - migrated_from
+              args_mapping: |
+                root = [
+                  this.id, this.first_name, this.last_name,
+                  this.email, this.signed_up_on, this.status,
+                  this.balance,
+                  "legacy.customers"
+                ]
+              suffix: ON CONFLICT (id) DO NOTHING
+              max_in_flight: 4
+              batching:
+                count: 100
+                period: 1s

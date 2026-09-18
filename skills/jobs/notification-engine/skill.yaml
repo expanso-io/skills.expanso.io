@@ -1,0 +1,70 @@
+# Skill: notification-engine
+name: notification-engine
+version: 1.0.0
+description: Receive events on a webhook, drop duplicates, keep the
+  severities someone must act on, and POST a formatted message with
+  retries.
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+job: 'A notification engine: send a message when an event matters.'
+credentials: []
+inputs: []
+outputs: []
+backends:
+- name: local
+  type: local
+  requires: []
+components:
+  inputs:
+  - http_server
+  processors:
+  - dedupe
+  - mapping
+  outputs:
+  - http_client
+  caches:
+  - memory
+job_specs:
+- pipeline.yaml
+proof:
+  status: executed-cloud-and-local
+  date: '2026-09-18'
+  expanso_edge: v2.1.21
+  runs:
+  - where: expanso-cloud
+    detail: Submitted to an Expanso Cloud workspace with a label selector
+      and executed by the one operator-registered node carrying that
+      label. Not a hosted runner; the job's dependencies ran on the
+      same host as the node.
+    checks_passed: 7/7
+  - where: local-mode-node
+    detail: Submitted to a local-mode node (expanso-edge run --local).
+      Not run through Cloud.
+    checks_passed: 7/7
+  proved:
+  - 8 events in; exactly the 3 critical/high ones delivered, a duplicate
+    delivered once.
+  - Two 503 responses from the receiver were retried until they succeeded.
+  not_proved:
+  - 'Delivery into Slack, email or any real person. The receiver was
+    a local test sink; the {"text": ...} body matches the Slack incoming-webhook
+    shape, but Slack was not called.'
+  note: The job spec has the same structure as the job that ran. Only
+    the values listed in its header comment differ, and long mappings
+    are rewrapped. Inputs in the runs were synthetic fixtures unless
+    a proved line says otherwise.
+dependencies:
+  network_egress:
+    required: true
+    endpoints:
+    - host: the notification endpoint
+      protocol: http(s)
+      purpose: POST the message
+  third_party_apis: []
+  credentials_transmitted: []
+  data_leaving_host:
+  - what: the formatted message text
+    to: the notification endpoint
+  offline_capable: false

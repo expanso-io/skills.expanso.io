@@ -40,6 +40,15 @@ wrong here before.
   asynchronously and can still fail; confirm with `job describe` /
   `execution list --job-id`. Passing validation is not execution evidence.
 
+## Job skills (`skills/jobs/`)
+
+Complete user jobs (RSS engine, migration, notifications, RAG, ...), each run
+end to end. Their `skill.yaml` carries a `proof` block (where it ran, what was
+and was not proved) that `build-catalog.py` publishes only for skills with a
+`job` field. The job specs have the same structure as the proven runs; only
+the values in each header comment differ. Do not add a job here without a run
+record, and keep `proof.status` honest (`executed-local-only` is not Cloud).
+
 ## Skills run on Cloud-scheduled nodes
 
 A `stdin` input cannot receive an operator's terminal input once the job is

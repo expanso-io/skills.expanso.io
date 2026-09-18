@@ -1,0 +1,70 @@
+# pipeline-query.yaml: the rag-query job, as run on 2026-09-18
+# on Expanso Cloud with expanso-edge v2.1.21.
+# Body copied from docs.expanso.io recipes/rag-embed-retrieve
+# (f6eab2b); 1 wrapped flow list(s) rewritten as block lists, same
+# parsed YAML. Its structure matches the proven run's config; long
+# mappings are only rewrapped. Set these values for your environment:
+#   .input.file.paths[0] = /var/tmp/expanso-rag/questions.jsonl
+#   .output.file.path = /var/tmp/expanso-rag/out/answers.jsonl
+#   ...qdrant.collection_name = docs
+#   ...qdrant.grpc_host = 127.0.0.1:6334
+# The selector pipeline_role: rag is an example; label your node to
+# match or change it. Use underscores in label keys.
+#
+name: rag-query
+type: pipeline
+selector:
+  match_labels:
+    pipeline_role: rag
+config:
+  input:
+    file:
+      paths: ["/var/tmp/expanso-rag/questions.jsonl"]
+      scanner:
+        lines: {}
+  pipeline:
+    processors:
+      - branch:
+          request_map: 'root = "search_query: " + this.question'
+          processors:
+            - ollama_embeddings:
+                model: "nomic-embed-text"
+                server_address: "http://127.0.0.1:11434"
+          result_map: root.vector = this
+      - branch:
+          processors:
+            - qdrant:
+                grpc_host: "127.0.0.1:6334"
+                collection_name: "docs"
+                vector_mapping: root = this.vector
+                # payload_fields defaults to [] (no payload); ask
+                # for the source-tracing fields explicitly.
+                payload_fields:
+                  - source_uri
+                  - doc
+                  - chunk_id
+                  - chunk_index
+                  - text
+                payload_filter: include
+                limit: 3
+          result_map: root.hits = this
+      # The qdrant processor returns proto3-JSON hits
+      # ({"stringValue": ...}); flatten them into plain fields for
+      # whatever consumes the answers.
+      - mapping: |
+          root.question = this.question
+          root.expected_doc = this.expected_doc
+          root.hits = this.hits.map_each(h -> {
+            "id": h.id.uuid,
+            "score": h.score,
+            "source_uri": h.payload.source_uri.stringValue.or(null),
+            "doc": h.payload.doc.stringValue,
+            "chunk_id": h.payload.chunk_id.stringValue,
+            "chunk_index":
+              h.payload.chunk_index.integerValue.number(),
+            "text": h.payload.text.stringValue
+          })
+  output:
+    file:
+      path: "/var/tmp/expanso-rag/out/answers.jsonl"
+      codec: lines

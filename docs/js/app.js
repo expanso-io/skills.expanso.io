@@ -36,7 +36,8 @@
         transforms: 'badge-transforms',
         utilities: 'badge-utilities',
         workflows: 'badge-workflows',
-        connectors: 'badge-connectors'
+        connectors: 'badge-connectors',
+        jobs: 'badge-jobs'
     };
 
     function initThemeToggle() {
@@ -291,19 +292,33 @@
         document.body.style.overflow = 'hidden';
 
         var hasCloudVariant = !!variantStatus(skillName, 'cloud');
+        // Job skills publish their own job specs instead of the cli/mcp pair.
+        var jobFiles = skill.job_specs || [];
         var results = await Promise.all([
             fetchSkillFile(skillName, 'skill.yaml', skill.category),
-            fetchSkillFile(skillName, 'pipeline-cli.yaml', skill.category),
-            fetchSkillFile(skillName, 'pipeline-mcp.yaml', skill.category),
+            jobFiles.length ? null : fetchSkillFile(skillName, 'pipeline-cli.yaml', skill.category),
+            jobFiles.length ? null : fetchSkillFile(skillName, 'pipeline-mcp.yaml', skill.category),
             hasCloudVariant ? fetchSkillFile(skillName, 'pipeline-cloud.yaml', skill.category) : null
-        ]);
+        ].concat(jobFiles.map(function(f) { return fetchSkillFile(skillName, f, skill.category); })));
+        var jobSpecs = jobFiles.map(function(f, i) { return { file: f, yaml: results[4 + i] }; })
+            .filter(function(j) { return !!j.yaml; });
 
         while (modalContent.firstChild) modalContent.removeChild(modalContent.firstChild);
-        buildModalContent(skillName, skill, results[0], results[1], results[2], results[3]);
+        buildModalContent(skillName, skill, results[0], results[1], results[2], results[3], jobSpecs);
         if (window.Prism) Prism.highlightAllUnder(modalContent);
     }
 
-    function buildModalContent(skillName, skill, skillYaml, pipelineCli, pipelineMcp, pipelineCloud) {
+    // Where a job skill was run, from its skill.yaml `proof` block.
+    function proofSummary(proof) {
+        if (!proof) return '';
+        var when = 'On ' + proof.date + ' (expanso-edge ' + proof.expanso_edge + '): ';
+        return when + (proof.status === 'executed-cloud-and-local'
+            ? 'run end to end on Expanso Cloud (one operator-registered node, not a hosted runner) and on a local-mode node.'
+            : 'run end to end on a local-mode node only. It has not been run through Expanso Cloud.');
+    }
+
+    function buildModalContent(skillName, skill, skillYaml, pipelineCli, pipelineMcp, pipelineCloud, jobSpecs) {
+        jobSpecs = jobSpecs || [];
         // ── Header ──
         var headerDiv = document.createElement('div');
         headerDiv.className = 'modal-header';
@@ -428,8 +443,35 @@
         var hasCli = !!pipelineCli;
         var hasMcp = !!pipelineMcp;
         var hasCloud = !!pipelineCloud;
+        var hasJob = jobSpecs.length > 0;
 
-        if (!hasCli && !hasMcp && !hasCloud) {
+        if (hasJob && skill.proof) {
+            var proofDiv = document.createElement('div');
+            proofDiv.className = 'modal-section';
+            var proofH3 = document.createElement('h3');
+            proofH3.textContent = 'Proof';
+            proofDiv.appendChild(proofH3);
+            var proofP = document.createElement('p');
+            proofP.className = 'readiness-note';
+            proofP.textContent = proofSummary(skill.proof);
+            proofDiv.appendChild(proofP);
+            [['Proved', skill.proof.proved], ['Not proved', skill.proof.not_proved]].forEach(function(pair) {
+                if (!pair[1] || !pair[1].length) return;
+                var h = document.createElement('h4');
+                h.textContent = pair[0];
+                proofDiv.appendChild(h);
+                var ul = document.createElement('ul');
+                pair[1].forEach(function(line) {
+                    var li = document.createElement('li');
+                    li.textContent = line;
+                    ul.appendChild(li);
+                });
+                proofDiv.appendChild(ul);
+            });
+            pipelineContent.appendChild(proofDiv);
+        }
+
+        if (!hasCli && !hasMcp && !hasCloud && !hasJob) {
             var noMsg = document.createElement('p');
             noMsg.className = 'no-content';
             noMsg.textContent = 'No pipeline available for this skill.';
@@ -441,6 +483,19 @@
 
             var pipeSubContents = {};
             var pipeSubDefs = [];
+            jobSpecs.forEach(function(j) {
+                var isQuery = j.file === 'pipeline-query.yaml';
+                pipeSubDefs.push({
+                    id: isQuery ? 'query' : 'recipe',
+                    label: isQuery ? 'Search job' : 'Job spec',
+                    yaml: j.yaml,
+                    file: j.file,
+                    job: true,
+                    desc: isQuery
+                        ? 'Second job: answers questions from what the ingest job stored. Deploy it after the job spec has run.'
+                        : 'The job that was run, with only the values in its header comment changed. Set up its dependencies from README.md first.'
+                });
+            });
             if (hasCloud) pipeSubDefs.push({ id: 'cloud', label: 'Cloud Pipeline', yaml: pipelineCloud, file: 'pipeline-cloud.yaml', desc: 'Cloud-scheduled pipeline. Its input needs nothing from your terminal, so it can run on a remote edge node. Start here for a first run against Expanso Cloud.' });
             if (hasCli) pipeSubDefs.push({ id: 'cli', label: 'CLI Pipeline', yaml: pipelineCli, file: 'pipeline-cli.yaml', desc: 'Standalone pipeline. Reads from stdin, processes data, outputs to stdout. A Cloud-scheduled job has no stdin connected to your terminal, so this variant cannot receive your input on a remote node as written.' });
             if (hasMcp) pipeSubDefs.push({ id: 'mcp', label: 'MCP Pipeline', yaml: pipelineMcp, file: 'pipeline-mcp.yaml', desc: 'HTTP server pipeline for MCP integration. Exposes an endpoint for AI assistants.' });
@@ -483,7 +538,9 @@
                 bannerTitle.className = 'copy-banner-title';
                 var status = variantStatus(skillName, sub.id);
                 var rejected = !!status && !status.validates;
-                bannerTitle.textContent = rejected ? 'Rejected by the local validator' : 'Deploy to Expanso Cloud';
+                var cloudUntested = sub.job && skill.proof && skill.proof.status !== 'executed-cloud-and-local';
+                bannerTitle.textContent = rejected ? 'Rejected by the local validator'
+                    : (cloudUntested ? 'Deploy to Expanso Cloud (untested there)' : 'Deploy to Expanso Cloud');
                 var bannerSub = document.createElement('div');
                 bannerSub.className = 'copy-banner-subtitle';
                 bannerSub.textContent = rejected
@@ -523,6 +580,8 @@
                 var validatorVersion = validationReport && validationReport.validator ? validationReport.validator.version : '';
                 if (!status) {
                     readinessEl.textContent = 'Validation status unknown. Run both validators below before deploying. Not confirmed by an end-to-end run.';
+                } else if (status.validates && sub.job && skill.proof) {
+                    readinessEl.textContent = 'Passes local validation (expanso-edge validate ' + validatorVersion + '). ' + proofSummary(skill.proof);
                 } else if (status.validates) {
                     readinessEl.textContent = 'Passes local validation (expanso-edge validate ' + validatorVersion + '). Not confirmed by an end-to-end run on Expanso Cloud.';
                 } else {
@@ -551,6 +610,9 @@
                         '# Requires: a saved Cloud profile and a connected edge node.\n' +
                         '# expanso-cli job deploy reads a FILE path or \'-\', not a URL.\n' +
                         'curl -fsSL -O ' + skillUrl + '\n' +
+                        (sub.job ? '# Set up its dependencies first (README.md), and edit the\n' +
+                            '# values listed in the job spec\'s header comment.\n' +
+                            'curl -fsSL -O ' + getSkillUrl(skillName, 'README.md') + '\n' : '') +
                         '# Run both validators; job validate accepts files edge rejects.\n' +
                         'expanso-edge validate ' + sub.file + '\n' +
                         'expanso-cli job validate ' + sub.file + ' --offline\n' +

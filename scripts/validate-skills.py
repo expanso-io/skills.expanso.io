@@ -56,6 +56,8 @@ VARIANTS = {
     # Recipes ship a single `pipeline.yaml` instead of the cli/mcp pair. They
     # were invisible to this report until this entry was added.
     "recipe": "pipeline.yaml",
+    # A job with a second stage (the RAG search job) ships it separately.
+    "query": "pipeline-query.yaml",
 }
 
 

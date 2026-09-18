@@ -1,0 +1,53 @@
+# Skill: ci-fixtures
+name: ci-fixtures
+version: 1.0.0
+description: 'Generate the same synthetic dataset on every run: every
+  field derived from the record number, single-threaded so the file
+  is byte-identical.'
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+job: 'CI test fixtures: the same synthetic dataset on every run.'
+credentials: []
+inputs: []
+outputs: []
+backends:
+- name: local
+  type: local
+  requires: []
+components:
+  inputs:
+  - generate
+  processors: []
+  outputs:
+  - file
+job_specs:
+- pipeline.yaml
+proof:
+  status: executed-local-only
+  date: '2026-09-18'
+  expanso_edge: v2.1.21
+  runs:
+  - where: local-mode-node
+    detail: Submitted to a local-mode node (expanso-edge run --local).
+      Not run through Cloud.
+    checks_passed: 6/6
+  proved:
+  - Two runs wrote byte-identical files of 200 records, all valid against
+    schema.json.
+  - A typo in the config made expanso-edge validate exit 1, usable as
+    a CI gate.
+  not_proved:
+  - Any run through Cloud.
+  note: The job spec has the same structure as the job that ran. Only
+    the values listed in its header comment differ, and long mappings
+    are rewrapped. Inputs in the runs were synthetic fixtures unless
+    a proved line says otherwise.
+dependencies:
+  network_egress:
+    required: false
+  third_party_apis: []
+  credentials_transmitted: []
+  data_leaving_host: []
+  offline_capable: true

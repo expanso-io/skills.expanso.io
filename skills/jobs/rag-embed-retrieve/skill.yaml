@@ -1,0 +1,90 @@
+# Skill: rag-embed-retrieve
+name: rag-embed-retrieve
+version: 1.0.0
+description: Fetch documents over HTTP, split them into paragraph chunks
+  that keep their source URL, embed each chunk with Ollama, store vectors
+  in Qdrant, and answer questions by vector search.
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+job: 'Document embedding for retrieval (RAG): fetch, chunk, embed, store,
+  search.'
+credentials: []
+inputs: []
+outputs: []
+backends:
+- name: local
+  type: local
+  requires: []
+components:
+  inputs:
+  - generate
+  - file
+  processors:
+  - http
+  - unarchive
+  - mapping
+  - branch
+  - ollama_embeddings
+  - qdrant
+  outputs:
+  - http_client
+  - file
+job_specs:
+- pipeline.yaml
+- pipeline-query.yaml
+proof:
+  status: executed-cloud-and-local
+  date: '2026-09-18'
+  expanso_edge: v2.1.21
+  runs:
+  - where: expanso-cloud
+    detail: Submitted to an Expanso Cloud workspace with a label selector
+      and executed by the one operator-registered node carrying that
+      label. Not a hosted runner; the job's dependencies ran on the
+      same host as the node.
+    checks_passed: 12/12
+  - where: local-mode-node
+    detail: Submitted to a local-mode node (expanso-edge run --local).
+      Not run through Cloud.
+    checks_passed: 12/12
+  proved:
+  - 4 documents fetched over HTTP became 16 chunks, each carrying its
+    source URL through storage and retrieval.
+  - Stored vectors equal a direct Ollama embedding of the same text
+    (cosine 1.000000); re-ingest is idempotent.
+  - All 4 test questions returned the right chunk first (qdrant processor
+    search).
+  not_proved:
+  - The native qdrant OUTPUT. On expanso-edge v2.1.21 its id mapping
+    could not read message fields or metadata, and the job still reported
+    completed with 0 points. Vectors are written with http_client to
+    the Qdrant REST upsert API instead.
+  note: The job spec has the same structure as the job that ran. Only
+    the values listed in its header comment differ, and long mappings
+    are rewrapped. Inputs in the runs were synthetic fixtures unless
+    a proved line says otherwise.
+dependencies:
+  network_egress:
+    required: true
+    endpoints:
+    - host: the document host
+      protocol: http(s)
+      purpose: fetch the index and documents
+    - host: Ollama (127.0.0.1:11434 here)
+      protocol: http
+      purpose: embeddings
+    - host: Qdrant (127.0.0.1:6333 REST, 6334 gRPC here)
+      protocol: http/grpc
+      purpose: store and search vectors
+  third_party_apis: []
+  credentials_transmitted: []
+  data_leaving_host:
+  - what: chunk text and vectors
+    to: Ollama and Qdrant, local in this configuration
+  offline_capable: true
+  tested_with:
+    ollama: 0.33.2
+    model: nomic-embed-text (768-dim)
+    qdrant: 1.19.1

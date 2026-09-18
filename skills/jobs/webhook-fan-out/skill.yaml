@@ -1,0 +1,59 @@
+# Skill: webhook-fan-out
+name: webhook-fan-out
+version: 1.0.0
+description: Accept events on one webhook and deliver every event to
+  several endpoints, each retrying independently.
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+job: 'A webhook fan-out: deliver every event to several endpoints.'
+credentials: []
+inputs: []
+outputs: []
+backends:
+- name: local
+  type: local
+  requires: []
+components:
+  inputs:
+  - http_server
+  processors:
+  - mapping
+  outputs:
+  - broker
+  - http_client
+job_specs:
+- pipeline.yaml
+proof:
+  status: executed-local-only
+  date: '2026-09-18'
+  expanso_edge: v2.1.21
+  runs:
+  - where: local-mode-node
+    detail: Submitted to a local-mode node (expanso-edge run --local).
+      Not run through Cloud.
+    checks_passed: 6/6
+  proved:
+  - 10 events in; each of 3 receivers got all 10 exactly once, including
+    one that answered 503 twice.
+  not_proved:
+  - Any run through Cloud; real third-party receivers (receivers were
+    local test sinks).
+  note: The job spec has the same structure as the job that ran. Only
+    the values listed in its header comment differ, and long mappings
+    are rewrapped. Inputs in the runs were synthetic fixtures unless
+    a proved line says otherwise.
+dependencies:
+  network_egress:
+    required: true
+    endpoints:
+    - host: each receiver
+      protocol: http(s)
+      purpose: POST each event
+  third_party_apis: []
+  credentials_transmitted: []
+  data_leaving_host:
+  - what: every event body
+    to: every receiver
+  offline_capable: false
