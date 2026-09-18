@@ -9,8 +9,10 @@
  * `expanso-cookie-consent` cookie on an expanso.io site; otherwise the
  * identity lives in memory for this page view only.
  *
- * This only sees people using a browser. Agents that fetch llms.txt or a
- * pipeline.yaml directly never run this script.
+ * This only sees people using a browser. It does NOT show whether pages are
+ * indexed, whether agents fetch llms.txt or pipeline files directly,
+ * whether install.sh runs, or whether any skill is deployed or executed.
+ * Those need request logs or Cloud-side data, which this script does not add.
  *
  * Only runs on skills.expanso.io. On localhost, `?analytics_debug=1`
  * records events in window.__expansoAnalyticsEvents instead of sending
@@ -139,11 +141,17 @@
         })() : ''
     });
 
+    var overlay = document.getElementById('modal-overlay');
+    function modalOpen() {
+        return !!(overlay && overlay.classList.contains('active'));
+    }
     function openSkill() {
+        if (!modalOpen()) return null;
         var title = document.querySelector('#skill-modal .modal-title');
         return title ? title.textContent.trim() : null;
     }
     function activeSpecLabel() {
+        if (!modalOpen()) return null;
         var tab = document.querySelector('#skill-modal .pipeline-sub-tab.active');
         return tab ? tab.textContent.trim() : null;
     }
@@ -183,7 +191,6 @@
     });
 
     // Skill detail opens, from a card click or a deep link.
-    var overlay = document.getElementById('modal-overlay');
     if (overlay && window.MutationObserver) {
         var wasOpen = false;
         var deepLinkUsed = false;
