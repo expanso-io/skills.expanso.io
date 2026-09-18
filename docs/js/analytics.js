@@ -117,9 +117,19 @@
                 save_campaign_params: false,
                 save_referrer: false,
                 before_send: function (ev) {
-                    // Never send full URLs with query strings or fragments.
-                    ['$current_url', '$referrer', '$initial_referrer'].forEach(function (k) {
-                        if (ev.properties && ev.properties[k]) ev.properties[k] = cleanUrl(ev.properties[k]);
+                    // Never send full URLs with query strings or fragments. The SDK
+                    // adds its own URL properties (e.g. $session_entry_url), so clean
+                    // every *url / *referrer value that is an http(s) URL; sentinels
+                    // such as '$direct' are left alone.
+                    [ev.properties, ev.$set, ev.$set_once].forEach(function (props) {
+                        if (!props) return;
+                        Object.keys(props).forEach(function (k) {
+                            var v = props[k];
+                            if (/(url|referrer)$/i.test(k) && typeof v === 'string' &&
+                                /^https?:\/\//i.test(v)) {
+                                props[k] = cleanUrl(v);
+                            }
+                        });
                     });
                     return ev;
                 }
