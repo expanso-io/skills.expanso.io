@@ -35,7 +35,8 @@ Each directory holds the job spec (`pipeline.yaml`; RAG also
 checks, the sample inputs used in the run, and a `skill.yaml` whose `proof`
 block records where it ran, what was proved and what was not. Each job
 spec has the same structure as the job that ran; only the values listed in
-its header comment differ, and long mappings are rewrapped.
+its header comment differ, and long mappings are rewrapped. The one
+exception is the RSS fetch-error guard, which is newer than its Cloud run.
 
 Run one (download first; `job deploy` does not fetch URLs):
 

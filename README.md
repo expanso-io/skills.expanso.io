@@ -30,7 +30,9 @@ The dated, sanitized run record with the Cloud job and execution ids is
 operator-registered node chosen by label, with the job's dependencies on
 that host; it is not a hosted runner. "Local" means a local-mode node only.
 Each job spec has the same structure as the job that ran; only the values
-listed in its header comment differ, and long mappings are rewrapped. Not proven, and not published as working jobs:
+listed in its header comment differ, and long mappings are rewrapped. The one
+exception is the RSS fetch-error guard, which is newer than its Cloud run.
+Not proven, and not published as working jobs:
 live X (Twitter) ingestion, change data capture, delivery into Slack or
 email, and the native `qdrant` output (the RAG job writes through Qdrant's
 REST API instead). The first five nodes are free.

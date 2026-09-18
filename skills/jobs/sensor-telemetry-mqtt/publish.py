@@ -15,12 +15,27 @@ c = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="jfp-synthetic-publi
 c.connect(host, port)
 c.loop_start()
 for seq in range(1, 11):
-    for sensor, line in (("sensor-a", "line1"), ("sensor-b", "line1"), ("sensor-c", "line2")):
-        temp_f = 150.0 + 20 * (seq % 3 == 0 and sensor == "sensor-b") * 3.5 if sensor == "sensor-b" else 68.0 + seq
-        body = {"seq": seq, "ts": f"2026-09-17T12:{seq:02d}:00Z", "temp_f": round(temp_f, 1), "pressure_kpa": 101 + seq}
+    for sensor, line in (
+        ("sensor-a", "line1"),
+        ("sensor-b", "line1"),
+        ("sensor-c", "line2"),
+    ):
+        temp_f = (
+            150.0 + 20 * (seq % 3 == 0 and sensor == "sensor-b") * 3.5
+            if sensor == "sensor-b"
+            else 68.0 + seq
+        )
+        body = {
+            "seq": seq,
+            "ts": f"2026-09-17T12:{seq:02d}:00Z",
+            "temp_f": round(temp_f, 1),
+            "pressure_kpa": 101 + seq,
+        }
         if sensor == "sensor-c" and seq % 5 == 0:
             del body["temp_f"]
-        c.publish(f"plant/{line}/{sensor}/telemetry", json.dumps(body), qos=1).wait_for_publish()
+        c.publish(
+            f"plant/{line}/{sensor}/telemetry", json.dumps(body), qos=1
+        ).wait_for_publish()
 c.loop_stop()
 c.disconnect()
 print("published 30")
