@@ -1,0 +1,62 @@
+# Skill: sensor-telemetry-mqtt
+name: sensor-telemetry-mqtt
+version: 1.0.0
+description: Subscribe to sensor topics over MQTT, normalize readings
+  (F to C), raise threshold alerts and keep malformed readings out of
+  the telemetry stream.
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+job: 'Sensor or industrial telemetry over MQTT: subscribe, normalize,
+  alert.'
+credentials: []
+inputs: []
+outputs: []
+backends:
+- name: local
+  type: local
+  requires: []
+components:
+  inputs:
+  - mqtt
+  processors:
+  - mapping
+  outputs:
+  - switch
+  - file
+job_specs:
+- pipeline.yaml
+proof:
+  status: executed-local-only
+  date: '2026-09-18'
+  expanso_edge: v2.1.21
+  record: skills/jobs/PROOF-2026-09-18.md
+  runs:
+  - where: local-mode-node
+    detail: Submitted to a local-mode node (expanso-edge run --local).
+      Not run through Cloud.
+    checks_passed: 6/6
+  proved:
+  - '30 synthetic readings: 28 valid in telemetry, 3 alerts, 2 malformed
+    rejected with the reason.'
+  not_proved:
+  - Any run through Cloud; OPC UA, Modbus or any other industrial protocol;
+    real sensor hardware. The publisher was a synthetic script.
+  note: The job spec has the same structure as the job that ran. Only
+    the values listed in its header comment differ, and long mappings
+    are rewrapped. Inputs in the runs were synthetic fixtures unless
+    a proved line says otherwise.
+dependencies:
+  network_egress:
+    required: true
+    endpoints:
+    - host: the MQTT broker
+      protocol: mqtt
+      purpose: subscribe
+  third_party_apis: []
+  credentials_transmitted: []
+  data_leaving_host: []
+  offline_capable: true
+  tested_with:
+    broker: eclipse-mosquitto:2, anonymous listener

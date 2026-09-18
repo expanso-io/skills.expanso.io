@@ -21,6 +21,24 @@ import yaml
 
 # Define skill categories with patterns
 CATEGORY_RULES = {
+    "jobs": {
+        "description": (
+            "Whole jobs you may be asked to build (RSS engine, data migration, "
+            "notifications, RAG, ...). Each was run end to end; its skill.yaml "
+            "`proof` block says where, and what was not proved"
+        ),
+        "patterns": [
+            "rss-feed-engine",
+            "data-migration-engine",
+            "notification-engine",
+            "rag-embed-retrieve",
+            "webhook-fan-out",
+            "log-reduction",
+            "sensor-telemetry-mqtt",
+            "ci-fixtures",
+        ],
+        "tags": ["job", "recipe", "proven"],
+    },
     "workflows": {
         "description": "End-to-end automation workflows combining multiple services",
         "patterns": [
@@ -321,6 +339,12 @@ def build_catalog(source_dir: Path, layout: str) -> tuple[dict, dict[str, list[s
         }
         if "dependencies" in skill_data:
             skill_meta["dependencies"] = skill_data["dependencies"]
+        # Job skills say which user job they build and where they were run.
+        # Only job skills get these fields, so other entries are unchanged.
+        if "job" in skill_data:
+            for key in ("job", "components", "job_specs", "proof"):
+                if key in skill_data:
+                    skill_meta[key] = skill_data[key]
 
         catalog["skills"][skill_name] = skill_meta
         catalog["total_skills"] += 1

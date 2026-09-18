@@ -1,0 +1,74 @@
+# Data migration engine
+
+Copy a legacy PostgreSQL table into a new schema in batches, reshaping each row and rejecting invalid rows with a reason. Re-running leaves the target table unchanged; the rejects file is appended again.
+
+**Use it when you are asked to build:** A data migration engine: move a legacy table into a new schema.
+
+## Where it was proven
+
+Run on 2026-09-18 with `expanso-edge v2.1.21`, on Expanso Cloud (7/7 checks) and on a local-mode node (7/7). The Cloud run was scheduled by label onto one operator-registered node, not a hosted runner, with its dependencies on the same host.
+
+The sign-aware `balance` formula was added after those runs and validated on a local-mode node only, never on Cloud. The Cloud and 994/6 runs used the earlier formula, and their fixture had only non-negative balances. Against a separate synthetic signed fixture (cents -150, -5, -100, -99999, 0, 7, 99, 100, 12345 and one invalid-email row) the job completed after 1 execution and wrote -1.50, -0.05, -1.00, -999.99, 0.00, 0.07, 0.99, 1.00, 123.45, all 9 rows identical to the independent SQL transform; the invalid email went to rejects, and a second run left the target table unchanged (the rejects file was appended again). With the old formula Postgres rejected `-1.-5`, only 6 of 9 rows were written and the job stayed `running`, retrying the output.
+
+Proved:
+
+- 1,000 synthetic legacy rows became 994 target rows plus 6 rejects, each with its reason.
+- The target matched an independent SQL statement of the transform (expected.sql); a second run left the target table unchanged.
+
+Not proved:
+
+- Change data capture. This is a batch copy; a CDC job (postgres_cdc) did not initialize in testing and is unproven.
+- `restart_policy: never` on Expanso Cloud with this spec; it was added after the Cloud run.
+- Negative balances on Expanso Cloud; the signed formula ran on a local-mode node only.
+
+## Components
+
+- inputs: `sql_select`
+- processors: `mapping`
+- outputs: `switch`, `sql_insert`, `file`
+
+## Files
+
+- `expected.sql`
+- `legacy.sql`
+- `modern.sql`
+- `pipeline.yaml`
+- `skill.yaml`
+
+Each `pipeline*.yaml` header lists the values to edit for your environment.
+
+## Set up the dependencies
+
+```bash
+# PostgreSQL (tested with 14.23). Seed the sample tables,
+# then set the two DSNs in pipeline.yaml to them:
+createdb legacy && createdb modern
+psql -d legacy -f legacy.sql
+psql -d modern -f modern.sql
+mkdir -p /var/tmp/expanso-migration/out
+```
+
+## Validate, deploy, confirm
+
+```bash
+expanso-edge validate pipeline.yaml
+expanso-cli job validate pipeline.yaml --offline
+expanso-cli job deploy pipeline.yaml
+expanso-cli job describe data-migration
+expanso-cli execution list --job-id <job-id>
+```
+
+A deploy only stores the job. Count the output where it lands:
+
+```bash
+# First run: 994 rows, and 6 rejects each with a reason
+# (a re-run appends the 6 rejects again):
+psql -d modern -Atc 'select count(*) from customers'
+wc -l /var/tmp/expanso-migration/out/rejects.jsonl
+```
+
+## Running it on Expanso Cloud
+
+- The spec pins itself with an example `selector`. Label the node that can reach the job's dependencies to match, or change the selector. Use underscores, not hyphens, in label keys: a hyphenated key made the pipeline fail to build on the node.
+- This spec sets `restart_policy: never` at the top level because its input is bounded. With the default policy a failing bounded job was re-run on Cloud every few seconds and read `running`; with `never` it ended `failed` after one execution. The field was added after this job's Cloud run and has not been re-run on Cloud with this spec.
+- Paths, hosts and credentials resolve on the node that executes the job, not on the machine that deployed it.

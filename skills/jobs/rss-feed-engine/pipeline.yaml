@@ -1,0 +1,92 @@
+# pipeline.yaml: the rss-feed-engine job, as run on 2026-09-18
+# on Expanso Cloud and on a local-mode node with expanso-edge
+# v2.1.21. The fetch-error guard was added afterwards and
+# validated on a local-mode node only, never on Cloud. The
+# top-level restart_policy: never was added after the Cloud run and
+# has not been re-run on Cloud with this spec. See
+# skills/jobs/PROOF-2026-09-18.md.
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/rss-feed-engine.mdx (draft), byte for byte except the
+# fetch-error guard after the http processor and restart_policy.
+# Otherwise its structure matches the proven run's config; long
+# mappings are only rewrapped. Set
+# these values for your environment:
+#   .cache_resources[0].file.directory =
+#     /var/tmp/expanso-rss/state/seen-guids
+#   .output.file.path = /var/tmp/expanso-rss/out/rss-items.jsonl
+#   the `http` processor's url, and the `root.feed` literal in the
+#     normalize mapping. Change both together to the same feed
+#     URL, otherwise records misstate their source.
+# Every feed item must carry a stable, non-empty <guid>: the dedupe
+# key is the GUID. Feeds whose items lack a GUID are not supported
+# and were not tested.
+# The selector pipeline_role: feeds is an example; label your node to
+# match or change it. Use underscores in label keys.
+#
+name: rss-feed-engine
+type: pipeline
+restart_policy: never
+selector:
+  match_labels:
+    pipeline_role: feeds
+config:
+  input:
+    generate:
+      # One bounded poll. For a standing engine, drop `count` and set
+      # `interval` to the feed's polling period, e.g. "5m". Also
+      # remove `restart_policy: never` above: one transient fetch
+      # error would stop a long-running job for good. The default
+      # policy restarts it on failure.
+      count: 1
+      interval: 1s
+      mapping: root = {}
+  pipeline:
+    processors:
+      - http:
+          url: "https://www.nasa.gov/news-release/feed/"
+          verb: GET
+          retries: 3
+      # Stop here with the fetch error before XML parsing.
+      - mapping: |
+          root = if errored() {
+            throw("feed fetch failed: " + error().or("unknown"))
+          } else { content() }
+      - xml:
+          operator: to_json
+      - mapping: |
+          let items = this.rss.channel.item
+          root = if $items.type() == "array" { $items } else {
+            [$items]
+          }
+      - unarchive:
+          format: json_array
+      - mapping: |
+          let g = this.guid
+          root.guid = if $g.type() == "object" { $g."#text" } else {
+            $g
+          }
+          root.title = this.title
+          root.link = this.link
+          root.category = this.category
+          root.summary = this.description
+          # RSS 2.0 dates are RFC 822: numeric zone (+0000) or a
+          # name (GMT). Bind to a variable: inside .catch(...)
+          # `this` is not the item.
+          let pd = this.pubDate
+          root.published_at = $pd.ts_strptime(
+            "%a, %d %b %Y %H:%M:%S %z"
+          ).catch($pd.ts_strptime(
+            "%a, %d %b %Y %H:%M:%S %Z"
+          )).ts_format("2006-01-02T15:04:05Z07:00", "UTC")
+          root.feed = "https://www.nasa.gov/news-release/feed/"
+      - dedupe:
+          cache: seen_guids
+          key: '${! json("guid").hash("sha256").encode("hex") }'
+  cache_resources:
+    - label: seen_guids
+      file:
+        directory: "/var/tmp/expanso-rss/state/seen-guids"
+  output:
+    file:
+      path: "/var/tmp/expanso-rss/out/rss-items.jsonl"
+      codec: lines

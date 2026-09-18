@@ -1,0 +1,50 @@
+# pipeline.yaml: the notification-engine job, as run on 2026-09-18
+# on Expanso Cloud with expanso-edge v2.1.21.
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/notification-engine.mdx (draft), byte for byte. Its
+# structure matches the proven run's config; long mappings are only
+# rewrapped. Set these values for your environment:
+#   .input.http_server.address = 127.0.0.1:8088
+#   .output.http_client.url = https://RECEIVER_HOST/notify
+# The selector pipeline_role: notify is an example; label your node to
+# match or change it. Use underscores in label keys.
+#
+name: notification-engine
+type: pipeline
+selector:
+  match_labels:
+    pipeline_role: notify
+config:
+  input:
+    http_server:
+      address: "127.0.0.1:8088"
+      path: /events
+      allowed_verbs: [POST]
+  pipeline:
+    processors:
+      - dedupe:
+          cache: seen_events
+          key: '${! json("id") }'
+      - mapping: |
+          root = if ["critical", "high"].contains(this.severity) {
+            this
+          } else { deleted() }
+      - mapping: |
+          root.text = "[%s] %s: %s (event %s at %s)".format(
+            this.severity.uppercase(), this.source, this.message,
+            this.id, this.ts
+          )
+          root.event_id = this.id
+          root.severity = this.severity
+  cache_resources:
+    - label: seen_events
+      memory: {}
+  output:
+    http_client:
+      url: "https://RECEIVER_HOST/notify"
+      verb: POST
+      headers:
+        Content-Type: application/json
+      retries: 5
+      retry_period: 200ms
+      max_in_flight: 1

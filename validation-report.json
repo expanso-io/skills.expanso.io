@@ -1,6 +1,6 @@
 {
   "disclaimer": "Local validation only. It checks pipeline syntax, structure and component types. It does not run the orchestrator's submission validation and it is NOT evidence that a pipeline executes. No entry here may be promoted to verified-executed without a dated Expanso Cloud run record.",
-  "generated": "2026-09-18T01:31:14.234141+00:00",
+  "generated": "2026-09-18T06:25:57.084333+00:00",
   "job_spec_validator": {
     "tool": "expanso-cli job validate --offline",
     "version": "Expanso CLI version v2.1.21"
@@ -506,6 +506,19 @@
         }
       }
     },
+    "ci-fixtures": {
+      "category": "jobs",
+      "readiness": "validated-not-executed",
+      "validates": true,
+      "variants": {
+        "recipe": {
+          "job_spec_accepted": true,
+          "pipeline": "skills/jobs/ci-fixtures/pipeline.yaml",
+          "readiness": "validated-not-executed",
+          "validates": true
+        }
+      }
+    },
     "circuit-breakers": {
       "category": "recipes",
       "readiness": "invalid-does-not-validate",
@@ -718,6 +731,19 @@
           "pipeline": "skills/security/data-fence/pipeline-mcp.yaml",
           "readiness": "invalid-does-not-validate",
           "validates": false
+        }
+      }
+    },
+    "data-migration-engine": {
+      "category": "jobs",
+      "readiness": "validated-not-executed",
+      "validates": true,
+      "variants": {
+        "recipe": {
+          "job_spec_accepted": true,
+          "pipeline": "skills/jobs/data-migration-engine/pipeline.yaml",
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -1804,6 +1830,19 @@
         }
       }
     },
+    "log-reduction": {
+      "category": "jobs",
+      "readiness": "validated-not-executed",
+      "validates": true,
+      "variants": {
+        "recipe": {
+          "job_spec_accepted": true,
+          "pipeline": "skills/jobs/log-reduction/pipeline.yaml",
+          "readiness": "validated-not-executed",
+          "validates": true
+        }
+      }
+    },
     "log-sanitize": {
       "category": "security",
       "readiness": "validated-not-executed",
@@ -2221,6 +2260,19 @@
         }
       }
     },
+    "notification-engine": {
+      "category": "jobs",
+      "readiness": "validated-not-executed",
+      "validates": true,
+      "variants": {
+        "recipe": {
+          "job_spec_accepted": true,
+          "pipeline": "skills/jobs/notification-engine/pipeline.yaml",
+          "readiness": "validated-not-executed",
+          "validates": true
+        }
+      }
+    },
     "number-format": {
       "category": "transforms",
       "readiness": "validated-not-executed",
@@ -2533,6 +2585,25 @@
         }
       }
     },
+    "rag-embed-retrieve": {
+      "category": "jobs",
+      "readiness": "validated-not-executed",
+      "validates": true,
+      "variants": {
+        "query": {
+          "job_spec_accepted": true,
+          "pipeline": "skills/jobs/rag-embed-retrieve/pipeline-query.yaml",
+          "readiness": "validated-not-executed",
+          "validates": true
+        },
+        "recipe": {
+          "job_spec_accepted": true,
+          "pipeline": "skills/jobs/rag-embed-retrieve/pipeline.yaml",
+          "readiness": "validated-not-executed",
+          "validates": true
+        }
+      }
+    },
     "random-number": {
       "category": "utilities",
       "readiness": "validated-not-executed",
@@ -2630,6 +2701,19 @@
         }
       }
     },
+    "rss-feed-engine": {
+      "category": "jobs",
+      "readiness": "validated-not-executed",
+      "validates": true,
+      "variants": {
+        "recipe": {
+          "job_spec_accepted": true,
+          "pipeline": "skills/jobs/rss-feed-engine/pipeline.yaml",
+          "readiness": "validated-not-executed",
+          "validates": true
+        }
+      }
+    },
     "s3-to-postgres": {
       "category": "recipes",
       "readiness": "validated-not-executed",
@@ -2711,6 +2795,19 @@
         "mcp": {
           "job_spec_accepted": true,
           "pipeline": "skills/transforms/semver-parse/pipeline-mcp.yaml",
+          "readiness": "validated-not-executed",
+          "validates": true
+        }
+      }
+    },
+    "sensor-telemetry-mqtt": {
+      "category": "jobs",
+      "readiness": "validated-not-executed",
+      "validates": true,
+      "variants": {
+        "recipe": {
+          "job_spec_accepted": true,
+          "pipeline": "skills/jobs/sensor-telemetry-mqtt/pipeline.yaml",
           "readiness": "validated-not-executed",
           "validates": true
         }
@@ -3751,6 +3848,19 @@
         }
       }
     },
+    "webhook-fan-out": {
+      "category": "jobs",
+      "readiness": "validated-not-executed",
+      "validates": true,
+      "variants": {
+        "recipe": {
+          "job_spec_accepted": true,
+          "pipeline": "skills/jobs/webhook-fan-out/pipeline.yaml",
+          "readiness": "validated-not-executed",
+          "validates": true
+        }
+      }
+    },
     "webhook-receive": {
       "category": "connectors",
       "readiness": "invalid-does-not-validate",
@@ -3870,8 +3980,8 @@
   },
   "totals": {
     "fails_validation": 62,
-    "skills": 207,
-    "validates": 145,
+    "skills": 215,
+    "validates": 153,
     "variants": {
       "cli": {
         "pipelines": 177,
@@ -3885,9 +3995,13 @@
         "pipelines": 177,
         "validates": 142
       },
+      "query": {
+        "pipelines": 1,
+        "validates": 1
+      },
       "recipe": {
-        "pipelines": 30,
-        "validates": 8
+        "pipelines": 38,
+        "validates": 16
       }
     }
   },

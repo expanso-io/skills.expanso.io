@@ -1,7 +1,20 @@
 {
   "version": "1.0.0",
-  "total_skills": 177,
+  "total_skills": 185,
   "categories": {
+    "jobs": {
+      "skill_count": 8,
+      "skills": [
+        "ci-fixtures",
+        "data-migration-engine",
+        "log-reduction",
+        "notification-engine",
+        "rag-embed-retrieve",
+        "rss-feed-engine",
+        "sensor-telemetry-mqtt",
+        "webhook-fan-out"
+      ]
+    },
     "workflows": {
       "skill_count": 19,
       "skills": [

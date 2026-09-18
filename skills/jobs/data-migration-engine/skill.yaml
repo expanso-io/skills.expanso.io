@@ -1,0 +1,86 @@
+# Skill: data-migration-engine
+name: data-migration-engine
+version: 1.0.0
+description: Copy a legacy PostgreSQL table into a new schema in batches,
+  reshaping each row and rejecting invalid rows with a reason. Re-running
+  leaves the target table unchanged; the rejects file is appended again.
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+job: 'A data migration engine: move a legacy table into a new schema.'
+credentials: []
+inputs: []
+outputs: []
+backends:
+- name: local
+  type: local
+  requires: []
+components:
+  inputs:
+  - sql_select
+  processors:
+  - mapping
+  outputs:
+  - switch
+  - sql_insert
+  - file
+job_specs:
+- pipeline.yaml
+proof:
+  status: executed-cloud-and-local
+  date: '2026-09-18'
+  expanso_edge: v2.1.21
+  record: skills/jobs/PROOF-2026-09-18.md
+  runs:
+  - where: expanso-cloud
+    detail: Submitted to an Expanso Cloud workspace with a label selector
+      and executed by the one operator-registered node carrying that
+      label. Not a hosted runner; the job's dependencies ran on the
+      same host as the node.
+    checks_passed: 7/7
+  - where: local-mode-node
+    detail: Submitted to a local-mode node (expanso-edge run --local).
+      Not run through Cloud.
+    checks_passed: 7/7
+  - where: local-mode-node
+    detail: The signed balance formula, added after the runs above, run
+      against a separate synthetic signed fixture (cents -150, -5,
+      -100, -99999, 0, 7, 99, 100, 12345 and one invalid-email row).
+      The job completed after 1 execution; all 9 target rows matched
+      the independent SQL transform (expected.sql), the invalid email
+      went to rejects, and a second run left the target table
+      unchanged (the rejects file was appended again). With the old
+      formula Postgres rejected -1.-5, only 6 of 9 rows were written
+      and the job stayed running, retrying the output.
+    checks_passed: 3/3
+  proved:
+  - 1,000 synthetic legacy rows became 994 target rows plus 6 rejects,
+    each with its reason.
+  - The target matched an independent SQL statement of the transform
+    (expected.sql); a second run left the target table unchanged.
+  not_proved:
+  - Change data capture. This is a batch copy; a CDC job (postgres_cdc)
+    did not initialize in testing and is unproven.
+  - The top-level restart_policy never on Expanso Cloud with this spec;
+    it was added after the Cloud run.
+  - Negative balances on Expanso Cloud. The Cloud and 994/6 runs used
+    the earlier formula and had only non-negative balances; the signed
+    formula ran on a local-mode node only.
+  note: The job spec has the same structure as the job that ran. Only
+    the values listed in its header comment differ, and long mappings
+    are rewrapped. The top-level restart_policy never and the signed
+    balance formula are newer than the Cloud run. Inputs in the runs
+    were synthetic fixtures unless a proved line says otherwise.
+dependencies:
+  network_egress:
+    required: false
+    scope: Only to the two databases.
+  third_party_apis: []
+  credentials_transmitted:
+  - name: database credentials in the two DSNs
+    to: the source and target databases
+  data_leaving_host:
+  - what: row data
+    to: the target database
+  offline_capable: true

@@ -1,0 +1,8 @@
+{
+  "documents": [
+    "http://127.0.0.1:8000/docs/data-center-cooling-runbook.md",
+    "http://127.0.0.1:8000/docs/field-sensor-battery-guide.md",
+    "http://127.0.0.1:8000/docs/harbor-crane-maintenance.md",
+    "http://127.0.0.1:8000/docs/orchard-irrigation-policy.md"
+  ]
+}

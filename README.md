@@ -1,8 +1,43 @@
 # Expanso Skills Marketplace
 
-The official marketplace for Expanso skills - pre-built data processing pipelines that work with OpenClaw, Claude, and any MCP-compatible AI assistant.
+The official marketplace for Expanso skills: complete jobs for the data work
+you are asked to build, plus single-purpose pipeline skills, for OpenClaw,
+Claude and any MCP-compatible AI assistant. All open source; the live count
+per category is in [`catalog.json`](catalog.json).
 
-**177 skills** across **6 categories** - all open source.
+## If you are asked to build...
+
+These eight jobs were each run end to end on 2026-09-18 with
+`expanso-edge` v2.1.21 and their output counted at the destination. Each
+lives in [`skills/jobs/`](skills/jobs/) with its job spec, a README with
+dependency setup and output checks, the sample inputs used, and a
+`skill.yaml` `proof` block recording where it ran and what was not proved.
+The dated, sanitized run record with the Cloud job and execution ids is
+[`skills/jobs/PROOF-2026-09-18.md`](skills/jobs/PROOF-2026-09-18.md).
+
+| Job | Proven | Directory |
+|---|---|---|
+| RSS feed engine | Cloud + local; live NASA and BBC feeds; fetch-error guard local only; items must carry a stable, non-empty `<guid>` (GUID-less feeds unsupported, untested) | [`rss-feed-engine`](skills/jobs/rss-feed-engine/) |
+| Data migration engine (batch) | Cloud + local | [`data-migration-engine`](skills/jobs/data-migration-engine/) |
+| Notification engine | Cloud + local, to a local test receiver only | [`notification-engine`](skills/jobs/notification-engine/) |
+| RAG: fetch, chunk, embed, store, search | Cloud + local; Ollama + Qdrant; URL-based chunk id local only | [`rag-embed-retrieve`](skills/jobs/rag-embed-retrieve/) |
+| Webhook fan-out | Local only | [`webhook-fan-out`](skills/jobs/webhook-fan-out/) |
+| Log reduction | Local only | [`log-reduction`](skills/jobs/log-reduction/) |
+| Sensor telemetry over MQTT | Local only; synthetic publisher | [`sensor-telemetry-mqtt`](skills/jobs/sensor-telemetry-mqtt/) |
+| CI test fixtures | Local only | [`ci-fixtures`](skills/jobs/ci-fixtures/) |
+
+"Cloud" means submitted to an Expanso Cloud workspace and executed by one
+operator-registered node chosen by label, with the job's dependencies on
+that host; it is not a hosted runner. "Local" means a local-mode node only.
+Each job spec has the same structure as the job that ran; only the values
+listed in its header comment differ, and long mappings are rewrapped. Four
+changes are newer than the runs and were not re-run on Cloud: the RSS
+fetch-error guard, the RAG URL-based chunk id and the migration's signed
+balance formula (each validated on a local-mode node only), and `restart_policy: never` on the bounded jobs.
+Not proven, and not published as working jobs:
+live X (Twitter) ingestion, change data capture, delivery into Slack or
+email, and the native `qdrant` output (the RAG job writes through Qdrant's
+REST API instead). The first five nodes are free.
 
 > **Readiness:** these skills are published pipeline definitions. Except where a
 > skill's own README states otherwise, they have **not** been confirmed by an
@@ -25,7 +60,7 @@ What that means in practice:
   **This is not the same as "credentials never leave your machine".** A skill that
   calls a third-party API (OpenAI, Slack, Gmail, ...) transmits its credential to
   *that provider*, along with whatever data you send it. Only skills whose
-  `skill.yaml` has a `dependencies` block (currently `text-summarize`) have been
+  `skill.yaml` has a `dependencies` block (`text-summarize` and the eight jobs) have been
   audited for what leaves the host; for any other skill, check its pipeline's
   components rather than relying on its README.
 - **Some skills run without network egress; many do not.** Only skills whose
@@ -129,6 +164,9 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 This MCP server provides tools to validate, create, and deploy Expanso pipelines directly from Claude.
 
 ## Skill Categories
+
+### Jobs (8 skills)
+Complete jobs, each run end to end. See [If you are asked to build...](#if-you-are-asked-to-build).
 
 ### Workflows (19 skills)
 End-to-end automation combining multiple services.
@@ -394,7 +432,7 @@ Two things this does **not** mean:
   available to a remote node.
 
 Each skill's `skill.yaml` lists the credentials it references. Only skills with a
-`dependencies` block in `skill.yaml` (currently `text-summarize`) have been audited
+`dependencies` block in `skill.yaml` (`text-summarize` and the jobs) have been audited
 for what leaves the host, and the catalog publishes that block. For any other
 skill, check the pipeline's components: any third-party API component sends its
 credential and your data to that provider.

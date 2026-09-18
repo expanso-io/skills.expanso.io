@@ -1,0 +1,73 @@
+# pipeline.yaml: the log-reduction job, as run on 2026-09-18
+# on a local-mode node with expanso-edge v2.1.21. The top-level
+# restart_policy: never was added after that run and has not been
+# re-run with this spec. See skills/jobs/PROOF-2026-09-18.md.
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/log-reduction.mdx (draft), byte for byte except
+# restart_policy. Otherwise its structure matches the proven run's
+# config; long mappings are only rewrapped. Set these values for
+# your environment:
+#   .input.broker.inputs[0].file.paths[0] = /var/log/app/access.log
+#   .output.file.path = /var/tmp/expanso-logs/out/reduced.jsonl
+# The selector pipeline_role: logs is an example; label your node to
+# match or change it. Use underscores in label keys.
+#
+name: log-reduction
+type: pipeline
+restart_policy: never
+selector:
+  match_labels:
+    pipeline_role: logs
+config:
+  input:
+    broker:
+      inputs:
+        - file:
+            paths: ["/var/log/app/access.log"]
+            scanner:
+              lines: {}
+      batching:
+        count: 100000
+        period: 2s
+  pipeline:
+    processors:
+      - mapping: |
+          let m = content().string().re_find_object(
+            "^(?P<ip>\\S+) \\S+ \\S+ " +
+            "\\[(?P<ts>[^\\]]+)\\] " +
+            "\"(?P<method>\\S+) (?P<path>\\S+) " +
+            "[^\"]*\" (?P<status>\\d{3}) (?P<bytes>\\d+) " +
+            "\"[^\"]*\" \"[^\"]*\" (?P<latency>[0-9.]+)$"
+          )
+          root = if $m.path == "/healthz" { deleted() } else {
+            {
+              "minute": $m.ts.slice(0, 17),
+              "method": $m.method,
+              "path": $m.path,
+              "status": $m.status.number(),
+              "latency_ms": ($m.latency.number() * 1000).round(),
+              "ip": $m.ip
+            }
+          }
+      - switch:
+          - check: this.status >= 400
+            processors:
+              - mapping: 'root = this.merge({"kind": "error"})'
+          - processors:
+              - group_by_value:
+                  value: '${! json("minute") } ${! json("path") }
+                    ${! json("status") }'
+              - archive:
+                  format: json_array
+              - mapping: |
+                  root = {
+                    "kind": "rollup",
+                    "minute": this.index(0).minute,
+                    "path": this.index(0).path,
+                    "status": this.index(0).status,
+                    "count": this.length()
+                  }
+  output:
+    file:
+      path: "/var/tmp/expanso-logs/out/reduced.jsonl"
+      codec: lines

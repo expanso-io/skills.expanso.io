@@ -1,0 +1,109 @@
+# pipeline.yaml: the data-migration job, as run on 2026-09-18
+# on Expanso Cloud with expanso-edge v2.1.21. The top-level
+# restart_policy: never was added after that run and has not been
+# re-run on Cloud with this spec. The signed balance formula is
+# also newer: the Cloud and 994/6 runs used the earlier formula
+# (their fixture had only non-negative balances); the signed one
+# was validated on a local-mode node only. See
+# skills/jobs/PROOF-2026-09-18.md.
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/data-migration.mdx (draft); 2 wrapped flow list(s)
+# rewritten as block lists, restart_policy added, and the balance
+# formula made sign-aware. Otherwise its
+# structure matches the proven run's config; long mappings are only
+# rewrapped. Set
+# these values for your environment:
+#   .input.sql_select.dsn = postgres://USER:PASS@SRC_HOST:5432/SRC_DB
+#   .output.switch.cases[0].output.file.path =
+#     /var/tmp/expanso-migration/out/rejects.jsonl
+#   ...sql_insert.dsn = postgres://USER:PASS@DST_HOST:5432/DST_DB
+# The selector pipeline_role: migration is an example; label your node
+# to match or change it. Use underscores in label keys.
+#
+name: data-migration
+type: pipeline
+restart_policy: never
+selector:
+  match_labels:
+    pipeline_role: migration
+config:
+  input:
+    sql_select:
+      driver: postgres
+      dsn: "postgres://USER:PASS@SRC_HOST:5432/SRC_DB"
+      table: customers
+      columns:
+        - cust_no
+        - full_name
+        - email
+        - signup
+        - status_code
+        - balance_cents
+      suffix: ORDER BY cust_no
+  pipeline:
+    processors:
+      - mapping: |
+          let parts = this.full_name.split(",")
+          let email = this.email.trim().lowercase()
+          let cents = this.balance_cents.number().int64()
+          root.id = this.cust_no
+          root.last_name = $parts.index(0).trim()
+          root.first_name = $parts.index(1).trim()
+          root.email = $email
+          root.signed_up_on = this.signup.ts_strptime(
+            "%m/%d/%Y"
+          ).ts_format("2006-01-02", "UTC")
+          root.status = match this.status_code {
+            "A" => "active"
+            "I" => "inactive"
+            "S" => "suspended"
+            _ => throw("unknown status code " + this.status_code)
+          }
+          # Signed cents: format the absolute value, then prefix the
+          # sign, so -150 becomes -1.50 and -5 becomes -0.05.
+          let sign = if $cents < 0 { "-" } else { "" }
+          let abs = if $cents < 0 { 0 - $cents } else { $cents }
+          root.balance = "%s%d.%02d".format(
+            $sign, ($abs / 100).floor().int64(), ($abs % 100).int64()
+          )
+          root.reject_reason = if !$email.contains("@") {
+            "invalid email"
+          } else { null }
+  output:
+    switch:
+      cases:
+        - check: errored() || this.reject_reason != null
+          output:
+            file:
+              path: "/var/tmp/expanso-migration/out/rejects.jsonl"
+              codec: lines
+            processors:
+              - mapping: |
+                  root = this
+                  root.error = if errored() { error() } else { null }
+        - output:
+            sql_insert:
+              driver: postgres
+              dsn: "postgres://USER:PASS@DST_HOST:5432/DST_DB"
+              table: customers
+              columns:
+                - id
+                - first_name
+                - last_name
+                - email
+                - signed_up_on
+                - status
+                - balance
+                - migrated_from
+              args_mapping: |
+                root = [
+                  this.id, this.first_name, this.last_name,
+                  this.email, this.signed_up_on, this.status,
+                  this.balance,
+                  "legacy.customers"
+                ]
+              suffix: ON CONFLICT (id) DO NOTHING
+              max_in_flight: 4
+              batching:
+                count: 100
+                period: 1s
