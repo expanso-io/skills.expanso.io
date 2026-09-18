@@ -30,10 +30,8 @@ jobs:
             for skill_dir in "$category_dir"*/; do
               if [ -d "$skill_dir" ]; then
                 # Recipes use pipeline.yaml; standard skills use skill.yaml + pipeline-cli.yaml
-                HAS_SKILL_YAML=0
                 HAS_PIPELINE=0
 
-                [ -f "$skill_dir/skill.yaml" ] && HAS_SKILL_YAML=1
                 [ -f "$skill_dir/pipeline-cli.yaml" ] && HAS_PIPELINE=1
                 [ -f "$skill_dir/pipeline-mcp.yaml" ] && HAS_PIPELINE=1
                 [ -f "$skill_dir/pipeline.yaml" ] && HAS_PIPELINE=1
