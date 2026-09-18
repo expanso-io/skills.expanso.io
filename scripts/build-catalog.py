@@ -263,7 +263,9 @@ def iter_skill_dirs(source_dir: Path, layout: str) -> list[tuple[str | None, Pat
 
 def resolve_category(skill_name: str, category_hint: str | None) -> str:
     """Resolve category using directory hint first, then name patterns."""
-    if category_hint and (category_hint in CATEGORY_RULES or category_hint == "utilities"):
+    if category_hint and (
+        category_hint in CATEGORY_RULES or category_hint == "utilities"
+    ):
         return category_hint
     return categorize_skill(skill_name)
 
@@ -373,9 +375,7 @@ def extract_tags(skill_name: str, skill_data: dict, category: str) -> list[str]:
         tags.add("remote")
     declared = (skill_data.get("dependencies") or {}).get("offline_capable")
     if declared is True or (
-        declared is None
-        and backend_types
-        and all(t == "local" for t in backend_types)
+        declared is None and backend_types and all(t == "local" for t in backend_types)
     ):
         tags.add("offline")
 
@@ -449,7 +449,9 @@ def main():
     catalog, category_skills = build_catalog(source_dir, layout)
 
     # Print summary
-    print(f"\nFound {catalog['total_skills']} skills in {len(category_skills)} categories:")
+    print(
+        f"\nFound {catalog['total_skills']} skills in {len(category_skills)} categories:"
+    )
     for cat, skills in sorted(category_skills.items()):
         if skills:
             print(f"  {cat}: {len(skills)} skills")
