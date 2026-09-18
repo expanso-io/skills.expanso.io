@@ -1,9 +1,10 @@
 # pipeline-query.yaml: the rag-query job, as run on 2026-09-18
 # on Expanso Cloud with expanso-edge v2.1.21.
-# Body copied from docs.expanso.io recipes/rag-embed-retrieve
-# (f6eab2b); 1 wrapped flow list(s) rewritten as block lists, same
-# parsed YAML. Its structure matches the proven run's config; long
-# mappings are only rewrapped. Set these values for your environment:
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/rag-embed-retrieve.mdx (draft); 1 wrapped flow
+# list(s) rewritten as block lists, same parsed YAML. Its structure
+# matches the proven run's config; long mappings are only rewrapped.
+# Set these values for your environment:
 #   .input.file.paths[0] = /var/tmp/expanso-rag/questions.jsonl
 #   .output.file.path = /var/tmp/expanso-rag/out/answers.jsonl
 #   ...qdrant.collection_name = docs

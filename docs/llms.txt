@@ -16,10 +16,12 @@ Cloud workspace and executed by one operator-registered node chosen by label
 (not a hosted runner; the job's dependencies ran on that same host).
 "Local" means a local-mode node (`expanso-edge run --local`) only, never run
 through Cloud. Inputs were synthetic fixtures unless the row says otherwise.
+The dated, sanitized run record with the Cloud job and execution ids:
+https://github.com/expanso-io/skills.expanso.io/blob/main/skills/jobs/PROOF-2026-09-18.md
 
 | Job | Components | Proven | Files |
 |---|---|---|---|
-| RSS feed engine: poll, parse, never emit an item twice | `generate` > `http` > `xml` > `mapping` > `unarchive` > `mapping` > `dedupe` (`file` cache) > `file` | Cloud + local, 14/14 checks; live NASA and BBC feeds | https://skills.expanso.io/rss-feed-engine/ |
+| RSS feed engine: poll, parse, never emit an item twice | `generate` > `http` > `mapping` (throw on `errored()`) > `xml` > `mapping` > `unarchive` > `mapping` > `dedupe` (`file` cache) > `file` | Cloud + local, 14/14 checks; live NASA and BBC feeds; the fetch-error guard after `http` was added later and run on a local-mode node only | https://skills.expanso.io/rss-feed-engine/ |
 | Data migration engine: legacy table into a new schema | `sql_select` > `mapping` > `switch` output: `sql_insert` + `file` rejects | Cloud + local, 7/7; 994 rows matched an independent SQL transform, 6 rejects | https://skills.expanso.io/data-migration-engine/ |
 | Notification engine: message when an event matters | `http_server` > `dedupe` > `mapping` > `mapping` > `http_client` with retries | Cloud + local, 7/7, to a local test receiver only | https://skills.expanso.io/notification-engine/ |
 | RAG: fetch documents, chunk, embed, store, search | ingest: `generate` > `http` > `unarchive` > `http` > `mapping` > `unarchive` > `branch` + `ollama_embeddings` > `mapping` > `http_client` (Qdrant REST); search: `file` > `branch` + `ollama_embeddings` > `branch` + `qdrant` processor > `mapping` > `file` | Cloud + local, 12/12; real embeddings, right chunk first for 4/4 questions | https://skills.expanso.io/rag-embed-retrieve/ |

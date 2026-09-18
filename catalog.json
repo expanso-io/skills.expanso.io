@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-09-18T04:56:12.004150+00:00",
+  "generated": "2026-09-18T05:09:08.761321+00:00",
   "total_skills": 185,
   "categories": {
     "jobs": {
@@ -1557,6 +1557,7 @@
         "status": "executed-local-only",
         "date": "2026-09-18",
         "expanso_edge": "v2.1.21",
+        "record": "skills/jobs/PROOF-2026-09-18.md",
         "runs": [
           {
             "where": "local-mode-node",
@@ -1631,6 +1632,7 @@
         "status": "executed-cloud-and-local",
         "date": "2026-09-18",
         "expanso_edge": "v2.1.21",
+        "record": "skills/jobs/PROOF-2026-09-18.md",
         "runs": [
           {
             "where": "expanso-cloud",
@@ -1701,6 +1703,7 @@
         "status": "executed-local-only",
         "date": "2026-09-18",
         "expanso_edge": "v2.1.21",
+        "record": "skills/jobs/PROOF-2026-09-18.md",
         "runs": [
           {
             "where": "local-mode-node",
@@ -1777,6 +1780,7 @@
         "status": "executed-cloud-and-local",
         "date": "2026-09-18",
         "expanso_edge": "v2.1.21",
+        "record": "skills/jobs/PROOF-2026-09-18.md",
         "runs": [
           {
             "where": "expanso-cloud",
@@ -1812,8 +1816,7 @@
       ],
       "tags": [
         "jobs",
-        "local",
-        "offline"
+        "local"
       ],
       "dependencies": {
         "network_egress": {
@@ -1840,11 +1843,15 @@
         "credentials_transmitted": [],
         "data_leaving_host": [
           {
+            "what": "HTTP GETs for the index and each document",
+            "to": "the document host"
+          },
+          {
             "what": "chunk text and vectors",
             "to": "Ollama and Qdrant, local in this configuration"
           }
         ],
-        "offline_capable": true,
+        "offline_capable": false,
         "tested_with": {
           "ollama": "0.33.2",
           "model": "nomic-embed-text (768-dim)",
@@ -1878,6 +1885,7 @@
         "status": "executed-cloud-and-local",
         "date": "2026-09-18",
         "expanso_edge": "v2.1.21",
+        "record": "skills/jobs/PROOF-2026-09-18.md",
         "runs": [
           {
             "where": "expanso-cloud",
@@ -1963,6 +1971,7 @@
         "status": "executed-cloud-and-local",
         "date": "2026-09-18",
         "expanso_edge": "v2.1.21",
+        "record": "skills/jobs/PROOF-2026-09-18.md",
         "runs": [
           {
             "where": "expanso-cloud",
@@ -1973,6 +1982,11 @@
             "where": "local-mode-node",
             "detail": "Submitted to a local-mode node (expanso-edge run --local). Not run through Cloud.",
             "checks_passed": "14/14"
+          },
+          {
+            "where": "local-mode-node",
+            "detail": "The fetch-error guard after the http processor, added after the runs above, run against a local fixture. HTTP 200 completed with 4 records; HTTP 401 and 503 each failed with 0 records and the error \"feed fetch failed\". Without the guard a 401 also failed, but in the xml step, so the guard makes fetch failures explicit and correctly attributed.",
+            "checks_passed": "3/3"
           }
         ],
         "proved": [
@@ -1980,9 +1994,10 @@
           "A duplicate GUID was emitted once; a restarted job emitted 0 items it had already seen (file-backed dedupe cache)."
         ],
         "not_proved": [
-          "Feeds other than RSS 2.0 (Atom was not tested)."
+          "Feeds other than RSS 2.0 (Atom was not tested).",
+          "The fetch-error guard on Expanso Cloud; it ran on a local-mode node only."
         ],
-        "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
+        "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. The fetch-error guard is newer than the Cloud run. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
       }
     },
     "sensor-telemetry-mqtt": {
@@ -2040,6 +2055,7 @@
         "status": "executed-local-only",
         "date": "2026-09-18",
         "expanso_edge": "v2.1.21",
+        "record": "skills/jobs/PROOF-2026-09-18.md",
         "runs": [
           {
             "where": "local-mode-node",
@@ -2112,6 +2128,7 @@
         "status": "executed-local-only",
         "date": "2026-09-18",
         "expanso_edge": "v2.1.21",
+        "record": "skills/jobs/PROOF-2026-09-18.md",
         "runs": [
           {
             "where": "local-mode-node",

@@ -32,6 +32,7 @@ proof:
   status: executed-cloud-and-local
   date: '2026-09-18'
   expanso_edge: v2.1.21
+  record: skills/jobs/PROOF-2026-09-18.md
   runs:
   - where: expanso-cloud
     detail: Submitted to an Expanso Cloud workspace with a label selector

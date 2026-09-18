@@ -29,6 +29,7 @@ proof:
   status: executed-local-only
   date: '2026-09-18'
   expanso_edge: v2.1.21
+  record: skills/jobs/PROOF-2026-09-18.md
   runs:
   - where: local-mode-node
     detail: Submitted to a local-mode node (expanso-edge run --local).

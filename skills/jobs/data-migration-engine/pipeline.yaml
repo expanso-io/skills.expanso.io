@@ -1,9 +1,10 @@
 # pipeline.yaml: the data-migration job, as run on 2026-09-18
 # on Expanso Cloud with expanso-edge v2.1.21.
-# Body copied from docs.expanso.io recipes/data-migration (f6eab2b); 2
-# wrapped flow list(s) rewritten as block lists, same parsed YAML. Its
-# structure matches the proven run's config; long mappings are only
-# rewrapped. Set these values for your environment:
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/data-migration.mdx (draft); 2 wrapped flow list(s)
+# rewritten as block lists, same parsed YAML. Its structure matches
+# the proven run's config; long mappings are only rewrapped. Set
+# these values for your environment:
 #   .input.sql_select.dsn = postgres://USER:PASS@SRC_HOST:5432/SRC_DB
 #   .output.switch.cases[0].output.file.path =
 #     /var/tmp/expanso-migration/out/rejects.jsonl

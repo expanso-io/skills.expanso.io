@@ -6,7 +6,9 @@ Poll an RSS feed, emit one normalized JSON record per item, never emit the same 
 
 ## Where it was proven
 
-Run on 2026-09-18 with `expanso-edge v2.1.21`, on Expanso Cloud (14/14 checks) and on a local-mode node (14/14). The Cloud run was scheduled by label onto one operator-registered node, not a hosted runner, with its dependencies on the same host.
+Run on 2026-09-18 with `expanso-edge v2.1.21`, on Expanso Cloud (14/14 checks) and on a local-mode node (14/14). The Cloud run was scheduled by label onto one operator-registered node, not a hosted runner, with its dependencies on the same host. Run ids are in [`../PROOF-2026-09-18.md`](../PROOF-2026-09-18.md).
+
+The fetch-error guard directly after the `http` processor was added after those runs and validated on a local-mode node only, never on Cloud. Against a local fixture, HTTP 200 completed with 4 records; HTTP 401 and 503 each failed with 0 records and the error `feed fetch failed: ...`. Without the guard a 401 also failed, but in the `xml` step, so the guard makes fetch failures explicit and correctly attributed.
 
 Proved:
 
@@ -16,6 +18,7 @@ Proved:
 Not proved:
 
 - Feeds other than RSS 2.0 (Atom was not tested).
+- The fetch-error guard on Expanso Cloud.
 
 ## Components
 

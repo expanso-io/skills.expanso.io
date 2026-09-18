@@ -1,9 +1,9 @@
 # pipeline.yaml: the sensor-telemetry job, as run on 2026-09-18
 # on a local-mode node with expanso-edge v2.1.21.
-# Body copied from docs.expanso.io recipes/sensor-telemetry-mqtt
-# (f6eab2b), byte for byte. Its structure matches the proven run's
-# config; long mappings are only rewrapped. Set these values for your
-# environment:
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/sensor-telemetry-mqtt.mdx (draft), byte for byte. Its
+# structure matches the proven run's config; long mappings are only
+# rewrapped. Set these values for your environment:
 #   .input.mqtt.client_id = sensor-telemetry
 #   .input.mqtt.urls[0] = tcp://127.0.0.1:1883
 #   .output.switch.cases[0].output.file.path =

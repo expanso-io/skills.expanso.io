@@ -35,6 +35,7 @@ proof:
   status: executed-cloud-and-local
   date: '2026-09-18'
   expanso_edge: v2.1.21
+  record: skills/jobs/PROOF-2026-09-18.md
   runs:
   - where: expanso-cloud
     detail: Submitted to an Expanso Cloud workspace with a label selector
@@ -46,6 +47,14 @@ proof:
     detail: Submitted to a local-mode node (expanso-edge run --local).
       Not run through Cloud.
     checks_passed: 14/14
+  - where: local-mode-node
+    detail: The fetch-error guard after the http processor, added after
+      the runs above, run against a local fixture. HTTP 200 completed
+      with 4 records; HTTP 401 and 503 each failed with 0 records and
+      the error "feed fetch failed". Without the guard a 401 also
+      failed, but in the xml step, so the guard makes fetch failures
+      explicit and correctly attributed.
+    checks_passed: 3/3
   proved:
   - Live NASA (10 items) and BBC Technology (21 items, GMT dates) feeds
     each matched an independent fetch of the same feed.
@@ -53,9 +62,12 @@ proof:
     it had already seen (file-backed dedupe cache).
   not_proved:
   - Feeds other than RSS 2.0 (Atom was not tested).
+  - The fetch-error guard on Expanso Cloud; it ran on a local-mode
+    node only.
   note: The job spec has the same structure as the job that ran. Only
     the values listed in its header comment differ, and long mappings
-    are rewrapped. Inputs in the runs were synthetic fixtures unless
+    are rewrapped. The fetch-error guard is newer than the Cloud
+    run. Inputs in the runs were synthetic fixtures unless
     a proved line says otherwise.
 dependencies:
   network_egress:

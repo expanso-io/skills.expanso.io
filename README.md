@@ -12,10 +12,12 @@ These eight jobs were each run end to end on 2026-09-18 with
 lives in [`skills/jobs/`](skills/jobs/) with its job spec, a README with
 dependency setup and output checks, the sample inputs used, and a
 `skill.yaml` `proof` block recording where it ran and what was not proved.
+The dated, sanitized run record with the Cloud job and execution ids is
+[`skills/jobs/PROOF-2026-09-18.md`](skills/jobs/PROOF-2026-09-18.md).
 
 | Job | Proven | Directory |
 |---|---|---|
-| RSS feed engine | Cloud + local; live NASA and BBC feeds | [`rss-feed-engine`](skills/jobs/rss-feed-engine/) |
+| RSS feed engine | Cloud + local; live NASA and BBC feeds; fetch-error guard local only | [`rss-feed-engine`](skills/jobs/rss-feed-engine/) |
 | Data migration engine (batch) | Cloud + local | [`data-migration-engine`](skills/jobs/data-migration-engine/) |
 | Notification engine | Cloud + local, to a local test receiver only | [`notification-engine`](skills/jobs/notification-engine/) |
 | RAG: fetch, chunk, embed, store, search | Cloud + local; Ollama + Qdrant | [`rag-embed-retrieve`](skills/jobs/rag-embed-retrieve/) |

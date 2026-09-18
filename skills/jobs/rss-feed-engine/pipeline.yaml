@@ -1,8 +1,13 @@
 # pipeline.yaml: the rss-feed-engine job, as run on 2026-09-18
-# on Expanso Cloud with expanso-edge v2.1.21.
-# Body copied from docs.expanso.io recipes/rss-feed-engine (f6eab2b),
-# byte for byte. Its structure matches the proven run's config; long
-# mappings are only rewrapped. Set these values for your environment:
+# on Expanso Cloud and on a local-mode node with expanso-edge
+# v2.1.21. The fetch-error guard was added afterwards and
+# validated on a local-mode node only, never on Cloud. See
+# skills/jobs/PROOF-2026-09-18.md.
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/rss-feed-engine.mdx (draft), byte for byte except the
+# fetch-error guard after the http processor. Its structure matches
+# the proven run's config; long mappings are only rewrapped. Set
+# these values for your environment:
 #   .cache_resources[0].file.directory =
 #     /var/tmp/expanso-rss/state/seen-guids
 #   .output.file.path = /var/tmp/expanso-rss/out/rss-items.jsonl
@@ -28,6 +33,12 @@ config:
           url: "https://www.nasa.gov/news-release/feed/"
           verb: GET
           retries: 3
+      # A failed fetch (401, 5xx, ...) only flags the message; without
+      # this the job can end `completed` with nothing written.
+      - mapping: |
+          root = if errored() {
+            throw("feed fetch failed: " + error().or("unknown"))
+          } else { content() }
       - xml:
           operator: to_json
       - mapping: |

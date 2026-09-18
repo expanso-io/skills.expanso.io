@@ -1,8 +1,9 @@
 # pipeline.yaml: the ci-fixtures job, as run on 2026-09-18
 # on a local-mode node with expanso-edge v2.1.21.
-# Body copied from docs.expanso.io recipes/ci-fixtures (f6eab2b), byte
-# for byte. Its structure matches the proven run's config; long
-# mappings are only rewrapped. Set these values for your environment:
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/ci-fixtures.mdx (draft), byte for byte. Its structure
+# matches the proven run's config; long mappings are only rewrapped.
+# Set these values for your environment:
 #   .input.generate.mapping = string literal "fixtures_RUN_ID" (one
 #     per run)
 #   .output.file.path = /var/tmp/expanso-fixtures/fixtures.jsonl

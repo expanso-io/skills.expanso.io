@@ -38,6 +38,7 @@ proof:
   status: executed-cloud-and-local
   date: '2026-09-18'
   expanso_edge: v2.1.21
+  record: skills/jobs/PROOF-2026-09-18.md
   runs:
   - where: expanso-cloud
     detail: Submitted to an Expanso Cloud workspace with a label selector
@@ -81,9 +82,11 @@ dependencies:
   third_party_apis: []
   credentials_transmitted: []
   data_leaving_host:
+  - what: HTTP GETs for the index and each document
+    to: the document host
   - what: chunk text and vectors
     to: Ollama and Qdrant, local in this configuration
-  offline_capable: true
+  offline_capable: false
   tested_with:
     ollama: 0.33.2
     model: nomic-embed-text (768-dim)
