@@ -667,6 +667,18 @@ they are not duplicated in this prose -- see [Known issues](#known-issues).
 audited skills. The `offline` tag is set only when a skill declares
 `dependencies.offline_capable: true`, or declares only local backends.
 
+## Analytics
+
+`docs/js/analytics.js` sends browser page views and clicks on
+skills.expanso.io to Expanso's PostHog project through ph.expanso.io, with
+the same privacy defaults as docs.expanso.io.
+
+It only sees visitors whose browser runs the script. It does NOT show
+whether pages are indexed, whether agents fetch `llms.txt` or pipeline
+files directly, whether `install.sh` runs, or whether any skill is deployed
+or executed. Those need request logs or Cloud-side data, which this site
+does not collect.
+
 ## Related Resources
 
 - [Expanso Documentation](https://docs.expanso.io)
