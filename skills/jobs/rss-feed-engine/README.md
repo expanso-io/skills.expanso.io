@@ -37,6 +37,8 @@ Each `pipeline*.yaml` header lists the values to edit for your environment.
 
 ## Set up the dependencies
 
+To poll a different feed, change the `http` processor's `url` and the `root.feed` literal in the normalize mapping together, to the same feed URL. The `feed` field is a fixed string, not derived from the fetch, so changing only the `url` makes every record misstate its source.
+
 ```bash
 mkdir -p /var/tmp/expanso-rss/state/seen-guids
 mkdir -p /var/tmp/expanso-rss/out
