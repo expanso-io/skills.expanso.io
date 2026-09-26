@@ -1,0 +1,21 @@
+{
+  "name": "expanso",
+  "displayName": "Expanso",
+  "version": "1.0.0",
+  "description": "Build, validate, deploy and debug Expanso data pipelines that run on your own edge nodes. Finds a proven job or recipe in the Expanso Skills catalog, writes the job spec, runs both validators, deploys with expanso-cli and confirms it actually executed.",
+  "author": {
+    "name": "Expanso",
+    "url": "https://expanso.io"
+  },
+  "homepage": "https://skills.expanso.io",
+  "repository": "https://github.com/expanso-io/skills.expanso.io",
+  "license": "MIT",
+  "keywords": [
+    "expanso",
+    "data-pipelines",
+    "edge-computing",
+    "bloblang",
+    "etl",
+    "observability"
+  ]
+}

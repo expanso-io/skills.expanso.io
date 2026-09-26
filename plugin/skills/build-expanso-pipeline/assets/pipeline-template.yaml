@@ -1,0 +1,53 @@
+# Expanso job: <name>
+# =====================
+#
+# WHAT IT DOES
+#   <one or two sentences>
+#
+# EDIT FOR YOUR ENVIRONMENT
+#   - selector label: which node runs this (label the node to match)
+#   - <paths, hosts, ports>
+#
+# SET ON THE NODE THAT RUNS THIS JOB (not on the deploying machine)
+#   - <ENV_VAR>: <what it is>, or "none"
+#
+# WHAT LEAVES THE HOST
+#   - <data> to <destination>, or "nothing"
+#
+# STATUS
+#   Validated with: <expanso-edge validate result, version>
+#   Executed: not yet. Validation is not execution.
+#
+# USE
+#   expanso-edge validate pipeline.yaml
+#   expanso-cli job validate pipeline.yaml --offline
+#   expanso-cli job deploy pipeline.yaml
+#   expanso-cli job describe <name>
+#   expanso-cli execution list --job-id <job-id>
+
+name: my-pipeline
+type: pipeline
+# Keep for a bounded input (a file read once, generate with count, sql_select).
+# Remove for a standing job so a transient failure restarts it.
+restart_policy: never
+selector:
+  match_labels:
+    pipeline_role: my_role    # underscores, not hyphens
+
+config:
+  input:
+    file:
+      paths: ["/var/tmp/my-pipeline/in/input.jsonl"]
+      scanner:
+        lines: {}
+
+  pipeline:
+    processors:
+      - mapping: |
+          root = this
+          root.processed_at = now()
+
+  output:
+    file:
+      path: "/var/tmp/my-pipeline/out/output.jsonl"
+      codec: lines

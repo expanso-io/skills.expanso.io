@@ -1,0 +1,19 @@
+{
+  "name": "expanso",
+  "owner": {
+    "name": "Expanso",
+    "url": "https://expanso.io"
+  },
+  "metadata": {
+    "description": "Expanso plugins for Claude: build, validate, deploy and debug data pipelines that run on your own edge nodes."
+  },
+  "plugins": [
+    {
+      "name": "expanso",
+      "source": "./plugin",
+      "description": "Build, validate, deploy and debug Expanso data pipelines that run on your own edge nodes.",
+      "category": "development",
+      "homepage": "https://skills.expanso.io"
+    }
+  ]
+}
