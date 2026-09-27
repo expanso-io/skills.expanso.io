@@ -82,6 +82,17 @@ record.
 
 Python runs through `uv`.
 
+## Claude plugin (`plugin/`)
+
+`plugin/` is the Claude plugin (skills and commands, Markdown only), listed by
+the root `.claude-plugin/marketplace.json`. Its skills restate the CLI contract
+above; change them together. `find-expanso-skill/references/proven-jobs.md` is
+generated from `skills/jobs/*/skill.yaml`: run `uv run -s scripts/build-plugin.py`
+after touching a job, and CI runs it with `--check`. Also run
+`claude plugin validate ./plugin`. Directory submission is manual, from
+claude.ai/directory/manage with plugin path `plugin`; raise `version` in
+`plugin/.claude-plugin/plugin.json` on every release.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

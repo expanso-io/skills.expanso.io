@@ -74,6 +74,14 @@ jobs:
             echo "⚠️  Audit script not found — skipping"
           fi
 
+      - name: Check Claude plugin (plugin/)
+        # Fails if plugin/skills/find-expanso-skill/references/proven-jobs.md
+        # drifts from skills/jobs/*/skill.yaml, or if the plugin breaks a
+        # directory pre-submission rule that can be checked offline.
+        run: |
+          pip install pyyaml
+          python3 scripts/build-plugin.py --check
+
       - name: Validate catalog
         run: |
           if [ -f catalog.json ]; then

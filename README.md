@@ -146,7 +146,23 @@ Validation and deployment both passing does **not** mean the pipeline ran. See
 reads `stdin`, which a Cloud-scheduled node cannot receive from your terminal.
 See [Providing input](#providing-input).
 
-### 4. Use with Claude Desktop
+### 4. Use with Claude (plugin)
+
+[`plugin/`](plugin/) is a Claude plugin that teaches Claude this workflow:
+find a proven job, write the job spec, run both validators, deploy, and confirm
+execution. It works in claude.ai, Cowork and Claude Code.
+
+```bash
+# Claude Code
+/plugin marketplace add expanso-io/skills.expanso.io
+/plugin install expanso@expanso
+```
+
+On claude.ai, add it from **Customize > Plugins > Add > Add marketplace** with
+this repository's URL. See [`plugin/README.md`](plugin/README.md) for what it
+does and what it sends.
+
+### 5. Use with Claude Desktop
 
 Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
