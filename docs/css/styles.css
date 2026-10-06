@@ -760,9 +760,9 @@ body {
     color: #c5c8c6;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    /* Wrap rather than scroll sideways. Matches .modal-code pre above and keeps
-       long YAML values and URLs inside the viewport at phone widths. */
-    white-space: pre-wrap;
+    /* Wrap YAML values, URLs, and preserved spaces at phone widths.
+       pre-wrap lets spaces hang past the edge of highlighted tokens. */
+    white-space: break-spaces;
     overflow-wrap: anywhere;
     word-break: break-word;
 }
@@ -780,7 +780,7 @@ body {
    so it applies to highlighted blocks too. */
 .code-block pre[class*="language-"],
 .code-block code[class*="language-"] {
-    white-space: pre-wrap;
+    white-space: break-spaces;
     overflow-wrap: anywhere;
     word-break: break-word;
 }

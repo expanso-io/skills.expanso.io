@@ -21,7 +21,7 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          let text = content().trim()
+          let text = content().string().trim()
           let length = env("LENGTH").or("100").number().or(100)
           let suffix = env("SUFFIX").or("...")
 

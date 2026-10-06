@@ -109,6 +109,15 @@ test('page and modal wrap at 320px without horizontal overflow', async ({ page }
   await expectNoHorizontalOverflow(page);
 });
 
+test('escaped YAML remains within the phone viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto('/skill/secrets-scan');
+  await page.getByRole('button', { name: 'Pipeline', exact: true }).click();
+  await expect(page.locator('#modal-content .code-block:visible code').first())
+    .toBeVisible();
+  await expectNoHorizontalOverflow(page);
+});
+
 test('retains deep links, spec and pipeline tabs, theme, and job proof', async ({
   page
 }) => {
