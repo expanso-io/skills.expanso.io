@@ -38,7 +38,7 @@ config:
                 root = this
                 root._table = "orders"
                 root._backup_type = "incremental"
-      
+
         # Inventory table (full backup - smaller table)
         - sql_select:
             driver: postgres
@@ -50,7 +50,7 @@ config:
                 root = this
                 root._table = "inventory"
                 root._backup_type = "full"
-      
+
         # Order line items
         - sql_select:
             driver: postgres

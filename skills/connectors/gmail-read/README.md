@@ -1,6 +1,6 @@
 # gmail-read
 
-Read emails from Gmail through Expanso Edge. Your OAuth tokens stay with the edge node that runs the pipeline — AI agents get clean email data without access to your credentials. The tokens and your requests are still sent to the Gmail API (Google), which is how the skill reads mail.
+Read message metadata and snippets from Gmail through Expanso Edge. Your OAuth tokens stay with the edge node that runs the pipeline — AI agents get clean email data without access to your credentials. The tokens and your requests are still sent to the Gmail API (Google), which is how the skill reads mail.
 
 ## Why Use This Instead of Direct Gmail API Access?
 
@@ -20,34 +20,11 @@ When an AI agent connects directly to Gmail, it gets your OAuth token — and wi
 expanso-edge validate pipeline-cli.yaml
 ```
 
-## Inputs
+## Inputs and outputs
 
-| Field | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `query` | string | no | `is:unread` | Gmail search query (same syntax as Gmail search bar) |
-| `label` | string | no | `INBOX` | Gmail label to read from |
-| `limit` | integer | no | 20 | Max emails to retrieve (1-100) |
-| `include_body` | boolean | no | true | Include email body content |
-
-## Outputs
-
-```json
-{
-  "emails": [
-    {
-      "id": "18d1234abcd",
-      "fetch_url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/18d1234abcd"
-    }
-  ],
-  "metadata": {
-    "skill": "gmail-read",
-    "query": "is:unread",
-    "trace_id": "abc123...",
-    "email_count": 10,
-    "timestamp": "2026-02-23T..."
-  }
-}
-```
+See [skill.yaml](skill.yaml) for declared inputs and credentials. The final
+mapping in [pipeline-cli.yaml](pipeline-cli.yaml) and
+[pipeline-mcp.yaml](pipeline-mcp.yaml) defines the response envelope.
 
 ## Composable Security
 
@@ -59,13 +36,9 @@ access-gate → gmail-read → pii-redact → data-fence → audit-log
 
 ## Credentials
 
-| Name | Required | Description |
-|------|----------|-------------|
-| `GMAIL_ACCESS_TOKEN` | Yes | Gmail OAuth2 access token |
-| `GMAIL_REFRESH_TOKEN` | No | For automatic token refresh |
-| `GMAIL_CLIENT_ID` | No | OAuth2 client ID |
-| `GMAIL_CLIENT_SECRET` | No | OAuth2 client secret |
-| `GMAIL_API_URL` | No | Override API URL (for testing) |
+Credential requirements are declared in [skill.yaml](skill.yaml). Credentials
+resolve on the executing node; see
+[the credential contract](../../../README.md#what-are-expanso-skills).
 
 ### Getting a Gmail Access Token
 

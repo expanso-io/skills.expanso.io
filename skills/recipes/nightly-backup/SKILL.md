@@ -19,12 +19,15 @@ Scheduled backup pipeline for database tables
 ## Quick Start
 
 ```bash
-# Run the pipeline with sample data
-./run.sh
-
-# Or run directly with Expanso CLI
+# Validate and submit the job to Expanso Cloud
 ./run.sh
 ```
+
+`run.sh` deploys the job; confirm assignment and output separately using
+[the execution checks](../../../README.md#confirm-it-actually-ran).
+Configure the profile, connected node, and input delivery as described in
+[Quick Start](../../../README.md#quick-start) and
+[Providing input](../../../README.md#providing-input).
 
 ## Pipeline
 

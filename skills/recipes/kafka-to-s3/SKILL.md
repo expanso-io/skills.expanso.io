@@ -20,7 +20,7 @@ Stream data from Kafka topics to S3 buckets with intelligent partitioning, batch
 
 ```bash
 # Configure environment
-export KAFKA_BROKERS=localhost:9092
+# Configure Kafka TLS/SASL on the executing node; see pipeline.yaml
 export AWS_ACCESS_KEY_ID=your-key
 export AWS_SECRET_ACCESS_KEY=your-secret
 export S3_BUCKET=your-bucket
@@ -28,6 +28,12 @@ export S3_BUCKET=your-bucket
 # Run the pipeline
 ./run.sh
 ```
+
+`run.sh` deploys the job; confirm assignment and output separately using
+[the execution checks](../../../README.md#confirm-it-actually-ran).
+Configure the profile, connected node, and input delivery as described in
+[Quick Start](../../../README.md#quick-start) and
+[Providing input](../../../README.md#providing-input).
 
 ## Pipeline
 

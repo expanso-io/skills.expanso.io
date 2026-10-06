@@ -77,10 +77,10 @@ config:
       # DataStage replacement: Lookup table / case statement
       - mapping: |
           root = this
-        
+
           # Map MCC codes to categories
           let mcc = this.MERCHANT_CATEGORY_CODE.string()
-        
+
           root.transaction_category = match $mcc {
             $mcc.has_prefix("54") => "GROCERY",
             $mcc.has_prefix("55") => "AUTOMOTIVE",
@@ -103,7 +103,7 @@ config:
           root.merchant_category_code = this.MERCHANT_CATEGORY_CODE
           root.source_system = this.SOURCE_SYSTEM
           root.created_at = this.CREATED_AT
-        
+
           # Carry forward transformed fields
           root.amount_usd = this.amount_usd
           root.original_amount = this.original_amount
@@ -112,14 +112,14 @@ config:
           root.account_number_pseudonym = this.account_number_pseudonym
           root.transaction_category = this.transaction_category
           root._lineage = this._lineage
-        
+
           # Add BigQuery partition field
           root._partition_date = this.TRANSACTION_DATE.string().ts_parse("2006-01-02T15:04:05Z07:00").ts_format("2006-01-02")
 
       # Step 6: Validate required fields before loading
       - mapping: |
-          root = if this.transaction_id == null || 
-                    this.customer_id == null || 
+          root = if this.transaction_id == null ||
+                    this.customer_id == null ||
                     this.amount_usd == null {
             throw("Missing required field for BigQuery load")
           } else {

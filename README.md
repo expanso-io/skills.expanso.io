@@ -508,8 +508,8 @@ This distinction matters more than any count, so it is stated first:
 
 | Command | Question it answers | Used by |
 |---|---|---|
-| `expanso-cli job validate --offline` | Is this a well-formed **job spec**? | the repository CI gate |
-| `expanso-edge validate` | Is the inner **pipeline config** valid? | `validation-report.json` |
+| `expanso-cli job validate --offline` | Is this a well-formed **job spec**? | CI and `validation-report.json` |
+| `expanso-edge validate` | Is the inner **pipeline config** valid? | CI and `validation-report.json` |
 
 The first does **not** check component configuration. The CI gate runs both and
 fails if either rejects any published pipeline. `validation-report.json` records
@@ -615,7 +615,6 @@ they are not duplicated in this prose -- see [Known issues](#known-issues).
 ```json
 {
   "version": "1.0.0",
-  "total_skills": 185,
   "categories": {
     "ai": {
       "description": "AI-powered skills...",
