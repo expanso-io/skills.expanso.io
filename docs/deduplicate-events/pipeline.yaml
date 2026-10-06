@@ -66,7 +66,13 @@ config:
                       let collision = error().has_prefix("key already exists: ")
                       root = this
                       root.is_duplicate = if $collision { true } else { null }
-                      root.error = if $collision { deleted() } else { error() }
+                      root.error = if $collision && this.error != null {
+                        this.error
+                      } else if $collision {
+                        deleted()
+                      } else {
+                        error()
+                      }
                       meta is_duplicate = if $collision { "true" } else { "" }
 
       - catch:

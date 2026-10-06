@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.value == null || this.total == null
+          root = if $missing {
+            throw("required input is missing: value, total")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let raw_value = this.value.or(content()).string().trim()
           let total_input = this.total
@@ -35,6 +42,11 @@ config:
           root.ratio = $ratio
           root.formatted = $percentage.string() + "%"
           root.metadata = {"skill": "percentage-calc", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

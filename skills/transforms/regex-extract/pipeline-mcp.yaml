@@ -23,6 +23,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.text == null || this.pattern == null
+          root = if $missing {
+            throw("required input is missing: text, pattern")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let text = this.text.or(content())
           let pattern = this.pattern.or("\\S+")
@@ -44,6 +51,11 @@ config:
           level: INFO
           message: |
             [regex-extract] Found ${! this.count } matches (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

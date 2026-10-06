@@ -10,6 +10,12 @@ config:
   pipeline:
     processors:
       - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let input = content().trim()
 
@@ -24,6 +30,11 @@ config:
           root.object_count = if $is_array { $parsed.length() } else { 1 }
           root.valid = true
           root.metadata = {"skill": "json-merge", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}

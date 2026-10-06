@@ -20,6 +20,12 @@ config:
   pipeline:
     processors:
       - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
+      - mapping: |
           meta input_hash = content().hash("sha256").encode("hex")
           meta trace_id = uuid_v4()
 
@@ -64,6 +70,11 @@ config:
           level: INFO
           message: |
             [speaker-diarize] Found ${! this.metadata.speaker_count } speakers, ${! this.metadata.segment_count } segments
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}

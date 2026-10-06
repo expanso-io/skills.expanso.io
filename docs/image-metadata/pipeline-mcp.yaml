@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.image_base64 == null
+          root = if $missing {
+            throw("required input is missing: image_base64")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let b64 = this.image_base64.or(content()).string().trim()
 
@@ -28,6 +35,11 @@ config:
           root.size_kb = ($size_bytes / 1024).floor()
           root.base64_length = $b64.length()
           root.metadata = {"skill": "image-metadata", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

@@ -1,10 +1,10 @@
 # pii-redact
 
-Redact personally identifiable information (PII) from text, replacing it with configurable placeholders.
+Redact personally identifiable information (PII) from text with a configurable redaction mask.
 
 ## Overview
 
-This skill uses AI to detect and redact PII from text. Unlike `pii-detect` which only identifies PII, this skill **transforms** the text by replacing sensitive information with placeholders.
+This skill uses AI to detect and redact PII from text. Unlike `pii-detect`, which only identifies PII, this skill transforms the text by replacing sensitive information with a selected redaction mask.
 
 ## Usage
 
@@ -33,7 +33,7 @@ expanso-edge validate pipeline-mcp.yaml
     "skill": "pii-redact",
     "mode": "cli",
     "model": "gpt-4o-mini",
-    "placeholder": "[REDACTED]",
+    "redaction_mask": "[REDACTED]",
     "trace_id": "abc123...",
     "timestamp": "2024-01-15T10:30:00Z"
   }
@@ -56,7 +56,7 @@ expanso-edge validate pipeline-mcp.yaml
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PLACEHOLDER` | `[REDACTED]` | Text to replace PII with |
+| `REDACTION_MASK` | `[REDACTED]` | Text to replace PII with |
 | `OPENAI_API_KEY` | - | Required for OpenAI backend |
 
 ## Use Cases

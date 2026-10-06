@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.width == null || this.height == null
+          root = if $missing {
+            throw("required input is missing: width, height")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let w = this.width.or(0).number()
           let h = this.height.or(0).number()
@@ -31,6 +38,11 @@ config:
           root.aspect_ratio = $ar
           root.orientation = if $w > $h { "landscape" } else if $h > $w { "portrait" } else { "square" }
           root.metadata = {"skill": "image-dimensions", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

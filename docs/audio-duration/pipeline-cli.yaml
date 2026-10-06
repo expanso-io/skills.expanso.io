@@ -10,6 +10,12 @@ config:
   pipeline:
     processors:
       - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let input = content().trim()
           let parsed = $input.parse_json().catch({"seconds": $input.number().catch(0)})
@@ -29,6 +35,11 @@ config:
           root.formatted = $h_str + ":" + $m_str + ":" + $s_str
           root.short = if $hours > 0 { $h_str + ":" + $m_str + ":" + $s_str } else { $m_str + ":" + $s_str }
           root.metadata = {"skill": "audio-duration", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}

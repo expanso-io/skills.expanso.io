@@ -313,7 +313,7 @@
 
         if (!skill) return;
 
-        if (!skipPush) history.pushState({ skill: skillName }, '', '/skill/' + skillName);
+        if (!skipPush) history.pushState({ skill: skillName }, '', '/skill/' + skillName + '/');
         updateMetaTags(skillName, skill);
 
         while (modalContent.firstChild) modalContent.removeChild(modalContent.firstChild);

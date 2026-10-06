@@ -23,6 +23,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.yaml == null
+          root = if $missing {
+            throw("required input is missing: yaml")
+          } else {
+            this
+          }
+      - mapping: |
           let yaml_content = this.yaml.or(content())
           meta input_hash = $yaml_content.hash("sha256").encode("hex")
           meta input_length = $yaml_content.length()
@@ -47,6 +54,11 @@ config:
           level: INFO
           message: |
             [yaml-validate] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

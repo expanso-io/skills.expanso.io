@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.dividend == null || this.divisor == null
+          root = if $missing {
+            throw("required input is missing: dividend, divisor")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let dividend = this.dividend.number().catch(0)
           let divisor = this.divisor.number().catch(1)
@@ -24,6 +31,11 @@ config:
           root.divisor = $divisor
           root.valid = $divisor != 0
           root.metadata = {"skill": "math-mod", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

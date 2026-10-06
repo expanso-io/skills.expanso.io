@@ -10,13 +10,20 @@ config:
   pipeline:
     processors:
       - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let input = content().trim()
+          let parsed = $input.parse_json().catch({})
 
           # Parse as "value/total" or "value of total" or JSON
           let parts = $input.split("/")
-          let value = if $parts.length() >= 1 { $parts.index(0).trim().number().catch(0) } else { 0 }
-          let total = if $parts.length() >= 2 { $parts.index(1).trim().number().catch(100) } else { 100 }
+          let value = if $parsed.value != null { $parsed.value.number().catch(0) } else if $parts.length() >= 1 { $parts.index(0).trim().number().catch(0) } else { 0 }
+          let total = if $parsed.total != null { $parsed.total.number().catch(100) } else if $parts.length() >= 2 { $parts.index(1).trim().number().catch(100) } else { 100 }
 
           let percentage = if $total > 0 { ($value / $total) * 100 } else { 0 }
           let ratio = if $total > 0 { $value / $total } else { 0 }
@@ -27,6 +34,11 @@ config:
           root.ratio = $ratio
           root.formatted = $percentage.string() + "%"
           root.metadata = {"skill": "percentage-calc", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}

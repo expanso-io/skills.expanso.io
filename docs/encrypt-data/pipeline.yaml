@@ -130,6 +130,11 @@ config:
             "pipeline": "field-encryption"
           }
 
+      # Any late transformation failure must remove the partially transformed
+      # message so an output can never observe remaining plaintext.
+      - catch:
+          - mapping: 'root = deleted()'
+
   output:
     stdout: {}
 

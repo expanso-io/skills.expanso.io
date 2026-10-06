@@ -23,6 +23,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.text == null
+          root = if $missing {
+            throw("required input is missing: text")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let text = this.text.or(content())
           let length = this.length.or(100).number().catch(100)
@@ -54,6 +61,11 @@ config:
           level: INFO
           message: |
             [text-truncate] ${! this.original_length } -> ${! this.final_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

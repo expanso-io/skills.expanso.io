@@ -4,13 +4,24 @@ tests:
   - name: "Current time"
     input: ""
     expected:
-      has_field: iso
-      has_field: unix
+      has_field: [iso, unix]
       metadata_has: [skill, trace_id, timestamp]
 
   - name: "Parse ISO date"
     input: "2024-01-15T10:30:00Z"
     expected:
-      has_field: iso
-      has_field: date
-      has_field: time
+      has_field: [iso, date, time]
+
+  - name: "Preserves fractional seconds"
+    input: "2024-01-15T10:30:00.123456789Z"
+    expected_output:
+      iso: "2024-01-15T10:30:00.123456789Z"
+      date: "2024-01-15"
+      time: "10:30:00"
+
+  - name: "Parses compact timezone offsets"
+    input: "2024-01-15T10:30:00+0530"
+    expected_output:
+      iso: "2024-01-15T10:30:00+05:30"
+      date: "2024-01-15"
+      time: "10:30:00"

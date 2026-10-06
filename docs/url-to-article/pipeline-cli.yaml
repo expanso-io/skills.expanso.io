@@ -18,6 +18,12 @@ config:
 
   pipeline:
     processors:
+      - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
       # 1. Prepare URL and trace metadata
       - mapping: |
           meta url = content().trim()
@@ -75,6 +81,11 @@ config:
           level: INFO
           message: |
             [url-to-article] Extracted ${! this.article.word_count } words from ${! meta("url") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}

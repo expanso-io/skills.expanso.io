@@ -19,6 +19,12 @@ config:
   pipeline:
     processors:
       - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           meta input_hash = content().hash("sha256").encode("hex")
           let cron = content().trim()
@@ -65,6 +71,11 @@ config:
           level: INFO
           message: |
             [cron-explain] Explained cron (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}

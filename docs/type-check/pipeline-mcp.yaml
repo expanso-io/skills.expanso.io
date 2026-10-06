@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.value == null
+          root = if $missing {
+            throw("required input is missing: value")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let input = this.value.or(content())
 
@@ -29,6 +36,11 @@ config:
           root.is_string = $type == "string"
           root.is_bool = $type == "bool"
           root.metadata = {"skill": "type-check", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

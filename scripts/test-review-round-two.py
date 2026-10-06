@@ -191,7 +191,27 @@ def main():
         failed_table = builder.build_table()
         failed_stripe = next(row for row in failed_table["examples"] if row["pipeline"] == str(stripe_path.relative_to(ROOT)))
         assert failed_stripe["status"] == "failing", failed_stripe
-        assert len(failed_table["pulled_examples"]) == 22
+        pulled_registry = {
+            str(pipeline.relative_to(ROOT))
+            for metadata in (ROOT / "skills").glob("*/*/skill.yaml")
+            if builder.load_yaml(metadata).get("publication", {}).get("status")
+            == "pulled"
+            for pipeline in metadata.parent.glob("pipeline*.yaml")
+            if pipeline.name in builder.PIPELINE_NAMES
+        }
+        pulled_ledger = {
+            row["pipeline"] for row in failed_table["pulled_examples"]
+        }
+        assert pulled_ledger == pulled_registry, {
+            "missing": sorted(pulled_registry - pulled_ledger),
+            "extra": sorted(pulled_ledger - pulled_registry),
+        }
+        pages_catalog = json.loads((ROOT / "docs/catalog.json").read_text())
+        for pipeline in pulled_registry:
+            path = Path(pipeline)
+            skill = path.parent.name
+            assert skill not in pages_catalog["skills"], skill
+            assert not (ROOT / "docs" / skill / path.name).exists(), pipeline
         gmail = next(row for row in failed_table["examples"] if row["pipeline"] == "skills/connectors/gmail-read/pipeline-cli.yaml")
         assert gmail["status"] == "failing" and gmail["criteria"]["runs"]["status"] == "failing", gmail
         assert gmail["criteria"]["runs"]["processor_regression"]["status"] == "pass", gmail

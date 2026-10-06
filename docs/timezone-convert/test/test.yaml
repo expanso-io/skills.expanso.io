@@ -1,7 +1,12 @@
 tests:
   - name: "Convert timezone"
-    input: '{"timezone": "UTC"}'
+    input: '{"timestamp": "2025-01-15T12:00:00Z", "timezone": "UTC"}'
     expected:
       has_field: converted
       has_field: timezone
       metadata_has: [skill, trace_id]
+    output_conditions:
+      - path: timezone
+        condition: "== UTC"
+      - path: original
+        condition: '== "2025-01-15T12:00:00Z"'

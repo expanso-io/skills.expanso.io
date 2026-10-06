@@ -23,6 +23,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.description == null
+          root = if $missing {
+            throw("required input is missing: description")
+          } else {
+            this
+          }
+      - mapping: |
           let description = this.description.or(content())
           let dialect = this.dialect.or("postgresql")
           let schema = this.schema.or("")
@@ -73,6 +80,11 @@ config:
           level: INFO
           message: |
             [sql-generate] Generated ${! meta("dialect") } query (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

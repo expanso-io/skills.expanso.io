@@ -10,6 +10,12 @@ config:
   pipeline:
     processors:
       - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           root.messages = [
             {"role": "system", "content": "You are a language detection expert. Respond with ONLY a JSON object containing: language (full name), code (ISO 639-1), confidence (0-1). Example: {\"language\": \"English\", \"code\": \"en\", \"confidence\": 0.95}"},
@@ -27,6 +33,11 @@ config:
           root.code = $response.code.or("xx")
           root.confidence = $response.confidence.or(0)
           root.metadata = {"skill": "language-detect", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}

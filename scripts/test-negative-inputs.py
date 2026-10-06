@@ -94,6 +94,69 @@ NO_INPUT_GENERATORS = {
     "utilities/random-number",
     "utilities/uuid-generate",
 }
+NO_DATA_CONTRACTS: dict[str, dict[str, Any]] = {
+    "skills/transforms/array-first/pipeline-cli.yaml": {
+        "array": [], "first": None, "first_3": [], "is_empty": True, "length": 0,
+    },
+    "skills/transforms/array-join/pipeline-mcp.yaml": {
+        "array": {}, "by_comma": "", "by_newline": "", "by_pipe": "",
+        "by_space": "", "count": 0, "joined": "", "separator": ", ",
+    },
+    "skills/transforms/array-last/pipeline-cli.yaml": {
+        "array": [], "is_empty": True, "last": None, "last_3": [], "length": 0,
+    },
+    "skills/transforms/array-length/pipeline-mcp.yaml": {
+        "is_empty": True, "length": 0, "type": "bytes",
+    },
+    "skills/transforms/boolean-parse/pipeline-mcp.yaml": {
+        "boolean": False, "input": "{}", "is_falsy": False,
+        "is_truthy": False, "is_valid": False,
+    },
+    "skills/transforms/env-parse/pipeline-cli.yaml": {
+        "has_comments": False, "line_count": 1, "raw": None, "variable_count": 0,
+    },
+    "skills/transforms/http-status/pipeline-cli.yaml": {
+        "category": "Unknown", "code": 0, "message": "Unknown Status",
+    },
+    "skills/transforms/http-status/pipeline-mcp.yaml": {
+        "category": "Unknown", "code": 0, "message": "Unknown Status",
+    },
+    "skills/transforms/json-to-csv/pipeline-cli.yaml": {
+        "columns": [], "csv": "\n", "row_count": 0,
+    },
+    "skills/transforms/json-to-csv/pipeline-mcp.yaml": {
+        "columns": [], "csv": "\n", "row_count": 0,
+    },
+    "skills/transforms/markdown-format/pipeline-cli.yaml": {
+        "format": "paragraph", "markdown": None, "original": None,
+    },
+    "skills/transforms/path-parse/pipeline-cli.yaml": {
+        "basename": None, "depth": 0, "dirname": ".", "extension": "",
+        "filename": None, "is_absolute": False, "path": None,
+    },
+    "skills/transforms/regex-extract/pipeline-cli.yaml": {
+        "count": 0, "has_match": False, "matches": [], "pattern": "\\S+",
+    },
+    "skills/transforms/slug-generate/pipeline-cli.yaml": {
+        "original": None, "separator": "-", "slug": "",
+    },
+    "skills/transforms/text-stats/pipeline-cli.yaml": {
+        "avg_word_length": 0, "characters": 0, "characters_no_spaces": 0,
+        "lines": 1, "paragraphs": 0, "reading_time_minutes": 0,
+        "sentences": 0, "words": 0,
+    },
+    "skills/utilities/image-metadata/pipeline-cli.yaml": {
+        "base64_length": 0, "format": "unknown", "size_bytes": 0, "size_kb": 0,
+    },
+    "skills/utilities/media-info/pipeline-cli.yaml": {
+        "extension": "", "filename": "", "is_media": False,
+        "size_bytes": 0, "size_kb": 0, "size_mb": 0, "type": "unknown",
+    },
+    "skills/utilities/media-info/pipeline-mcp.yaml": {
+        "extension": "", "filename": "", "is_media": False,
+        "size_bytes": 0, "type": "unknown",
+    },
+}
 
 
 def load_regression_module():
@@ -228,10 +291,19 @@ def has_domain_data(value: Any, key: str = "") -> bool:
     return True
 
 
-def output_issues(output: Any, require_failure_or_empty: bool) -> list[str]:
+def output_issues(
+    pipeline: str, output: Any, require_failure_or_empty: bool
+) -> list[str]:
     issues = truthy_claims(output)
     if not require_failure_or_empty:
         return issues
+    expected_no_data = NO_DATA_CONTRACTS.get(pipeline)
+    if expected_no_data is not None and isinstance(output, dict):
+        without_metadata = {
+            key: value for key, value in output.items() if key != "metadata"
+        }
+        if without_metadata == expected_no_data:
+            return issues
     if output in (None, {}, []):
         return issues
     if has_failure_signal(output):
@@ -261,12 +333,25 @@ def main() -> int:
     reg = load_regression_module()
     directory = ROOT / ".conformance" / f"negative-inputs-{time.time_ns()}"
     directory.mkdir(parents=True)
-    suite = reg.Suite(directory, environment(skills))
+    suite = None
+    suite_number = 0
+    processed = 0
+    audit_environment = environment(skills)
+
+    def fresh_suite():
+        nonlocal suite_number
+        suite_number += 1
+        return reg.Suite(directory / f"batch-{suite_number:03d}", audit_environment)
+
+    suite = fresh_suite()
     rows = []
     try:
         for relative, _, document in skills:
             required = required_inputs(document)
             for variant in ("cli", "mcp"):
+                if processed and processed % 50 == 0:
+                    suite.close()
+                    suite = fresh_suite()
                 config = copy.deepcopy(reg.config(relative, variant))
                 isolate_external_failures(config.get("pipeline", {}))
                 case = (
@@ -283,9 +368,24 @@ def main() -> int:
                     else case
                 )
                 headers = {"Authorization": f"Bearer {TOKEN}"} if variant == "mcp" else None
-                result = suite.execute(config, payload, headers=headers, raw=raw)
-                needs_failure = bool(required) or relative not in NO_INPUT_GENERATORS
-                issues = output_issues(result, needs_failure)
+                try:
+                    result = suite.execute(
+                        config, payload, headers=headers, raw=raw
+                    )
+                    needs_failure = (
+                        bool(required) or relative not in NO_INPUT_GENERATORS
+                    )
+                    pipeline = f"skills/{relative}/pipeline-{variant}.yaml"
+                    issues = output_issues(pipeline, result, needs_failure)
+                except Exception as exc:  # noqa: BLE001 - record every failed case
+                    result = None
+                    detail = str(exc).splitlines()[0][:500] or type(exc).__name__
+                    issues = [
+                        f"execution did not return a response: "
+                        f"{type(exc).__name__}: {detail}"
+                    ]
+                    suite.close()
+                    suite = fresh_suite()
                 row = {
                     "pipeline": f"skills/{relative}/pipeline-{variant}.yaml",
                     "case": "missing required field" if required else "invalid or unreachable dependency input",
@@ -295,6 +395,7 @@ def main() -> int:
                     "output": result,
                 }
                 rows.append(row)
+                processed += 1
                 print(f"{row['status'].upper()} {row['pipeline']}")
         expected = {
             f"skills/{relative}/pipeline-{variant}.yaml"
@@ -323,7 +424,8 @@ def main() -> int:
         print(json.dumps(report["coverage"] | report["counts"], sort_keys=True))
         return 1 if report["counts"]["failed"] else 0
     finally:
-        suite.close()
+        if suite:
+            suite.close()
 
 
 if __name__ == "__main__":

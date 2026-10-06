@@ -29,6 +29,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.image_url == null
+          root = if $missing {
+            throw("required input is missing: image_url")
+          } else {
+            this
+          }
+      - mapping: |
           let url = this.image_url.or("")
           let detail = this.detail.or("high")
 
@@ -88,6 +95,11 @@ config:
           level: INFO
           message: |
             [image-analyze] MCP request (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

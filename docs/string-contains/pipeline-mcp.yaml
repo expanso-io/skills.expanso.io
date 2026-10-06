@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.text == null || this.search == null
+          root = if $missing {
+            throw("required input is missing: text, search")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
 
           let text = this.text.or("")
@@ -32,6 +39,11 @@ config:
           root.starts_with = $starts_with
           root.ends_with = $ends_with
           root.metadata = {"skill": "string-contains", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

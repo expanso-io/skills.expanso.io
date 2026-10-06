@@ -19,6 +19,12 @@ config:
   pipeline:
     processors:
       - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
+      - mapping: |
           let trace_id = uuid_v4()
           let created_at = now()
           meta trace_id = $trace_id
@@ -55,6 +61,11 @@ config:
           level: INFO
           message: |
             [sign-envelope] Signed payload (hash: ${! this.envelope.hash.slice(0, 16) }..., trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}
