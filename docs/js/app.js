@@ -214,7 +214,7 @@
             if (copyBtn) {
                 var text = copyBtn.dataset.copy;
 
-                if (text) copyToClipboard(text, copyBtn);
+                copyToClipboard(text, copyBtn);
             }
         });
     }
@@ -327,20 +327,24 @@
         var hasCloudVariant = !!variantStatus(skillName, 'cloud');
         // Job skills publish their own job specs instead of the cli/mcp pair.
         var jobFiles = skill.job_specs || [];
+        var explorerJson = await fetchSkillFile(skillName, 'explorer.json', skill.category);
+        var explorers = explorerJson ? JSON.parse(explorerJson) : {};
+        var extraFiles = Object.keys(explorers).filter(function(file) {
+            return ['pipeline-cli.yaml', 'pipeline-mcp.yaml', 'pipeline-cloud.yaml'].indexOf(file) === -1;
+        });
 
         var results = await Promise.all([
             fetchSkillFile(skillName, 'skill.yaml', skill.category),
             jobFiles.length ? null : fetchSkillFile(skillName, 'pipeline-cli.yaml', skill.category),
             jobFiles.length ? null : fetchSkillFile(skillName, 'pipeline-mcp.yaml', skill.category),
             hasCloudVariant ? fetchSkillFile(skillName, 'pipeline-cloud.yaml', skill.category) : null
-        ].concat(jobFiles.map(function(f) { return fetchSkillFile(skillName, f, skill.category); })));
+        ].concat(extraFiles.map(function(f) { return fetchSkillFile(skillName, f, skill.category); })));
 
-        var jobSpecs = jobFiles.map(function(f, i) { return { file: f, yaml: results[4 + i] }; })
+        var jobSpecs = extraFiles.map(function(f, i) { return { file: f, yaml: results[4 + i], job: jobFiles.indexOf(f) !== -1 }; })
             .filter(function(j) { return !!j.yaml; });
 
         while (modalContent.firstChild) modalContent.removeChild(modalContent.firstChild);
-        var explorerJson = await fetchSkillFile(skillName, 'explorer.json', skill.category);
-        buildModalContent(skillName, skill, results[0], results[1], results[2], results[3], jobSpecs, explorerJson ? JSON.parse(explorerJson) : {});
+        buildModalContent(skillName, skill, results[0], results[1], results[2], results[3], jobSpecs, explorers);
 
         if (window.Prism) Prism.highlightAllUnder(modalContent);
     }
@@ -483,7 +487,7 @@
         var hasCli = !!pipelineCli;
         var hasMcp = !!pipelineMcp;
         var hasCloud = !!pipelineCloud;
-        var hasJob = jobSpecs.length > 0;
+        var hasJob = jobSpecs.some(function(j) { return j.job; });
 
         if (hasJob && skill.proof) {
             var proofDiv = document.createElement('div');
@@ -511,7 +515,7 @@
             pipelineContent.appendChild(proofDiv);
         }
 
-        if (!hasCli && !hasMcp && !hasCloud && !hasJob) {
+        if (!hasCli && !hasMcp && !hasCloud && !jobSpecs.length) {
             var noMsg = document.createElement('p');
             noMsg.className = 'no-content';
             noMsg.textContent = 'No pipeline available for this skill.';
@@ -527,13 +531,13 @@
                 var isQuery = j.file === 'pipeline-query.yaml';
                 pipeSubDefs.push({
                     id: isQuery ? 'query' : 'recipe',
-                    label: isQuery ? 'Search job' : 'Job spec',
+                    label: isQuery ? 'Search job' : (j.job ? 'Job spec' : 'Recipe Pipeline'),
                     yaml: j.yaml,
                     file: j.file,
-                    job: true,
+                    job: j.job,
                     desc: isQuery
                         ? 'Second job: answers questions from what the ingest job stored. Deploy it after the job spec has run.'
-                        : 'The job that was run, with only the values in its header comment changed. Set up its dependencies from README.md first.'
+                        : (j.job ? 'The job that was run, with only the values in its header comment changed. Set up its dependencies from README.md first.' : 'Complete recipe pipeline. Set up its dependencies from README.md first.')
                 });
             });
 

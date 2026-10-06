@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T16:56:34Z",
+  "generated": "2026-10-06T18:32:42Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -1095,7 +1095,7 @@
     },
     {
       "pipeline": "skills/ai/audio-transcribe/pipeline-mcp.yaml",
-      "sha256": "52d279d034922fe28dbd100827271635d86277083bc0a40ecd094822d5f64080",
+      "sha256": "f5fcf94e2262d1225242bd0a3c691006eba62d668bafef35b29a8c4781bdaddb",
       "category": "ai",
       "skill": "audio-transcribe",
       "variant": "mcp",
@@ -1175,7 +1175,7 @@
     },
     {
       "pipeline": "skills/ai/code-explain/pipeline-mcp.yaml",
-      "sha256": "8451be5959d400f6008de34d7b87b13f8161102d8ea399dcb44716f12205d5d6",
+      "sha256": "63e0d96312bd0c5bdb881542e8f2f090b20c29e0d67827a6c65824154b9710b4",
       "category": "ai",
       "skill": "code-explain",
       "variant": "mcp",
@@ -1255,7 +1255,7 @@
     },
     {
       "pipeline": "skills/ai/grammar-check/pipeline-mcp.yaml",
-      "sha256": "f4f4a4fdea1ba005dec549238278f8753313a43258f78786beba1675b852f3c3",
+      "sha256": "2d344978c2283c65bd23ae612b4d9f1ef3186e4fd4cf23cc0d345d78d566b9f7",
       "category": "ai",
       "skill": "grammar-check",
       "variant": "mcp",
@@ -1335,7 +1335,7 @@
     },
     {
       "pipeline": "skills/ai/image-alttext/pipeline-mcp.yaml",
-      "sha256": "856701f15db1e500345885759ea2f1fa732e464655f7432ae844678b4848c259",
+      "sha256": "e2feca88afbf1a7bbb7e1ea83c37e699a7d36b22be37808aeae44f30fc81474c",
       "category": "ai",
       "skill": "image-alttext",
       "variant": "mcp",
@@ -1415,7 +1415,7 @@
     },
     {
       "pipeline": "skills/ai/image-analyze/pipeline-mcp.yaml",
-      "sha256": "ba406821a358b0e5a7135f8e0b1533d9314c8d42e1eaabc03301f06c77d290d7",
+      "sha256": "7aa3f73d62ca66a032bae206c5f29d9c28b4c2a8a85796c352073c44ae19ee6f",
       "category": "ai",
       "skill": "image-analyze",
       "variant": "mcp",
@@ -1495,7 +1495,7 @@
     },
     {
       "pipeline": "skills/ai/image-caption/pipeline-mcp.yaml",
-      "sha256": "2b11902928affd5e5a2f68e8db2c79ce8b76c88b5b235d9d70461f5f2658805d",
+      "sha256": "86aa2ab58610bde055c48a564cc8283824cfd10796ce8dfcab7a6c0a1cc1b9c3",
       "category": "ai",
       "skill": "image-caption",
       "variant": "mcp",
@@ -1575,7 +1575,7 @@
     },
     {
       "pipeline": "skills/ai/image-describe/pipeline-mcp.yaml",
-      "sha256": "9ce273cd097388aece72a3b935f13b0a87e759eea3fd80d9099c3308a6ce0eb6",
+      "sha256": "ece538be240998619a169c9fc0edd479474a531f452239f4208121ed1ccf4238",
       "category": "ai",
       "skill": "image-describe",
       "variant": "mcp",
@@ -1655,7 +1655,7 @@
     },
     {
       "pipeline": "skills/ai/image-moderate/pipeline-mcp.yaml",
-      "sha256": "06c9e8fdd062393b18d616cb9e2b5a3a10eb1e02e62b38c9adc65e1f96816e04",
+      "sha256": "241eea0c9dea43ae6dc0df42bef26c59d83a7cd986658107b87e1d2d773b8888",
       "category": "ai",
       "skill": "image-moderate",
       "variant": "mcp",
@@ -1735,7 +1735,7 @@
     },
     {
       "pipeline": "skills/ai/json-extract/pipeline-mcp.yaml",
-      "sha256": "de02d6a47badd26925cf28ee2556fa72d44156ed6abdda81ac568f18b5b98d81",
+      "sha256": "969ccdad85a5d4c9285c66f4f0e71faf9d8f6df7bd8ca1846a026a69e493adc0",
       "category": "ai",
       "skill": "json-extract",
       "variant": "mcp",
@@ -1815,7 +1815,7 @@
     },
     {
       "pipeline": "skills/ai/keyword-extract/pipeline-mcp.yaml",
-      "sha256": "d4e58a2c689fcb732ed9ca726bf64d7b83b9423d4514ac07263ed4777d813b9e",
+      "sha256": "b937fe872211ae32cb256cc08ea23a89fb54ef71a37171eda3cea8ec4576cd63",
       "category": "ai",
       "skill": "keyword-extract",
       "variant": "mcp",
@@ -1895,7 +1895,7 @@
     },
     {
       "pipeline": "skills/ai/language-detect/pipeline-mcp.yaml",
-      "sha256": "8e83deae923c521f54f1580d3408d63d77460789e06bdb69e0d42ae2303614bc",
+      "sha256": "7d51a89a2d86ecde617d265cc504cc5a235fe1c3161a7003e27f836f8aa4f2fd",
       "category": "ai",
       "skill": "language-detect",
       "variant": "mcp",
@@ -1975,7 +1975,7 @@
     },
     {
       "pipeline": "skills/ai/meeting-notes/pipeline-mcp.yaml",
-      "sha256": "c11f696a3f2e5160c8545fb608790e620da1320bb6cf0bfe2c919244af30e246",
+      "sha256": "4ca143ea4075e4b6e4bf145a52e3281b8a93ab96aab30efb779a0dc0e37e82f5",
       "category": "ai",
       "skill": "meeting-notes",
       "variant": "mcp",
@@ -2055,7 +2055,7 @@
     },
     {
       "pipeline": "skills/ai/sentiment-score/pipeline-mcp.yaml",
-      "sha256": "9e8b81bae87d19cf83db78f45d6aec80e5021f2f55f685d281935ebd378d7299",
+      "sha256": "c723935b1d42882a16be590e0b61f0b14cbb592344e5e2bcc789a4bd4030c364",
       "category": "ai",
       "skill": "sentiment-score",
       "variant": "mcp",
@@ -2135,7 +2135,7 @@
     },
     {
       "pipeline": "skills/ai/speaker-diarize/pipeline-mcp.yaml",
-      "sha256": "3f9620205cd24bfc472b793d8529d04ef6a82a23e613d93e2e5a3bdcb75d0839",
+      "sha256": "d8acc4f4d01654c9cfcbbd4a0b8f3d530936260c2e0f1a20a5514514e9f68d5d",
       "category": "ai",
       "skill": "speaker-diarize",
       "variant": "mcp",
@@ -2215,7 +2215,7 @@
     },
     {
       "pipeline": "skills/ai/sql-generate/pipeline-mcp.yaml",
-      "sha256": "1df447a2ab0717c7c81aefd42f83db028d38f748c4a557035145cda48c244822",
+      "sha256": "bd3d4bc65e2ac14234fe4ad34f07801a6c54bb85e5476f1d5401883e240413cc",
       "category": "ai",
       "skill": "sql-generate",
       "variant": "mcp",
@@ -2295,7 +2295,7 @@
     },
     {
       "pipeline": "skills/ai/text-embed/pipeline-mcp.yaml",
-      "sha256": "8dacf51c3ca3f4bcb5ae9156b6d90c0364e2bde9752f96d684f0210ba572d799",
+      "sha256": "c7e506ea1c84404bd2f1a2603c8ea0ecc56eeb63a1bc9bff89589561d61f360e",
       "category": "ai",
       "skill": "text-embed",
       "variant": "mcp",
@@ -2375,7 +2375,7 @@
     },
     {
       "pipeline": "skills/ai/text-summarize/pipeline-mcp.yaml",
-      "sha256": "f02667869076f138293ea1a58224211434d04fdfc2b73df0649b1f9b1cb5f7ab",
+      "sha256": "a750d9eb45d3bed39ecdf10370cb3361905c7e67ac6cb13e3bd5b8f999d20f26",
       "category": "ai",
       "skill": "text-summarize",
       "variant": "mcp",
@@ -2455,7 +2455,7 @@
     },
     {
       "pipeline": "skills/ai/text-to-command/pipeline-mcp.yaml",
-      "sha256": "02fb532af12cd99bcdb586656ebdd860f0e4dadf08256334c46be5c32f0c53f6",
+      "sha256": "0cfb3149f528fd873fe06a76170fa71a44b4df4fd991131dd8437da5132b4e44",
       "category": "ai",
       "skill": "text-to-command",
       "variant": "mcp",
@@ -2535,7 +2535,7 @@
     },
     {
       "pipeline": "skills/ai/text-to-image/pipeline-mcp.yaml",
-      "sha256": "057be5ce7050b2f0e99410f0f5b5754c5e62fb3f3d8bffe914ec6529ce307ebd",
+      "sha256": "ff619bc29ce4b87b53faaf5e3d686eda7a211b1fde18b2085c9906858fbab1af",
       "category": "ai",
       "skill": "text-to-image",
       "variant": "mcp",
@@ -2615,7 +2615,7 @@
     },
     {
       "pipeline": "skills/ai/text-to-speech/pipeline-mcp.yaml",
-      "sha256": "b2b54aeba0e49fb14df29b8180f6097dfd737b03969ed8212d7040210e0ce87b",
+      "sha256": "9a8654c3ee42ebc5e909a6c7f8d35663e42c155388e9dd7a96f613cd23ff46d6",
       "category": "ai",
       "skill": "text-to-speech",
       "variant": "mcp",
@@ -2695,7 +2695,7 @@
     },
     {
       "pipeline": "skills/ai/text-translate/pipeline-mcp.yaml",
-      "sha256": "90694b185d0ee7c9498563e18c32b85b44cedf928a16b43c07201d44f728e754",
+      "sha256": "4ecefac9bfe4300e240c482c78f9a806fa584a96f0ca5c3596a5792a799ce662",
       "category": "ai",
       "skill": "text-translate",
       "variant": "mcp",
@@ -2775,7 +2775,7 @@
     },
     {
       "pipeline": "skills/ai/url-to-article/pipeline-mcp.yaml",
-      "sha256": "0d518f92bee435f7efab4f62413690fa54f586f8b0148a442193662f7182d3a8",
+      "sha256": "8c01f0037f0eb10669473f37823c96007ddf5c8726d657cbc55790ac9ddac600",
       "category": "ai",
       "skill": "url-to-article",
       "variant": "mcp",
@@ -2935,7 +2935,7 @@
     },
     {
       "pipeline": "skills/connectors/gmail-read/pipeline-mcp.yaml",
-      "sha256": "0ec80c3fbb6865a2b67d0648d2d7d97b52503819d395699e6220803f387432b3",
+      "sha256": "d5dd360054bfc68055000cb8d408cc66bec527ca53b955e0a8238a3ac004bbe6",
       "category": "connectors",
       "skill": "gmail-read",
       "variant": "mcp",
@@ -3015,7 +3015,7 @@
     },
     {
       "pipeline": "skills/connectors/slack-read/pipeline-mcp.yaml",
-      "sha256": "3e4e01fbf97bcf3c9eb9e5c7e3b1c775ace63c0c88a5a3868948db8ab08dba49",
+      "sha256": "b7f912f3e4f1d690bfa43e6e1ceb0ace400ace5d3554ddf0c2e017884c5b4ea2",
       "category": "connectors",
       "skill": "slack-read",
       "variant": "mcp",
@@ -3095,7 +3095,7 @@
     },
     {
       "pipeline": "skills/connectors/webhook-receive/pipeline-mcp.yaml",
-      "sha256": "7ef5964f45e151b28c3c4cbf4be7190e1f95d04e4e88c74545fbac95489a23d2",
+      "sha256": "c716660e710583ff0eb16f9716c27cef4927f03318a79fedfe9667b34591582f",
       "category": "connectors",
       "skill": "webhook-receive",
       "variant": "mcp",
@@ -4663,7 +4663,7 @@
     },
     {
       "pipeline": "skills/security/access-gate/pipeline-mcp.yaml",
-      "sha256": "9e8c835cf4e300299510453950883211af5d9c5bf1ba92e98e0640d197db2e55",
+      "sha256": "e6aa190e934de7e1f43e99340341052aad78971f70c8b37e818ee2ccb1bc0032",
       "category": "security",
       "skill": "access-gate",
       "variant": "mcp",
@@ -4743,7 +4743,7 @@
     },
     {
       "pipeline": "skills/security/audit-envelope/pipeline-mcp.yaml",
-      "sha256": "fa2d683cc456a8b81cd9f622d7051b39e56b3f68b60fff7e1df3713a5e02f9f0",
+      "sha256": "3814fe904b329ab6bb1ade0b5083d7512844dc8ff779317e5f141fe52e64274b",
       "category": "security",
       "skill": "audit-envelope",
       "variant": "mcp",
@@ -4823,7 +4823,7 @@
     },
     {
       "pipeline": "skills/security/cve-scan/pipeline-mcp.yaml",
-      "sha256": "58a847dffeb329f65b6f9086359bfaff13d334f51f99b2a85dc1ff7f30605a90",
+      "sha256": "4d2b77fb96079366085f31bd86aaef5c82d388a543bfc6316bc764fca464dea0",
       "category": "security",
       "skill": "cve-scan",
       "variant": "mcp",
@@ -4903,7 +4903,7 @@
     },
     {
       "pipeline": "skills/security/data-fence/pipeline-mcp.yaml",
-      "sha256": "e64bb4121280260c949baff367dfaffa91aeb5993791d04546ada8bf968502ce",
+      "sha256": "a4cf76eb486825794f827f0b0cf1e25c9ad1594202cde899a6aa1e84fa537330",
       "category": "security",
       "skill": "data-fence",
       "variant": "mcp",
@@ -4983,7 +4983,7 @@
     },
     {
       "pipeline": "skills/security/hash-digest/pipeline-mcp.yaml",
-      "sha256": "ad3090372c2dcfbfe52a60cba77a295c554b8756857e14971fa9d6522e6d68ec",
+      "sha256": "a36de9bb11d24d3641b746b87ff363ba8881545db4e983ef3743223bb0d42e62",
       "category": "security",
       "skill": "hash-digest",
       "variant": "mcp",
@@ -5135,7 +5135,7 @@
     },
     {
       "pipeline": "skills/security/log-sanitize/pipeline-mcp.yaml",
-      "sha256": "8c57cd1242bd33309f976b703063220b2582500aa50eb20afb5c23bfc50617bc",
+      "sha256": "c06068bb7d5057629461df32afc98e094a11c32f1ac576dcd11f1b1bd7c433d6",
       "category": "security",
       "skill": "log-sanitize",
       "variant": "mcp",
@@ -5215,7 +5215,7 @@
     },
     {
       "pipeline": "skills/security/password-generate/pipeline-mcp.yaml",
-      "sha256": "528b3f3df35b0ab02d408a2749651cff8c146136d2e0a0da4fa7ed6ea1f2256c",
+      "sha256": "4288d2656ee914a5574afb48ac92faaefe65c397704bc498d7fbf934de831789",
       "category": "security",
       "skill": "password-generate",
       "variant": "mcp",
@@ -5302,7 +5302,7 @@
     },
     {
       "pipeline": "skills/security/pii-detect/pipeline-mcp.yaml",
-      "sha256": "0a73ce06b472284de432cdbc67ae6aaa3838a5ad65766fde623f6f9312c7c1ef",
+      "sha256": "e07b7deafcdcd53d56dc3a0ce9ac73c3ca0fc629bfcb8f91bb85a0356d7f177e",
       "category": "security",
       "skill": "pii-detect",
       "variant": "mcp",
@@ -5314,14 +5314,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 6,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -5389,7 +5382,7 @@
     },
     {
       "pipeline": "skills/security/pii-redact/pipeline-mcp.yaml",
-      "sha256": "fbb74505be137b210891e5de574326a2bcb5aaf82fc82fdc0137029f08f98812",
+      "sha256": "9043ec4a153ae8c0d3eff798227dcd471d3849ec41cbd831a710338ed56ffd29",
       "category": "security",
       "skill": "pii-redact",
       "variant": "mcp",
@@ -5541,7 +5534,7 @@
     },
     {
       "pipeline": "skills/security/sbom-generate/pipeline-mcp.yaml",
-      "sha256": "963323913048dfdfc771e0671120a4ab7c8258721cd5db2b1757d66c2ef223bd",
+      "sha256": "d24cd8cb21bc80ae9d6ab454c41fc0e36f68935bd720287fcf707ea308cf9197",
       "category": "security",
       "skill": "sbom-generate",
       "variant": "mcp",
@@ -5628,7 +5621,7 @@
     },
     {
       "pipeline": "skills/security/secrets-scan/pipeline-mcp.yaml",
-      "sha256": "7caba3563f9c265eacb34a0cac6580400cc8be20636890f49471a4bf1ad9b230",
+      "sha256": "d4a5503310ad7dbf4a2ee6f2817951314a7a383881ec9a9fb49eee5d780907eb",
       "category": "security",
       "skill": "secrets-scan",
       "variant": "mcp",
@@ -5640,14 +5633,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 6,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -5715,7 +5701,7 @@
     },
     {
       "pipeline": "skills/security/sign-envelope/pipeline-mcp.yaml",
-      "sha256": "4a6fa228e127914503f98bbbf1d555ec70feaf87d87b137293dde302af4d8299",
+      "sha256": "7aab2dfc37c005effcae0271b26a7f2ed4784dfa203c7f0fd526faf1aebe96f1",
       "category": "security",
       "skill": "sign-envelope",
       "variant": "mcp",
@@ -5867,7 +5853,7 @@
     },
     {
       "pipeline": "skills/security/verify-signature/pipeline-mcp.yaml",
-      "sha256": "ca3b2d077c06537ef6d4fe415220800e541c0161b9cb4a99a27b457dc753f849",
+      "sha256": "90ab7c343b671b30d0a3ac96a902d899e3ac3a76dc9a68b7a7efdd2e4f16e96e",
       "category": "security",
       "skill": "verify-signature",
       "variant": "mcp",
@@ -5947,7 +5933,7 @@
     },
     {
       "pipeline": "skills/transforms/array-chunk/pipeline-mcp.yaml",
-      "sha256": "addedb9081ae7739190d20644dad838fe706760edc9606819093ed2946bfb35d",
+      "sha256": "9225f3855e6489077d7b057fb42ad5947d76bc73f7e6e84a7b9914b94bf2cfb3",
       "category": "transforms",
       "skill": "array-chunk",
       "variant": "mcp",
@@ -6027,7 +6013,7 @@
     },
     {
       "pipeline": "skills/transforms/array-filter/pipeline-mcp.yaml",
-      "sha256": "c05f79d8db785b7b00f19f7f2342f0420b77c1f956db6a9a2b2d9f2da919ded5",
+      "sha256": "650a146faa280ab72c134ef7d5eb72142d1a22af8bbbf1381d3cef2e285512f2",
       "category": "transforms",
       "skill": "array-filter",
       "variant": "mcp",
@@ -6107,7 +6093,7 @@
     },
     {
       "pipeline": "skills/transforms/array-find/pipeline-mcp.yaml",
-      "sha256": "d206282c60774e36cbbf27c78906a7d5ed1e5e470246393599da2472159dd97e",
+      "sha256": "eccb9aec7b9fe908004fc9a66dfbb14ccc61136b7e8243666ddc916d148cebea",
       "category": "transforms",
       "skill": "array-find",
       "variant": "mcp",
@@ -6187,7 +6173,7 @@
     },
     {
       "pipeline": "skills/transforms/array-first/pipeline-mcp.yaml",
-      "sha256": "e0d470e2b13be9d853066966c7741dd0cb88f8a04a1521c086da1c1d4b3c3a39",
+      "sha256": "368bad21deefda16fc0e0cbebe5debb065e8d55cd5c54f78b8484288f867d9d2",
       "category": "transforms",
       "skill": "array-first",
       "variant": "mcp",
@@ -6267,7 +6253,7 @@
     },
     {
       "pipeline": "skills/transforms/array-flatten/pipeline-mcp.yaml",
-      "sha256": "ed50303f84ff5de94d181eff78d31d795f611598fec889fdd9de94c7724bab18",
+      "sha256": "82360a4b31a09e65f8d7636a80bb45f1044858413780ff7f6a2cad55c439e0af",
       "category": "transforms",
       "skill": "array-flatten",
       "variant": "mcp",
@@ -6347,7 +6333,7 @@
     },
     {
       "pipeline": "skills/transforms/array-includes/pipeline-mcp.yaml",
-      "sha256": "5beaf7959a96456ffa4b65d59e029bfa842cbc1ec9e5fff7913c1a943108fbf7",
+      "sha256": "802b55f4ccb32c20dd7f57c937a6068ce68eaab1c40bacbf11fb44d8483aaa28",
       "category": "transforms",
       "skill": "array-includes",
       "variant": "mcp",
@@ -6427,7 +6413,7 @@
     },
     {
       "pipeline": "skills/transforms/array-join/pipeline-mcp.yaml",
-      "sha256": "caf3a1e6989216625c9747f509fb9c7622a77ce38c8f541fde17f1c6d3e9a76a",
+      "sha256": "fdae4eff8cd6647052cf178f6292204c140c56736c56247bd97c185ca7ffcfe5",
       "category": "transforms",
       "skill": "array-join",
       "variant": "mcp",
@@ -6507,7 +6493,7 @@
     },
     {
       "pipeline": "skills/transforms/array-last/pipeline-mcp.yaml",
-      "sha256": "df184f05e1a0ff0a1d9b3a3ceb273c90da98e8f2e8c4f85bba603395b66034a8",
+      "sha256": "68b60cfb3fe09ff23af12ff5b87be1b2ff967e4b1fc6ddd97db1f676bb4ae9b2",
       "category": "transforms",
       "skill": "array-last",
       "variant": "mcp",
@@ -6587,7 +6573,7 @@
     },
     {
       "pipeline": "skills/transforms/array-length/pipeline-mcp.yaml",
-      "sha256": "ece17b4941f449156b3eb6b7724997258e38b4bca6b5b4032a881fbac6b52454",
+      "sha256": "b67e26df131462e1cfe169414213ab74c84e4bf080bee9bbdde848984048f3be",
       "category": "transforms",
       "skill": "array-length",
       "variant": "mcp",
@@ -6667,7 +6653,7 @@
     },
     {
       "pipeline": "skills/transforms/array-map/pipeline-mcp.yaml",
-      "sha256": "08d7ff2daccf62f789a82b3c68269725fb75ae58daf98c293fa0dbd96a2188ca",
+      "sha256": "2eac34481945dba2877ce776a56245773d6b22412276dc5ba26cbfe6047f3847",
       "category": "transforms",
       "skill": "array-map",
       "variant": "mcp",
@@ -6747,7 +6733,7 @@
     },
     {
       "pipeline": "skills/transforms/array-reduce/pipeline-mcp.yaml",
-      "sha256": "016341a30084675e889c678129190b19cbf99ae51c61fec0e1a1f6198267bd99",
+      "sha256": "802411216f7af1983cd82d1dca62fcb45d07a7bb7d4c2f271ba6527ad4281322",
       "category": "transforms",
       "skill": "array-reduce",
       "variant": "mcp",
@@ -6827,7 +6813,7 @@
     },
     {
       "pipeline": "skills/transforms/array-reverse/pipeline-mcp.yaml",
-      "sha256": "9d4567c4f7bcfd6188001b4be115d170e44cf0f36e8876f46ac33094e20d5f2f",
+      "sha256": "1abe4690205cf8fbb2e34fd4448aeb658ede47e50d12639e78083469749f093f",
       "category": "transforms",
       "skill": "array-reverse",
       "variant": "mcp",
@@ -6907,7 +6893,7 @@
     },
     {
       "pipeline": "skills/transforms/array-slice/pipeline-mcp.yaml",
-      "sha256": "959a8db398e2f7bab48b9cb38e66b204e9e6c7f2ab3628a0ad61512f19f60725",
+      "sha256": "1f0cbcfe5f2d91c86d428cdc42f7a570bc89b1f23c2b98ff2c226443a225ff3f",
       "category": "transforms",
       "skill": "array-slice",
       "variant": "mcp",
@@ -6987,7 +6973,7 @@
     },
     {
       "pipeline": "skills/transforms/array-sort/pipeline-mcp.yaml",
-      "sha256": "c4ca10d093930bc1bd72f94e372aed98a9886f34ee1e517955f9c9a16917c1dd",
+      "sha256": "59358f0029c935efb7a4baad8547ee7f82d32d9441ddf4ad6414352160124d58",
       "category": "transforms",
       "skill": "array-sort",
       "variant": "mcp",
@@ -7067,7 +7053,7 @@
     },
     {
       "pipeline": "skills/transforms/array-unique/pipeline-mcp.yaml",
-      "sha256": "e18b0fdfaf6bc27a40917331aebbd1d00b806f7a6e3dc762a122fca0f02ea1eb",
+      "sha256": "3a40fd22501d9239b5ffecf2a1b0000996cca401de197bed135fe240678cedca",
       "category": "transforms",
       "skill": "array-unique",
       "variant": "mcp",
@@ -7147,7 +7133,7 @@
     },
     {
       "pipeline": "skills/transforms/base64-codec/pipeline-mcp.yaml",
-      "sha256": "06398a5b5b86b5d72a532dc3704bc3ccc590f43f2f453fc4bd747bcc929fef70",
+      "sha256": "e0d2655c784c630fab8d1ee4fb659ad5a4b71a537e2c19a248cf813a4b5345d2",
       "category": "transforms",
       "skill": "base64-codec",
       "variant": "mcp",
@@ -7227,7 +7213,7 @@
     },
     {
       "pipeline": "skills/transforms/binary-encode/pipeline-mcp.yaml",
-      "sha256": "5a7855915c409bebf01ee777de7938d9a3471463278114f64d748aca2f8129aa",
+      "sha256": "b5e0f7db0df6a71c4571f176038022e77a01595cc0520d20a76718065896b14c",
       "category": "transforms",
       "skill": "binary-encode",
       "variant": "mcp",
@@ -7307,7 +7293,7 @@
     },
     {
       "pipeline": "skills/transforms/boolean-parse/pipeline-mcp.yaml",
-      "sha256": "27c13f67f9400f1e3c47d0480c5c262a58d7b222f159be1b7bae05d239c8d49f",
+      "sha256": "1b62aaabe1e25398db51e82809ea2f74aa5aa4f447cdfe698a3844c7a99f1fb5",
       "category": "transforms",
       "skill": "boolean-parse",
       "variant": "mcp",
@@ -7387,7 +7373,7 @@
     },
     {
       "pipeline": "skills/transforms/color-convert/pipeline-mcp.yaml",
-      "sha256": "68230fb07ef501929741c7085fcaae321f3ef118c46ce78402df3c3261b1850d",
+      "sha256": "3bc785bd636c0943eb9cbf4e56966df33fd851c48ba96b50817b63630fa8ef88",
       "category": "transforms",
       "skill": "color-convert",
       "variant": "mcp",
@@ -7467,7 +7453,7 @@
     },
     {
       "pipeline": "skills/transforms/color-rgb/pipeline-mcp.yaml",
-      "sha256": "dab7ecc8d8f41d6b9cca9f3a1d9ab76ce233da2c882bccaec84e8f5fc2532f9b",
+      "sha256": "fa11a2f7d0fe8572e6b10c7876bcfab987e985b38a9abde781587fe10d9ca77a",
       "category": "transforms",
       "skill": "color-rgb",
       "variant": "mcp",
@@ -7547,7 +7533,7 @@
     },
     {
       "pipeline": "skills/transforms/cron-explain/pipeline-mcp.yaml",
-      "sha256": "75b3fe5cb0ececd5cf1f59dcd3214799487f904f556ecb4bcfd541eac9e384a5",
+      "sha256": "a1d6cc88d04e0a8713871204cf2b0a0942ee9119f52d21ca95cb9efa341646e8",
       "category": "transforms",
       "skill": "cron-explain",
       "variant": "mcp",
@@ -7627,7 +7613,7 @@
     },
     {
       "pipeline": "skills/transforms/csv-to-json/pipeline-mcp.yaml",
-      "sha256": "4d1b33a90a9cd83cb0506f24aa274d1bf9c26656bd83e51a8f3828afec5615d1",
+      "sha256": "f7919e63bb0590a77c68c57de8cc473106b02fb0ee75aada193b20159de123a4",
       "category": "transforms",
       "skill": "csv-to-json",
       "variant": "mcp",
@@ -7707,7 +7693,7 @@
     },
     {
       "pipeline": "skills/transforms/date-add/pipeline-mcp.yaml",
-      "sha256": "71203bbff428a5b48ad8bded3c9ff9adf999fd998996c5104e3e2bf651ffcecb",
+      "sha256": "d36959d83c1fd53e5de2ba97e9a58dfdc5b6fdbbc69f918f93e4486c47de62c0",
       "category": "transforms",
       "skill": "date-add",
       "variant": "mcp",
@@ -7787,7 +7773,7 @@
     },
     {
       "pipeline": "skills/transforms/date-diff/pipeline-mcp.yaml",
-      "sha256": "6525b77e3d02cdfe0a53a809353262e8973610193f3636196c2d1a0ca0ca2aa1",
+      "sha256": "0dbf3725c73fb5cc1b6487e9a31dde7fda314e08cb9c4a74c69ca211cb1be433",
       "category": "transforms",
       "skill": "date-diff",
       "variant": "mcp",
@@ -7867,7 +7853,7 @@
     },
     {
       "pipeline": "skills/transforms/date-format/pipeline-mcp.yaml",
-      "sha256": "7439995e706507ceb4d7e8e667fce9479cff9c6d200a7eaca76c52ac42307240",
+      "sha256": "a6d25886d0b55850844bef9538136fde873dc95eb62b00539886904105924ffc",
       "category": "transforms",
       "skill": "date-format",
       "variant": "mcp",
@@ -7947,7 +7933,7 @@
     },
     {
       "pipeline": "skills/transforms/date-now/pipeline-mcp.yaml",
-      "sha256": "beb3407a9a87e3e697897be531d345d361a6c7101ff79e8f0932c7444e78784f",
+      "sha256": "bd2d0d0f59f2343f99723b29455c2350c73baad15a06c77887f29efbca6bd003",
       "category": "transforms",
       "skill": "date-now",
       "variant": "mcp",
@@ -8027,7 +8013,7 @@
     },
     {
       "pipeline": "skills/transforms/duration-format/pipeline-mcp.yaml",
-      "sha256": "bfdb52cbac3c8049f06024082bada3113f5b21b525a3fcf25e201bf54eedcf6b",
+      "sha256": "496740ddc6c57d86125d16a8659f617d0156170f0d3cfe0f6b22565c4bfdae61",
       "category": "transforms",
       "skill": "duration-format",
       "variant": "mcp",
@@ -8107,7 +8093,7 @@
     },
     {
       "pipeline": "skills/transforms/emoji-strip/pipeline-mcp.yaml",
-      "sha256": "551ee511e1e1d86229c9f509b29278ee2fcca5c2c63ff4d28bfaf92af9ab6a14",
+      "sha256": "e8eac6cb0228e8744eff07eff84409a097dd892598709841f3bef8a521f1be74",
       "category": "transforms",
       "skill": "emoji-strip",
       "variant": "mcp",
@@ -8187,7 +8173,7 @@
     },
     {
       "pipeline": "skills/transforms/env-parse/pipeline-mcp.yaml",
-      "sha256": "4d1a4b6166f872738d9146f3dd140947713db7a3c6899c6be578ef5fe2c36ad2",
+      "sha256": "e7fbde296c2408333f9f193f6c7f1e5a26c5656b272817f5c8cd3b128cc39910",
       "category": "transforms",
       "skill": "env-parse",
       "variant": "mcp",
@@ -8267,7 +8253,7 @@
     },
     {
       "pipeline": "skills/transforms/file-size/pipeline-mcp.yaml",
-      "sha256": "ab7e2a78c4d7c439d5a13d8a9c5426b0f84196375dcf9c16f9047e8da47dc5fb",
+      "sha256": "92f41f8d5ae97de2c5675f75291beb6e1dd0083f872f6e22a1b51a43ad5438fe",
       "category": "transforms",
       "skill": "file-size",
       "variant": "mcp",
@@ -8347,7 +8333,7 @@
     },
     {
       "pipeline": "skills/transforms/hex-encode/pipeline-mcp.yaml",
-      "sha256": "70b197849080c6966a2c4b4b1b964c4c23fb7d27e2505ca0b5c006c74a37c7a2",
+      "sha256": "26f5d74dc5d91449c82365867f025a359b5427efc1599c9ddd49bcc121424fe2",
       "category": "transforms",
       "skill": "hex-encode",
       "variant": "mcp",
@@ -8427,7 +8413,7 @@
     },
     {
       "pipeline": "skills/transforms/html-strip/pipeline-mcp.yaml",
-      "sha256": "e905b14bbaee402af4f64a70c408e11bd553fc329716fc3530e4ec6f3cf301d4",
+      "sha256": "5698375d833311682f64d272b32c86577e9e6e4237d6b4b4576c2dc4af53b9a8",
       "category": "transforms",
       "skill": "html-strip",
       "variant": "mcp",
@@ -8507,7 +8493,7 @@
     },
     {
       "pipeline": "skills/transforms/http-status/pipeline-mcp.yaml",
-      "sha256": "e0d036a879bfb78c7ebefa43ad886c71309902dec3aed8519e9fe9d659bbd966",
+      "sha256": "c5b192d555df315de52205b9e6a823f4befb83ec376265f5eb8fccf3e0e62335",
       "category": "transforms",
       "skill": "http-status",
       "variant": "mcp",
@@ -8587,7 +8573,7 @@
     },
     {
       "pipeline": "skills/transforms/ip-parse/pipeline-mcp.yaml",
-      "sha256": "288230548ded4094ead2fb96c6a199a7e5bb4bb964893bfdbb16d80063fbb951",
+      "sha256": "2cde6d2199a6c11f6e2a7ba0c577421a7bc094f876f4bb4443c823d71f2f56a5",
       "category": "transforms",
       "skill": "ip-parse",
       "variant": "mcp",
@@ -8667,7 +8653,7 @@
     },
     {
       "pipeline": "skills/transforms/json-canonicalize/pipeline-mcp.yaml",
-      "sha256": "456bdf7593d4d5c55e35e85fe02e56766652fdd22b6d57a85e09d932d835c7ae",
+      "sha256": "178bbc0a18594919281a0b4566fe4db98b1b6d842c36da5e8fdad9903b6a9759",
       "category": "transforms",
       "skill": "json-canonicalize",
       "variant": "mcp",
@@ -8747,7 +8733,7 @@
     },
     {
       "pipeline": "skills/transforms/json-compact/pipeline-mcp.yaml",
-      "sha256": "9558fa9a26f6d943b1fa311f00704390b4ecd02b50d7ec821099dfc23264fed6",
+      "sha256": "df89c39b1682331c2588eefcdb95d1cd442b45a0f5160e7dd9152cd21c2a6504",
       "category": "transforms",
       "skill": "json-compact",
       "variant": "mcp",
@@ -8827,7 +8813,7 @@
     },
     {
       "pipeline": "skills/transforms/json-diff/pipeline-mcp.yaml",
-      "sha256": "d076c4a5cbad421b441a6faec5913e530feb45287b4d3a120eac735f3a87ec9a",
+      "sha256": "dae1ac93f9fb6be6da65260bf07ae3c0ee88a7c32f181f3dd4270d9f6441dfd1",
       "category": "transforms",
       "skill": "json-diff",
       "variant": "mcp",
@@ -8907,7 +8893,7 @@
     },
     {
       "pipeline": "skills/transforms/json-flatten/pipeline-mcp.yaml",
-      "sha256": "ea6a4431332f50bba0c62a2ddc6f55d89abcf1cfedfcde30c094c16743cc33cb",
+      "sha256": "b17b339bc2bc23774fb3b466172b56b2d3fb5442a3f5a583de6f02a10c77f6cd",
       "category": "transforms",
       "skill": "json-flatten",
       "variant": "mcp",
@@ -8987,7 +8973,7 @@
     },
     {
       "pipeline": "skills/transforms/json-merge/pipeline-mcp.yaml",
-      "sha256": "5c61a4015f56fd82d1dbb5858c3f0cf685718e191ce46117a4ae4113df7cb5fb",
+      "sha256": "888464b9b3859ed0ecefe5828607c593bdf03675b2ee3db5624ae9a55beaa86c",
       "category": "transforms",
       "skill": "json-merge",
       "variant": "mcp",
@@ -9104,7 +9090,7 @@
     },
     {
       "pipeline": "skills/transforms/json-pretty/pipeline-mcp.yaml",
-      "sha256": "8c35b980df406245152960d5ac9a32d1bbcbd97b977425bf83627449b8753800",
+      "sha256": "7bff973588db161d7e5bc5a2ac932f6f6902bc18f9507481b3c194e1662d4fb6",
       "category": "transforms",
       "skill": "json-pretty",
       "variant": "mcp",
@@ -9184,7 +9170,7 @@
     },
     {
       "pipeline": "skills/transforms/json-to-csv/pipeline-mcp.yaml",
-      "sha256": "75b270f71c40106b8fbbbd2579fc7e5465dd41334e42ad46d1b4872cacd90d2c",
+      "sha256": "bf68ab6b8ac94a64e46b7feb8d00ade82b6a0d63ee0f444fea7dc6131c580803",
       "category": "transforms",
       "skill": "json-to-csv",
       "variant": "mcp",
@@ -9264,7 +9250,7 @@
     },
     {
       "pipeline": "skills/transforms/json-to-yaml/pipeline-mcp.yaml",
-      "sha256": "59dc49751140ae76aac27c2e6b71585983f76756389d51f92fdc199431531a9a",
+      "sha256": "4aa1694a8e3209e2d6760efbec242e3a865d0ec6cb0f743fc49d6edb3bb81eea",
       "category": "transforms",
       "skill": "json-to-yaml",
       "variant": "mcp",
@@ -9344,7 +9330,7 @@
     },
     {
       "pipeline": "skills/transforms/json-validate/pipeline-mcp.yaml",
-      "sha256": "c4b85c599fb740903324c897edff51f714269f7a889dd1b9811168d72940eb8e",
+      "sha256": "8e58a3bd4223693cbe15fc8cc261652627f56649eda868119ae1b5c117aeb91f",
       "category": "transforms",
       "skill": "json-validate",
       "variant": "mcp",
@@ -9424,7 +9410,7 @@
     },
     {
       "pipeline": "skills/transforms/jwt-decode/pipeline-mcp.yaml",
-      "sha256": "67ea525f30079b0401e3c85c15e30d700f9cdf100dffb706dd6c3f1f2e2a7c34",
+      "sha256": "68da915a2ccc54ad138a8dd98c5d30cfa04c74cc8c537c611ca1178676275a55",
       "category": "transforms",
       "skill": "jwt-decode",
       "variant": "mcp",
@@ -9504,7 +9490,7 @@
     },
     {
       "pipeline": "skills/transforms/line-numbers/pipeline-mcp.yaml",
-      "sha256": "60e4612a02aebfbfba2d9357f3b2569c5567a656d496642058f4a399955cf39c",
+      "sha256": "129e8da9773b317429209b4b30f7d2849fbe688614a412532f19f2a97df66ed7",
       "category": "transforms",
       "skill": "line-numbers",
       "variant": "mcp",
@@ -9584,7 +9570,7 @@
     },
     {
       "pipeline": "skills/transforms/lorem-ipsum/pipeline-mcp.yaml",
-      "sha256": "6aaf2f04bfe5a81d2f1ba5f5e067f5fc8048f607bb11c9f1aac3ddbd69410b27",
+      "sha256": "d75fdbcf2305bf543af37e8c45f1d996a0ea16da3b00a6723b6c049e7e9d34e8",
       "category": "transforms",
       "skill": "lorem-ipsum",
       "variant": "mcp",
@@ -9664,7 +9650,7 @@
     },
     {
       "pipeline": "skills/transforms/markdown-format/pipeline-mcp.yaml",
-      "sha256": "41bad7902c925fbeef2dae38ee52f20bc3e49bd4762f099e709df21b7c4d15f4",
+      "sha256": "7c8bb6a0a908b173eafa9eef1a2eb2ffb1297aeb11ec3d8058c0d39bcac4ef9a",
       "category": "transforms",
       "skill": "markdown-format",
       "variant": "mcp",
@@ -9744,7 +9730,7 @@
     },
     {
       "pipeline": "skills/transforms/markdown-toc/pipeline-mcp.yaml",
-      "sha256": "cb12342f18c59250e7fb6165630f344ef4e284ac01101e54ae9da3c71c116d07",
+      "sha256": "fa25c93acab10b2c8f4db11f3419b2833773a96db70bd3c0d2cd81db6179a07a",
       "category": "transforms",
       "skill": "markdown-toc",
       "variant": "mcp",
@@ -9824,7 +9810,7 @@
     },
     {
       "pipeline": "skills/transforms/math-abs/pipeline-mcp.yaml",
-      "sha256": "44a69d7d7f1b0f5e8752a48539e36fdd4df3d609ecf172eb7929087925d6c9f5",
+      "sha256": "3b0e8faf408a6c59cde56df950ee4f325151262d8135394bedf863ce481efdc8",
       "category": "transforms",
       "skill": "math-abs",
       "variant": "mcp",
@@ -9904,7 +9890,7 @@
     },
     {
       "pipeline": "skills/transforms/math-ceil/pipeline-mcp.yaml",
-      "sha256": "c6fe38f0dd106ec7b479958ecb1a5e5225e28019d13f2152fb997e84aa8b8c11",
+      "sha256": "14c063f596124b48a9a233c47da8bae90fb2154463a8c1cc0859f1c1dbdce764",
       "category": "transforms",
       "skill": "math-ceil",
       "variant": "mcp",
@@ -9984,7 +9970,7 @@
     },
     {
       "pipeline": "skills/transforms/math-floor/pipeline-mcp.yaml",
-      "sha256": "e76e35cdad5aa968d19bbe0a26e17ca167eb1f85f48c40376f01d0c33799dac7",
+      "sha256": "2d1960b32a3e51ca1f09454b989ab017722b30484ab04911855bd1782e1b684a",
       "category": "transforms",
       "skill": "math-floor",
       "variant": "mcp",
@@ -10064,7 +10050,7 @@
     },
     {
       "pipeline": "skills/transforms/math-max/pipeline-mcp.yaml",
-      "sha256": "ff3ee4c852d0389df025a1633bbd588f7468f57eb04cf6278dd58e36c26a9687",
+      "sha256": "3fe534ae20652707590b0ca248189da1df2d149758f5367d1ca1bcfc11601548",
       "category": "transforms",
       "skill": "math-max",
       "variant": "mcp",
@@ -10144,7 +10130,7 @@
     },
     {
       "pipeline": "skills/transforms/math-min/pipeline-mcp.yaml",
-      "sha256": "30d3d21cede65a0d3ce2897a7d7039df397af0c32011517820faac21a5df6c20",
+      "sha256": "bbba5bfbc21a25a5b08510c4a509a71a9632836bb48aee362e4080f6b0041933",
       "category": "transforms",
       "skill": "math-min",
       "variant": "mcp",
@@ -10224,7 +10210,7 @@
     },
     {
       "pipeline": "skills/transforms/math-mod/pipeline-mcp.yaml",
-      "sha256": "59a0f2e14891432733da3104ba3b94bfca6a96e42a0400ee3173a6518eab3e24",
+      "sha256": "fa5cdc1c4e133f79ff64029b10dd2184d10e9e9065b71d8e4c6365487b355940",
       "category": "transforms",
       "skill": "math-mod",
       "variant": "mcp",
@@ -10304,7 +10290,7 @@
     },
     {
       "pipeline": "skills/transforms/math-pow/pipeline-mcp.yaml",
-      "sha256": "898f438eac793badb0ac75cb567c0e4ee02f3613ae7a4dd9fc13dbc7ffc5f576",
+      "sha256": "8447c8c4c3fd928456293b8b17f681726aae6f36668f4bb830f282ab95750366",
       "category": "transforms",
       "skill": "math-pow",
       "variant": "mcp",
@@ -10384,7 +10370,7 @@
     },
     {
       "pipeline": "skills/transforms/math-sqrt/pipeline-mcp.yaml",
-      "sha256": "d18da33bfa002baf9ce4f711213ddbc3bcc11641785cdddb8b308b5d7c38fbce",
+      "sha256": "90d21818889c6b9a941625b0027de3b0d6bdf2deb54b4d1ba385624085f0dca5",
       "category": "transforms",
       "skill": "math-sqrt",
       "variant": "mcp",
@@ -10464,7 +10450,7 @@
     },
     {
       "pipeline": "skills/transforms/number-format/pipeline-mcp.yaml",
-      "sha256": "c9c8b02d72caaca6a8a0bcd8408c73a1b6e180e221b86b578be5a23e81f911fc",
+      "sha256": "1c8e3d498861589b5b6c599562911852af74a06bde1f96dd4941837a0ce527c0",
       "category": "transforms",
       "skill": "number-format",
       "variant": "mcp",
@@ -10544,7 +10530,7 @@
     },
     {
       "pipeline": "skills/transforms/number-round/pipeline-mcp.yaml",
-      "sha256": "037aa557bee2c40d7662a26d1a20bc540263a6dbb4bf58f7c7c7611010ebd659",
+      "sha256": "9f893465977169cbcf9e6fcfc173de52f6df9926ebc4dee7e2c0915aa75b4fd7",
       "category": "transforms",
       "skill": "number-round",
       "variant": "mcp",
@@ -10624,7 +10610,7 @@
     },
     {
       "pipeline": "skills/transforms/object-keys/pipeline-mcp.yaml",
-      "sha256": "9921d9b8e4ca39ea984248e2d103d459e8ede785944120920dd4f329fd423a4c",
+      "sha256": "65ea0dfd1ee5b99241a42cae6dbeeba57fc0029022c5b8cffc6730f7198aa37d",
       "category": "transforms",
       "skill": "object-keys",
       "variant": "mcp",
@@ -10704,7 +10690,7 @@
     },
     {
       "pipeline": "skills/transforms/object-merge/pipeline-mcp.yaml",
-      "sha256": "51e45f62edeaa920eb28840b2d362d365fe3a0b7da29c7e5cb6aa3247de4bc02",
+      "sha256": "693e39dcf890fc8be5ad0703ff41ac6b4d7b28c4912751e056c4093549c3768c",
       "category": "transforms",
       "skill": "object-merge",
       "variant": "mcp",
@@ -10784,7 +10770,7 @@
     },
     {
       "pipeline": "skills/transforms/object-pick/pipeline-mcp.yaml",
-      "sha256": "3365ee029dd98ad037e2683a5304bfa53ad157095852a80630ace0380d3ab7c7",
+      "sha256": "69baf4ffab9e89fd90a8c8dd2b413099d2d8924197a92cd4c40215419aa74179",
       "category": "transforms",
       "skill": "object-pick",
       "variant": "mcp",
@@ -10864,7 +10850,7 @@
     },
     {
       "pipeline": "skills/transforms/object-values/pipeline-mcp.yaml",
-      "sha256": "aef66a3efb394bd6712f6d9ca7c9b2fb4ae710efd043a4fea1fda1dc15447aee",
+      "sha256": "fc26e28b06451245f273bf21bdde8aa488ffe0ac0e99cd469351fae3df32c6ea",
       "category": "transforms",
       "skill": "object-values",
       "variant": "mcp",
@@ -10944,7 +10930,7 @@
     },
     {
       "pipeline": "skills/transforms/path-parse/pipeline-mcp.yaml",
-      "sha256": "80b1e67cd529ef6d78d24851a4c6cf4a9edb6d58f9f600148196d726eb4832f5",
+      "sha256": "fee9666d2918a2604aca00b9b9404c58315366fc36227068fcb652be9fc2eaf2",
       "category": "transforms",
       "skill": "path-parse",
       "variant": "mcp",
@@ -11024,7 +11010,7 @@
     },
     {
       "pipeline": "skills/transforms/percentage-calc/pipeline-mcp.yaml",
-      "sha256": "ee310c02d3d8c5884d5504514027bce1480541f11678325535c04add5ff671c9",
+      "sha256": "2b06d4a57c2fda20b0580bf239bda6811f9a4ba2c75daf5d96f677e8d429d056",
       "category": "transforms",
       "skill": "percentage-calc",
       "variant": "mcp",
@@ -11104,7 +11090,7 @@
     },
     {
       "pipeline": "skills/transforms/query-string/pipeline-mcp.yaml",
-      "sha256": "0d536c84b559774417251bac10dc45207b7c8f1f79fd2e8d3e236021ae45c162",
+      "sha256": "496ebc8de4618df291a9837f0dcc2145cfce4033504fa5ca5cb23738c300c390",
       "category": "transforms",
       "skill": "query-string",
       "variant": "mcp",
@@ -11184,7 +11170,7 @@
     },
     {
       "pipeline": "skills/transforms/regex-extract/pipeline-mcp.yaml",
-      "sha256": "4e1b3af4c974281cd0e4e1aa31e450230b052ced6eb3155e82764c051ab55aa5",
+      "sha256": "5981834c8ab30c93c2de8ce8db947761009a387feb9a19a6185fbbc8f3ccaaa2",
       "category": "transforms",
       "skill": "regex-extract",
       "variant": "mcp",
@@ -11264,7 +11250,7 @@
     },
     {
       "pipeline": "skills/transforms/semver-parse/pipeline-mcp.yaml",
-      "sha256": "77c30a87128a585562ee2c7dd73749ea707f9c1ff14e8af104802a6d2e16e6ab",
+      "sha256": "5053470130ed54dfa6fce5673bb9ccd921154c72178de7554f215a928af3b137",
       "category": "transforms",
       "skill": "semver-parse",
       "variant": "mcp",
@@ -11344,7 +11330,7 @@
     },
     {
       "pipeline": "skills/transforms/slug-generate/pipeline-mcp.yaml",
-      "sha256": "c23b6584a4785412a09ce85a42013a79f2e738ea1787217500aefda3d53cbe18",
+      "sha256": "7278903f3b14b5e85161c294761576407ea163f611a01e128554e26cee41c67a",
       "category": "transforms",
       "skill": "slug-generate",
       "variant": "mcp",
@@ -11424,7 +11410,7 @@
     },
     {
       "pipeline": "skills/transforms/string-case/pipeline-mcp.yaml",
-      "sha256": "dfa72dfb2d09a44b1e7a43c3db72b3a6ab6a430cd2eff91a46bc931de1ba5886",
+      "sha256": "a7e03e7e92ac10fa3519ef9a9b8b675893d209516653201ee291a606ebd64704",
       "category": "transforms",
       "skill": "string-case",
       "variant": "mcp",
@@ -11504,7 +11490,7 @@
     },
     {
       "pipeline": "skills/transforms/string-contains/pipeline-mcp.yaml",
-      "sha256": "827d87b4954bedc488ed0b468b10c0bcb168e30d11484a0dff407162f0c6d5f9",
+      "sha256": "b63d515a7d580580f082b1c3b61d20a4eb08773117366568b9900124ca907aba",
       "category": "transforms",
       "skill": "string-contains",
       "variant": "mcp",
@@ -11584,7 +11570,7 @@
     },
     {
       "pipeline": "skills/transforms/string-ends-with/pipeline-mcp.yaml",
-      "sha256": "414d3d217792e956220f78c7f0caa241dd4a0fe917a7019ee554c957e9c2ba8f",
+      "sha256": "e57c4a8982f85400dfd03ffa289d8295d9895d57ac85d6d5de5c19bf77980bfd",
       "category": "transforms",
       "skill": "string-ends-with",
       "variant": "mcp",
@@ -11664,7 +11650,7 @@
     },
     {
       "pipeline": "skills/transforms/string-pad/pipeline-mcp.yaml",
-      "sha256": "d55729edd95d0c4a5107d856708a2db106398d52c07a82510083619dd8b40738",
+      "sha256": "2d310b5a7930875f38d49220be4d3fb62dee4c96a64e489ba43a164be62f456e",
       "category": "transforms",
       "skill": "string-pad",
       "variant": "mcp",
@@ -11744,7 +11730,7 @@
     },
     {
       "pipeline": "skills/transforms/string-repeat/pipeline-mcp.yaml",
-      "sha256": "e77ad76b218c4d6720f36ec5ccea22ae8557cc161597ebe0c6bd17b8efdaa934",
+      "sha256": "af0dff25c337395da3d0a38b187a9a1c551deb5f8d20553af5ee1c91b8839341",
       "category": "transforms",
       "skill": "string-repeat",
       "variant": "mcp",
@@ -11824,7 +11810,7 @@
     },
     {
       "pipeline": "skills/transforms/string-replace/pipeline-mcp.yaml",
-      "sha256": "4f7cd06375afc10c437cb83df89d8a297c4f0a2176c125e504ce81f6ae204622",
+      "sha256": "de434420e55abe47442363f3c73948b8ea60eceadfb1f7b5f2c09165a219d4c8",
       "category": "transforms",
       "skill": "string-replace",
       "variant": "mcp",
@@ -11904,7 +11890,7 @@
     },
     {
       "pipeline": "skills/transforms/string-reverse/pipeline-mcp.yaml",
-      "sha256": "e62e32d2637f567d701209c944589f747f87484bc6c47348246a297a733f1c97",
+      "sha256": "efc3878fd467a4ebfb9cebb0939ee620bcdff1fd82878c2d2608a46867625118",
       "category": "transforms",
       "skill": "string-reverse",
       "variant": "mcp",
@@ -11984,7 +11970,7 @@
     },
     {
       "pipeline": "skills/transforms/string-split/pipeline-mcp.yaml",
-      "sha256": "e61352e61290687c2f84024d19abafd96364ca90e53b86fa320557c5429462a0",
+      "sha256": "2b677069cf790715841d699ffa05f813e93faabcb2d2750de58a114e40b303c1",
       "category": "transforms",
       "skill": "string-split",
       "variant": "mcp",
@@ -12064,7 +12050,7 @@
     },
     {
       "pipeline": "skills/transforms/string-starts-with/pipeline-mcp.yaml",
-      "sha256": "7a8660e7bd81ab892dcbb134987b29789a0ade3d03d9ab9cff32f010953d850e",
+      "sha256": "81709b432ca2b23706db0abccefc5271dcc3419e5c475ca08a24e6cdec3c3b00",
       "category": "transforms",
       "skill": "string-starts-with",
       "variant": "mcp",
@@ -12144,7 +12130,7 @@
     },
     {
       "pipeline": "skills/transforms/string-trim/pipeline-mcp.yaml",
-      "sha256": "38e2726601db48879e5a577aaa8912777c0b952889c603260547b8b80d9a87a5",
+      "sha256": "fa041fdd29f81a2b2ac8b86da6abf440e6ddb46966bdc2e862075eef6df94e7f",
       "category": "transforms",
       "skill": "string-trim",
       "variant": "mcp",
@@ -12224,7 +12210,7 @@
     },
     {
       "pipeline": "skills/transforms/text-analyze/pipeline-mcp.yaml",
-      "sha256": "14a25bef7af4bd21912252705c423a9f3d15cd16cf1424492e2eb2a73320c2c4",
+      "sha256": "881f33c4b42bfbc30a2f7995b2b3d941e72aaca881bf4281cc10ce4c03f2c4f7",
       "category": "transforms",
       "skill": "text-analyze",
       "variant": "mcp",
@@ -12304,7 +12290,7 @@
     },
     {
       "pipeline": "skills/transforms/text-capitalize/pipeline-mcp.yaml",
-      "sha256": "1e8f7fcded603730987871ab0210fcd42be1012fcab67b6522819b87d104279b",
+      "sha256": "76ea4eb7083c334ec60c82d0e9a5fc9524f8ac8d5f9dc6f6bcac15efa30f7f7c",
       "category": "transforms",
       "skill": "text-capitalize",
       "variant": "mcp",
@@ -12384,7 +12370,7 @@
     },
     {
       "pipeline": "skills/transforms/text-diff/pipeline-mcp.yaml",
-      "sha256": "06c9fc459f926be4cec70def6f03b7e90cd045ac55170bd62744491f71bd2e6c",
+      "sha256": "395fbd09d3ff44b6af463c5999f43478f2064e1609869ee9fc4e102d5b86d5e4",
       "category": "transforms",
       "skill": "text-diff",
       "variant": "mcp",
@@ -12464,7 +12450,7 @@
     },
     {
       "pipeline": "skills/transforms/text-escape/pipeline-mcp.yaml",
-      "sha256": "a3ae32657180694ef3ddb76eea3c03d8ea18c2e3a418d169bbb534120bd5005b",
+      "sha256": "1fe5ea6ccb8eb8f0ca858f59e4311af2054b10bea6c27036a4627e106a90d586",
       "category": "transforms",
       "skill": "text-escape",
       "variant": "mcp",
@@ -12544,7 +12530,7 @@
     },
     {
       "pipeline": "skills/transforms/text-format/pipeline-mcp.yaml",
-      "sha256": "e737062b6beda881103223e3b0b9a7a6fbcdd4b76697b7436f95d63d052dc2e4",
+      "sha256": "6731945dcb865b65af3eb9dbb2e1524fce0f943f3a15381b75597054a3d67a3f",
       "category": "transforms",
       "skill": "text-format",
       "variant": "mcp",
@@ -12624,7 +12610,7 @@
     },
     {
       "pipeline": "skills/transforms/text-indent/pipeline-mcp.yaml",
-      "sha256": "61e71cdd10cc33436f77cfc235427dea68ecff3d9db94cc77adb723b82d00299",
+      "sha256": "c7926b66959a0629f0a9b9acf808e512f9e4c8d7237c13f78d9a78004f56d820",
       "category": "transforms",
       "skill": "text-indent",
       "variant": "mcp",
@@ -12704,7 +12690,7 @@
     },
     {
       "pipeline": "skills/transforms/text-lines/pipeline-mcp.yaml",
-      "sha256": "7824f48b4b20d3513f40a68a3182f90c55e31206bd5128a118f83c9774cd782f",
+      "sha256": "403952a115450e5ae295b4024e5d43260d9f3bebc47e5df5c5aaf3c08efa9d1a",
       "category": "transforms",
       "skill": "text-lines",
       "variant": "mcp",
@@ -12784,7 +12770,7 @@
     },
     {
       "pipeline": "skills/transforms/text-reverse/pipeline-mcp.yaml",
-      "sha256": "6736ef18cf3fcb4250d3526b385c06121bb777d3a3b6222da8f888549576d670",
+      "sha256": "36d03a01cd986a45834acefac1e859d3c144ea63a85720e49d0088abab21ad6d",
       "category": "transforms",
       "skill": "text-reverse",
       "variant": "mcp",
@@ -12864,7 +12850,7 @@
     },
     {
       "pipeline": "skills/transforms/text-stats/pipeline-mcp.yaml",
-      "sha256": "def9303bb73ce158bedd16649be3b32991becf7c484d8fc7c6e544dafbc32f13",
+      "sha256": "1efc88551c2e4d3d365af2a109f3dd4cfccdf90c8ae6dee1281e8f6242881543",
       "category": "transforms",
       "skill": "text-stats",
       "variant": "mcp",
@@ -12944,7 +12930,7 @@
     },
     {
       "pipeline": "skills/transforms/text-truncate/pipeline-mcp.yaml",
-      "sha256": "6af23911d802cf7a54bdc5c9556d90ea244e9897f446caf4ebae4423660e81b6",
+      "sha256": "b66a45944bae3a59e00643d1a0f5a508864951d8e417a3b701bb85217e8a7e01",
       "category": "transforms",
       "skill": "text-truncate",
       "variant": "mcp",
@@ -13024,7 +13010,7 @@
     },
     {
       "pipeline": "skills/transforms/text-wrap/pipeline-mcp.yaml",
-      "sha256": "daa8466cb216d81265a45317fc758a9c35dabd27ee2ad9a654f2b7c4a2234db9",
+      "sha256": "ee067939135cdcd8f865d86c002cc64b3d23ca358f09a058088470b9093acf28",
       "category": "transforms",
       "skill": "text-wrap",
       "variant": "mcp",
@@ -13104,7 +13090,7 @@
     },
     {
       "pipeline": "skills/transforms/time-parse/pipeline-mcp.yaml",
-      "sha256": "35d123998f5942b48711ef9e61519ace5a8a3c1b76a161357f551f2df0407e77",
+      "sha256": "e99115e066b0ca2f5174e7e7fe07d50a88885dc47a24cd9a42dbc70f8f163144",
       "category": "transforms",
       "skill": "time-parse",
       "variant": "mcp",
@@ -13184,7 +13170,7 @@
     },
     {
       "pipeline": "skills/transforms/timestamp-parse/pipeline-mcp.yaml",
-      "sha256": "664a6314ec618d754e7a093698dedd52d6994454360d9f5c40086cdd21f876a7",
+      "sha256": "468ac4fa95fcaa7ec2ca3f4cf9232e5c35f1a168995f88b90224c730c1b623d0",
       "category": "transforms",
       "skill": "timestamp-parse",
       "variant": "mcp",
@@ -13264,7 +13250,7 @@
     },
     {
       "pipeline": "skills/transforms/timezone-convert/pipeline-mcp.yaml",
-      "sha256": "09505d132290cc1b6b86b304b35b96d506f89d776bc003af5b296a26a9a69272",
+      "sha256": "fba688d7c9e108336b826246225fc1a6797403d575c6c45dfebb027fd00082e8",
       "category": "transforms",
       "skill": "timezone-convert",
       "variant": "mcp",
@@ -13344,7 +13330,7 @@
     },
     {
       "pipeline": "skills/transforms/type-check/pipeline-mcp.yaml",
-      "sha256": "f485eb0b144afb9f2ad027676e02f171907c7d4529a1327b485b462b86a248f7",
+      "sha256": "32f9c848e66ef26163d2601f103369d9186e2de87aec67ebf6b9c5842483477f",
       "category": "transforms",
       "skill": "type-check",
       "variant": "mcp",
@@ -13424,7 +13410,7 @@
     },
     {
       "pipeline": "skills/transforms/url-encode/pipeline-mcp.yaml",
-      "sha256": "b2c604be085e9428a24f13b206dec72f509540726692f80d03791d5b7c28313e",
+      "sha256": "d5882c9f7cb2726ab5148983d1b6ad733b2c1dcb88b019ac76bb98ab71684104",
       "category": "transforms",
       "skill": "url-encode",
       "variant": "mcp",
@@ -13504,7 +13490,7 @@
     },
     {
       "pipeline": "skills/transforms/url-parse/pipeline-mcp.yaml",
-      "sha256": "d26140e0c5fb5513288e8ecd33184229bcf3b0d288ee38ccd10f6481f53b66bb",
+      "sha256": "b3b87b8cc93709e9b7c781858939ed773fe0189c9b150e8ad37e25a84ebda312",
       "category": "transforms",
       "skill": "url-parse",
       "variant": "mcp",
@@ -13584,7 +13570,7 @@
     },
     {
       "pipeline": "skills/transforms/whitespace-normalize/pipeline-mcp.yaml",
-      "sha256": "5e01f4f36757de833a52359d379cde27ea9bb6b5a978a4d2258ff653aca0ee03",
+      "sha256": "a9abe98b9744eddf1f8a79c0ea719b791fc804778f104a82c42c04a5720311ae",
       "category": "transforms",
       "skill": "whitespace-normalize",
       "variant": "mcp",
@@ -13664,7 +13650,7 @@
     },
     {
       "pipeline": "skills/transforms/word-count/pipeline-mcp.yaml",
-      "sha256": "755ecb9fe3fc3c54e8d741cde8d9cd6d66533e9f677c798c7e6518bbc4b094d7",
+      "sha256": "50829c4fd718982c1bc23bc46d5ea9a54177a877f4e2637bd7b0d0ba54fa8db4",
       "category": "transforms",
       "skill": "word-count",
       "variant": "mcp",
@@ -13744,7 +13730,7 @@
     },
     {
       "pipeline": "skills/transforms/xml-to-json/pipeline-mcp.yaml",
-      "sha256": "9cfc0094bbd4ece601344db161a92e0b6295f6873cd81debf339eaa66f4b916d",
+      "sha256": "6d55ef4684a342298501fac939195a57cb448479803727c0b3c2c840ee529b17",
       "category": "transforms",
       "skill": "xml-to-json",
       "variant": "mcp",
@@ -13824,7 +13810,7 @@
     },
     {
       "pipeline": "skills/transforms/yaml-to-json/pipeline-mcp.yaml",
-      "sha256": "4567f4631e3c9740afc0621f17f275f7dcacd6dab376641538ddadaad81b8444",
+      "sha256": "5baa11f4e22657a9f366b64b43433dc499dcf84da25d98ebe2386a5ef6d91978",
       "category": "transforms",
       "skill": "yaml-to-json",
       "variant": "mcp",
@@ -13904,7 +13890,7 @@
     },
     {
       "pipeline": "skills/transforms/yaml-validate/pipeline-mcp.yaml",
-      "sha256": "ca0e74c07b5db839a9bb74cc76b96f57ec31a3b250885dab8a7088c7fb96588f",
+      "sha256": "233cc3f1ae0e1accab9d3dc984479c96b7e8c262c8eda9752e60187055cf123c",
       "category": "transforms",
       "skill": "yaml-validate",
       "variant": "mcp",
@@ -13984,7 +13970,7 @@
     },
     {
       "pipeline": "skills/utilities/audio-duration/pipeline-mcp.yaml",
-      "sha256": "0342c4e4ecf94927da788dedf3550dd4897e938c64881009e82f6625c2762e41",
+      "sha256": "3298bf2696e865fc274624058cb80683a6b8597f6736035d91a28678ae42a307",
       "category": "utilities",
       "skill": "audio-duration",
       "variant": "mcp",
@@ -14064,7 +14050,7 @@
     },
     {
       "pipeline": "skills/utilities/config-normalize/pipeline-mcp.yaml",
-      "sha256": "3b1e274fe46cea049c65a101237a74f193d10f4b683cf90874fe39b62e6a1752",
+      "sha256": "f3160980f3627fd0a81b17b8a993002e859cbfac0b12fddfc5fcc057d5a6aad7",
       "category": "utilities",
       "skill": "config-normalize",
       "variant": "mcp",
@@ -14216,7 +14202,7 @@
     },
     {
       "pipeline": "skills/utilities/email-validate/pipeline-mcp.yaml",
-      "sha256": "297d6303b8535de78e2e944fad19dc17b7504385ea5cdcb36bfcdc7e2f8c2cd6",
+      "sha256": "ef99670187b8eec729f34bb1adada96655da69204fe2167cc32c1129b79775db",
       "category": "utilities",
       "skill": "email-validate",
       "variant": "mcp",
@@ -14303,7 +14289,7 @@
     },
     {
       "pipeline": "skills/utilities/idempotent-cache/pipeline-mcp.yaml",
-      "sha256": "2309c6c7dcb44806f239035b60e4b01d34dfb42e5f98a3e1e46325525d2b2a03",
+      "sha256": "c4f9e4d2ecf54c3ce8b683b5b290931e9aa721d5d3f03d3665f0d9a7bfd4a409",
       "category": "utilities",
       "skill": "idempotent-cache",
       "variant": "mcp",
@@ -14315,14 +14301,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": null,
-          "published_adapters_intact": true,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "published_adapters_intact": true
         },
         "platform_realism": {
           "status": "pass",
@@ -14390,7 +14369,7 @@
     },
     {
       "pipeline": "skills/utilities/image-dimensions/pipeline-mcp.yaml",
-      "sha256": "b752acd8f1791e04af2dd48ee1d836ac8fb81bf2f7b8b75dfad61d272dab3c4f",
+      "sha256": "d0d5665c3c20226b5766493f6af2a1e8e93a995bc36d30fd0838bdbe09f8938c",
       "category": "utilities",
       "skill": "image-dimensions",
       "variant": "mcp",
@@ -14470,7 +14449,7 @@
     },
     {
       "pipeline": "skills/utilities/image-metadata/pipeline-mcp.yaml",
-      "sha256": "62aec2026187347dfccf46af03bf3ac504b7e16e1676fb09eac96069ed323c43",
+      "sha256": "1967dc528617782c2648eb0a78b1839a7aba7393a1c188991cb43e0346a83a5b",
       "category": "utilities",
       "skill": "image-metadata",
       "variant": "mcp",
@@ -14550,7 +14529,7 @@
     },
     {
       "pipeline": "skills/utilities/image-resize-calc/pipeline-mcp.yaml",
-      "sha256": "36ff38b5e306ee4c713725034d2369e5dfd01d41b82228ca1209c342492e383f",
+      "sha256": "51e25a4ea6cd362adda31c2b4c8eaad298b9fc17b2bc587fe066538f7dabba5b",
       "category": "utilities",
       "skill": "image-resize-calc",
       "variant": "mcp",
@@ -14630,7 +14609,7 @@
     },
     {
       "pipeline": "skills/utilities/media-info/pipeline-mcp.yaml",
-      "sha256": "634817a3d422cd6568933d3c62122ed7c33a84a7af9e5ef8155c4623d995d095",
+      "sha256": "9bee1bc419f0b22607cef07d6f8d37efc4cfece7af282c8647c92155252b6ffa",
       "category": "utilities",
       "skill": "media-info",
       "variant": "mcp",
@@ -14710,7 +14689,7 @@
     },
     {
       "pipeline": "skills/utilities/media-type-detect/pipeline-mcp.yaml",
-      "sha256": "ed66c3bd2f1590ceac85758d6714b6efcef3ddda4b693cd6e46a9e456ad5dd99",
+      "sha256": "7ae874614049c2019365c53f6b563ad31dfdb5806a15f8657b44628cbb096b04",
       "category": "utilities",
       "skill": "media-type-detect",
       "variant": "mcp",
@@ -14790,7 +14769,7 @@
     },
     {
       "pipeline": "skills/utilities/mime-type/pipeline-mcp.yaml",
-      "sha256": "c98461be253fdc3a4f053112f436883932b566410a0b5ead4bfeac6e64ef8fce",
+      "sha256": "d0fdb88f17ffa394e84fb783ba128f01a281d6c4bf03c79d88ce93765ddf3376",
       "category": "utilities",
       "skill": "mime-type",
       "variant": "mcp",
@@ -14942,7 +14921,7 @@
     },
     {
       "pipeline": "skills/utilities/random-number/pipeline-mcp.yaml",
-      "sha256": "78a68c5dceccbe604fd84ffa99b36e060444b03b252327fac8df87992cce866b",
+      "sha256": "4ad1ed4892d36693898f395c75e06d800c61803d14103f6eeda9c52f7941d570",
       "category": "utilities",
       "skill": "random-number",
       "variant": "mcp",
@@ -15094,7 +15073,7 @@
     },
     {
       "pipeline": "skills/utilities/uuid-generate/pipeline-mcp.yaml",
-      "sha256": "a703f45b19e78c26f92c514c81332f2a1dfcde8405c561cab556d431966322dc",
+      "sha256": "012395f845de8943e5af0a6f6f4bc0017a56d7aa49baf0d0f1d478be7d134875",
       "category": "utilities",
       "skill": "uuid-generate",
       "variant": "mcp",
@@ -15174,7 +15153,7 @@
     },
     {
       "pipeline": "skills/utilities/video-thumbnail/pipeline-mcp.yaml",
-      "sha256": "79b880d4aab9d0aeb793c1072ebbe2997a869ac70e95bd5f74397ee7e8143e99",
+      "sha256": "6f688f7b7e737ca32a6a5c1dde40b272a51fa3556320ecf03e61a06960115886",
       "category": "utilities",
       "skill": "video-thumbnail",
       "variant": "mcp",
@@ -15326,7 +15305,7 @@
     },
     {
       "pipeline": "skills/workflows/backup-verify/pipeline-mcp.yaml",
-      "sha256": "d1592731510ee393c0e71ac9931b27480a65f72f19594a572398fceff707b5ca",
+      "sha256": "14bde616cb912fcea84a0acae9846b80ed48d4dda5338861101d8ae68ecee203",
       "category": "workflows",
       "skill": "backup-verify",
       "variant": "mcp",
@@ -15406,7 +15385,7 @@
     },
     {
       "pipeline": "skills/workflows/catalog-reconcile/pipeline-mcp.yaml",
-      "sha256": "c5aac7e0a460285d076cd33088f4f84520d14acba3c5d9f337b0f69989f10f82",
+      "sha256": "677c30b5af68d533cf3cd7e0a1cdc66879ee3b00e675948e6039e1a3eb52bc50",
       "category": "workflows",
       "skill": "catalog-reconcile",
       "variant": "mcp",
@@ -15486,7 +15465,7 @@
     },
     {
       "pipeline": "skills/workflows/devops-monitor/pipeline-mcp.yaml",
-      "sha256": "ecc1683d8dd79d1bc5cb2d243da27c0381a3f13abfe4aa4e406644f6933ef4a7",
+      "sha256": "2145deff692fe98ba2ff9472edc91cd5f7aa5f295a857cb1eab69b82921eb887",
       "category": "workflows",
       "skill": "devops-monitor",
       "variant": "mcp",
@@ -15566,7 +15545,7 @@
     },
     {
       "pipeline": "skills/workflows/email-triage/pipeline-mcp.yaml",
-      "sha256": "eee20c37fadbddc68a0153d4446b287792dbaf7829e1571437468c6daf661a76",
+      "sha256": "edbf7a5c5a8cd061fab4458c22863c506855be1d37384bf41eb714b56908633c",
       "category": "workflows",
       "skill": "email-triage",
       "variant": "mcp",
@@ -15725,7 +15704,7 @@
     },
     {
       "pipeline": "skills/workflows/jira-automate/pipeline-mcp.yaml",
-      "sha256": "9ca431c0db2cd304f3895b2c9028497cc3fceaa3ca4bc60aa6d87bd0b9583342",
+      "sha256": "6c9a7f19556e9db3c7480ef12d20f95e21d9a287eae8ce5b3d357ead7d517b8f",
       "category": "workflows",
       "skill": "jira-automate",
       "variant": "mcp",
@@ -15737,14 +15716,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 3
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -15812,7 +15784,7 @@
     },
     {
       "pipeline": "skills/workflows/llm-router/pipeline-mcp.yaml",
-      "sha256": "c9e5ee3cc09bd3cd9c00e68fa3f62c65bebf7dc0e51c220622589c4f35b54c26",
+      "sha256": "e1c7598a8b2eef41f97b3405d9d0320b3f9579a4afa7de1ce42f9d7abc07b0d6",
       "category": "workflows",
       "skill": "llm-router",
       "variant": "mcp",
@@ -15964,7 +15936,7 @@
     },
     {
       "pipeline": "skills/workflows/meal-planner/pipeline-mcp.yaml",
-      "sha256": "a3d9979bf3eb78fc6cfa68ca6a855b1a2699b44405cc5e9c33de4194b88edd3d",
+      "sha256": "60747c91f6a4ab609436fa008a9241b2c4284ea78098945e42187cfe358b2aa2",
       "category": "workflows",
       "skill": "meal-planner",
       "variant": "mcp",
@@ -16044,7 +16016,7 @@
     },
     {
       "pipeline": "skills/workflows/morning-briefing/pipeline-mcp.yaml",
-      "sha256": "7f6920df3b709153e65177eb945aa8abed70b19504b64fdf28705bc88f24b636",
+      "sha256": "7b5db6b92d4b5208c4788182718fe5595ef93c705cff90685e6c0669765669ac",
       "category": "workflows",
       "skill": "morning-briefing",
       "variant": "mcp",
@@ -16196,7 +16168,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-mcp.yaml",
-      "sha256": "51835f80a918f1e23a2e0cf3022bafaf4f16511e77e49954692155586fe0fa65",
+      "sha256": "879c1b5b86488700c17c4cee972374fcfc05a7c191546ecd29d38d8f6438760c",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "mcp",
@@ -16355,7 +16327,7 @@
     },
     {
       "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
-      "sha256": "a6a954860ccde536dc784cf0549f21aa971e2b8448879e687ca38c1b7375e173",
+      "sha256": "68222c5c747afc54881569ee194c8fc6c503f0aa3adc54c83c53481f73e55df5",
       "category": "workflows",
       "skill": "stripe-reports",
       "variant": "mcp",
@@ -16367,14 +16339,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -16442,7 +16407,7 @@
     },
     {
       "pipeline": "skills/workflows/task-dashboard/pipeline-mcp.yaml",
-      "sha256": "ae6cf092d5ea7bd4f4e5b8976c973b9760ed0c36ec3a787b1ebb42ffb11b0791",
+      "sha256": "8724476824de1b81592603451781dd03351a3377a5919fdbac9ca7b0555fb05f",
       "category": "workflows",
       "skill": "task-dashboard",
       "variant": "mcp",
@@ -16594,7 +16559,7 @@
     },
     {
       "pipeline": "skills/workflows/todoist-automate/pipeline-mcp.yaml",
-      "sha256": "5c1db3d4dbdb3ced5daad5f4119052884b233e88f8f57fb0bfde0afb14233a9b",
+      "sha256": "8fa14686201cfd3f45985c5bd71221bb5b292019eb92ff5c61ac9002798ff3ed",
       "category": "workflows",
       "skill": "todoist-automate",
       "variant": "mcp",
@@ -16674,7 +16639,7 @@
     },
     {
       "pipeline": "skills/workflows/voice-admin/pipeline-mcp.yaml",
-      "sha256": "c29e204bdffed1b120559f19aad93d138ce5c65b3141f53e46bb1aa2c938d15f",
+      "sha256": "acf2879b1d7024bbe935e7ec049b37ff59260ca8c272e4fd3895ecced55e78f1",
       "category": "workflows",
       "skill": "voice-admin",
       "variant": "mcp",

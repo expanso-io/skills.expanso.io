@@ -2,6 +2,51 @@ const { test, expect } = require('@playwright/test');
 const { execFileSync } = require('node:child_process');
 const { createHash } = require('node:crypto');
 
+test('empty recorded stage values report clipboard success and failure', async ({ context, page }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/skill/date-now/');
+  await page.getByRole('button', { name: 'Pipeline', exact: true }).click();
+  const input = page.locator('.stage-explorer:visible .stage-input');
+  await expect(input.locator('code')).toHaveText('');
+  const copy = input.locator('.copy-btn');
+  await copy.click();
+  await expect(copy).toHaveText('Copied');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('');
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: () => Promise.reject(new Error('forced failure')) }
+    });
+    document.execCommand = () => false;
+  });
+  await copy.click();
+  await expect(copy).toHaveText('Copy failed');
+});
+
+test('CSV conversion exposes every published variant and its recorded stages', async ({ page }) => {
+  const ledger = await (await page.request.get('/example-conformance.json')).json();
+  const published = ledger.examples.filter(row => row.status !== 'pulled' && row.pipeline.split('/').at(-2) === 'csv-to-json');
+  await page.goto('/skill/csv-to-json/');
+  await page.getByRole('button', { name: 'Pipeline', exact: true }).click();
+  const tabs = page.locator('.pipeline-sub-tabs > button');
+  await expect(tabs).toHaveCount(published.length);
+  const observed = [];
+  for (let index = 0; index < await tabs.count(); index += 1) {
+    await tabs.nth(index).click();
+    const content = page.locator('.copy-pipeline-banner:visible').locator('..');
+    observed.push(await content.locator('.code-block:not(.stage-config):not(.stage-input):not(.stage-output) code').first().textContent());
+    const explorer = content.locator('.stage-explorer');
+    await expect(explorer).toBeVisible();
+    for (const value of ['.stage-input', '.stage-output']) {
+      await expect(explorer.locator(value)).not.toHaveText('Not recorded');
+    }
+  }
+  for (const row of published) {
+    const source = await (await page.request.get(`/csv-to-json/${row.pipeline.split('/').at(-1)}`)).text();
+    expect(observed).toContain(source);
+  }
+});
+
 test('intact published MCP listener responds at configured PORT', () => {
   test.setTimeout(90_000);
   const output = execFileSync('uv', ['run', '-s', 'scripts/test-mcp-listener.py'], { encoding: 'utf8', timeout: 80_000 });
@@ -32,12 +77,15 @@ test('every published sibling exposes its actual pipeline stages', async ({ page
   test.setTimeout(480_000);
   const response = await page.request.get('/catalog.json');
   const catalog = await response.json();
+  const ledger = await (await page.request.get('/example-conformance.json')).json();
   let variants = 0;
   for (const name of Object.keys(catalog.skills)) {
     await page.goto(`/skill/${name}/`);
     await page.getByRole('button', { name: 'Pipeline', exact: true }).click();
     // Variant controls have their own container, separate from stage controls.
     const variantTabs = page.locator('.pipeline-sub-tabs > button');
+    const published = ledger.examples.filter(row => row.status !== 'pulled' && row.pipeline.split('/').at(-2) === name);
+    await expect(variantTabs, `${name} published variant coverage`).toHaveCount(published.length);
     for (let index = 0; index < await variantTabs.count(); index += 1) {
       await variantTabs.nth(index).click();
       const explorer = page.locator('.stage-explorer:visible');
