@@ -44,12 +44,30 @@ inputs:
 
 # Skill outputs
 outputs:
-  - name: emails
+  - name: source
+    type: string
+    description: 'Source identifier: gmail'
+  - name: resource
+    type: string
+    description: 'Resource identifier: messages'
+  - name: schema_version
+    type: string
+    description: 'Response envelope schema version: 1.0'
+  - name: trace_id
+    type: string
+    description: Request trace identifier
+  - name: data
     type: array
     description: "Array of messages: {id, subject, from, to, date, snippet, labels, has_attachment}"
+  - name: count
+    type: integer
+    description: Number of messages in data
+  - name: sensitivity
+    type: string
+    description: 'Data sensitivity: raw'
   - name: metadata
     type: object
-    description: "Processing metadata: {skill, trace_id, email_count, total_estimated, query, timestamp}"
+    description: "Processing metadata: {skill, mode, query, label, fixture, email_count, total_estimated, trace_id, timestamp}"
 
 # Backend options
 backends:
