@@ -59,11 +59,19 @@ def main():
                 assert analysis["score"] == 100 and analysis["has_viewport"] is True, result
                 assert analysis["images_missing_alt"] == 0 and analysis["meta_description"] in ["D", "Description with spaces"], result
                 assert result["recommendations"] == [], result
+            for attribute, expected in [
+                ('content="Bob\'s complete guide"', "Bob's complete guide"),
+                ("content='A \"complete\" guide'", 'A "complete" guide'),
+            ]:
+                result = suite.execute(reg.config("workflows/seo-pipeline", variant),
+                                       {"html": '<title>Chart</title><h1>Chart</h1><meta name="description" ' + attribute + '><meta name=viewport content=x><img src=x alt=Chart>'})
+                assert result["analysis"]["meta_description"] == expected, result
+                assert result["analysis"]["score"] == 100, result
             result = suite.execute(reg.config("workflows/seo-pipeline", variant),
                                    {"html": '<title>Chart</title><h1>Chart</h1><meta name=description-other content=D><meta name=viewport-other content=x><img src=x alt=>'})
             assert result["analysis"]["score"] == 45, result
         reg.write_evidence()
-        print("PASS six backup rows survive in distinct objects; ten HTML attribute cases")
+        print("PASS six backup rows survive in distinct objects; fourteen HTML attribute cases")
     finally:
         suite.close()
 
