@@ -23,6 +23,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.text == null
+          root = if $missing {
+            throw("required input is missing: text")
+          } else {
+            this
+          }
+      - mapping: |
           let input_text = this.text.or(content())
           let mode = this.mode.or("encode")
           meta input_hash = $input_text.hash("sha256").encode("hex")
@@ -51,6 +58,11 @@ config:
           level: INFO
           message: |
             [url-encode] ${! this.mode } ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

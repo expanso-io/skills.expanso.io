@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.objects == null
+          root = if $missing {
+            throw("required input is missing: objects")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let input = this.objects.or(content()).string().trim()
           let parsed = $input.parse_json().catch(null)
@@ -32,6 +39,11 @@ config:
           root.valid = $parsed != null
           root.error = if $parsed == null { "Invalid JSON input" } else { "" }
           root.metadata = {"skill": "object-merge", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

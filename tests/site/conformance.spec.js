@@ -193,7 +193,7 @@ test('retains deep links, spec and pipeline tabs, theme, and job proof', async (
 }) => {
   await waitForCatalog(page);
   await page.locator('.skill-card').first().click();
-  await expect(page).toHaveURL(/\/skill\/[^/]+$/);
+  await expect(page).toHaveURL(/\/skill\/[^/]+\/$/);
   await expect(page.getByRole('button', { name: 'Spec', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Pipeline', exact: true })).toBeVisible();
   const deepLink = page.url();

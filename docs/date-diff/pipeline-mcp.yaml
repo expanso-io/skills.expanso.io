@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.start == null || this.end == null
+          root = if $missing {
+            throw("required input is missing: start, end")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let start = this.start.or(now())
           let end = this.end.or(now())
@@ -25,6 +32,11 @@ config:
           root.diff_hours = root.diff_seconds / 3600
           root.diff_days = root.diff_seconds / 86400
           root.metadata = {"skill": "date-diff", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

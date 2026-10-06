@@ -28,6 +28,13 @@ config:
 
   pipeline:
     processors:
+      - mapping: |
+          let missing = this.url == null
+          root = if $missing {
+            throw("required input is missing: url")
+          } else {
+            this
+          }
       # 1. Parse request and validate
       - mapping: |
           let url = this.url.or("")
@@ -84,6 +91,11 @@ config:
           level: INFO
           message: |
             [url-to-article] MCP request: ${! meta("url") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

@@ -19,6 +19,12 @@ config:
   pipeline:
     processors:
       - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
+      - mapping: |
           meta image_url = content().trim()
           meta trace_id = uuid_v4()
 
@@ -70,6 +76,11 @@ config:
           level: INFO
           message: |
             [image-analyze] Found ${! this.metadata.object_count } objects (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}

@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.text == null
+          root = if $missing {
+            throw("required input is missing: text")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let input = this.text.or(content()).string().trim()
 
@@ -27,6 +34,11 @@ config:
           root.kebab = $normalized.re_replace_all("_", "-")
           root.input = $input
           root.metadata = {"skill": "string-case", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

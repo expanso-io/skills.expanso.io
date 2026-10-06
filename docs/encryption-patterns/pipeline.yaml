@@ -145,6 +145,11 @@ config:
           root.processing_metadata.algorithm = "AES-256-CTR+HMAC-SHA256"
           root.processing_metadata.key_version = env("KEY_VERSION").or("v1")
 
+      # Catch failures from every encryption stage, including failures after
+      # earlier fields have already been transformed.
+      - catch:
+          - mapping: 'root = deleted()'
+
   output:
     broker:
       pattern: fan_out

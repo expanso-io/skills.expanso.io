@@ -23,6 +23,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.json == null
+          root = if $missing {
+            throw("required input is missing: json")
+          } else {
+            this
+          }
+      - mapping: |
           let source = this.json.or(content())
           let json_content = if $source.type() == "string" {
             $source
@@ -58,6 +65,11 @@ config:
           level: INFO
           message: |
             [json-validate] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

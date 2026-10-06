@@ -23,6 +23,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.original == null || this.modified == null
+          root = if $missing {
+            throw("required input is missing: original, modified")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
 
           let original = this.original.or("")
@@ -64,6 +71,11 @@ config:
           level: INFO
           message: |
             [text-diff] Identical: ${! this.identical } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.base == null || this.exponent == null
+          root = if $missing {
+            throw("required input is missing: base, exponent")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let base = this.base.number().catch(0)
           let exp = this.exponent.number().catch(2)
@@ -23,6 +30,11 @@ config:
           root.base = $base
           root.exponent = $exp
           root.metadata = {"skill": "math-pow", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

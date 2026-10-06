@@ -10,6 +10,12 @@ config:
   pipeline:
     processors:
       - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           root.messages = [
             {"role": "system", "content": "Score the sentiment of text. Return JSON: 'score' (-1 to 1, decimals ok), 'label' (positive/negative/neutral), 'confidence' (0-1). Be precise."},
@@ -27,6 +33,11 @@ config:
           root.label = $r.label
           root.confidence = $r.confidence.or(0.5)
           root.metadata = {"skill": "sentiment-score", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}

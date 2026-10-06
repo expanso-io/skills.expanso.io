@@ -23,6 +23,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.data == null
+          root = if $missing {
+            throw("required input is missing: data")
+          } else {
+            this
+          }
+      - mapping: |
           let trace_id = uuid_v4()
           let timestamp = now()
           meta trace_id = $trace_id
@@ -61,6 +68,11 @@ config:
           level: INFO
           message: |
             [audit-envelope] Created envelope (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

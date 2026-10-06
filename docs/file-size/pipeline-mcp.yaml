@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.bytes == null
+          root = if $missing {
+            throw("required input is missing: bytes")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let bytes = this.bytes.or(content()).number().catch(0)
 
@@ -33,6 +40,11 @@ config:
           root.gb = $gb.floor()
           root.formatted = $formatted
           root.metadata = {"skill": "file-size", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

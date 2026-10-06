@@ -1,0 +1,869 @@
+{
+  "schema": "expanso-negative-input-classification/1",
+  "date": "2026-10-06",
+  "source_report": "2026-10-06 pre-remediation negative-input audit",
+  "source_counts": {
+    "failed": 141,
+    "published_variants": 330,
+    "tested_variants": 330
+  },
+  "final_evidence": {
+    "report": ".conformance/negative-inputs.json (CI artifact)",
+    "passed": 330,
+    "failed": 0,
+    "published_variants": 330,
+    "tested_variants": 330
+  },
+  "counts": {
+    "fake_success": 123,
+    "audit_false_positive": 18
+  },
+  "classifications": [
+    {
+      "skill": "ai/image-alttext",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/image-analyze",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/image-analyze",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/image-caption",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/image-caption",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/language-detect",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/language-detect",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/sentiment-score",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/sentiment-score",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/speaker-diarize",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/speaker-diarize",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/sql-generate",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/sql-generate",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/text-to-speech",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/text-translate",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/text-translate",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/url-to-article",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "ai/url-to-article",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "security/audit-envelope",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "security/audit-envelope",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "security/log-sanitize",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "security/sign-envelope",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/array-chunk",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/array-first",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept the exact empty-array result with is_empty=true."
+    },
+    {
+      "skill": "transforms/array-flatten",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/array-join",
+      "variant": "mcp",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept the exact all-empty join result with count=0."
+    },
+    {
+      "skill": "transforms/array-last",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept the exact empty-array result with is_empty=true."
+    },
+    {
+      "skill": "transforms/array-length",
+      "variant": "mcp",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept the exact length=0 and is_empty=true result."
+    },
+    {
+      "skill": "transforms/array-reverse",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/array-sort",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/base64-codec",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/binary-encode",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/boolean-parse",
+      "variant": "mcp",
+      "class": "audit_false_positive",
+      "action": "Treat the exact is_valid=false response as an explicit failure signal."
+    },
+    {
+      "skill": "transforms/cron-explain",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/cron-explain",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/csv-to-json",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/date-diff",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/date-diff",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/date-format",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/date-format",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/duration-format",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/duration-format",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/emoji-strip",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/env-parse",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept the exact zero-variable result with null raw input."
+    },
+    {
+      "skill": "transforms/env-parse",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/file-size",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/file-size",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/hex-encode",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/html-strip",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/http-status",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Treat code=0 with Unknown Status as the explicit invalid-code sentinel."
+    },
+    {
+      "skill": "transforms/http-status",
+      "variant": "mcp",
+      "class": "audit_false_positive",
+      "action": "Treat code=0 with Unknown Status as the explicit invalid-code sentinel."
+    },
+    {
+      "skill": "transforms/json-compact",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/json-diff",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/json-diff",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/json-merge",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/json-merge",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/json-pretty",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/json-to-csv",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept the exact zero-row and zero-column CSV result."
+    },
+    {
+      "skill": "transforms/json-to-csv",
+      "variant": "mcp",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept the exact zero-row and zero-column CSV result."
+    },
+    {
+      "skill": "transforms/json-to-yaml",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/json-validate",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/line-numbers",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/line-numbers",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/markdown-format",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept null original and null markdown as no data."
+    },
+    {
+      "skill": "transforms/markdown-format",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/math-mod",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/math-mod",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/math-pow",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/math-pow",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/number-format",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/number-format",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/number-round",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/number-round",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/object-keys",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/object-keys",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/object-merge",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/object-values",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/path-parse",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept the exact null-path result as no data."
+    },
+    {
+      "skill": "transforms/path-parse",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/percentage-calc",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/percentage-calc",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/query-string",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/regex-extract",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept count=0, matches=[], and has_match=false."
+    },
+    {
+      "skill": "transforms/regex-extract",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/slug-generate",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept null original and an empty slug as no data."
+    },
+    {
+      "skill": "transforms/slug-generate",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-case",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-contains",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-contains",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-ends-with",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-ends-with",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-pad",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-pad",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-repeat",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-repeat",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-reverse",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-split",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-split",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-starts-with",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-starts-with",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/string-trim",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-capitalize",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-diff",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-escape",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-format",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-indent",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-indent",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-lines",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-lines",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-reverse",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-reverse",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-stats",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept the exact all-zero content statistics result."
+    },
+    {
+      "skill": "transforms/text-stats",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-truncate",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-wrap",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/text-wrap",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/time-parse",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/timezone-convert",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/timezone-convert",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/type-check",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/type-check",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/url-encode",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/whitespace-normalize",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/word-count",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/yaml-to-json",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "transforms/yaml-validate",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/audio-duration",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/audio-duration",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/image-dimensions",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/image-dimensions",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/image-metadata",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept unknown format with every size field zero."
+    },
+    {
+      "skill": "utilities/image-metadata",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/image-resize-calc",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/image-resize-calc",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/media-info",
+      "variant": "cli",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept empty filename, is_media=false, and zero sizes."
+    },
+    {
+      "skill": "utilities/media-info",
+      "variant": "mcp",
+      "class": "audit_false_positive",
+      "action": "Narrow audit to accept empty filename, is_media=false, and zero sizes."
+    },
+    {
+      "skill": "utilities/media-type-detect",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/media-type-detect",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/mime-type",
+      "variant": "cli",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/mime-type",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    },
+    {
+      "skill": "utilities/video-thumbnail",
+      "variant": "mcp",
+      "class": "fake_success",
+      "action": "Add required-input validation and normalize every processor or provider failure to an explicit error."
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "total_skills": 174,
+  "total_skills": 173,
   "categories": {
     "jobs": {
       "skill_count": 8,
@@ -62,7 +62,7 @@
       ]
     },
     "security": {
-      "skill_count": 14,
+      "skill_count": 13,
       "skills": [
         "access-gate",
         "audit-envelope",
@@ -76,7 +76,6 @@
         "sbom-generate",
         "secrets-scan",
         "sign-envelope",
-        "tls-inspect",
         "verify-signature"
       ]
     },

@@ -1,7 +1,12 @@
 tests:
   - name: "Calculate percentage"
-    input: "50/200"
+    input: '{"value": 50, "total": 200}'
     expected:
       has_field: percentage
       has_field: ratio
       metadata_has: [skill, trace_id]
+    output_conditions:
+      - path: percentage
+        condition: "== 25"
+      - path: ratio
+        condition: "== 0.25"

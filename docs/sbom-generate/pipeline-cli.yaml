@@ -31,15 +31,15 @@ config:
           let dev_deps = $pkg.devDependencies.or({})
 
           # Build component list
-          let components = $deps.keys().map_each(name -> {
+          let components = $deps.key_values().map_each(dependency -> {
             "type": "library",
-            "name": name,
-            "version": $deps.get(name),
+            "name": dependency.key,
+            "version": dependency.value,
             "scope": "required"
-          }).concat($dev_deps.keys().map_each(name -> {
+          }).concat($dev_deps.key_values().map_each(dependency -> {
             "type": "library",
-            "name": name,
-            "version": $dev_deps.get(name),
+            "name": dependency.key,
+            "version": dependency.value,
             "scope": "optional"
           }))
 

@@ -24,18 +24,20 @@ config:
           let input = content().trim()
 
           # Get current time or parse input
+          let parsed = $input.ts_parse("2006-01-02T15:04:05.999999999Z07:00").catch(
+              $input.ts_parse("2006-01-02T15:04:05.999999999Z0700").catch(
+                $input.ts_parse("2006-01-02").catch(null)
+              )
+          )
           let ts = if $input.length() == 0 {
             now()
+          } else if $parsed == null {
+            throw("timestamp must be ISO 8601 or YYYY-MM-DD")
           } else {
-            # Try to parse as various formats
-            $input.ts_parse("2006-01-02T15:04:05Z07:00").catch(
-              $input.ts_parse("2006-01-02").catch(
-                now()
-              )
-            )
+            $parsed
           }
 
-          root.iso = $ts.ts_format("2006-01-02T15:04:05Z07:00")
+          root.iso = $ts.ts_format("2006-01-02T15:04:05.999999999Z07:00")
           root.date = $ts.ts_format("2006-01-02")
           root.time = $ts.ts_format("15:04:05")
           root.unix = $ts.ts_unix()
@@ -48,6 +50,10 @@ config:
             "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
+
+      - catch:
+          - mapping: |
+              root = {"status": "error", "error": error()}
 
       - log:
           level: INFO
