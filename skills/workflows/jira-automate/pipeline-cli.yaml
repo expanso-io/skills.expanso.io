@@ -23,51 +23,55 @@ config:
       - switch:
           - check: 'this.action == "search"'
             processors:
-              - mapping: |
-                  let base = env("JIRA_URL").trim_suffix("/")
-                  meta trace_id = this._trace_id
-                  meta jira_auth = "Basic " + (env("JIRA_EMAIL").or("") + ":" + env("JIRA_API_TOKEN").or("")).encode("base64")
-                  meta jira_action = this.action
-                  meta jira_url = $base + "/rest/api/3/search/jql"
-                  root = if !$base.re_match("^https://") {
-                    throw("JIRA_URL must be an https URL")
-                  } else if this.project.length() == 0 {
-                    throw("project is required for search")
-                  } else {
-                    {
-                      "jql": "project = " + this.project,
-                      "fields": ["key", "summary", "status", "assignee"],
-                      "maxResults": this.limit.or(50)
-                    }
-                  }
-              - http:
-                  url: '${! meta("jira_url") }'
-                  verb: POST
-                  headers:
-                    Authorization: '${! meta("jira_auth") }'
-                    Accept: application/json
-                    Content-Type: application/json
-                  timeout: 30s
-                  retries: 3
-                  rate_limit: jira_api
-              - mapping: |
-                  let issues = this.issues.or([]).map_each(issue -> {
-                    "key": issue.key,
-                    "summary": issue.fields.summary.or(""),
-                    "status": issue.fields.status.name.or(""),
-                    "assignee": issue.fields.assignee.emailAddress.or(issue.fields.assignee.displayName).or(null)
-                  })
-                  root.action = meta("jira_action")
-                  root.result = {"issues": $issues, "next_page_token": this.nextPageToken.or(null)}
-                  root.issues = $issues
-                  root.metadata = {
-                    "skill": "jira-automate",
-                    "mode": "cli",
-                    "action": meta("jira_action"),
-                    "source": "jira_api",
-                    "trace_id": meta("trace_id").or(uuid_v4()),
-                    "timestamp": now()
-                  }
+              - try:
+                  - mapping: |
+                      let base = env("JIRA_URL").trim_suffix("/")
+                      meta trace_id = this._trace_id
+                      meta jira_auth = "Basic " + (env("JIRA_EMAIL").or("") + ":" + env("JIRA_API_TOKEN").or("")).encode("base64")
+                      meta jira_action = this.action
+                      meta jira_url = $base + "/rest/api/3/search/jql"
+                      root = if !$base.re_match("^https://") {
+                        throw("JIRA_URL must be an https URL")
+                      } else if this.project.length() == 0 {
+                        throw("project is required for search")
+                      } else {
+                        {
+                          "jql": "project = " + this.project,
+                          "fields": ["key", "summary", "status", "assignee"],
+                          "maxResults": this.limit.or(50)
+                        }
+                      }
+                  - http:
+                      url: '${! meta("jira_url") }'
+                      verb: POST
+                      headers:
+                        Authorization: '${! meta("jira_auth") }'
+                        Accept: application/json
+                        Content-Type: application/json
+                      timeout: 30s
+                      retries: 3
+                      rate_limit: jira_api
+                  - mapping: |
+                      let issues = this.issues.or([]).map_each(issue -> {
+                        "key": issue.key,
+                        "summary": issue.fields.summary.or(""),
+                        "status": issue.fields.status.name.or(""),
+                        "assignee": issue.fields.assignee.emailAddress.or(issue.fields.assignee.displayName).or(null)
+                      })
+                      root.action = meta("jira_action")
+                      root.result = {"issues": $issues, "next_page_token": this.nextPageToken.or(null)}
+                      root.issues = $issues
+                      root.metadata = {
+                        "skill": "jira-automate",
+                        "mode": "cli",
+                        "action": meta("jira_action"),
+                        "source": "jira_api",
+                        "trace_id": meta("trace_id").or(uuid_v4()),
+                        "timestamp": now()
+                      }
+              - catch:
+                  - mapping: |
+                      root = {"status": "error", "error": error()}
 
           - check: 'this.action == "create"'
             processors:

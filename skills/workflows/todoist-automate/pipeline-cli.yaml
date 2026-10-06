@@ -21,40 +21,44 @@ config:
       - switch:
           - check: 'this.action == "list"'
             processors:
-              - mapping: |
-                  let base = env("TODOIST_API_URL").or("https://api.todoist.com/api/v1").trim_suffix("/")
-                  meta action = this.action
-                  meta trace_id = this._trace_id
-                  meta url = $base + "/tasks?limit=" + this.limit.or(50).string()
-                  root = if !$base.re_match("^https://") { throw("TODOIST_API_URL must be an https URL") } else { {} }
-              - http:
-                  url: '${! meta("url") }'
-                  verb: GET
-                  headers:
-                    Authorization: "Bearer ${TODOIST_TOKEN}"
-                    Accept: application/json
-                  timeout: 30s
-                  retries: 3
-                  rate_limit: todoist_api
-              - mapping: |
-                  let tasks = if this.type() == "array" { this } else { this.results.or([]) }
-                  let today = now().ts_format("2006-01-02")
-                  root.action = meta("action")
-                  root.tasks = $tasks
-                  root.result = {"tasks": $tasks, "next_cursor": this.next_cursor.or(null)}
-                  root.summary = {
-                    "total": $tasks.length(),
-                    "high_priority": $tasks.filter(task -> task.priority.or(1) >= 3).length(),
-                    "due_today": $tasks.filter(task -> task.due.date.or("") == $today).length()
-                  }
-                  root.metadata = {
-                    "skill": "todoist-automate",
-                    "mode": "cli",
-                    "action": meta("action"),
-                    "source": "todoist_api",
-                    "trace_id": meta("trace_id").or(uuid_v4()),
-                    "timestamp": now()
-                  }
+              - try:
+                  - mapping: |
+                      let base = env("TODOIST_API_URL").or("https://api.todoist.com/api/v1").trim_suffix("/")
+                      meta action = this.action
+                      meta trace_id = this._trace_id
+                      meta url = $base + "/tasks?limit=" + this.limit.or(50).string()
+                      root = if !$base.re_match("^https://") { throw("TODOIST_API_URL must be an https URL") } else { {} }
+                  - http:
+                      url: '${! meta("url") }'
+                      verb: GET
+                      headers:
+                        Authorization: "Bearer ${TODOIST_TOKEN}"
+                        Accept: application/json
+                      timeout: 30s
+                      retries: 3
+                      rate_limit: todoist_api
+                  - mapping: |
+                      let tasks = if this.type() == "array" { this } else { this.results.or([]) }
+                      let today = now().ts_format("2006-01-02")
+                      root.action = meta("action")
+                      root.tasks = $tasks
+                      root.result = {"tasks": $tasks, "next_cursor": this.next_cursor.or(null)}
+                      root.summary = {
+                        "total": $tasks.length(),
+                        "high_priority": $tasks.filter(task -> task.priority.or(1) >= 3).length(),
+                        "due_today": $tasks.filter(task -> task.due.date.or("") == $today).length()
+                      }
+                      root.metadata = {
+                        "skill": "todoist-automate",
+                        "mode": "cli",
+                        "action": meta("action"),
+                        "source": "todoist_api",
+                        "trace_id": meta("trace_id").or(uuid_v4()),
+                        "timestamp": now()
+                      }
+              - catch:
+                  - mapping: |
+                      root = {"status": "error", "error": error()}
 
           - check: 'this.action == "create"'
             processors:
