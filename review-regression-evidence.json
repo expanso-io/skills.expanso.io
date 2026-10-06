@@ -1,9 +1,14 @@
 {
   "generated": "2026-10-06T09:15:57.968875+00:00",
-  "engine": {
-    "path": "/usr/local/bin/expanso-edge",
-    "version": "v2.1.21",
-    "sha256": "0cc13bd6d1a14756f87f877f578941157b6f62047bab818c81205c5a0882fc3f"
+  "tools": {
+    "expanso_edge": {
+      "path": "/usr/local/bin/expanso-edge",
+      "version": "v2.1.21",
+      "sha256": "0cc13bd6d1a14756f87f877f578941157b6f62047bab818c81205c5a0882fc3f"
+    },
+    "expanso_cli": {
+      "version": "Expanso CLI version v2.1.21"
+    }
   },
   "status": "pass",
   "cases": [

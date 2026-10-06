@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+"$script_dir/require-expanso-tools.sh"
+
 mode="${1:-check}"
 output_dir="${2:-.conformance/nightly}"
 
@@ -14,7 +17,7 @@ case "$mode" in
 esac
 
 uv run -s scripts/audit-skills.py
-./scripts/validate-pipelines.sh
+"$script_dir/validate-pipelines.sh"
 uv run -s scripts/check-example-conformance.py
 uv run -s scripts/check-feature-preservation.py
 uv run -s scripts/test-skills.py \

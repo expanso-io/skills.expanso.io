@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T16:01:27Z",
+  "generated": "2026-10-06T19:11:55Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -10,8 +10,8 @@
     "regression_history": "Deep links, Spec and Pipeline tabs, theme persistence, and job proof survive the redesign."
   },
   "toolchain": {
-    "expanso_edge": "v2.1.21",
-    "expanso_cli": "Expanso CLI version v2.1.21"
+    "expanso_edge": "v2.1.22",
+    "expanso_cli": "Expanso CLI version v2.1.22"
   },
   "history_review": {
     "baseline": "git history through 699bea8",

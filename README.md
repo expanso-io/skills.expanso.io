@@ -460,7 +460,9 @@ uvx pre-commit install
 
 The hook sends the staged bytes of every changed `pipeline*.yaml` file to
 `expanso-edge validate -`. It exits quickly when a commit contains no pipeline
-changes. Run it across the current index without committing with:
+changes. Local checks use the latest `expanso-edge` and `expanso-cli` already on
+`PATH`; if either is missing, they fail with installation guidance. Run the hook
+across the current index without committing with:
 
 ```bash
 uvx pre-commit run expanso-edge-validate
@@ -468,9 +470,10 @@ uvx pre-commit run expanso-edge-validate
 
 The `Public example conformance` CI job always reports on pull requests and
 `main`. It uses the same fast no-op when no published example, conformance
-script, or shared page changed. A nightly workflow repeats the full Edge sweep
-with the pinned release and the latest release. Latest-only failures update one
-tracking issue; a newer green release opens a pin-bump pull request.
+script, or shared page changed. CI installs the latest Edge and CLI releases with
+the official installers and records both exact versions in its reports. A
+latest-only nightly sweep updates one tracking issue on failure and closes it
+after recovery. No release is pinned and no older-version fallback is used.
 
 ## Credential Management
 
@@ -503,7 +506,7 @@ credential and your data to that provider.
 ## Pipeline shape & readiness
 
 Every row is at its true label. **No row is `verified-executed`.** A row may only
-be promoted by a dated run record on current Expanso Cloud carrying pinned
+be promoted by a dated run record on current Expanso Cloud carrying exact
 versions, control-plane identifiers, and a downstream receipt. Component
 availability alone does not promote a row: it establishes that the component
 exists, not that the shape runs.

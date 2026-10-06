@@ -43,28 +43,28 @@ jobs:
           node-version: "22"
           cache: npm
 
-      - name: Install pinned Expanso validators
+      - name: Test local Expanso tool detection
+        if: steps.changes.outputs.run == 'true'
+        run: scripts/test-require-expanso-tools.sh
+
+      - name: Install latest Expanso Edge and CLI
         if: steps.changes.outputs.run == 'true'
         shell: bash
         run: |
           set -euo pipefail
           bin_dir="$RUNNER_TEMP/expanso-bin"
-          edge_version=$(<.github/expanso-edge-version)
           mkdir -p "$bin_dir"
           curl -fsSL https://get.expanso.io/edge/install.sh \
             | EXPANSO_INSTALL_DIR="$bin_dir" \
-              EXPANSO_VERSION="$edge_version" \
               USE_SUDO=false \
               bash
           curl -fsSL https://get.expanso.io/cli/install.sh \
             | EXPANSO_INSTALL_DIR="$bin_dir" \
-              EXPANSO_VERSION=v2.1.21 \
               USE_SUDO=false \
               bash
           echo "$bin_dir" >> "$GITHUB_PATH"
-          test "$("$bin_dir/expanso-edge" version)" = "$edge_version"
-          test "$("$bin_dir/expanso-cli" version)" = \
-            "Expanso CLI version v2.1.21"
+          "$bin_dir/expanso-edge" version
+          "$bin_dir/expanso-cli" version
 
       - name: Validate and execute every published example
         if: steps.changes.outputs.run == 'true'

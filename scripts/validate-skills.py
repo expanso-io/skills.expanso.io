@@ -33,7 +33,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 
 # Readiness vocabulary. Nothing here may reach `verified-executed`; that label is
-# earned only by a dated Cloud run record with pinned versions, control-plane
+# earned only by a dated Cloud run record with exact versions, control-plane
 # identifiers and a downstream receipt.
 READY_VALIDATED = "validated-not-executed"
 READY_INVALID = "invalid-does-not-validate"
@@ -171,21 +171,22 @@ def main() -> int:
     binary = edge_bin()
     if shutil.which(binary) is None:
         print(
-            "expanso-edge not found on PATH; skipping validation report",
-            file=sys.stderr,
-        )
-        return 0
-
-    version = tool_version(binary)
-    cli = shutil.which("expanso-cli")
-    if cli is None and not args.check:
-        print(
-            "expanso-cli not found on PATH; refusing to write a report without "
-            "job-spec results",
+            "expanso-edge is missing from PATH; install the latest release "
+            "from https://get.expanso.io/ and retry",
             file=sys.stderr,
         )
         return 1
-    cli_version = tool_version(cli) if cli else "unavailable"
+
+    version = tool_version(binary)
+    cli = shutil.which("expanso-cli")
+    if cli is None:
+        print(
+            "expanso-cli is missing from PATH; install the latest release "
+            "from https://get.expanso.io/ and retry",
+            file=sys.stderr,
+        )
+        return 1
+    cli_version = tool_version(cli)
     skills: dict[str, dict] = {}
     skill_dirs = {p.parent for p in args.source.glob("*/*/pipeline-cli.yaml")}
     skill_dirs |= {p.parent for p in args.source.glob("*/*/pipeline.yaml")}

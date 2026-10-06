@@ -262,7 +262,16 @@ def main():
         assert suite.execute(config("recipes/cross-border-gdpr", "recipe"), sample) is None
         rows.append("gdpr:missing-key")
         print(f"PASS {len(rows)} regression contracts on Expanso Edge")
-        (directory / "report.json").write_text(json.dumps({"passed": rows}, indent=2) + "\n")
+        (directory / "report.json").write_text(
+            json.dumps(
+                {
+                    "tools": tool_evidence(),
+                    "passed": rows,
+                },
+                indent=2,
+            )
+            + "\n"
+        )
         write_evidence()
         return 0
     finally:
@@ -273,10 +282,17 @@ def main():
         thread.join(timeout=5)
 
 
+def tool_evidence():
+    return {
+        "expanso_edge": runner.tool_evidence(shutil.which("expanso-edge")),
+        "expanso_cli": runner.tool_evidence(shutil.which("expanso-cli")),
+    }
+
+
 def write_evidence():
     (ROOT / ".conformance" / "focused-regressions.json").write_text(json.dumps({
         "generated": datetime.now(timezone.utc).isoformat(),
-        "engine": runner.tool_evidence(shutil.which("expanso-edge")),
+        "tools": tool_evidence(),
         "status": "pass", "cases": EVIDENCE,
     }, indent=2) + "\n")
 

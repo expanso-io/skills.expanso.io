@@ -175,12 +175,17 @@ def report_text(
         raise RuntimeError("validation report has no generated date")
     validations = validation_index(validation)
     edge_version = validation.get("validator", {}).get("version", "unknown")
+    cli_version = validation.get("job_spec_validator", {}).get(
+        "version", "unknown"
+    )
     lines = [
         f"# Pipeline validation report: {date}",
         "",
-        f"Validator: `expanso-edge validate {edge_version}`. A pass means the "
-        "published job spec and inner pipeline both validate. Execution evidence "
-        "is recorded separately in `example-conformance.json`.",
+        f"Validators: `expanso-edge validate` reported `{edge_version}`; "
+        f"`expanso-cli job validate --offline` reported `{cli_version}`. A pass "
+        "means the published job spec and inner pipeline both validate. "
+        "Execution evidence is recorded separately in "
+        "`example-conformance.json`.",
         "",
         "## Complete pipelines",
         "",

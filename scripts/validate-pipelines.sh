@@ -14,21 +14,8 @@
 set -euo pipefail
 
 SKILLS_DIR="${1:-skills}"
-
-if ! command -v expanso-cli >/dev/null 2>&1; then
-  echo "Installing expanso-cli..."
-  # Authoritative route, matching README.md and docs/install.sh.
-  # Pipe to bash, not sh: the installer is a bash script and fails under
-  # dash (/bin/sh on Debian/Ubuntu) with a syntax error at its first array.
-  curl -fsSL https://get.expanso.io/cli/install.sh | bash
-  export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
-fi
-
-if ! command -v expanso-cli >/dev/null 2>&1; then
-  echo "expanso-cli is required to validate pipelines and could not be installed." >&2
-  echo "Refusing to report success without running the validator." >&2
-  exit 1
-fi
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+"$script_dir/require-expanso-tools.sh" cli
 
 echo "expanso-cli version: $(expanso-cli version 2>&1 | head -1)"
 echo "Validating pipeline job specs under ${SKILLS_DIR}/ ..."

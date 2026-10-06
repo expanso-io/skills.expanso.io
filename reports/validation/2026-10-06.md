@@ -1,6 +1,6 @@
 # Pipeline validation report: 2026-10-06
 
-Validator: `expanso-edge validate v2.1.21`. A pass means the published job spec and inner pipeline both validate. Execution evidence is recorded separately in `example-conformance.json`.
+Validators: `expanso-edge validate` reported `v2.1.22`; `expanso-cli job validate --offline` reported `Expanso CLI version v2.1.22`. A pass means the published job spec and inner pipeline both validate. Execution evidence is recorded separately in `example-conformance.json`.
 
 ## Complete pipelines
 

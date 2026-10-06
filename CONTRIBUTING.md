@@ -254,7 +254,9 @@ uvx pre-commit install
 ```
 
 The hook validates the staged version of each changed pipeline with
-`expanso-edge`. CI still runs the complete uncached catalog sweep.
+the latest `expanso-edge` already on `PATH`. It fails with installation guidance
+when the binary is missing. CI installs the latest Edge and CLI releases, then
+runs the complete uncached catalog sweep.
 
 ### PR Checklist
 

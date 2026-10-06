@@ -8,8 +8,11 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import importlib.util
 import json
+import shutil
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -313,12 +316,32 @@ def output_issues(
     return issues
 
 
+def tool_evidence(binary: str) -> dict[str, str]:
+    resolved = Path(binary).resolve()
+    version = subprocess.run(
+        [str(resolved), "version"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    return {
+        "path": str(resolved),
+        "version": (version.stdout or version.stderr).strip(),
+        "sha256": hashlib.sha256(resolved.read_bytes()).hexdigest(),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("skills", nargs="*", help="Optional skill names")
     parser.add_argument("--report", type=Path, default=REPORT)
     args = parser.parse_args()
     selected = set(args.skills)
+    edge_bin = shutil.which("expanso-edge")
+    cli_bin = shutil.which("expanso-cli")
+    if not edge_bin or not cli_bin:
+        raise SystemExit("expanso-edge and expanso-cli are required")
     skills = published_skills(selected)
     if not skills:
         raise SystemExit("no published CLI/MCP skills selected")
@@ -411,6 +434,10 @@ def main() -> int:
         report = {
             "schema": "expanso-negative-input-audit/1",
             "generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "tools": {
+                "expanso_edge": tool_evidence(edge_bin),
+                "expanso_cli": tool_evidence(cli_bin),
+            },
             "coverage": {"published_variants": len(expected), "tested_variants": len(covered)},
             "counts": {
                 "passed": sum(row["status"] == "passed" for row in rows),
