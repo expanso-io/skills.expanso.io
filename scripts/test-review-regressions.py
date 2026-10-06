@@ -246,7 +246,7 @@ def main():
 
 
 def write_evidence():
-    (ROOT / "review-regression-evidence.json").write_text(json.dumps({
+    (ROOT / ".conformance" / "focused-regressions.json").write_text(json.dumps({
         "generated": datetime.now(timezone.utc).isoformat(),
         "engine": runner.tool_evidence(shutil.which("expanso-edge")),
         "status": "pass", "cases": EVIDENCE,

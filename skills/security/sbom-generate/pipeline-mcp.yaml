@@ -69,7 +69,7 @@ config:
             "components": $components
           }
           let spdx_packages = $components.map_each(component -> {
-            "SPDXID": "SPDXRef-Package-" + component.name.re_replace_all("[^A-Za-z0-9.-]", "-"),
+            "SPDXID": "SPDXRef-Package-" + component.format_json().hash("sha256").encode("hex"),
             "name": component.name,
             "versionInfo": component.version,
             "downloadLocation": "NOASSERTION",

@@ -13,102 +13,114 @@ config:
 
   pipeline:
     processors:
-      - mapping: |
-          let input = content().parse_json()
-          let label = $input.label.or("INBOX").string()
-          let limit = $input.limit.or(20)
-          root = if $limit < 1 || $limit > 100 {
-            throw("limit must be between 1 and 100")
-          } else if !$label.re_match("^[A-Za-z0-9_-]{1,50}$") {
-            throw("invalid label format")
-          } else {
-            $input.assign({
-              "query": $input.query.or("is:unread"),
-              "label": $label,
-              "limit": $limit,
-              "_trace_id": uuid_v4()
-            })
-          }
+      - try:
+          - mapping: |
+              let input = content().parse_json()
+              let label = $input.label.or("INBOX").string()
+              let limit = $input.limit.or(20)
+              root = if $limit < 1 || $limit > 100 {
+                throw("limit must be between 1 and 100")
+              } else if !$label.re_match("^[A-Za-z0-9_-]{1,50}$") {
+                throw("invalid label format")
+              } else {
+                $input.assign({
+                  "query": $input.query.or("is:unread"),
+                  "label": $label,
+                  "limit": $limit,
+                  "_trace_id": uuid_v4()
+                })
+              }
 
-      - mapping: |
-          let base = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1").trim_suffix("/")
-          meta context_json = this.format_json()
-          meta gmail_api = $base
-          meta list_url = $base + "/users/me/messages?q=" + this.query.escape_url_query() + "&labelIds=" + this.label.escape_url_query() + "&maxResults=" + this.limit.string()
-          root = if !$base.re_match("^https://") { throw("GMAIL_API_URL must be an https URL") } else { {} }
-      - http:
-          url: '${! meta("list_url") }'
-          verb: GET
-          headers:
-            Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
-            Accept: application/json
-          timeout: 30s
-          retries: 3
-          rate_limit: gmail_api
-      - mapping: |
-          let ids = this.messages.or([]).map_each(message -> message.id)
-          meta total_estimated = this.resultSizeEstimate.or(0)
-          root = if $ids.length() == 0 {
-            [{"_empty": true}]
-          } else {
-            $ids.map_each(id -> {"url": meta("gmail_api") + "/users/me/messages/" + id + "?format=metadata"})
-          }
-      - unarchive:
-          format: json_array
-      - switch:
-          - check: 'this._empty.or(false)'
-            processors:
-              - mapping: 'root = this'
-          - processors:
-              - http:
-                  url: '${! this.url }'
-                  verb: GET
-                  headers:
-                    Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
-                    Accept: application/json
-                  timeout: 30s
-                  retries: 3
-                  rate_limit: gmail_api
-              - mapping: |
-                  let headers = this.payload.headers.or([]).fold({}, pair -> pair.tally.assign({(pair.value.name.lowercase()): pair.value.value}))
-                  root = {
-                    "id": this.id,
-                    "subject": $headers.get("subject").or(""),
-                    "from": $headers.get("from").or(""),
-                    "to": $headers.get("to").or(""),
-                    "date": $headers.get("date").or(""),
-                    "snippet": this.snippet.or(""),
-                    "labels": this.labelIds.or([]),
-                    "has_attachment": this.payload.parts.or([]).any(part -> part.filename.or("").length() > 0)
-                  }
-      - archive:
-          format: json_array
-      - mapping: |
-          root.emails = this.filter(email -> !email._empty.or(false))
-          root._context = meta("context_json").parse_json()
-          root._total_estimated = meta("total_estimated").or("0").number()
+          - mapping: |
+              let base = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1").trim_suffix("/")
+              meta context_json = this.format_json()
+              meta gmail_api = $base
+              meta list_url = $base + "/users/me/messages?q=" + this.query.escape_url_query() + "&labelIds=" + this.label.escape_url_query() + "&maxResults=" + this.limit.string()
+              root = if !$base.re_match("^https://") { throw("GMAIL_API_URL must be an https URL") } else { {} }
+          - http:
+              url: '${! meta("list_url") }'
+              verb: GET
+              headers:
+                Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
+                Accept: application/json
+              timeout: 30s
+              retries: 3
+              rate_limit: gmail_api
+          - mapping: |
+              let ids = this.messages.or([]).map_each(message -> message.id)
+              meta total_estimated = this.resultSizeEstimate.or(0)
+              root = if $ids.length() == 0 {
+                [{"_empty": true}]
+              } else {
+                $ids.map_each(id -> {"url": meta("gmail_api") + "/users/me/messages/" + id + "?format=metadata"})
+              }
+          - unarchive:
+              format: json_array
+          - switch:
+              - check: 'this._empty.or(false)'
+                processors:
+                  - mapping: 'root = this'
+              - processors:
+                  - try:
+                      - http:
+                          url: '${! this.url }'
+                          verb: GET
+                          headers:
+                            Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
+                            Accept: application/json
+                          timeout: 30s
+                          retries: 3
+                          rate_limit: gmail_api
+                      - mapping: |
+                          let headers = this.payload.headers.or([]).fold({}, pair -> pair.tally.assign({(pair.value.name.lowercase()): pair.value.value}))
+                          root = {
+                            "id": this.id,
+                            "subject": $headers.get("subject").or(""),
+                            "from": $headers.get("from").or(""),
+                            "to": $headers.get("to").or(""),
+                            "date": $headers.get("date").or(""),
+                            "snippet": this.snippet.or(""),
+                            "labels": this.labelIds.or([]),
+                            "has_attachment": this.payload.parts.or([]).any(part -> part.filename.or("").length() > 0)
+                          }
+                  - catch:
+                      - mapping: |
+                          root = {"_provider_error": error()}
+          - archive:
+              format: json_array
+          - mapping: |
+              let failures = this.filter(email -> email._provider_error != null)
+              root = if $failures.length() > 0 { throw($failures.index(0)._provider_error) } else { this }
 
-      - mapping: |
-          let context = this._context
-          root.source = "gmail"
-          root.resource = "messages"
-          root.schema_version = "1.0"
-          root.trace_id = $context._trace_id
-          root.data = this.emails
-          root.emails = this.emails
-          root.count = this.emails.length()
-          root.sensitivity = "raw"
-          root.metadata = {
-            "skill": "gmail-read",
-            "mode": "cli",
-            "query": $context.query,
-            "label": $context.label,
-            "source": "gmail_api",
-            "email_count": this.emails.length(),
-            "total_estimated": this._total_estimated,
-            "trace_id": $context._trace_id,
-            "timestamp": now()
-          }
+          - mapping: |
+              root.emails = this.filter(email -> !email._empty.or(false))
+              root._context = meta("context_json").parse_json()
+              root._total_estimated = meta("total_estimated").or("0").number()
+
+          - mapping: |
+              let context = this._context
+              root.source = "gmail"
+              root.resource = "messages"
+              root.schema_version = "1.0"
+              root.trace_id = $context._trace_id
+              root.data = this.emails
+              root.emails = this.emails
+              root.count = this.emails.length()
+              root.sensitivity = "raw"
+              root.metadata = {
+                "skill": "gmail-read",
+                "mode": "cli",
+                "query": $context.query,
+                "label": $context.label,
+                "source": "gmail_api",
+                "email_count": this.emails.length(),
+                "total_estimated": this._total_estimated,
+                "trace_id": $context._trace_id,
+                "timestamp": now()
+              }
+      - catch:
+          - mapping: |
+              root = {"status": "error", "error": error()}
 
   output:
     stdout: {}
