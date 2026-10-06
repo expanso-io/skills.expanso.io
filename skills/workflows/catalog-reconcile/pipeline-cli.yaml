@@ -42,12 +42,12 @@ config:
             "key": group.key,
             "records_by_source": group.value.map_each(item -> {"source": item._source, "record": item.without("_source", "_match_key")})
           })
-          root.unmatched = $unmatched_groups.map_each(group -> {
+          root.unmatched = $unmatched_groups.map_each(group -> group.value.map_each(item -> {
             "key": group.key,
-            "source": group.value.0._source,
-            "record": group.value.0.without("_source", "_match_key"),
+            "source": item._source,
+            "record": item.without("_source", "_match_key"),
             "reason": "no_match_found"
-          })
+          })).flatten()
           root.summary = {
             "total_processed": $keyed_items.length(),
             "matched": root.matches.length(),

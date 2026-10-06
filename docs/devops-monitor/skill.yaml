@@ -1,63 +1,36 @@
 # Skill: devops-monitor
 # Version: 1.0.0
 #
-# Automated DevOps monitoring with AI-powered analysis.
-# Monitors logs, metrics, and codebase for issues.
-# Runs while you sleep - alerts on critical issues only.
+# Analyze observations collected by DevOps monitoring systems.
 #
 # Features:
 # - Log analysis and anomaly detection
-# - GitHub workflow monitoring
-# - Server health checks
-# - Automated debugging suggestions
-# - Smart alerting (no noise)
+# - Workflow-run status analysis
+# - Error-event severity classification
+# - Thresholded alert candidates
 
 name: devops-monitor
 version: 1.0.0
-description: AI-powered DevOps monitoring with automated log analysis and alerting
-
-credentials:
-  - name: GITHUB_TOKEN
-    required: false
-    description: GitHub personal access token
-  - name: PROMETHEUS_URL
-    required: false
-    description: Prometheus endpoint for metrics
-  - name: GRAFANA_API_KEY
-    required: false
-    description: Grafana API key
-  - name: SLACK_WEBHOOK
-    required: false
-    description: Slack webhook for alerts
-  - name: PAGERDUTY_KEY
-    required: false
-    description: PagerDuty integration key
-  - name: OPENAI_API_KEY
-    required: true
-    description: OpenAI for AI analysis
+description: Analyze supplied workflow, log, and metric observations without inventing collector or alert receipts
 
 inputs:
-  - name: sources
-    type: array
-    default: [github, logs]
-    description: "Data sources: github, logs, prometheus, uptime"
-  - name: repos
+  - name: workflows
     type: array
     default: []
-    description: GitHub repos to monitor (owner/repo format)
-  - name: log_paths
+    description: Workflow-run observations from an upstream collector
+  - name: errors
     type: array
     default: []
-    description: Log file paths to analyze
+    description: Aggregated error events from an upstream log collector
+  - name: metrics
+    type: object
+    default: {}
+    description: Metric snapshot to include in the report
   - name: alert_threshold
     type: string
     default: high
     enum: [low, medium, high, critical]
     description: Minimum severity for alerts
-  - name: lookback_hours
-    type: integer
-    default: 1
-    description: Hours of data to analyze
 
 outputs:
   - name: status
@@ -72,19 +45,20 @@ outputs:
   - name: metrics
     type: object
     description: Key metrics summary
-  - name: alerts_sent
+  - name: alert_candidates
     type: array
-    description: Alerts that were dispatched
+    description: Issues meeting the configured threshold; no delivery is claimed
   - name: metadata
     type: object
     description: Monitoring metadata
 
 backends:
-  - name: openai
-    type: remote
-    requires: [OPENAI_API_KEY]
+  - name: local
+    type: local
+    requires: []
+    description: Deterministic local analysis of supplied observations
 
 components:
-  inputs: [stdin, http_server, http_client]
-  processors: [mapping, http, openai_chat_completion, branch, log]
-  outputs: [http_client, stdout, sync_response]
+  inputs: [stdin, http_server]
+  processors: [mapping, log]
+  outputs: [stdout, sync_response]

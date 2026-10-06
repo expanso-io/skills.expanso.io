@@ -2,9 +2,10 @@
 # ========================================
 #
 # Usage:
-#   echo "Contact John at john@example.com" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
-# Credentials stay local - ${OPENAI_API_KEY} is resolved on your edge node.
+# ${OPENAI_API_KEY} is resolved on your edge node and sent to OpenAI as the API
+# credential, together with the input text. It is not sent to Expanso Cloud.
 
 name: "pii-redact-cli"
 type: pipeline
@@ -21,12 +22,13 @@ config:
           meta input_hash = content().hash("sha256").encode("hex")
           meta input_length = content().length()
           meta trace_id = uuid_v4()
-          meta placeholder = env("PLACEHOLDER").or("[REDACTED]")
+          let placeholder = env("PLACEHOLDER").or("[REDACTED]")
+          meta placeholder = $placeholder
 
           root.messages = [
             {
               "role": "system",
-              "content": "You are a PII redaction specialist. Analyze the text and replace ALL personally identifiable information with the placeholder '" + meta("placeholder") + "'. PII includes: names, emails, phone numbers, SSNs, addresses, credit card numbers, IP addresses, dates of birth, and any other identifying information. Return a JSON object with: redacted_text (the text with PII replaced), redaction_count (integer), redacted_types (array of PII types found like 'email', 'phone', 'name', etc.)."
+              "content": "You are a PII redaction specialist. Analyze the text and replace ALL personally identifiable information with the placeholder '" + $placeholder + "'. PII includes: names, emails, phone numbers, SSNs, addresses, credit card numbers, IP addresses, dates of birth, and any other identifying information. Return a JSON object with: redacted_text (the text with PII replaced), redaction_count (integer), redacted_types (array of PII types found like 'email', 'phone', 'name', etc.)."
             },
             {
               "role": "user",
@@ -37,6 +39,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let response = this.choices.0.message.content.parse_json().catch({
@@ -54,15 +57,14 @@ config:
             "placeholder": meta("placeholder"),
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [pii-redact] Redacted ${! root.redaction_count } items (trace: ${! meta("trace_id").slice(0, 8) })
+            [pii-redact] Redacted ${! this.redaction_count } items (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

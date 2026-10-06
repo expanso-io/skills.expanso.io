@@ -1,50 +1,71 @@
 # text-summarize
 
-> Summarize any text into 3-5 bullet points while keeping your API keys local.
+> Summarize any text into 3-5 bullet points using an AI model.
 
-This is the "Hello World" of Expanso + OpenClaw skills. It demonstrates the core value proposition:
+**Read before deploying: with the default `openai` backend this skill is not
+offline and not local-only.**
 
-- **Your API keys stay local** - `${OPENAI_API_KEY}` is resolved on your machine
-- **Validated pipelines** - This skill passes `expanso-cli job validate`
-- **Full audit trail** - Every invocation is logged with input hash and trace ID
-- **Backend flexibility** - Use OpenAI or Ollama without code changes
+- **The input text leaves the host.** The entire input is sent to the OpenAI API
+  (`api.openai.com`) on every invocation, subject to OpenAI's data handling terms.
+- **`OPENAI_API_KEY` leaves the host, to OpenAI.** It is read from the environment
+  of the node that executes the pipeline and sent to OpenAI as the bearer
+  credential. It is not sent to Expanso Cloud and is not stored in the pipeline.
+- **The key must exist on the executing node.** For a Cloud-scheduled job that is
+  the edge node, not the machine you deploy from.
+- **Only a self-hosted model avoids this egress** (see
+  [Using Ollama](#using-with-ollama-self-hosted-model)).
+
+The authoritative, machine-readable declaration is the `dependencies` block in
+[`skill.yaml`](skill.yaml).
+
+**Readiness:** both pipelines pass local validation (`expanso-edge validate`,
+v2.1.21). Neither has been confirmed by an end-to-end run on Expanso Cloud.
 
 ## Quick Start
 
-### CLI Mode (for shell scripting)
+`expanso-edge run` starts the node agent; it does not run a pipeline file.
+Validate locally, then deploy to your Expanso Cloud control plane:
 
 ```bash
-# Set your API key
-export OPENAI_API_KEY=sk-...
+# Validate, no control plane needed. Run both; they disagree.
+expanso-edge validate pipeline-cli.yaml pipeline-mcp.yaml
+expanso-cli job validate pipeline-mcp.yaml --offline
 
-# Summarize text from stdin
-echo "Your long article or document text here..." | \
-  expanso-edge run pipeline-cli.yaml
+# Deploy. Needs a saved Cloud profile and a connected edge node
+# whose environment has OPENAI_API_KEY set.
+expanso-cli job deploy pipeline-mcp.yaml
 
-# Or pipe a file
-cat my-article.txt | expanso-edge run pipeline-cli.yaml
+# Deploying only stores the job. Confirm it was scheduled and ran:
+expanso-cli job describe text-summarize-mcp
+expanso-cli execution list --job-id <job-id>
 ```
 
-### MCP Mode (for OpenClaw integration)
+### MCP Mode (HTTP endpoint)
+
+Once `pipeline-mcp.yaml` is running on a node, call it on that node:
 
 ```bash
-# Start the skill server
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-# Call from curl (or OpenClaw MCP)
-curl -X POST http://localhost:8080/summarize \
+curl -X POST http://<edge-node>:8080/summarize \
   -H "Content-Type: application/json" \
   -d '{"text": "Your long article or document text here..."}'
 ```
+
+### CLI Mode (stdin)
+
+`pipeline-cli.yaml` reads `stdin`. A Cloud-scheduled job's stdin is not connected
+to your terminal, so this variant cannot receive your input once it is scheduled
+onto a remote node. For a Cloud-scheduled job, use the MCP variant or change the
+input to one the node can reach itself (file, `http_server`, a queue, or object
+storage).
 
 ## Configuration
 
 | Environment Variable | Required | Description |
 |---------------------|----------|-------------|
-| `OPENAI_API_KEY` | Yes* | OpenAI API key |
+| `OPENAI_API_KEY` | Yes* | OpenAI API key, set on the executing node. Sent to OpenAI. |
 | `PORT` | No | HTTP port for MCP mode (default: 8080) |
 
-*Not required if using Ollama backend locally.
+*Not required if the pipeline is repointed at a self-hosted Ollama model.
 
 ## Example Output
 
@@ -63,9 +84,10 @@ curl -X POST http://localhost:8080/summarize \
 }
 ```
 
-## Using with Ollama (Local, No API Key)
+## Using with Ollama (Self-Hosted Model)
 
-For complete privacy, you can use Ollama instead of OpenAI. Edit the pipeline to replace `openai_chat_completion` with `ollama_chat`:
+To keep the input text off third-party APIs, point the pipeline at a model you
+host. Edit the pipeline to replace `openai_chat_completion` with `ollama_chat`:
 
 ```yaml
 # In pipeline-cli.yaml, replace:
@@ -79,7 +101,9 @@ For complete privacy, you can use Ollama instead of OpenAI. Edit the pipeline to
     model: llama3.2
 ```
 
-Make sure Ollama is running:
+The Ollama server must be reachable from the node that executes the pipeline;
+`localhost` means that node. This variant has not been validated or run here.
+Make sure Ollama is running there:
 
 ```bash
 ollama run llama3.2
@@ -88,40 +112,31 @@ ollama run llama3.2
 ## How It Works
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     YOUR MACHINE                                 │
-│                                                                 │
-│  ┌───────────┐     ┌─────────────────┐     ┌───────────────┐   │
-│  │ Input     │────▶│ Expanso Edge    │────▶│ Output        │   │
-│  │ (stdin or │     │                 │     │ (stdout or    │   │
-│  │  HTTP)    │     │ ${OPENAI_API_KEY}│     │  HTTP resp)   │   │
-│  └───────────┘     │ resolved HERE   │     └───────────────┘   │
-│                    └────────┬────────┘                         │
-│                             │                                   │
-│                    ┌────────▼────────┐                         │
-│                    │ Local Vault     │                         │
-│                    │ (env vars)      │                         │
-│                    └─────────────────┘                         │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              │ API call with key
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     OPENAI API                                   │
-│                                                                 │
-│  Receives: text to summarize                                    │
-│  Does NOT receive: who you are, where the key came from        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────── EDGE NODE THAT RUNS THE JOB ─────┐
+│                                                              │
+│  Input ──▶ Expanso Edge ──▶ Output                           │
+│  (stdin    reads OPENAI_API_KEY    (stdout or HTTP response) │
+│   or HTTP) from this node's env                              │
+└──────────────────────────────┬───────────────────────────────┘
+                               │ HTTPS: full input text
+                               │ + OPENAI_API_KEY (bearer)
+                               ▼
+                    ┌─────────────────────┐
+                    │ OpenAI API          │
+                    │ api.openai.com      │
+                    └─────────────────────┘
 ```
 
-The key insight: OpenAI only sees the text. Your identity and credential source are protected by the local execution model.
+OpenAI receives the full input text, the prompt, and your API key. Expanso Cloud
+receives neither the key nor the text; it schedules the job and stores the
+pipeline definition.
 
 ## Troubleshooting
 
 ### "OPENAI_API_KEY not set"
 
-Make sure you've exported the environment variable:
+The variable must be set in the environment of the node that executes the
+pipeline, not only in the shell you deploy from:
 
 ```bash
 export OPENAI_API_KEY=sk-your-key-here
@@ -139,10 +154,12 @@ curl -X POST http://localhost:8080/summarize \
 
 ### Validation Errors
 
-Run the validation script:
+Validate the pipeline files directly, or regenerate the repository-wide report
+from the repository root:
 
 ```bash
-uv run -s scripts/validate-skills.py text-summarize
+expanso-edge validate pipeline-cli.yaml pipeline-mcp.yaml
+uv run -s scripts/validate-skills.py
 ```
 
 ## Cost Estimate
@@ -152,7 +169,7 @@ Using OpenAI GPT-4o-mini:
 - ~$0.60 per 1M output tokens
 - Typical summary: ~$0.001 (less than a penny)
 
-Using Ollama: **Free** (runs locally)
+Using Ollama: no per-request API cost; you pay for hosting the model.
 
 ## Related Skills
 
@@ -161,4 +178,4 @@ Using Ollama: **Free** (runs locally)
 
 ---
 
-*Built with [Expanso Edge](https://expanso.io) - Your keys, your machine.*
+*Built with [Expanso Edge](https://expanso.io).*

@@ -92,6 +92,11 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
+      - name: Stage and check published Pages artifacts
+        run: |
+          uv run -s scripts/stage-pages.py
+          uv run -s scripts/test-pages-publication.py
+
       - name: Test copy feedback, accessibility, and phone layout
         run: npm run test:site
 

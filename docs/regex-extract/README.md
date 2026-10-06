@@ -10,30 +10,16 @@ This skill uses regular expressions to find and extract matching text from input
 
 ### CLI Mode
 
-```bash
-# Extract emails
-PATTERN="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" \
-  echo "Contact us at test@example.com or info@company.org" | \
-  expanso-edge run pipeline-cli.yaml
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
 
-# Extract numbers
-PATTERN="\\d+" echo "Order #123 with 5 items for $99.99" | \
-  expanso-edge run pipeline-cli.yaml
+```bash
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-# Start server
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-# Make request
-curl -X POST http://localhost:8080/extract \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Contact test@example.com or info@company.org",
-    "pattern": "[a-z]+@[a-z]+\\.[a-z]+"
-  }'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Output

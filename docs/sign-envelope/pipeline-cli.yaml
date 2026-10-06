@@ -4,7 +4,7 @@
 # Create signed envelope for payload.
 #
 # Usage:
-#   echo '{"data":"secret"}' | SIGNING_KEY=base64... expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -19,17 +19,22 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          meta created_at = now()
+          let trace_id = uuid_v4()
+          let created_at = now()
+          meta trace_id = $trace_id
+          meta created_at = $created_at
 
-          let payload = content()
+          let payload = content().string()
           let canonical = $payload.parse_json().catch($payload).format_json().catch($payload)
           let hash = $canonical.hash("sha256").encode("hex")
 
-          # HMAC-SHA256 signature using SIGNING_KEY environment variable
-          # For production, ensure SIGNING_KEY is a strong random value
-          let key = env("SIGNING_KEY").or("default-dev-key")
-          let signature = ($hash + "." + $key).hash("sha256").encode("hex")
+          # HMAC-SHA256 signature using a required, strong key from node-local secrets.
+          let key = env("SIGNING_KEY").or("")
+          let signature = if $key.length() < 32 {
+            throw("SIGNING_KEY must contain at least 32 characters")
+          } else {
+            $hash.hash("hmac_sha256", $key).encode("hex")
+          }
 
           root.envelope = {
             "payload": $payload.parse_json().catch($payload),
@@ -37,12 +42,12 @@ config:
             "signature": $signature,
             "key_id": env("KEY_ID").or("default"),
             "algorithm": "hmac-sha256",
-            "created_at": meta("created_at")
+            "created_at": $created_at
           }
           root.metadata = {
             "skill": "sign-envelope",
             "mode": "cli",
-            "trace_id": meta("trace_id"),
+            "trace_id": $trace_id,
             "timestamp": now()
           }
 
@@ -52,5 +57,4 @@ config:
             [sign-envelope] Signed payload (hash: ${! this.envelope.hash.slice(0, 16) }..., trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -1,24 +1,21 @@
 # Skill: backup-verify
 # Version: 1.0.0
 #
-# Verify backup integrity across local and cloud storage.
+# Verify backup integrity by comparing independently generated manifests.
 
 name: backup-verify
 version: 1.0.0
-description: Verify backup integrity and sync status across storage providers
-
-credentials:
-  - name: AWS_ACCESS_KEY_ID
-    required: false
-  - name: AWS_SECRET_ACCESS_KEY
-    required: false
-  - name: GOOGLE_CLOUD_KEY
-    required: false
+description: Compare local and backup manifests by path, size, and SHA-256 digest
 
 inputs:
-  - name: local_paths
+  - name: local_manifest
     type: array
-    default: []
+    required: true
+    description: "Local manifest entries: [{path, size, sha256}]"
+  - name: backup_manifest
+    type: array
+    required: true
+    description: "Backup manifest entries: [{path, size, sha256}]"
   - name: cloud_provider
     type: string
     default: s3
@@ -26,6 +23,7 @@ inputs:
   - name: bucket
     type: string
     required: false
+    description: Provider that produced backup_manifest; this pipeline does not fetch it
 
 outputs:
   - name: status
@@ -41,5 +39,5 @@ backends:
 
 components:
   inputs: [stdin, http_server]
-  processors: [mapping, http, log]
+  processors: [mapping, log]
   outputs: [stdout, sync_response]

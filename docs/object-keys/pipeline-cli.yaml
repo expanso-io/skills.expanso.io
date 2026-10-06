@@ -23,8 +23,7 @@ config:
           root.values = $values
           root.count = $keys.length()
           root.valid = $is_object
-          root.metadata = {"skill": "object-keys", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "object-keys", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

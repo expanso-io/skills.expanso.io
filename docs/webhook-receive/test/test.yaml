@@ -1,0 +1,42 @@
+# Tests for webhook-receive
+# Run: expanso test skills/connectors/webhook-receive/test/test.yaml
+
+name: webhook-receive-tests
+
+tests:
+  - name: "processes raw webhook payload"
+    input: '{"action":"opened","pull_request":{"title":"Add feature"}}'
+    env:
+      WEBHOOK_SECRET: "fixture-webhook-secret-at-least-32-bytes"
+    expected:
+      json_contains:
+        metadata:
+          skill: "webhook-receive"
+
+  - name: "processes wrapped webhook with headers"
+    input: '{"headers":{"X-GitHub-Event":"push"},"body":{"ref":"refs/heads/main"}}'
+    env:
+      WEBHOOK_SECRET: "fixture-webhook-secret-at-least-32-bytes"
+    expected:
+      json_contains:
+        event:
+          type: "push"
+        metadata:
+          skill: "webhook-receive"
+
+  - name: "handles unknown event type"
+    input: '{"data":"test"}'
+    env:
+      WEBHOOK_SECRET: "fixture-webhook-secret-at-least-32-bytes"
+    expected:
+      json_contains:
+        event:
+          type: "unknown"
+
+  - name: "rejects an invalid webhook signature"
+    input: '{"action":"opened","pull_request":{"title":"Untrusted"}}'
+    env:
+      WEBHOOK_SECRET: "fixture-webhook-secret-at-least-32-bytes"
+    invalid_webhook_signature: true
+    expected:
+      error_or_empty: true

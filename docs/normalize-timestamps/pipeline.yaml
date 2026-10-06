@@ -1,0 +1,103 @@
+name: normalize-timestamps-complete
+type: pipeline
+description: Complete Timestamp Normalization Pipeline with format detection, UTC conversion, and metadata enrichment.
+namespace: production
+labels:
+  category: data-transformation
+  pattern: timestamp-normalization
+
+config:
+  input:
+    kafka:
+      addresses: ["${KAFKA_BROKERS}"]
+      topics: ["${INPUT_TOPIC:raw-events}"]
+      consumer_group: "timestamp-normalizer"
+      start_from_oldest: false
+      tls:
+        enabled: true
+      sasl:
+        mechanism: SCRAM-SHA-512
+        user: "${KAFKA_USERNAME}"
+        password: "${KAFKA_PASSWORD}"
+
+  pipeline:
+    processors:
+      - mapping: |
+          let raw = this.timestamp.string()
+          let format = if $raw.re_match("^\\d{10}$") {
+            "unix_seconds"
+          } else if $raw.re_match("^\\d{13}$") {
+            "unix_milliseconds"
+          } else if $raw.re_match("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$") {
+            "custom_datetime"
+          } else if $raw.re_match("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$") {
+            "iso8601_naive"
+          } else if $raw.re_match("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}([.]\\d+)?(Z|[-+]\\d{2}:?\\d{2})$") {
+            "iso8601_offset"
+          } else {
+            "unknown"
+          }
+
+          let normalized = if $format == "unix_seconds" {
+            $raw.number().ts_format("2006-01-02T15:04:05Z07:00", "UTC")
+          } else if $format == "unix_milliseconds" {
+            ($raw.number() / 1000).ts_format("2006-01-02T15:04:05Z07:00", "UTC")
+          } else if $format == "custom_datetime" {
+            ($raw + " UTC").ts_parse("2006-01-02 15:04:05 MST").ts_format("2006-01-02T15:04:05Z07:00", "UTC")
+          } else if $format == "iso8601_naive" {
+            ($raw + "Z").ts_parse("2006-01-02T15:04:05Z07:00").ts_format("2006-01-02T15:04:05Z07:00", "UTC")
+          } else if $format == "iso8601_offset" {
+            $raw.ts_parse("2006-01-02T15:04:05Z07:00").ts_format("2006-01-02T15:04:05Z07:00", "UTC")
+          } else {
+            null
+          }
+          let parsed = if $normalized != null {
+            $normalized.ts_parse("2006-01-02T15:04:05Z07:00")
+          }
+          let day_of_week = if $parsed != null { $parsed.ts_format("Monday", "UTC") }
+          let month = if $parsed != null { $parsed.ts_format("01", "UTC").number() }
+          let hour = if $parsed != null { $parsed.ts_format("15", "UTC").number() }
+
+          root = this
+          root.timestamp_original = $raw
+          root.format_detected = $format
+          root.timestamp = if $normalized != null { $normalized } else { this.timestamp }
+          root.time_metadata = if $parsed != null {
+            {
+              "year": $parsed.ts_format("2006", "UTC").number(),
+              "month": $month,
+              "day": $parsed.ts_format("02", "UTC").number(),
+              "hour": $hour,
+              "day_of_week": $day_of_week,
+              "is_weekend": ["Saturday", "Sunday"].contains($day_of_week),
+              "is_business_hours": !["Saturday", "Sunday"].contains($day_of_week) && $hour >= 9 && $hour < 17,
+              "quarter": if $month <= 3 { "Q1" } else if $month <= 6 { "Q2" } else if $month <= 9 { "Q3" } else { "Q4" },
+              "hour_bucket": $parsed.ts_format("2006-01-02T15:00:00Z", "UTC"),
+              "day_bucket": $parsed.ts_format("2006-01-02", "UTC")
+            }
+          } else {
+            deleted()
+          }
+          root.quality_score = if $parsed != null { 1.0 } else { 0.333 }
+
+  output:
+    kafka:
+      addresses: ["${KAFKA_BROKERS}"]
+      topic: "${OUTPUT_TOPIC:normalized-timestamps}"
+      key: '${! json("event_id") }'
+      compression: "snappy"
+      ack_replicas: true
+      tls:
+        enabled: true
+      sasl:
+        mechanism: SCRAM-SHA-512
+        user: "${KAFKA_USERNAME}"
+        password: "${KAFKA_PASSWORD}"
+
+logger:
+  level: "${LOG_LEVEL:INFO}"
+  format: json
+
+metrics:
+  prometheus:
+    path: "/metrics"

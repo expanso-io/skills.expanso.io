@@ -13,26 +13,61 @@ config:
       - mapping: |
           meta trace_id = uuid_v4()
           let input = content().parse_json()
+          let local = $input.local_manifest
+          let backup = $input.backup_manifest
+          let local_keyed = $local.map_each(file -> file.merge({"_manifest_key": file.path.hash("sha256").encode("hex")}))
+          let backup_keyed = $backup.map_each(file -> file.merge({"_manifest_key": file.path.hash("sha256").encode("hex")}))
+          let backup_by_path = $backup_keyed.fold({}, pair -> pair.tally.assign({(pair.value._manifest_key): pair.value}))
+          let local_by_path = $local_keyed.fold({}, pair -> pair.tally.assign({(pair.value._manifest_key): pair.value}))
+          let local_differences = $local_keyed.map_each(file -> if $backup_by_path.get(file._manifest_key) == null {
+            {"path": file.path, "status": "missing_in_backup"}
+          } else if $backup_by_path.get(file._manifest_key).sha256.lowercase() != file.sha256.lowercase() || $backup_by_path.get(file._manifest_key).size != file.size {
+            {
+              "path": file.path,
+              "status": "content_mismatch",
+              "local": {"size": file.size, "sha256": file.sha256},
+              "backup": {"size": $backup_by_path.get(file._manifest_key).size, "sha256": $backup_by_path.get(file._manifest_key).sha256}
+            }
+          } else {
+            null
+          }).filter(item -> item != null)
+          let backup_only = $backup_keyed.filter(file -> $local_by_path.get(file._manifest_key) == null).map_each(file -> {
+            "path": file.path,
+            "status": "missing_locally"
+          })
+          let differences = $local_differences.concat($backup_only)
 
-          # Simulated backup verification
-          root.status = {
-            "verified": true,
-            "local_files": 1250,
-            "cloud_files": 1248,
-            "missing_in_cloud": 2,
-            "last_backup": now().ts_sub("2h"),
-            "total_size_gb": 45.2
+          root = if $local.length() > 0 && !$local.all(item -> item.path != null && item.size != null && item.sha256.re_match("^[0-9a-fA-F]{64}$")) {
+            throw("local_manifest entries require path, size, and a SHA-256 hex digest")
+          } else if $backup.length() > 0 && !$backup.all(item -> item.path != null && item.size != null && item.sha256.re_match("^[0-9a-fA-F]{64}$")) {
+            throw("backup_manifest entries require path, size, and a SHA-256 hex digest")
+          } else {
+            {}
           }
-          root.differences = [
-            {"file": "/data/recent/file1.txt", "status": "missing_in_cloud"},
-            {"file": "/data/recent/file2.txt", "status": "missing_in_cloud"}
-          ]
-          root.metadata = {"skill": "backup-verify", "mode": "cli", "trace_id": meta("trace_id")}
+          root.status = {
+            "verified": $differences.length() == 0,
+            "local_files": $local.length(),
+            "backup_files": $backup.length(),
+            "differences": $differences.length(),
+            "local_bytes": $local.map_each(file -> file.size).sum(),
+            "backup_bytes": $backup.map_each(file -> file.size).sum()
+          }
+          root.differences = $differences
+          root.metadata = {
+            "skill": "backup-verify",
+            "mode": "cli",
+            "cloud_provider": $input.cloud_provider.or("unspecified"),
+            "bucket": $input.bucket.or(null),
+            "trace_id": meta("trace_id").or(uuid_v4())
+          }
 
       - log:
           level: INFO
-          message: "[backup-verify] Verified ${! this.status.local_files } files"
+          message: "[backup-verify] Compared ${! this.status.local_files } local and ${! this.status.backup_files } backup files"
+
+      - catch:
+          - mapping: |
+              root = {"status": {"verified": false}, "error": error()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

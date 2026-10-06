@@ -12,6 +12,11 @@ tests:
 
   - name: "Short text unchanged"
     input: "Short"
+    expected_output:
+      result: "Short"
+      truncated: false
+      original_length: 5
+      final_length: 5
     expected:
       has_field: result
       has_field: original_length

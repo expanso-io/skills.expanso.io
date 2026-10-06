@@ -38,40 +38,10 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Build site with skills
-        run: |
-          # Copy catalog files. Root is authoritative; the committed docs/
-          # copies are build leftovers and are overwritten here.
-          cp catalog.json docs/
-          cp catalog-minimal.json docs/
-          cp example-conformance.json docs/
+        run: uv run -s scripts/stage-pages.py
 
-          # Machine-readable per-skill validation status. Generated locally by
-          # scripts/validate-skills.py against a recorded expanso-edge version,
-          # so the report always names the version it was produced against.
-          if [ -f validation-report.json ]; then
-            cp validation-report.json docs/
-          fi
-
-          # Flatten skills structure: skills.expanso.io/<name>/ (no categories in URL)
-          for category_dir in skills/*/; do
-            for skill_dir in "$category_dir"*/; do
-              if [ -d "$skill_dir" ]; then
-                skill_name=$(basename "$skill_dir")
-                echo "Copying $skill_name..."
-                cp -r "$skill_dir" "docs/$skill_name"
-              fi
-            done
-          done
-
-          # List what we're deploying
-          echo ""
-          echo "Skills deployed (flat structure):"
-          find docs -mindepth 2 -maxdepth 2 -name pipeline-cli.yaml -print | sort | head -20
-          echo ""
-          echo "Total skills: $(find docs -mindepth 2 -maxdepth 2 -name pipeline-cli.yaml -print | wc -l)"
-
-      - name: Generate SEO assets (sitemap, skill pages)
-        run: uv run -s scripts/build-seo.py --catalog catalog.json --output docs
+      - name: Check published artifacts
+        run: uv run -s scripts/test-pages-publication.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

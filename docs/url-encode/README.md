@@ -10,29 +10,16 @@ This skill encodes text for safe use in URLs or decodes URL-encoded text back to
 
 ### CLI Mode
 
-```bash
-# Encode text for URL
-echo "Hello World! Special chars: &=?" | expanso-edge run pipeline-cli.yaml
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
 
-# Decode URL-encoded text
-MODE=decode echo "Hello%20World%21" | expanso-edge run pipeline-cli.yaml
+```bash
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-# Start server
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-# Encode
-curl -X POST http://localhost:8080/encode \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Hello World!", "mode": "encode"}'
-
-# Decode
-curl -X POST http://localhost:8080/encode \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Hello%20World%21", "mode": "decode"}'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Output

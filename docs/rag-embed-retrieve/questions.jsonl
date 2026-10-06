@@ -1,0 +1,4 @@
+{"question":"How often do the hoist wire ropes on the port cranes need a visual check?","expected_doc":"harbor-crane-maintenance.md"}
+{"question":"When do we switch on sprinklers to keep the apple buds from freezing?","expected_doc":"orchard-irrigation-policy.md"}
+{"question":"What inlet temperature sets off the critical alarm for the server room?","expected_doc":"data-center-cooling-runbook.md"}
+{"question":"At what reading should the sensor battery be swapped out?","expected_doc":"field-sensor-battery-guide.md"}

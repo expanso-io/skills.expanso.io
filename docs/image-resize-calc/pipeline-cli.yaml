@@ -31,8 +31,7 @@ config:
           root.new_height = ($height * $final_scale).floor()
           root.aspect_ratio = $aspect
           root.scale_factor = $final_scale
-          root.metadata = {"skill": "image-resize-calc", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "image-resize-calc", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

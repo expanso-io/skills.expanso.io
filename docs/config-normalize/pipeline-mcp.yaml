@@ -4,7 +4,7 @@
 # HTTP endpoint for config normalization.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/normalize \
 #     -H "Content-Type: application/json" \
@@ -34,7 +34,7 @@ config:
 
           root = if $raw.length() == 0 {
             throw("config field is required")
-          } else { "" }
+          } else { {} }
 
           let detected_format = if $format != "auto" {
             $format
@@ -58,7 +58,7 @@ config:
             "mode": "mcp",
             "detected_format": $detected_format,
             "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

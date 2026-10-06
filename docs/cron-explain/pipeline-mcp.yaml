@@ -2,7 +2,7 @@
 # ==========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/explain -d '{"cron": "0 9 * * 1-5"}'
 
 name: "cron-explain-mcp"
@@ -41,6 +41,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let cron = meta("cron")
@@ -60,7 +61,7 @@ config:
             "mode": "mcp",
             "model": "gpt-4o-mini",
             "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

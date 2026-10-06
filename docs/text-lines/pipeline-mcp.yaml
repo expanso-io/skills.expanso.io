@@ -24,7 +24,7 @@ config:
           root.lines = $lines
           root.line_count = $lines.length()
           root.non_empty_count = $non_empty.length()
-          root.metadata = {"skill": "text-lines", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "text-lines", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

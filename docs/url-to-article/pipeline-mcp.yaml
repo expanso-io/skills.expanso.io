@@ -4,7 +4,7 @@
 # HTTP endpoint for MCP/OpenClaw integration.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/extract \
 #     -H "Content-Type: application/json" \
@@ -36,7 +36,7 @@ config:
           } else if !$url.has_prefix("http") {
             throw("url must start with http:// or https://")
           } else {
-            ""
+            this
           }
           meta url = $url
           meta trace_id = uuid_v4()
@@ -51,7 +51,7 @@ config:
 
       # 3. Extract article content
       - mapping: |
-          let html = content()
+          let html = content().string()
 
           let title = $html.re_find_all("<title[^>]*>([^<]+)</title>").index(0).or(
             $html.re_find_all("<h1[^>]*>([^<]+)</h1>").index(0)
@@ -76,7 +76,7 @@ config:
           root.metadata = {
             "skill": "url-to-article",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

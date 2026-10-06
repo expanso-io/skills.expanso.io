@@ -2,7 +2,7 @@
 # ========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/count -d '{"text": "Hello world."}'
 
 name: "word-count-mcp"
@@ -42,14 +42,14 @@ config:
           root.metadata = {
             "skill": "word-count",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [word-count] ${! root.words } words (trace: ${! meta("trace_id").slice(0, 8) })
+            [word-count] ${! this.words } words (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     sync_response: {}

@@ -10,34 +10,16 @@ This skill wraps text in various Markdown formatting elements. Runs entirely loc
 
 ### CLI Mode
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
+
 ```bash
-# Create heading
-FORMAT=heading LEVEL=2 echo "My Section" | expanso-edge run pipeline-cli.yaml
-# Output: ## My Section
-
-# Create code block
-FORMAT=code LANG=python echo "print('hello')" | expanso-edge run pipeline-cli.yaml
-# Output: ```python\nprint('hello')\n```
-
-# Create list
-FORMAT=list echo -e "Item 1\nItem 2\nItem 3" | expanso-edge run pipeline-cli.yaml
-# Output: - Item 1\n- Item 2\n- Item 3
-
-# Create link
-FORMAT=link URL="https://example.com" echo "Click here" | expanso-edge run pipeline-cli.yaml
-# Output: [Click here](https://example.com)
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-# Start server
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-# Create formatted Markdown
-curl -X POST http://localhost:8080/format \
-  -H "Content-Type: application/json" \
-  -d '{"text": "My Title", "format": "heading", "level": 2}'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Format Options

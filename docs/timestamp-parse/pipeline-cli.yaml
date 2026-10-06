@@ -2,9 +2,9 @@
 # =============================================
 #
 # Usage:
-#   echo "" | expanso-edge run pipeline-cli.yaml                    # Current time
-#   echo "2024-01-15T10:30:00Z" | expanso-edge run pipeline-cli.yaml  # Parse ISO
-#   echo "1705315800" | expanso-edge run pipeline-cli.yaml           # Parse Unix
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -45,7 +45,7 @@ config:
             "skill": "timestamp-parse",
             "mode": "cli",
             "input": $input,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -55,5 +55,4 @@ config:
             [timestamp-parse] Processed timestamp (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

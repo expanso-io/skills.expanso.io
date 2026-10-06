@@ -12,30 +12,16 @@ Scan code, configs, and logs for accidentally committed credentials. Essential f
 
 ### CLI Mode
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
+
 ```bash
-export OPENAI_API_KEY=sk-...
-
-# Scan a file
-cat config.yaml | expanso-edge run pipeline-cli.yaml
-
-# Scan before committing
-git diff --cached | expanso-edge run pipeline-cli.yaml
-
-# Scan entire codebase
-find . -name "*.py" -exec cat {} \; | expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-curl -X POST http://localhost:8080/scan \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "const API_KEY = \"sk-abc123def456\";",
-    "types": ["api_key", "token"]
-  }'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Configuration
@@ -115,18 +101,9 @@ const config = {
 
 ## Pre-Commit Integration
 
-Add to `.pre-commit-config.yaml`:
-
-```yaml
-repos:
-  - repo: local
-    hooks:
-      - id: secrets-scan
-        name: Scan for secrets
-        entry: bash -c 'git diff --cached | expanso-edge run skills/secrets-scan/pipeline-cli.yaml | jq -e ".has_secrets == false"'
-        language: system
-        pass_filenames: false
-```
+There is no verified pre-commit form. The skill runs as a Cloud-scheduled job,
+and `pipeline-cli.yaml` reads `stdin`, which that job cannot receive from a
+local `git diff`.
 
 ## False Positive Handling
 
@@ -144,4 +121,4 @@ The scanner automatically ignores:
 
 ---
 
-*Built with [Expanso Edge](https://expanso.io) - Your keys, your machine.*
+*Built with [Expanso Edge](https://expanso.io).*

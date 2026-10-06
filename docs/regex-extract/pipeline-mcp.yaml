@@ -2,7 +2,7 @@
 # ===========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/extract \
 #     -d '{"text": "Contact test@example.com", "pattern": "[a-z]+@[a-z]+\\.[a-z]+"}'
 
@@ -36,14 +36,14 @@ config:
           root.metadata = {
             "skill": "regex-extract",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [regex-extract] Found ${! root.count } matches (trace: ${! meta("trace_id").slice(0, 8) })
+            [regex-extract] Found ${! this.count } matches (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     sync_response: {}

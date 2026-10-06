@@ -24,8 +24,7 @@ config:
           root.first = $first
           root.found = $first != null
           root.count = if $parsed.type() == "array" { $parsed.length() } else { 0 }
-          root.metadata = {"skill": "array-find", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "array-find", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

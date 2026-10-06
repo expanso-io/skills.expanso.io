@@ -12,34 +12,16 @@ This skill takes any code snippet and produces a clear, human-readable explanati
 
 ### CLI Mode
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
+
 ```bash
-export OPENAI_API_KEY=sk-...
-
-# Explain a code file
-cat mycode.py | expanso-edge run pipeline-cli.yaml
-
-# With language hint (improves accuracy)
-cat mycode.rs | LANGUAGE=rust expanso-edge run pipeline-cli.yaml
-
-# Brief explanation
-cat mycode.js | DETAIL_LEVEL=brief expanso-edge run pipeline-cli.yaml
-
-# Detailed explanation with line-by-line breakdown
-cat mycode.go | DETAIL_LEVEL=detailed expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-curl -X POST http://localhost:8080/explain \
-  -H "Content-Type: application/json" \
-  -d '{
-    "code": "def factorial(n):\n  return 1 if n <= 1 else n * factorial(n-1)",
-    "language": "python",
-    "detail_level": "normal"
-  }'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Configuration
@@ -126,4 +108,4 @@ ollama run codellama
 
 ---
 
-*Built with [Expanso Edge](https://expanso.io) - Your keys, your machine.*
+*Built with [Expanso Edge](https://expanso.io).*

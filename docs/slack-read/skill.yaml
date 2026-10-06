@@ -1,0 +1,104 @@
+# Skill: slack-read
+# Version: 1.0.0
+#
+# Read messages from Slack channels and DMs via the Slack API.
+# SLACK_BOT_TOKEN is read from the executing node's environment and sent to the
+# Slack API (slack.com) as the bearer credential. It is not sent to Expanso
+# Cloud
+# and is not exposed to the calling agent. Message data is fetched from Slack.
+#
+# Compose with security skills for safe agent access:
+#   access-gate → slack-read → pii-redact → data-fence → audit-log
+
+name: "slack-read"
+version: "1.0.0"
+description: "Read messages from Slack channels and DMs with filtering and search"
+
+author:
+  name: "Expanso Team"
+  url: "https://expanso.io"
+  avatar: "EX"
+
+# Credentials (read from the executing node's environment; sent to Slack only)
+credentials:
+  - name: SLACK_BOT_TOKEN
+    required: true
+    description: Slack Bot User OAuth Token (xoxb-...)
+  - name: SLACK_CHANNEL_ID
+    required: false
+    description: Default channel ID to read from
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
+
+# Skill inputs
+inputs:
+  - name: channel
+    type: string
+    required: true
+    description: Slack channel ID (e.g., C01234567)
+  - name: limit
+    type: integer
+    default: 20
+    description: Maximum messages to retrieve (1-200)
+  - name: query
+    type: string
+    required: false
+    description: Optional search query to filter messages
+  - name: since_hours
+    type: integer
+    default: 24
+    description: Retrieve messages from last N hours
+
+# Skill outputs
+outputs:
+  - name: source
+    type: string
+    description: 'Source identifier: slack'
+  - name: resource
+    type: string
+    description: 'Resource identifier: conversations.history'
+  - name: schema_version
+    type: string
+    description: 'Response envelope schema version: 1.0'
+  - name: trace_id
+    type: string
+    description: Request trace identifier
+  - name: data
+    type: array
+    description: "Array of messages: {id, user, text, timestamp, thread_ts, reactions}"
+  - name: messages
+    type: array
+    description: Compatibility alias for data
+  - name: count
+    type: integer
+    description: Number of messages in data
+  - name: sensitivity
+    type: string
+    description: 'Data sensitivity: raw'
+  - name: error
+    type: string
+    description: API error, present only when the Slack request fails
+  - name: metadata
+    type: object
+    description: "Processing metadata: {skill, mode, channel, query, success, source, message_count, total_available, trace_id, timestamp}"
+
+# Backend options
+backends:
+  - name: slack-api
+    type: remote
+    requires: [SLACK_BOT_TOKEN]
+    description: Slack Web API (requires bot token with channels:history scope)
+
+# Expanso components used
+components:
+  inputs:
+    - stdin
+    - http_server
+  processors:
+    - mapping
+    - http
+    - log
+  outputs:
+    - stdout
+    - sync_response

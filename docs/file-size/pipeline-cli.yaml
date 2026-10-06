@@ -27,8 +27,7 @@ config:
           root.mb = $mb.floor()
           root.gb = $gb.floor()
           root.formatted = $formatted
-          root.metadata = {"skill": "file-size", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "file-size", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

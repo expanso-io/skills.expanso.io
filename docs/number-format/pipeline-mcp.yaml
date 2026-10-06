@@ -29,7 +29,7 @@ config:
           root.formatted = $formatted
           root.original = $num
           root.format = $format
-          root.metadata = {"skill": "number-format", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "number-format", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

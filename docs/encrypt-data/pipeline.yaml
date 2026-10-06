@@ -1,0 +1,142 @@
+name: encrypt-data-complete
+type: pipeline
+description: Authenticated field envelopes with a unique IV and separate encryption and MAC keys.
+namespace: production
+labels:
+  category: data-security
+  pattern: field-encryption
+
+config:
+  input:
+    http_server:
+      address: "0.0.0.0:8080"
+      path: /transactions
+      allowed_verbs: ["POST"]
+
+  pipeline:
+    processors:
+      # AES-256 needs a 32-byte key. A distinct MAC key prevents ciphertext
+      # changes from going undetected. Supply both through the node environment.
+      - mapping: |
+          let encryption_key = env("FIELD_ENCRYPTION_KEY_HEX").or("")
+          let mac_key = env("FIELD_MAC_KEY").or("")
+
+          root = if !$encryption_key.re_match("^[0-9a-fA-F]{64}$") {
+            throw("FIELD_ENCRYPTION_KEY_HEX must contain exactly 32 bytes as hexadecimal")
+          } else if $mac_key.length() < 32 {
+            throw("FIELD_MAC_KEY must contain at least 32 characters")
+          } else {
+            this
+          }
+
+      # A failed key check must remove the original plaintext before any
+      # downstream processor or output can observe it.
+      - catch:
+          - mapping: 'root = deleted()'
+
+      # Encrypt the payment object as one envelope so a key/IV pair is never
+      # reused for multiple values. The MAC covers the field name, IV, and
+      # ciphertext; consumers must verify it before decrypting.
+      - mapping: |
+          root = this
+
+          let plaintext = this.payment.format_json()
+          let key = env("FIELD_ENCRYPTION_KEY_HEX").decode("hex")
+          let mac_key = env("FIELD_MAC_KEY")
+          let iv = uuid_v4().replace_all("-", "").decode("hex")
+          let iv_hex = $iv.encode("hex")
+          let ciphertext = $plaintext.encrypt_aes("ctr", $key, $iv).encode("base64")
+          let mac = ("payment:" + $iv_hex + ":" + $ciphertext).hash("hmac_sha256", $mac_key).encode("hex")
+          let card = this.payment.card_number.or("").re_replace_all("[^0-9]", "")
+
+          root.payment = if this.payment != null {
+            {
+              "card_last_four": $card.slice(-4),
+              "card_brand": match {
+                $card.has_prefix("4") => "visa",
+                $card.re_match("^5[1-5]") => "mastercard",
+                $card.re_match("^3[47]") => "amex",
+                _ => "other"
+              },
+              "expiration": this.payment.expiration,
+              "protected": {
+                "ciphertext": $ciphertext,
+                "iv": $iv_hex,
+                "mac": $mac
+              }
+            }
+          } else { deleted() }
+
+      - mapping: |
+          root = this
+
+          let plaintext = this.customer.format_json()
+          let key = env("FIELD_ENCRYPTION_KEY_HEX").decode("hex")
+          let mac_key = env("FIELD_MAC_KEY")
+          let iv = uuid_v4().replace_all("-", "").decode("hex")
+          let iv_hex = $iv.encode("hex")
+          let ciphertext = $plaintext.encrypt_aes("ctr", $key, $iv).encode("base64")
+          let mac = ("customer:" + $iv_hex + ":" + $ciphertext).hash("hmac_sha256", $mac_key).encode("hex")
+          let email = this.customer.email.or("")
+          let ssn = this.customer.ssn.or("").re_replace_all("[^0-9]", "")
+          let phone = this.customer.phone.or("").re_replace_all("[^0-9]", "")
+
+          root.customer = if this.customer != null {
+            {
+              "email_domain": $email.split("@").index(1),
+              "ssn_last_four": $ssn.slice(-4),
+              "phone_area_code": $phone.slice(0, 3),
+              "protected": {
+                "ciphertext": $ciphertext,
+                "iv": $iv_hex,
+                "mac": $mac
+              }
+            }
+          } else { deleted() }
+
+      - mapping: |
+          root = this
+
+          let plaintext = this.address.format_json()
+          let key = env("FIELD_ENCRYPTION_KEY_HEX").decode("hex")
+          let mac_key = env("FIELD_MAC_KEY")
+          let iv = uuid_v4().replace_all("-", "").decode("hex")
+          let iv_hex = $iv.encode("hex")
+          let ciphertext = $plaintext.encrypt_aes("ctr", $key, $iv).encode("base64")
+          let mac = ("address:" + $iv_hex + ":" + $ciphertext).hash("hmac_sha256", $mac_key).encode("hex")
+          let zip = this.address.zip.or("").re_replace_all("[^0-9]", "")
+
+          root.address = if this.address != null {
+            {
+              "zip_prefix": $zip.slice(0, 3),
+              "city": this.address.city,
+              "state": this.address.state,
+              "country": this.address.country,
+              "protected": {
+                "ciphertext": $ciphertext,
+                "iv": $iv_hex,
+                "mac": $mac
+              }
+            }
+          } else { deleted() }
+
+      - mapping: |
+          root = this
+          root.encryption_metadata = {
+            "encrypted": true,
+            "timestamp": now(),
+            "algorithm": "AES-256-CTR+HMAC-SHA256",
+            "key_version": env("KEY_VERSION").or("v1"),
+            "pipeline": "field-encryption"
+          }
+
+  output:
+    stdout: {}
+
+logger:
+  level: INFO
+  format: json
+
+metrics:
+  prometheus:
+    path: /metrics

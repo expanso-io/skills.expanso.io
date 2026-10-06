@@ -27,8 +27,7 @@ config:
           root.contains_case_insensitive = $contains_case_insensitive
           root.starts_with = $starts_with
           root.ends_with = $ends_with
-          root.metadata = {"skill": "string-contains", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "string-contains", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

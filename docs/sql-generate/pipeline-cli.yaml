@@ -2,8 +2,8 @@
 # ==========================================
 #
 # Usage:
-#   echo "Get all users who signed up last month" | expanso-edge run pipeline-cli.yaml
-#   DIALECT=mysql echo "Count orders by status" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Requires OPENAI_API_KEY.
 
@@ -42,6 +42,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let response = this.choices.0.message.content.parse_json().catch({
@@ -58,15 +59,14 @@ config:
             "model": "gpt-4o-mini",
             "dialect": root.dialect,
             "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [sql-generate] Generated ${! root.dialect } query (trace: ${! meta("trace_id").slice(0, 8) })
+            [sql-generate] Generated ${! this.dialect } query (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

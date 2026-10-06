@@ -1,6 +1,11 @@
 tests:
-  - name: "Transcribe audio"
-    input: '{"audio_url": "https://example.com/test.mp3", "description": "short greeting"}'
-    expected:
-      has_field: transcript
-      metadata_has: [skill, trace_id]
+  - name: "Downloads audio and returns the transcription provider result"
+    input: '{"audio_url":"https://media.example.test/hello.wav"}'
+    provider_responses:
+      - mock-audio-bytes
+    ai_responses:
+      - Hello from the audio provider.
+    expected_output:
+      transcript: "Hello from the audio provider."
+      metadata:
+        source: openai_transcription

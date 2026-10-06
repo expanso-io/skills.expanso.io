@@ -28,7 +28,7 @@ config:
           root.is_number = $type == "number"
           root.is_string = $type == "string"
           root.is_bool = $type == "bool"
-          root.metadata = {"skill": "type-check", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "type-check", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

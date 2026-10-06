@@ -2,7 +2,7 @@
 # ===========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/slugify -d '{"text": "Hello World!"}'
 
 name: "slug-generate-mcp"
@@ -26,11 +26,10 @@ config:
           let text = this.text.or(content())
           let separator = this.separator.or("-")
 
-          let slug = $text.lowercase()
-          let slug = $slug.re_replace_all("\\s+", $separator)
-          let slug = $slug.re_replace_all("[^a-z0-9" + $separator + "]", "")
-          let slug = $slug.re_replace_all($separator + "+", $separator)
-          let slug = $slug.trim($separator)
+          let slug = $text.lowercase().replace_all($separator, " ")
+          let slug = $slug.re_replace_all("[^a-z0-9\\s]", "")
+          let slug = $slug.re_replace_all("\\s+", " ").trim()
+          let slug = $slug.split(" ").join($separator)
 
           root.slug = $slug
           root.original = $text
@@ -38,7 +37,7 @@ config:
           root.metadata = {
             "skill": "slug-generate",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

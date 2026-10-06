@@ -31,7 +31,7 @@ config:
           root.count = if $parsed.type() == "array" { $parsed.length() } else { 1 }
           root.valid = $parsed != null
           root.error = if $parsed == null { "Invalid JSON input" } else { "" }
-          root.metadata = {"skill": "object-merge", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "object-merge", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

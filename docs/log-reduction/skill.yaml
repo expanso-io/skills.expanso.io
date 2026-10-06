@@ -1,0 +1,63 @@
+# Skill: log-reduction
+name: log-reduction
+version: 1.0.0
+description: Parse access logs, drop health-check noise, keep every
+  4xx/5xx as its own event and roll up successes per minute, route and
+  status.
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+job: 'Log reduction: cut log volume but keep every error.'
+credentials: []
+inputs: []
+outputs: []
+backends:
+- name: local
+  type: local
+  requires: []
+components:
+  inputs:
+  - broker
+  - file
+  processors:
+  - mapping
+  - switch
+  - group_by_value
+  - archive
+  outputs:
+  - file
+job_specs:
+- pipeline.yaml
+proof:
+  status: executed-local-only
+  date: '2026-09-18'
+  expanso_edge: v2.1.21
+  record: skills/jobs/PROOF-2026-09-18.md
+  runs:
+  - where: local-mode-node
+    detail: Submitted to a local-mode node (expanso-edge run --local).
+      Not run through Cloud.
+    checks_passed: 5/5
+  proved:
+  - '5,000 synthetic lines became 330 events: all 250 errors kept individually
+    and 80 per-minute rollups matching an independent recount.'
+  - 92.7% fewer bytes on that synthetic log only; not a benchmark for
+    real logs.
+  not_proved:
+  - Any run through Cloud; streaming (unbounded) logs. The whole bounded
+    file is read as one batch.
+  - The top-level restart_policy never with this spec; it was added
+    after the run and has not been re-run.
+  note: The job spec has the same structure as the job that ran. Only
+    the values listed in its header comment differ, and long mappings
+    are rewrapped. The top-level restart_policy never is newer than
+    the run. Inputs in the runs were synthetic fixtures unless
+    a proved line says otherwise.
+dependencies:
+  network_egress:
+    required: false
+  third_party_apis: []
+  credentials_transmitted: []
+  data_leaving_host: []
+  offline_capable: true

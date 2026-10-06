@@ -4,13 +4,13 @@
 # Explain code in plain English.
 #
 # Usage:
-#   cat mycode.py | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 #   # With language hint
-#   cat mycode.rs | LANGUAGE=rust expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 #   # With detail level
-#   cat mycode.js | DETAIL_LEVEL=detailed expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 
 name: code-explain-cli
 type: pipeline
@@ -27,6 +27,9 @@ config:
           meta input_hash = content().hash("sha256").encode("hex")
           meta input_length = content().length()
           meta trace_id = uuid_v4()
+          root.error = if content().length() == 0 {
+            "input cannot be empty"
+          } else { deleted() }
 
           let language = env("LANGUAGE").or("auto-detect")
           let detail = env("DETAIL_LEVEL").or("normal")
@@ -52,29 +55,46 @@ config:
             }
           ]
 
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  tools: []
 
       - mapping: |
-          root.explanation = this.choices.0.message.content
-          root.metadata = {
-            "skill": "code-explain",
-            "mode": "cli",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
-            "language": env("LANGUAGE").or("auto-detect"),
-            "detail_level": env("DETAIL_LEVEL").or("normal"),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "code-explain",
+                "mode": "cli",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "explanation": this.choices.0.message.content,
+              "metadata": {
+                "skill": "code-explain",
+                "mode": "cli",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "input_length": meta("input_length"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "language": env("LANGUAGE").or("auto-detect"),
+                "detail_level": env("DETAIL_LEVEL").or("normal"),
+                "timestamp": now()
+              }
+            }
           }
 
       - log:
           level: INFO
           message: |
-            [code-explain] Explained ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [code-explain] Processed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

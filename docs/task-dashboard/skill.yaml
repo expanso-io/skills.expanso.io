@@ -1,11 +1,7 @@
 # Skill: task-dashboard
 name: task-dashboard
 version: 1.0.0
-description: Mission control dashboard for AI agent task queue management
-
-credentials:
-  - name: OPENAI_API_KEY
-    required: true
+description: Summarize task records supplied by an upstream queue or task system
 
 inputs:
   - name: action
@@ -13,8 +9,13 @@ inputs:
     default: status
     enum: [status, add, complete, prioritize]
   - name: task
-    type: string
+    type: object
     required: false
+    description: Retained for compatibility; state-changing actions report unsupported
+  - name: tasks
+    type: array
+    required: true
+    description: Current task records to summarize
 
 outputs:
   - name: queue
@@ -27,8 +28,10 @@ outputs:
     type: object
 
 backends:
-  - name: openai
-    type: remote
+  - name: local
+    type: local
+    requires: []
+    description: Deterministic local task summary
 
 components:
   inputs: [stdin, http_server]
