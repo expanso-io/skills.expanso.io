@@ -1,0 +1,32 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "146fa81633c62c58b78fc1722ed7d59e18109a767101ac505ef6da4cca93e3a8",
+  "date": "2026-10-06T11:41:31Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Decode JWT",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.sig"
+      ],
+      "output": [
+        {
+          "header": {
+            "alg": "HS256"
+          },
+          "metadata": {
+            "mode": "cli",
+            "skill": "jwt-decode",
+            "timestamp": "2026-10-06T04:41:31.531648-07:00",
+            "trace_id": "2a20a61a-32d5-4162-b116-cc8d5d5ede4f"
+          },
+          "payload": {},
+          "signature": "c2ln",
+          "valid_format": true
+        }
+      ]
+    }
+  ]
+}

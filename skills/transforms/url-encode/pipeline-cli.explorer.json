@@ -1,0 +1,64 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "5811d684bad91b0962e78ac738211aa96c259864a9c7f30c71589c775f8355ae",
+  "date": "2026-10-06T11:43:27Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Encode text",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "Hello World!"
+      ],
+      "output": [
+        {
+          "metadata": {
+            "input_hash": null,
+            "input_length": null,
+            "mode": "cli",
+            "operation": null,
+            "skill": "url-encode",
+            "timestamp": "2026-10-06T04:43:27.325131-07:00",
+            "trace_id": "b77287d9-2d10-4066-9a85-15db9dfb1fec"
+          },
+          "mode": null,
+          "result": "Hello+World%21"
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "metadata": {
+            "input_hash": null,
+            "input_length": null,
+            "mode": "cli",
+            "operation": null,
+            "skill": "url-encode",
+            "timestamp": "2026-10-06T04:43:27.325131-07:00",
+            "trace_id": "b77287d9-2d10-4066-9a85-15db9dfb1fec"
+          },
+          "mode": null,
+          "result": "Hello+World%21"
+        }
+      ],
+      "output": [
+        {
+          "metadata": {
+            "input_hash": null,
+            "input_length": null,
+            "mode": "cli",
+            "operation": null,
+            "skill": "url-encode",
+            "timestamp": "2026-10-06T04:43:27.325131-07:00",
+            "trace_id": "b77287d9-2d10-4066-9a85-15db9dfb1fec"
+          },
+          "mode": null,
+          "result": "Hello+World%21"
+        }
+      ]
+    }
+  ]
+}

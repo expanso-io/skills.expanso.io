@@ -1,0 +1,32 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "2d3281d7d98642b5e0cbee29185a31e898218e74f1fd8e6c278b32560fcc8cec",
+  "date": "2026-10-06T11:42:25Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Parse semver",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "1.2.3"
+      ],
+      "output": [
+        {
+          "major": 1,
+          "metadata": {
+            "mode": "cli",
+            "skill": "semver-parse",
+            "timestamp": "2026-10-06T04:42:24.940429-07:00",
+            "trace_id": "da06a8b9-3f82-46fa-9cd1-0434ca3959d1"
+          },
+          "minor": 2,
+          "patch": 3,
+          "prerelease": "",
+          "valid": true,
+          "version": "MS4yLjM="
+        }
+      ]
+    }
+  ]
+}

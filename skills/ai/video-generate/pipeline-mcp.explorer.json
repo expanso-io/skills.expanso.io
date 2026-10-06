@@ -1,0 +1,203 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "7bc3511841d82593b6fe7e38636644907092c7cc525c97df6af08e740753dbd8",
+  "date": "2026-10-06T11:37:10Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Normalizes a successful Replicate prediction",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "prompt": "A cat playing piano"
+        }
+      ],
+      "output": [
+        {
+          "prompt": "A cat playing piano"
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "prompt": "A cat playing piano"
+        }
+      ],
+      "output": [
+        {
+          "_start_time": "2026-10-06T04:37:06.80064-07:00",
+          "_trace_id": "95fc0156-1fd7-4ad8-841a-5f8cbf51f19b",
+          "prompt": "A cat playing piano"
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "_start_time": "2026-10-06T04:37:06.80064-07:00",
+          "_trace_id": "95fc0156-1fd7-4ad8-841a-5f8cbf51f19b",
+          "prompt": "A cat playing piano"
+        }
+      ],
+      "output": [
+        {
+          "input": {
+            "prompt": "A cat playing piano",
+            "prompt_optimizer": true
+          },
+          "version": "5522017e7bc92c4b2d90cc09a65051d7ade8e26c2932444ba16ca0f7a9b5cbb2"
+        }
+      ]
+    },
+    {
+      "name": "http",
+      "input": [
+        {
+          "input": {
+            "prompt": "A cat playing piano",
+            "prompt_optimizer": true
+          },
+          "version": "5522017e7bc92c4b2d90cc09a65051d7ade8e26c2932444ba16ca0f7a9b5cbb2"
+        }
+      ],
+      "output": [
+        {
+          "id": "prediction-001",
+          "output": [
+            "https://cdn.example.test/cat-piano.mp4"
+          ],
+          "status": "succeeded",
+          "urls": {
+            "get": "https://api.replicate.com/v1/predictions/prediction-001"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "id": "prediction-001",
+          "output": [
+            "https://cdn.example.test/cat-piano.mp4"
+          ],
+          "status": "succeeded",
+          "urls": {
+            "get": "https://api.replicate.com/v1/predictions/prediction-001"
+          }
+        }
+      ],
+      "output": [
+        {
+          "id": "prediction-001",
+          "output": [
+            "https://cdn.example.test/cat-piano.mp4"
+          ],
+          "status": "succeeded",
+          "urls": {
+            "get": "https://api.replicate.com/v1/predictions/prediction-001"
+          }
+        }
+      ]
+    },
+    {
+      "name": "while",
+      "input": [
+        {
+          "id": "prediction-001",
+          "output": [
+            "https://cdn.example.test/cat-piano.mp4"
+          ],
+          "status": "succeeded",
+          "urls": {
+            "get": "https://api.replicate.com/v1/predictions/prediction-001"
+          }
+        }
+      ],
+      "output": [
+        {
+          "id": "prediction-001",
+          "output": [
+            "https://cdn.example.test/cat-piano.mp4"
+          ],
+          "status": "succeeded",
+          "urls": {
+            "get": "https://api.replicate.com/v1/predictions/prediction-001"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "id": "prediction-001",
+          "output": [
+            "https://cdn.example.test/cat-piano.mp4"
+          ],
+          "status": "succeeded",
+          "urls": {
+            "get": "https://api.replicate.com/v1/predictions/prediction-001"
+          }
+        }
+      ],
+      "output": [
+        {
+          "error": null,
+          "metadata": {
+            "completed_at": "2026-10-06T04:37:09.806222-07:00",
+            "mode": "mcp",
+            "model": "minimax/video-01",
+            "prediction_id": "prediction-001",
+            "skill": "video-generate",
+            "source": "replicate_api",
+            "started_at": "2026-10-06T04:37:06.80064-07:00",
+            "trace_id": "95fc0156-1fd7-4ad8-841a-5f8cbf51f19b"
+          },
+          "status": "succeeded",
+          "video_url": "https://cdn.example.test/cat-piano.mp4"
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "error": null,
+          "metadata": {
+            "completed_at": "2026-10-06T04:37:09.806222-07:00",
+            "mode": "mcp",
+            "model": "minimax/video-01",
+            "prediction_id": "prediction-001",
+            "skill": "video-generate",
+            "source": "replicate_api",
+            "started_at": "2026-10-06T04:37:06.80064-07:00",
+            "trace_id": "95fc0156-1fd7-4ad8-841a-5f8cbf51f19b"
+          },
+          "status": "succeeded",
+          "video_url": "https://cdn.example.test/cat-piano.mp4"
+        }
+      ],
+      "output": [
+        {
+          "error": null,
+          "metadata": {
+            "completed_at": "2026-10-06T04:37:09.806222-07:00",
+            "mode": "mcp",
+            "model": "minimax/video-01",
+            "prediction_id": "prediction-001",
+            "skill": "video-generate",
+            "source": "replicate_api",
+            "started_at": "2026-10-06T04:37:06.80064-07:00",
+            "trace_id": "95fc0156-1fd7-4ad8-841a-5f8cbf51f19b"
+          },
+          "status": "succeeded",
+          "video_url": "https://cdn.example.test/cat-piano.mp4"
+        }
+      ]
+    }
+  ]
+}

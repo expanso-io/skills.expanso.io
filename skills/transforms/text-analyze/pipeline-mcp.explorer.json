@@ -1,0 +1,125 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "14a25bef7af4bd21912252705c423a9f3d15cd16cf1424492e2eb2a73320c2c4",
+  "date": "2026-10-06T11:42:52Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "sentiment_positive",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "text": "I absolutely love this product! It's the best thing ever!"
+        }
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "You are a text analyst. Analyze text and return structured JSON. Be precise and objective.",
+              "role": "system"
+            },
+            {
+              "content": "Analyze this text for: sentiment,entities,topics,keywords\n\nReturn a JSON object with the following structure:\n{\n  \"sentiment\": {\"label\": \"positive|negative|neutral\", \"score\": 0.0-1.0, \"explanation\": \"...\"},\n  \"entities\": [{\"text\": \"...\", \"type\": \"PERSON|ORG|LOCATION|DATE|...\", \"start\": 0, \"end\": 0}],\n  \"topics\": [\"topic1\", \"topic2\"],\n  \"keywords\": [\"keyword1\", \"keyword2\"]\n}\n\nOnly include the analyses requested. Return valid JSON only.\n\nText:\nI absolutely love this product! It's the best thing ever!",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "You are a text analyst. Analyze text and return structured JSON. Be precise and objective.",
+              "role": "system"
+            },
+            {
+              "content": "Analyze this text for: sentiment,entities,topics,keywords\n\nReturn a JSON object with the following structure:\n{\n  \"sentiment\": {\"label\": \"positive|negative|neutral\", \"score\": 0.0-1.0, \"explanation\": \"...\"},\n  \"entities\": [{\"text\": \"...\", \"type\": \"PERSON|ORG|LOCATION|DATE|...\", \"start\": 0, \"end\": 0}],\n  \"topics\": [\"topic1\", \"topic2\"],\n  \"keywords\": [\"keyword1\", \"keyword2\"]\n}\n\nOnly include the analyses requested. Return valid JSON only.\n\nText:\nI absolutely love this product! It's the best thing ever!",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "analysis": {
+            "result": "mock"
+          },
+          "metadata": {
+            "input_hash": "3da53c5d5b916a5894cc4c58fd2b8c0b7bdc2613cbdd0df2ceb74504bfddcfe3",
+            "input_length": "57",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "skill": "text-analyze",
+            "timestamp": "2026-10-06T04:42:52.380464-07:00",
+            "trace_id": "781f9d23-3915-4b86-b723-0d8e7c09bbf3"
+          }
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "analysis": {
+            "result": "mock"
+          },
+          "metadata": {
+            "input_hash": "3da53c5d5b916a5894cc4c58fd2b8c0b7bdc2613cbdd0df2ceb74504bfddcfe3",
+            "input_length": "57",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "skill": "text-analyze",
+            "timestamp": "2026-10-06T04:42:52.380464-07:00",
+            "trace_id": "781f9d23-3915-4b86-b723-0d8e7c09bbf3"
+          }
+        }
+      ],
+      "output": [
+        {
+          "analysis": {
+            "result": "mock"
+          },
+          "metadata": {
+            "input_hash": "3da53c5d5b916a5894cc4c58fd2b8c0b7bdc2613cbdd0df2ceb74504bfddcfe3",
+            "input_length": "57",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "skill": "text-analyze",
+            "timestamp": "2026-10-06T04:42:52.380464-07:00",
+            "trace_id": "781f9d23-3915-4b86-b723-0d8e7c09bbf3"
+          }
+        }
+      ]
+    }
+  ]
+}

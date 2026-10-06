@@ -1,0 +1,33 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "288230548ded4094ead2fb96c6a199a7e5bb4bb964893bfdbb16d80063fbb951",
+  "date": "2026-10-06T11:41:09Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Parse IP address",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "ip": "192.168.1.1"
+        }
+      ],
+      "output": [
+        {
+          "ip": "192.168.1.1",
+          "is_loopback": false,
+          "is_private": true,
+          "metadata": {
+            "mode": "mcp",
+            "skill": "ip-parse",
+            "timestamp": "2026-10-06T04:41:09.3902-07:00",
+            "trace_id": "019d353c-bd3d-4e75-857f-c2ba17ff0b81"
+          },
+          "valid": true,
+          "version": 4
+        }
+      ]
+    }
+  ]
+}

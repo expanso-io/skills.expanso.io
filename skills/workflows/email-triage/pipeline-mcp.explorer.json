@@ -1,0 +1,151 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "427cdfd41ba406270c52535a73a3e816e7eb17a29fe47f608652865d762e3a93",
+  "date": "2026-10-06T11:44:22Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Processes emails and categorizes correctly",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "provider": "gmail"
+        }
+      ],
+      "output": [
+        {
+          "provider": "gmail"
+        }
+      ]
+    },
+    {
+      "name": "try",
+      "input": [
+        {
+          "provider": "gmail"
+        }
+      ],
+      "output": [
+        {
+          "calendar_events": [],
+          "draft_responses": [],
+          "emails": [
+            {
+              "action": "review",
+              "calendar_event": null,
+              "category": "fyi",
+              "from": "ops@example.test",
+              "id": "1",
+              "priority": 3,
+              "subject": "Urgent incident"
+            }
+          ],
+          "metadata": {
+            "mode": "mcp",
+            "processing_time_ms": 0.337,
+            "provider": "gmail",
+            "skill": "email-triage",
+            "timestamp": "2026-10-06T04:44:21.995909-07:00",
+            "trace_id": "9c300dc9-9fcc-4a55-85fd-18f135ce7991"
+          },
+          "summary": {
+            "action_required_count": 0,
+            "by_category": {
+              "action-required": 0,
+              "fyi": 1,
+              "meeting": 0,
+              "newsletter": 0,
+              "spam": 0,
+              "urgent": 0
+            },
+            "meetings_found": 0,
+            "processed": 1,
+            "urgent_count": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "catch",
+      "input": [
+        {
+          "calendar_events": [],
+          "draft_responses": [],
+          "emails": [
+            {
+              "action": "review",
+              "calendar_event": null,
+              "category": "fyi",
+              "from": "ops@example.test",
+              "id": "1",
+              "priority": 3,
+              "subject": "Urgent incident"
+            }
+          ],
+          "metadata": {
+            "mode": "mcp",
+            "processing_time_ms": 0.337,
+            "provider": "gmail",
+            "skill": "email-triage",
+            "timestamp": "2026-10-06T04:44:21.995909-07:00",
+            "trace_id": "9c300dc9-9fcc-4a55-85fd-18f135ce7991"
+          },
+          "summary": {
+            "action_required_count": 0,
+            "by_category": {
+              "action-required": 0,
+              "fyi": 1,
+              "meeting": 0,
+              "newsletter": 0,
+              "spam": 0,
+              "urgent": 0
+            },
+            "meetings_found": 0,
+            "processed": 1,
+            "urgent_count": 0
+          }
+        }
+      ],
+      "output": [
+        {
+          "calendar_events": [],
+          "draft_responses": [],
+          "emails": [
+            {
+              "action": "review",
+              "calendar_event": null,
+              "category": "fyi",
+              "from": "ops@example.test",
+              "id": "1",
+              "priority": 3,
+              "subject": "Urgent incident"
+            }
+          ],
+          "metadata": {
+            "mode": "mcp",
+            "processing_time_ms": 0.337,
+            "provider": "gmail",
+            "skill": "email-triage",
+            "timestamp": "2026-10-06T04:44:21.995909-07:00",
+            "trace_id": "9c300dc9-9fcc-4a55-85fd-18f135ce7991"
+          },
+          "summary": {
+            "action_required_count": 0,
+            "by_category": {
+              "action-required": 0,
+              "fyi": 1,
+              "meeting": 0,
+              "newsletter": 0,
+              "spam": 0,
+              "urgent": 0
+            },
+            "meetings_found": 0,
+            "processed": 1,
+            "urgent_count": 0
+          }
+        }
+      ]
+    }
+  ]
+}

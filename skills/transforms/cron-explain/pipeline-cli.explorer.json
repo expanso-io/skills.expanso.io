@@ -1,0 +1,138 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "ed7e054d01fc21caff16b9e12604333f98baf8f5d6ccb27dc96f03e73d870178",
+  "date": "2026-10-06T11:40:38Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Explain weekday cron",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "0 9 * * 1-5"
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "You are a cron expression expert. Explain cron expressions in clear, simple English. Include when it will run (time, days, frequency). Format: Start with a one-sentence summary, then provide details. Be concise but complete.",
+              "role": "system"
+            },
+            {
+              "content": "Explain this cron expression: 0 9 * * 1-5",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "openai_chat_completion",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "You are a cron expression expert. Explain cron expressions in clear, simple English. Include when it will run (time, days, frequency). Format: Start with a one-sentence summary, then provide details. Be concise but complete.",
+              "role": "system"
+            },
+            {
+              "content": "Explain this cron expression: 0 9 * * 1-5",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "Mock response: 0 9 * * 1-5"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "Mock response: 0 9 * * 1-5"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "cron": "eyJjaG9pY2VzIjpbeyJtZXNzYWdlIjp7ImNvbnRlbnQiOiJNb2NrIHJlc3BvbnNlOiAwIDkgKiAqIDEtNSJ9fV19",
+          "explanation": "Mock response: 0 9 * * 1-5",
+          "fields": {
+            "day_of_month": "MA==",
+            "day_of_week": "Kg==",
+            "hour": "cmVzcG9uc2U6",
+            "minute": "eyJjaG9pY2VzIjpbeyJtZXNzYWdlIjp7ImNvbnRlbnQiOiJNb2Nr",
+            "month": "OQ=="
+          },
+          "metadata": {
+            "input_hash": "22b9fd458d105c202a2417fe672cb136cecf465b5b40a884c5c48724218e70a0",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "skill": "cron-explain",
+            "timestamp": "2026-10-06T04:40:38.434756-07:00",
+            "trace_id": "c93b31cd-b7ed-40f2-b247-aa80ca5efa2b"
+          }
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "cron": "eyJjaG9pY2VzIjpbeyJtZXNzYWdlIjp7ImNvbnRlbnQiOiJNb2NrIHJlc3BvbnNlOiAwIDkgKiAqIDEtNSJ9fV19",
+          "explanation": "Mock response: 0 9 * * 1-5",
+          "fields": {
+            "day_of_month": "MA==",
+            "day_of_week": "Kg==",
+            "hour": "cmVzcG9uc2U6",
+            "minute": "eyJjaG9pY2VzIjpbeyJtZXNzYWdlIjp7ImNvbnRlbnQiOiJNb2Nr",
+            "month": "OQ=="
+          },
+          "metadata": {
+            "input_hash": "22b9fd458d105c202a2417fe672cb136cecf465b5b40a884c5c48724218e70a0",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "skill": "cron-explain",
+            "timestamp": "2026-10-06T04:40:38.434756-07:00",
+            "trace_id": "c93b31cd-b7ed-40f2-b247-aa80ca5efa2b"
+          }
+        }
+      ],
+      "output": [
+        {
+          "cron": "eyJjaG9pY2VzIjpbeyJtZXNzYWdlIjp7ImNvbnRlbnQiOiJNb2NrIHJlc3BvbnNlOiAwIDkgKiAqIDEtNSJ9fV19",
+          "explanation": "Mock response: 0 9 * * 1-5",
+          "fields": {
+            "day_of_month": "MA==",
+            "day_of_week": "Kg==",
+            "hour": "cmVzcG9uc2U6",
+            "minute": "eyJjaG9pY2VzIjpbeyJtZXNzYWdlIjp7ImNvbnRlbnQiOiJNb2Nr",
+            "month": "OQ=="
+          },
+          "metadata": {
+            "input_hash": "22b9fd458d105c202a2417fe672cb136cecf465b5b40a884c5c48724218e70a0",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "skill": "cron-explain",
+            "timestamp": "2026-10-06T04:40:38.434756-07:00",
+            "trace_id": "c93b31cd-b7ed-40f2-b247-aa80ca5efa2b"
+          }
+        }
+      ]
+    }
+  ]
+}

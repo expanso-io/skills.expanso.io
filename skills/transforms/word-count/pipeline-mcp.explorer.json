@@ -1,0 +1,69 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "ef10cce6d6001c6ba3ef82f2167c7744709516d651ff9ccc4a8cef9dfcf03ea2",
+  "date": "2026-10-06T11:43:35Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Count simple text",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "text": "Hello world. This is a test."
+        }
+      ],
+      "output": [
+        {
+          "characters": 28,
+          "characters_no_spaces": 23,
+          "metadata": {
+            "mode": "mcp",
+            "skill": "word-count",
+            "timestamp": "2026-10-06T04:43:34.933642-07:00",
+            "trace_id": "62bd249a-90e9-42df-9214-fed0a8e9c3c1"
+          },
+          "paragraphs": 1,
+          "reading_time_minutes": 1,
+          "sentences": 2,
+          "words": 6
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "characters": 28,
+          "characters_no_spaces": 23,
+          "metadata": {
+            "mode": "mcp",
+            "skill": "word-count",
+            "timestamp": "2026-10-06T04:43:34.933642-07:00",
+            "trace_id": "62bd249a-90e9-42df-9214-fed0a8e9c3c1"
+          },
+          "paragraphs": 1,
+          "reading_time_minutes": 1,
+          "sentences": 2,
+          "words": 6
+        }
+      ],
+      "output": [
+        {
+          "characters": 28,
+          "characters_no_spaces": 23,
+          "metadata": {
+            "mode": "mcp",
+            "skill": "word-count",
+            "timestamp": "2026-10-06T04:43:34.933642-07:00",
+            "trace_id": "62bd249a-90e9-42df-9214-fed0a8e9c3c1"
+          },
+          "paragraphs": 1,
+          "reading_time_minutes": 1,
+          "sentences": 2,
+          "words": 6
+        }
+      ]
+    }
+  ]
+}

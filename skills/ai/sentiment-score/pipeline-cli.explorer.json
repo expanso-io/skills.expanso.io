@@ -1,0 +1,84 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "10abc724ee4d8503e59dac8b1ede0af6143b08a6809cb58a7caa9698eb69c837",
+  "date": "2026-10-06T11:36:36Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Score positive text",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "I love this!"
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "Score the sentiment of text. Return JSON: 'score' (-1 to 1, decimals ok), 'label' (positive/negative/neutral), 'confidence' (0-1). Be precise.",
+              "role": "system"
+            },
+            {
+              "content": "SSBsb3ZlIHRoaXMh",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "openai_chat_completion",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "Score the sentiment of text. Return JSON: 'score' (-1 to 1, decimals ok), 'label' (positive/negative/neutral), 'confidence' (0-1). Be precise.",
+              "role": "system"
+            },
+            {
+              "content": "SSBsb3ZlIHRoaXMh",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "confidence": 0.5,
+          "label": null,
+          "metadata": {
+            "mode": "cli",
+            "skill": "sentiment-score",
+            "timestamp": "2026-10-06T04:36:36.680177-07:00",
+            "trace_id": "707f50a1-a679-4dfa-829f-11624c1baf73"
+          },
+          "score": null
+        }
+      ]
+    }
+  ]
+}

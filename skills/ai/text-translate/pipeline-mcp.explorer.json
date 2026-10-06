@@ -1,0 +1,87 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "865765d68b3be645de94d115b3a2d6eb4f908d8c8e83d11c68ce4ff3e9241f07",
+  "date": "2026-10-06T11:36:58Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Translate to Spanish",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "text": "Hello world",
+          "target": "spanish"
+        }
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "You are a translator. Translate the text to spanish. Return JSON with: 'translation' (translated text), 'source_language' (detected language), 'target_language'. Preserve formatting and tone.",
+              "role": "system"
+            },
+            {
+              "content": "Hello world",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "openai_chat_completion",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "You are a translator. Translate the text to spanish. Return JSON with: 'translation' (translated text), 'source_language' (detected language), 'target_language'. Preserve formatting and tone.",
+              "role": "system"
+            },
+            {
+              "content": "Hello world",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "metadata": {
+            "mode": "mcp",
+            "skill": "text-translate",
+            "timestamp": "2026-10-06T04:36:58.484647-07:00",
+            "trace_id": "41edfa90-1cd6-4358-9426-0d53aac18981"
+          },
+          "source_language": "unknown",
+          "target_language": "spanish",
+          "translation": null
+        }
+      ]
+    }
+  ]
+}

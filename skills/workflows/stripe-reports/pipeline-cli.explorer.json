@@ -1,0 +1,52 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "3d145f8625d9740b566b00a241f8c41e1bfbc11a9f6c3d32f012d197cbbbe748",
+  "date": "2026-10-06T11:44:34Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Groups Stripe minor-unit totals by currency",
+  "errors": [
+    "Oct  6 04:44:34.353 ERR failed assignment (line 9): STRIPE_API_URL must be an https URL component=edge_service execution_id=e-484afac9-f11b-4441-83d1-428314383f80 label=\"\" path=root.pipeline.processors.3.try.1 pipeline_id=j-8b5ef943-bd9e-4f40-9d2b-1096ca1330b4 pipeline_version=1"
+  ],
+  "stages": [
+    {
+      "name": "try",
+      "input": [
+        {
+          "period": "today",
+          "include_insights": false
+        }
+      ],
+      "output": [
+        {
+          "_end_unix": 1791287074,
+          "_include_insights": false,
+          "_include_quick_wins": true,
+          "_start_unix": 1791200674,
+          "_trace_id": "3e83af0d-43fe-434a-a304-6ef9160d3ad6",
+          "include_insights": false,
+          "period": "today"
+        }
+      ]
+    },
+    {
+      "name": "catch",
+      "input": [
+        {
+          "_end_unix": 1791287074,
+          "_include_insights": false,
+          "_include_quick_wins": true,
+          "_start_unix": 1791200674,
+          "_trace_id": "3e83af0d-43fe-434a-a304-6ef9160d3ad6",
+          "include_insights": false,
+          "period": "today"
+        }
+      ],
+      "output": [
+        {
+          "error": "failed assignment (line 9): STRIPE_API_URL must be an https URL",
+          "status": "error"
+        }
+      ]
+    }
+  ]
+}

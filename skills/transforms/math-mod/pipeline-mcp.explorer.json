@@ -1,0 +1,33 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "591f7dad299d61e6081ad4052afcc4447e9a468f47ae54ce6c55bfafa87f6e8a",
+  "date": "2026-10-06T11:41:56Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Calculate modulo",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "dividend": 10,
+          "divisor": 3
+        }
+      ],
+      "output": [
+        {
+          "dividend": 10,
+          "divisor": 3,
+          "metadata": {
+            "mode": "mcp",
+            "skill": "math-mod",
+            "timestamp": "2026-10-06T04:41:56.636405-07:00",
+            "trace_id": "9e9e3c87-6bad-44b8-8254-c97b810f0cf2"
+          },
+          "remainder": 1,
+          "valid": true
+        }
+      ]
+    }
+  ]
+}

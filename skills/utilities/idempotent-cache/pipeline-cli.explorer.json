@@ -1,0 +1,154 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "d7ac796f05af1422c131a55049a6ec3187b5d5999a17d9665c4ded7afc36b534",
+  "date": "2026-10-06T11:43:50Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Caches repeated input",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "input": {
+            "data": "test"
+          },
+          "ttl_seconds": 60
+        }
+      ],
+      "output": [
+        {
+          "hash": "57b25c3508e24095e391190fdbce47d9c953520a674824f21806b529ff994d39",
+          "input": {
+            "data": "test"
+          },
+          "trace_id": "94c7b3ca-c055-4d32-94a4-d6a7c37a40e3",
+          "ttl_seconds": 60
+        }
+      ]
+    },
+    {
+      "name": "branch",
+      "input": [
+        {
+          "hash": "57b25c3508e24095e391190fdbce47d9c953520a674824f21806b529ff994d39",
+          "input": {
+            "data": "test"
+          },
+          "trace_id": "94c7b3ca-c055-4d32-94a4-d6a7c37a40e3",
+          "ttl_seconds": 60
+        }
+      ],
+      "output": [
+        {
+          "cached": false,
+          "hash": "57b25c3508e24095e391190fdbce47d9c953520a674824f21806b529ff994d39",
+          "input": {
+            "data": "test"
+          },
+          "trace_id": "94c7b3ca-c055-4d32-94a4-d6a7c37a40e3",
+          "ttl_seconds": 60
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "input": [
+        {
+          "cached": false,
+          "hash": "57b25c3508e24095e391190fdbce47d9c953520a674824f21806b529ff994d39",
+          "input": {
+            "data": "test"
+          },
+          "trace_id": "94c7b3ca-c055-4d32-94a4-d6a7c37a40e3",
+          "ttl_seconds": 60
+        }
+      ],
+      "output": [
+        {
+          "cached": false,
+          "hash": "57b25c3508e24095e391190fdbce47d9c953520a674824f21806b529ff994d39",
+          "input": {
+            "data": "test"
+          },
+          "result": {
+            "data": "test"
+          },
+          "trace_id": "94c7b3ca-c055-4d32-94a4-d6a7c37a40e3",
+          "ttl_seconds": 60
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "cached": false,
+          "hash": "57b25c3508e24095e391190fdbce47d9c953520a674824f21806b529ff994d39",
+          "input": {
+            "data": "test"
+          },
+          "result": {
+            "data": "test"
+          },
+          "trace_id": "94c7b3ca-c055-4d32-94a4-d6a7c37a40e3",
+          "ttl_seconds": 60
+        }
+      ],
+      "output": [
+        {
+          "cached": false,
+          "hash": "57b25c3508e24095e391190fdbce47d9c953520a674824f21806b529ff994d39",
+          "metadata": {
+            "input_size": 22,
+            "mode": "cli",
+            "skill": "idempotent-cache",
+            "timestamp": "2026-10-06T04:43:49.994669-07:00",
+            "trace_id": "94c7b3ca-c055-4d32-94a4-d6a7c37a40e3",
+            "ttl_seconds": 60
+          },
+          "result": {
+            "data": "test"
+          }
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "cached": false,
+          "hash": "57b25c3508e24095e391190fdbce47d9c953520a674824f21806b529ff994d39",
+          "metadata": {
+            "input_size": 22,
+            "mode": "cli",
+            "skill": "idempotent-cache",
+            "timestamp": "2026-10-06T04:43:49.994669-07:00",
+            "trace_id": "94c7b3ca-c055-4d32-94a4-d6a7c37a40e3",
+            "ttl_seconds": 60
+          },
+          "result": {
+            "data": "test"
+          }
+        }
+      ],
+      "output": [
+        {
+          "cached": false,
+          "hash": "57b25c3508e24095e391190fdbce47d9c953520a674824f21806b529ff994d39",
+          "metadata": {
+            "input_size": 22,
+            "mode": "cli",
+            "skill": "idempotent-cache",
+            "timestamp": "2026-10-06T04:43:49.994669-07:00",
+            "trace_id": "94c7b3ca-c055-4d32-94a4-d6a7c37a40e3",
+            "ttl_seconds": 60
+          },
+          "result": {
+            "data": "test"
+          }
+        }
+      ]
+    }
+  ]
+}

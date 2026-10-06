@@ -198,6 +198,18 @@
             if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
                 closeModal();
             }
+            if (!modalOverlay.classList.contains('active') || e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                var explorers = modalContent.querySelectorAll('.step-explorer');
+                Array.from(explorers).some(function(explorer) {
+                    if (!explorer.getClientRects().length) return false;
+                    var button = explorer.querySelector(e.key === 'ArrowRight' ? '.stage-next' : '.stage-previous');
+                    if (!button) return false;
+                    e.preventDefault();
+                    button.click();
+                    return true;
+                });
+            }
         });
 
         window.addEventListener('popstate', function(e) {
@@ -338,8 +350,30 @@
         var jobSpecs = jobFiles.map(function(f, i) { return { file: f, yaml: results[4 + i] }; })
             .filter(function(j) { return !!j.yaml; });
 
+        var traces = {};
+        var variants = jobSpecs.concat([
+            { file: 'pipeline-cli.yaml', yaml: results[1] },
+            { file: 'pipeline-mcp.yaml', yaml: results[2] },
+            { file: 'pipeline-cloud.yaml', yaml: results[3] }
+        ]).filter(function(item) { return !!item.yaml; });
+        await Promise.all(variants.map(async function(item) {
+            try {
+                var response = await fetch(SKILLS_BASE + '/' + skillName + '/' + item.file.replace('.yaml', '.explorer.json'));
+                if (!response.ok) return;
+                var trace = await response.json();
+                var digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(item.yaml));
+                var hash = Array.from(new Uint8Array(digest)).map(function(byte) { return byte.toString(16).padStart(2, '0'); }).join('');
+                if (trace.schema === 'expanso-stage-execution/1' && trace.pipeline_sha256 === hash &&
+                    Array.isArray(trace.stages) && trace.stages.length && trace.stages.every(function(stage) {
+                        return typeof stage.name === 'string' && Array.isArray(stage.input) && Array.isArray(stage.output);
+                    })) {
+                    traces[item.file] = trace;
+                }
+            } catch (error) { console.warn('Stage record unavailable', error); }
+        }));
+
         while (modalContent.firstChild) modalContent.removeChild(modalContent.firstChild);
-        buildModalContent(skillName, skill, results[0], results[1], results[2], results[3], jobSpecs);
+        buildModalContent(skillName, skill, results[0], results[1], results[2], results[3], jobSpecs, traces);
 
         if (window.Prism) Prism.highlightAllUnder(modalContent);
     }
@@ -354,7 +388,7 @@
             : 'run end to end on a local-mode node only. It has not been run through Expanso Cloud.');
     }
 
-    function buildModalContent(skillName, skill, skillYaml, pipelineCli, pipelineMcp, pipelineCloud, jobSpecs) {
+    function buildModalContent(skillName, skill, skillYaml, pipelineCli, pipelineMcp, pipelineCloud, jobSpecs, traces) {
         jobSpecs = jobSpecs || [];
         // ── Header ──
         var headerDiv = document.createElement('div');
@@ -624,6 +658,10 @@
 
                 subDiv.appendChild(readinessEl);
 
+                var explorer = createStepExplorer(traces[sub.file]);
+                explorer.dataset.pipelineFile = sub.file;
+                subDiv.appendChild(explorer);
+
                 // Code block
                 subDiv.appendChild(createCodeBlock(sub.yaml, 'yaml'));
 
@@ -685,6 +723,79 @@
     }
 
     // ── SEO Helpers ─────────────────────────────────────────
+
+    function createStepExplorer(trace) {
+        var section = document.createElement('section');
+        section.className = 'step-explorer modal-section';
+        section.tabIndex = 0;
+        section.setAttribute('aria-label', 'Pipeline step explorer');
+        var heading = document.createElement('h3');
+        heading.textContent = 'Step explorer';
+        section.appendChild(heading);
+        var note = document.createElement('p');
+        note.className = 'readiness-note';
+        note.textContent = trace ? trace.sample + ' · ' + trace.date + ': ' + trace.scope : 'No current execution record is available for this pipeline.';
+        section.appendChild(note);
+        if (!trace) return section;
+        if (trace.errors && trace.errors.length) {
+            var errors = document.createElement('p');
+            errors.className = 'readiness-note readiness-warn';
+            errors.textContent = 'This sample encountered processing errors: ' + trace.errors.join('\n');
+            section.appendChild(errors);
+        }
+
+        var navigation = document.createElement('div');
+        navigation.className = 'stage-navigation';
+        var previous = document.createElement('button');
+        previous.type = 'button';
+        previous.className = 'stage-previous';
+        previous.textContent = 'Previous stage';
+        var position = document.createElement('p');
+        position.className = 'stage-position';
+        position.setAttribute('aria-live', 'polite');
+        var next = document.createElement('button');
+        next.type = 'button';
+        next.className = 'stage-next';
+        next.textContent = 'Next stage';
+        navigation.append(previous, position, next);
+        section.appendChild(navigation);
+        var panels = document.createElement('div');
+        panels.className = 'stage-panels';
+        var values = [];
+        ['Input', 'Output'].forEach(function(label) {
+            var panel = document.createElement('div');
+            var title = document.createElement('h4');
+            title.textContent = label;
+            var pre = document.createElement('pre');
+            pre.className = 'stage-' + label.toLowerCase();
+            pre.tabIndex = 0;
+            pre.setAttribute('aria-label', 'Stage ' + label.toLowerCase());
+            panel.append(title, pre);
+            panels.appendChild(panel);
+            values.push(pre);
+        });
+        section.appendChild(panels);
+        var index = 0;
+        function render() {
+            var stage = trace.stages[index];
+            position.textContent = 'Stage ' + (index + 1) + ' of ' + trace.stages.length + ': ' + stage.name;
+            values[0].textContent = JSON.stringify(stage.input, null, 2);
+            values[1].textContent = JSON.stringify(stage.output, null, 2);
+            previous.disabled = index === 0;
+            next.disabled = index === trace.stages.length - 1;
+        }
+        function move(delta) {
+            var modal = document.getElementById('skill-modal');
+            var scroll = modal.scrollTop;
+            index = Math.max(0, Math.min(trace.stages.length - 1, index + delta));
+            render();
+            modal.scrollTop = scroll;
+        }
+        previous.addEventListener('click', function() { move(-1); });
+        next.addEventListener('click', function() { move(1); });
+        render();
+        return section;
+    }
 
     var defaultTitle = document.title;
     var defaultDescription = document.querySelector('meta[name="description"]').getAttribute('content');

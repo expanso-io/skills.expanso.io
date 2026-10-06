@@ -1,0 +1,75 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "7536916e2d2a4335fad5a6a706f65d7f12e3bcd5b09423547da6349d1ffd7f58",
+  "date": "2026-10-06T11:41:24Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Convert JSON array",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        [
+          {
+            "name": "Alice",
+            "age": 30
+          }
+        ]
+      ],
+      "output": [
+        {
+          "columns": [
+            "age",
+            "name"
+          ],
+          "csv": "agefixturename\n30fixtureAlice",
+          "metadata": {
+            "delimiter": "fixture",
+            "mode": "cli",
+            "skill": "json-to-csv",
+            "timestamp": "2026-10-06T04:41:24.317461-07:00",
+            "trace_id": "db2424e5-5c3d-4305-9511-f00ba5f46bbd"
+          },
+          "row_count": 1
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "columns": [
+            "age",
+            "name"
+          ],
+          "csv": "agefixturename\n30fixtureAlice",
+          "metadata": {
+            "delimiter": "fixture",
+            "mode": "cli",
+            "skill": "json-to-csv",
+            "timestamp": "2026-10-06T04:41:24.317461-07:00",
+            "trace_id": "db2424e5-5c3d-4305-9511-f00ba5f46bbd"
+          },
+          "row_count": 1
+        }
+      ],
+      "output": [
+        {
+          "columns": [
+            "age",
+            "name"
+          ],
+          "csv": "agefixturename\n30fixtureAlice",
+          "metadata": {
+            "delimiter": "fixture",
+            "mode": "cli",
+            "skill": "json-to-csv",
+            "timestamp": "2026-10-06T04:41:24.317461-07:00",
+            "trace_id": "db2424e5-5c3d-4305-9511-f00ba5f46bbd"
+          },
+          "row_count": 1
+        }
+      ]
+    }
+  ]
+}

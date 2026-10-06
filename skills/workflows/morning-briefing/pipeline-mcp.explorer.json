@@ -1,0 +1,138 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "7f6920df3b709153e65177eb945aa8abed70b19504b64fdf28705bc88f24b636",
+  "date": "2026-10-06T11:44:31Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Summarizes only supplied briefing records",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "location": "New York, NY",
+          "calendar": [
+            {
+              "time": "09:00",
+              "title": "Standup"
+            }
+          ],
+          "weather": {
+            "location": "New York, NY",
+            "temperature": 61,
+            "condition": "Rain"
+          },
+          "news": [
+            {
+              "title": "Transit update",
+              "source": "City desk"
+            }
+          ],
+          "tasks": [
+            {
+              "title": "Review roadmap",
+              "priority": 1
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "Create a concise morning briefing using only the supplied records. Do not invent meetings, weather, headlines, tasks, or delivery receipts.",
+              "role": "system"
+            },
+            {
+              "content": "Briefing records:\n{\n    \"calendar\": [\n        {\n            \"time\": \"09:00\",\n            \"title\": \"Standup\"\n        }\n    ],\n    \"news\": [\n        {\n            \"source\": \"City desk\",\n            \"title\": \"Transit update\"\n        }\n    ],\n    \"tasks\": [\n        {\n            \"priority\": 1,\n            \"title\": \"Review roadmap\"\n        }\n    ],\n    \"weather\": {\n        \"condition\": \"Rain\",\n        \"location\": \"New York, NY\",\n        \"temperature\": 61\n    }\n}",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "openai_chat_completion",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "Create a concise morning briefing using only the supplied records. Do not invent meetings, weather, headlines, tasks, or delivery receipts.",
+              "role": "system"
+            },
+            {
+              "content": "Briefing records:\n{\n    \"calendar\": [\n        {\n            \"time\": \"09:00\",\n            \"title\": \"Standup\"\n        }\n    ],\n    \"news\": [\n        {\n            \"source\": \"City desk\",\n            \"title\": \"Transit update\"\n        }\n    ],\n    \"tasks\": [\n        {\n            \"priority\": 1,\n            \"title\": \"Review roadmap\"\n        }\n    ],\n    \"weather\": {\n        \"condition\": \"Rain\",\n        \"location\": \"New York, NY\",\n        \"temperature\": 61\n    }\n}",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "briefing": {
+            "calendar": [
+              {
+                "time": "09:00",
+                "title": "Standup"
+              }
+            ],
+            "news": [
+              {
+                "source": "City desk",
+                "title": "Transit update"
+              }
+            ],
+            "tasks": [
+              {
+                "priority": 1,
+                "title": "Review roadmap"
+              }
+            ],
+            "weather": {
+              "condition": "Rain",
+              "location": "New York, NY",
+              "temperature": 61
+            }
+          },
+          "metadata": {
+            "location": "New York, NY",
+            "mode": "mcp",
+            "skill": "morning-briefing",
+            "source": "request",
+            "timestamp": "2026-10-06T04:44:31.024057-07:00",
+            "trace_id": "17960703-b1c0-48be-acec-a44ef67bfd99"
+          },
+          "priorities": [
+            "Review roadmap"
+          ],
+          "summary": "{\"result\": \"mock\"}"
+        }
+      ]
+    }
+  ]
+}

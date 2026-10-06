@@ -1,0 +1,30 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "96c33ebcd150c8958966d62b9ade0f455bde0d12bc284a92c7c2ff7b2679e26f",
+  "date": "2026-10-06T11:37:23Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Missing-field negative sample",
+  "stages": [
+    {
+      "name": "dedupe",
+      "input": [
+        {}
+      ],
+      "output": [
+        {}
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {}
+      ],
+      "output": []
+    },
+    {
+      "name": "mapping",
+      "input": [],
+      "output": []
+    }
+  ]
+}

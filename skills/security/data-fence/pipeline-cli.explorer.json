@@ -1,0 +1,141 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "07218e67adcd30797c770a4e689a106a8bc39e54aff5e0cc062696a3623f482e",
+  "date": "2026-10-06T11:37:49Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "filters to allowed fields",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "data": [
+            {
+              "id": 1,
+              "name": "John",
+              "ssn": "123-45-6789"
+            }
+          ],
+          "allowed_fields": [
+            "id",
+            "name"
+          ]
+        }
+      ],
+      "output": [
+        {
+          "data": [
+            {
+              "id": 1,
+              "name": "John",
+              "ssn": "123-45-6789"
+            }
+          ],
+          "allowed_fields": [
+            "id",
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "data": [
+            {
+              "id": 1,
+              "name": "John",
+              "ssn": "123-45-6789"
+            }
+          ],
+          "allowed_fields": [
+            "id",
+            "name"
+          ]
+        }
+      ],
+      "output": [
+        {
+          "data": [
+            {
+              "id": 1,
+              "name": "John",
+              "ssn": "123-45-6789"
+            }
+          ],
+          "allowed_fields": [
+            "id",
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "data": [
+            {
+              "id": 1,
+              "name": "John",
+              "ssn": "123-45-6789"
+            }
+          ],
+          "allowed_fields": [
+            "id",
+            "name"
+          ]
+        }
+      ],
+      "output": [
+        {
+          "data": [
+            {
+              "id": 1,
+              "name": "John",
+              "ssn": "123-45-6789"
+            }
+          ],
+          "allowed_fields": [
+            "id",
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "data": [
+            {
+              "id": 1,
+              "name": "John",
+              "ssn": "123-45-6789"
+            }
+          ],
+          "allowed_fields": [
+            "id",
+            "name"
+          ]
+        }
+      ],
+      "output": [
+        {
+          "data": [
+            {
+              "id": 1,
+              "name": "John",
+              "ssn": "123-45-6789"
+            }
+          ],
+          "allowed_fields": [
+            "id",
+            "name"
+          ]
+        }
+      ]
+    }
+  ]
+}

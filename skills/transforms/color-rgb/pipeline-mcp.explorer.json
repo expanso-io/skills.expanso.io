@@ -1,0 +1,34 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "dab7ecc8d8f41d6b9cca9f3a1d9ab76ce233da2c882bccaec84e8f5fc2532f9b",
+  "date": "2026-10-06T11:40:37Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Convert color",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "color": "#fff"
+        }
+      ],
+      "output": [
+        {
+          "hex": "#ffffff",
+          "hex_b": "ff",
+          "hex_g": "ff",
+          "hex_r": "ff",
+          "input": "#fff",
+          "metadata": {
+            "mode": "mcp",
+            "skill": "color-rgb",
+            "timestamp": "2026-10-06T04:40:37.475391-07:00",
+            "trace_id": "9026ba89-12f5-4da4-bbf6-cd7a2d454ef9"
+          },
+          "valid": true
+        }
+      ]
+    }
+  ]
+}

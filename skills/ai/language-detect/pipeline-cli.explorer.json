@@ -1,0 +1,84 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "0738adcf9eaae8433b8cce1fc60598933199f61a2714caae9bdc945d195a50d0",
+  "date": "2026-10-06T11:36:32Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Detect language",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "Hello world"
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "You are a language detection expert. Respond with ONLY a JSON object containing: language (full name), code (ISO 639-1), confidence (0-1). Example: {\"language\": \"English\", \"code\": \"en\", \"confidence\": 0.95}",
+              "role": "system"
+            },
+            {
+              "content": "Detect the language of this text:\n\nHello world",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "openai_chat_completion",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "You are a language detection expert. Respond with ONLY a JSON object containing: language (full name), code (ISO 639-1), confidence (0-1). Example: {\"language\": \"English\", \"code\": \"en\", \"confidence\": 0.95}",
+              "role": "system"
+            },
+            {
+              "content": "Detect the language of this text:\n\nHello world",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "code": "xx",
+          "confidence": 0,
+          "language": "Unknown",
+          "metadata": {
+            "mode": "cli",
+            "skill": "language-detect",
+            "timestamp": "2026-10-06T04:36:31.880108-07:00",
+            "trace_id": "f03d8401-8daf-4d09-b303-68b4f1577a44"
+          }
+        }
+      ]
+    }
+  ]
+}

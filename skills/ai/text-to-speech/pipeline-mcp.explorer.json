@@ -1,0 +1,80 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "2649eecb9d7a28a7e1bcf513a5856201153ae5630167cd88a7357651338d27fd",
+  "date": "2026-10-06T11:36:56Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Generates audio",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "text": "Hello world"
+        }
+      ],
+      "output": [
+        "Hello world"
+      ]
+    },
+    {
+      "name": "openai_speech",
+      "input": [
+        "Hello world"
+      ],
+      "output": [
+        "MOCK_AUDIO"
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        "MOCK_AUDIO"
+      ],
+      "output": [
+        {
+          "audio": "TU9DS19BVURJTw==",
+          "metadata": {
+            "mode": "mcp",
+            "model": "tts-1",
+            "skill": "text-to-speech",
+            "text_length": "11",
+            "timestamp": "2026-10-06T04:36:55.84286-07:00",
+            "trace_id": "0352840e-d4b6-43ba-bac2-1cb20019497e",
+            "voice": "alloy"
+          }
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "audio": "TU9DS19BVURJTw==",
+          "metadata": {
+            "mode": "mcp",
+            "model": "tts-1",
+            "skill": "text-to-speech",
+            "text_length": "11",
+            "timestamp": "2026-10-06T04:36:55.84286-07:00",
+            "trace_id": "0352840e-d4b6-43ba-bac2-1cb20019497e",
+            "voice": "alloy"
+          }
+        }
+      ],
+      "output": [
+        {
+          "audio": "TU9DS19BVURJTw==",
+          "metadata": {
+            "mode": "mcp",
+            "model": "tts-1",
+            "skill": "text-to-speech",
+            "text_length": "11",
+            "timestamp": "2026-10-06T04:36:55.84286-07:00",
+            "trace_id": "0352840e-d4b6-43ba-bac2-1cb20019497e",
+            "voice": "alloy"
+          }
+        }
+      ]
+    }
+  ]
+}

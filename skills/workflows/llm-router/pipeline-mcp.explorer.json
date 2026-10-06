@@ -1,0 +1,81 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "c9e5ee3cc09bd3cd9c00e68fa3f62c65bebf7dc0e51c220622589c4f35b54c26",
+  "date": "2026-10-06T11:44:26Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Routes simple prompt to mini model",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "prompt": "Say hello",
+          "task_type": "simple"
+        }
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "Say hello",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "openai_chat_completion",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "Say hello",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "Mock response: {\"prompt\": \"Say hello\", \"task_type\": \"simple\"}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "Mock response: {\"prompt\": \"Say hello\", \"task_type\": \"simple\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "cost": {
+            "tokens": 0
+          },
+          "metadata": {
+            "mode": "mcp",
+            "skill": "llm-router",
+            "trace_id": "dbb849b9-4171-4afc-a711-f221db351528"
+          },
+          "model_used": "gpt-4o-mini",
+          "response": "Mock response: {\"prompt\": \"Say hello\", \"task_type\": \"simple\"}"
+        }
+      ]
+    }
+  ]
+}

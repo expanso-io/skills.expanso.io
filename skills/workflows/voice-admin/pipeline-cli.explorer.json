@@ -1,0 +1,249 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "d6f67cf9b536ddc090202e9504c0c3bef072a1ab581b2ef9f7913519ea173a87",
+  "date": "2026-10-06T11:44:41Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Extracts a proposed voice action without claiming execution",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "audio_url": "https://media.example.test/voice-command.wav"
+        }
+      ],
+      "output": [
+        {
+          "_trace_id": "5537023d-d10f-4717-9064-2a1deb0e73a2",
+          "audio_url": "https://media.example.test/voice-command.wav"
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "_trace_id": "5537023d-d10f-4717-9064-2a1deb0e73a2",
+          "audio_url": "https://media.example.test/voice-command.wav"
+        }
+      ],
+      "output": [
+        {}
+      ]
+    },
+    {
+      "name": "http",
+      "input": [
+        {}
+      ],
+      "output": [
+        "mock-audio-bytes"
+      ]
+    },
+    {
+      "name": "openai_transcription",
+      "input": [
+        "mock-audio-bytes"
+      ],
+      "output": [
+        "Schedule a water-heater visit Tuesday at 2pm."
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        "Schedule a water-heater visit Tuesday at 2pm."
+      ],
+      "output": [
+        {
+          "_source": "openai_transcription",
+          "_trace_id": "5537023d-d10f-4717-9064-2a1deb0e73a2",
+          "audio_url": "https://media.example.test/voice-command.wav",
+          "transcript": "Schedule a water-heater visit Tuesday at 2pm."
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "_source": "openai_transcription",
+          "_trace_id": "5537023d-d10f-4717-9064-2a1deb0e73a2",
+          "audio_url": "https://media.example.test/voice-command.wav",
+          "transcript": "Schedule a water-heater visit Tuesday at 2pm."
+        }
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "Extract proposed administrative actions from the transcript. Do not claim any action was executed. Return JSON: {\"actions\":[{\"type\":\"schedule|invoice|task|reminder|other\",\"subject\":\"\",\"details\":{},\"needs_confirmation\":true}]}",
+              "role": "system"
+            },
+            {
+              "content": "Schedule a water-heater visit Tuesday at 2pm.",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "openai_chat_completion",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "Extract proposed administrative actions from the transcript. Do not claim any action was executed. Return JSON: {\"actions\":[{\"type\":\"schedule|invoice|task|reminder|other\",\"subject\":\"\",\"details\":{},\"needs_confirmation\":true}]}",
+              "role": "system"
+            },
+            {
+              "content": "Schedule a water-heater visit Tuesday at 2pm.",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"actions\": [{\"type\": \"schedule\", \"subject\": \"water-heater visit\", \"details\": {\"time\": \"Tuesday at 2pm\"}, \"needs_confirmation\": true}]}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"actions\": [{\"type\": \"schedule\", \"subject\": \"water-heater visit\", \"details\": {\"time\": \"Tuesday at 2pm\"}, \"needs_confirmation\": true}]}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "_source": "openai_transcription",
+          "_trace_id": "5537023d-d10f-4717-9064-2a1deb0e73a2",
+          "actions": [
+            {
+              "details": {
+                "time": "Tuesday at 2pm"
+              },
+              "needs_confirmation": true,
+              "subject": "water-heater visit",
+              "type": "schedule"
+            }
+          ],
+          "audio_url": "https://media.example.test/voice-command.wav",
+          "transcript": "Schedule a water-heater visit Tuesday at 2pm."
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "_source": "openai_transcription",
+          "_trace_id": "5537023d-d10f-4717-9064-2a1deb0e73a2",
+          "actions": [
+            {
+              "details": {
+                "time": "Tuesday at 2pm"
+              },
+              "needs_confirmation": true,
+              "subject": "water-heater visit",
+              "type": "schedule"
+            }
+          ],
+          "audio_url": "https://media.example.test/voice-command.wav",
+          "transcript": "Schedule a water-heater visit Tuesday at 2pm."
+        }
+      ],
+      "output": [
+        {
+          "actions": [
+            {
+              "details": {
+                "time": "Tuesday at 2pm"
+              },
+              "needs_confirmation": true,
+              "subject": "water-heater visit",
+              "type": "schedule"
+            }
+          ],
+          "confirmations": [],
+          "execution_status": "proposed_only",
+          "metadata": {
+            "mode": "cli",
+            "skill": "voice-admin",
+            "source": "openai_transcription",
+            "timestamp": "2026-10-06T04:44:41.503947-07:00",
+            "trace_id": "5537023d-d10f-4717-9064-2a1deb0e73a2"
+          },
+          "transcript": "Schedule a water-heater visit Tuesday at 2pm."
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "actions": [
+            {
+              "details": {
+                "time": "Tuesday at 2pm"
+              },
+              "needs_confirmation": true,
+              "subject": "water-heater visit",
+              "type": "schedule"
+            }
+          ],
+          "confirmations": [],
+          "execution_status": "proposed_only",
+          "metadata": {
+            "mode": "cli",
+            "skill": "voice-admin",
+            "source": "openai_transcription",
+            "timestamp": "2026-10-06T04:44:41.503947-07:00",
+            "trace_id": "5537023d-d10f-4717-9064-2a1deb0e73a2"
+          },
+          "transcript": "Schedule a water-heater visit Tuesday at 2pm."
+        }
+      ],
+      "output": [
+        {
+          "actions": [
+            {
+              "details": {
+                "time": "Tuesday at 2pm"
+              },
+              "needs_confirmation": true,
+              "subject": "water-heater visit",
+              "type": "schedule"
+            }
+          ],
+          "confirmations": [],
+          "execution_status": "proposed_only",
+          "metadata": {
+            "mode": "cli",
+            "skill": "voice-admin",
+            "source": "openai_transcription",
+            "timestamp": "2026-10-06T04:44:41.503947-07:00",
+            "trace_id": "5537023d-d10f-4717-9064-2a1deb0e73a2"
+          },
+          "transcript": "Schedule a water-heater visit Tuesday at 2pm."
+        }
+      ]
+    }
+  ]
+}

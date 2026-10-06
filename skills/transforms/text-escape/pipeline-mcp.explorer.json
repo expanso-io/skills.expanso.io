@@ -1,0 +1,32 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "2bf5627966f43a709c187da239bbcaf24f2374b21acbd6e38e9e5c74497194d1",
+  "date": "2026-10-06T11:42:59Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Escape text",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "text": "Hello & World"
+        }
+      ],
+      "output": [
+        {
+          "html_escaped": "Hello &amp; World",
+          "metadata": {
+            "mode": "mcp",
+            "skill": "text-escape",
+            "timestamp": "2026-10-06T04:42:59.389595-07:00",
+            "trace_id": "ed276c89-6558-49ca-b911-5ee813c01f4a"
+          },
+          "original": "Hello & World",
+          "original_length": 13,
+          "url_escaped": "Hello+%26+World"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "51350da4be821ec90e1daccb0136b0a48752812911adca54fcf92f8ea4acc5ad",
+  "date": "2026-10-06T11:41:28Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Convert simple JSON",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "json": {
+            "key": "value"
+          }
+        }
+      ],
+      "output": [
+        {
+          "error": "",
+          "metadata": {
+            "mode": "mcp",
+            "skill": "json-to-yaml",
+            "timestamp": "2026-10-06T04:41:27.947934-07:00",
+            "trace_id": "a3dcce44-6200-42a1-bffe-ed6ac61e9476"
+          },
+          "valid": true,
+          "yaml": "a2V5OiB2YWx1ZQo="
+        }
+      ]
+    }
+  ]
+}

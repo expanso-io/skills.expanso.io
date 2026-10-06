@@ -1,0 +1,61 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "9abe663f68f2dcb21ba0c368e70a78aea8b3c4acc213068b85813eadbcb7cf93",
+  "date": "2026-10-06T11:43:00Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Format to lowercase",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "HELLO WORLD"
+      ],
+      "output": [
+        {
+          "format": null,
+          "metadata": {
+            "format_applied": null,
+            "mode": "cli",
+            "skill": "text-format",
+            "timestamp": "2026-10-06T04:43:00.401536-07:00",
+            "trace_id": "984cedb3-2648-493f-a8f8-da3504441cd2"
+          },
+          "original_length": 11,
+          "result": "aGVsbG8gd29ybGQ="
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "format": null,
+          "metadata": {
+            "format_applied": null,
+            "mode": "cli",
+            "skill": "text-format",
+            "timestamp": "2026-10-06T04:43:00.401536-07:00",
+            "trace_id": "984cedb3-2648-493f-a8f8-da3504441cd2"
+          },
+          "original_length": 11,
+          "result": "aGVsbG8gd29ybGQ="
+        }
+      ],
+      "output": [
+        {
+          "format": null,
+          "metadata": {
+            "format_applied": null,
+            "mode": "cli",
+            "skill": "text-format",
+            "timestamp": "2026-10-06T04:43:00.401536-07:00",
+            "trace_id": "984cedb3-2648-493f-a8f8-da3504441cd2"
+          },
+          "original_length": 11,
+          "result": "aGVsbG8gd29ybGQ="
+        }
+      ]
+    }
+  ]
+}

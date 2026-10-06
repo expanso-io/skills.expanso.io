@@ -1,0 +1,72 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "5501c49c23e1ec2d14571a3b5bbaf733143aff5e0c6f839af8b7c8010b113930",
+  "date": "2026-10-06T11:43:41Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Valid simple YAML",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "yaml": "key: value"
+        }
+      ],
+      "output": [
+        {
+          "error": null,
+          "metadata": {
+            "input_hash": null,
+            "input_length": null,
+            "mode": "mcp",
+            "skill": "yaml-validate",
+            "timestamp": "2026-10-06T04:43:41.53713-07:00",
+            "trace_id": "e6c2af23-883b-482d-9b2a-ea963b43dcc8"
+          },
+          "parsed": {
+            "key": "value"
+          },
+          "valid": true
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "error": null,
+          "metadata": {
+            "input_hash": null,
+            "input_length": null,
+            "mode": "mcp",
+            "skill": "yaml-validate",
+            "timestamp": "2026-10-06T04:43:41.53713-07:00",
+            "trace_id": "e6c2af23-883b-482d-9b2a-ea963b43dcc8"
+          },
+          "parsed": {
+            "key": "value"
+          },
+          "valid": true
+        }
+      ],
+      "output": [
+        {
+          "error": null,
+          "metadata": {
+            "input_hash": null,
+            "input_length": null,
+            "mode": "mcp",
+            "skill": "yaml-validate",
+            "timestamp": "2026-10-06T04:43:41.53713-07:00",
+            "trace_id": "e6c2af23-883b-482d-9b2a-ea963b43dcc8"
+          },
+          "parsed": {
+            "key": "value"
+          },
+          "valid": true
+        }
+      ]
+    }
+  ]
+}

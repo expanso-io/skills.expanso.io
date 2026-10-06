@@ -1,0 +1,36 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "f49c54e873c275cda49057665e91f5501951baa51a8b08158b03165bcad024cd",
+  "date": "2026-10-06T11:43:52Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Calculate dimensions",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "width": 1920,
+          "height": 1080
+        }
+      ],
+      "output": [
+        {
+          "aspect_ratio": "16:9",
+          "height": 1080,
+          "megapixels": 2.0736,
+          "metadata": {
+            "mode": "cli",
+            "skill": "image-dimensions",
+            "timestamp": "2026-10-06T04:43:52.45287-07:00",
+            "trace_id": "198c45f9-c640-4c78-8ad2-879031f51ddc"
+          },
+          "orientation": "landscape",
+          "pixels": 2073600,
+          "ratio_decimal": 1.7777777777777777,
+          "width": 1920
+        }
+      ]
+    }
+  ]
+}
