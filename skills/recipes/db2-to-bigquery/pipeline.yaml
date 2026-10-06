@@ -126,6 +126,8 @@ config:
             this
           }
 
+      - mapping: 'root = if errored() { deleted() } else { this }'
+
   output:
     # Google ADC supplies credentials. Grant the node service account append
     # permission only on this table.

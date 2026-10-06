@@ -48,15 +48,6 @@ def load_json(path: Path) -> dict[str, Any]:
         ) from exc
 
 
-def load_execution_report(path: Path) -> dict[str, Any]:
-    try:
-        return load_json(path)
-    except RuntimeError:
-        if not path.exists():
-            return {}
-        raise
-
-
 def load_yaml(path: Path) -> dict[str, Any]:
     value = yaml.safe_load(path.read_text())
     return value if isinstance(value, dict) else {}
@@ -206,9 +197,9 @@ def build_table(
     *,
     preserve_generated: bool = False,
 ) -> dict[str, Any]:
-    cli_report = load_execution_report(REPORTS["cli"])
-    mcp_report = load_execution_report(REPORTS["mcp"])
-    recipe_report = load_execution_report(REPORTS["recipes"])
+    cli_report = load_json(REPORTS["cli"])
+    mcp_report = load_json(REPORTS["mcp"])
+    recipe_report = load_json(REPORTS["recipes"])
     cli_index = index_skill_report(cli_report)
     mcp_index = index_skill_report(mcp_report)
     recipe_index = {str(row.get("pipeline")): row for row in recipe_report.get("recipes", [])}

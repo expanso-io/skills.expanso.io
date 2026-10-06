@@ -212,8 +212,9 @@ def main():
                 processors = cfg["pipeline"]["processors"]
                 if variant == "mcp":
                     processors = processors[1:]
+                processors = next(p["try"] for p in processors if "try" in p)
                 switch = next(p for p in processors if "switch" in p)
-                cfg["pipeline"]["processors"] = [processors[0], switch]
+                cfg["pipeline"]["processors"] = [{"try": [processors[0], switch]}]
                 result = suite.execute(cfg, {"provider": "outlook", "since_hours": 1})
                 assert [email["id"] for email in result["emails"]] == ["recent"], (result, Provider.calls)
                 rows.append(f"outlook:{variant}")
