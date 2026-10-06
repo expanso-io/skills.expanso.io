@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T15:11:51Z",
+  "generated": "2026-10-06T15:28:00Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -3541,7 +3541,7 @@
     },
     {
       "pipeline": "skills/recipes/circuit-breakers/pipeline.yaml",
-      "sha256": "994cf2435659b343a10ba0579926205d5abc8dc39750a8bae1ebb0a0221abbe6",
+      "sha256": "725377b8896ae1ac5aaacc6ce7c88876d617ec4750b03ed74cb087a2cfb367e4",
       "category": "recipes",
       "skill": "circuit-breakers",
       "variant": "recipe",

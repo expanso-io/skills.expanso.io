@@ -37,7 +37,7 @@ config:
               root.enrichment_source = "primary_api"
       - catch:
           # Primary failed, try secondary
-          - mapping: 'root = this'
+          - catch: []
           - try:
               - http:
                   url: "https://${SECONDARY_API_HOST}/enrich/${!this.event_id}"

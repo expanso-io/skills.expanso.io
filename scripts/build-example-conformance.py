@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import argparse
-import gzip
 import hashlib
 import json
 import subprocess
@@ -38,7 +37,7 @@ REPORTS = {
 
 def load_json(path: Path) -> dict[str, Any]:
     try:
-        return json.loads(gzip.decompress(path.read_bytes()).decode() if path.suffix == ".gz" else path.read_text())
+        return json.loads(path.read_text())
     except FileNotFoundError as exc:
         raise RuntimeError(
             f"required report is missing: {path.relative_to(REPO)}"
@@ -220,13 +219,9 @@ def build_table(
     *,
     preserve_generated: bool = False,
 ) -> dict[str, Any]:
-    reports = {}
-    for name, current in REPORTS.items():
-        retained = REPO / "execution-reports" / f"review-{name}.json.gz"
-        reports[name] = load_json(current) if current.exists() else load_json(retained) if retained.exists() else {}
-    cli_report = reports["cli"]
-    mcp_report = reports["mcp"]
-    recipe_report = reports["recipes"]
+    cli_report = load_json(REPORTS["cli"])
+    mcp_report = load_json(REPORTS["mcp"])
+    recipe_report = load_json(REPORTS["recipes"])
     cli_index = index_skill_report(cli_report)
     mcp_index = index_skill_report(mcp_report)
     recipe_index = {str(row.get("pipeline")): row for row in recipe_report.get("recipes", [])}
@@ -240,7 +235,6 @@ def build_table(
         for row in (existing or {}).get("examples", [])
     }
 
-    prior_rows = {row["pipeline"]: row for row in (existing or {}).get("examples", [])}
     rows: list[dict[str, Any]] = []
     for path in pipeline_files():
         relative = str(path.relative_to(REPO))
@@ -253,15 +247,6 @@ def build_table(
             execution = {"status": "pulled", "reason": publication["reason"]}
         else:
             execution = execution_evidence(path, variant, cli_index, mcp_index, recipe_index, special_index)
-            prior = prior_rows.get(relative)
-            missing = (
-                (variant == "cli" and (path.parents[1].name, path.parent.name) not in cli_index)
-                or (variant == "mcp" and (path.parents[1].name, path.parent.name) not in mcp_index)
-                or (variant == "recipe" and relative not in recipe_index)
-                or (variant == "cloud" and relative not in special_index)
-            )
-            if missing and prior and prior.get("sha256") == sha256(path):
-                execution = dict(prior["criteria"]["runs"])
         if execution.get("status") == "skipped":
             if variant in {"recipe", "cloud"}:
                 if relative not in skip_reasons:
@@ -353,10 +338,10 @@ def build_table(
         "toolchain": {
             "expanso_edge": mcp_report.get("tools", {})
             .get("expanso_edge", {})
-            .get("version") or (existing or {}).get("toolchain", {}).get("expanso_edge"),
+            .get("version"),
             "expanso_cli": mcp_report.get("tools", {})
             .get("expanso_cli", {})
-            .get("version") or (existing or {}).get("toolchain", {}).get("expanso_cli"),
+            .get("version"),
         },
         "history_review": {
             "baseline": "git history through 699bea8",
