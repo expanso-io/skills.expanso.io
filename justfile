@@ -14,7 +14,7 @@ build-catalog:
 
 # Look up skills
 lookup *ARGS:
-    uv run -s scripts/skill-lookup.py {{ARGS}}
+    uv run -s scripts/skill-lookup.py {{ ARGS }}
 
 # List all skills by category
 list-skills:
@@ -22,25 +22,15 @@ list-skills:
 
 # Search skills
 search QUERY:
-    uv run -s scripts/skill-lookup.py search {{QUERY}}
+    uv run -s scripts/skill-lookup.py search {{ QUERY }}
 
 # Run skill tests (pass through args)
 test-skills *ARGS:
-    uv run -s scripts/test-skills.py {{ARGS}}
+    uv run -s scripts/test-skills.py {{ ARGS }}
 
-# Copy catalog and skills to docs (for local testing)
-# Uses flat structure: docs/<skill-name>/
+# Stage the Pages publication for local testing
 prep-docs:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    cp catalog.json docs/
-    cp catalog-minimal.json docs/
-    echo "Copying skills with flat structure..."
-    for dir in skills/*/*/; do
-        name=$(basename "$dir")
-        cp -r "$dir" "docs/$name" 2>/dev/null || true
-    done
-    echo "Done. Skills at docs/<name>/"
+    uv run -s scripts/stage-pages.py
 
 # Full local dev setup
 dev: prep-docs serve
