@@ -1439,6 +1439,10 @@ def main() -> int:
     )
     parser.add_argument("skills", nargs="*", help="Skill names to test")
     parser.add_argument(
+        "--stage-samples", action="store_true",
+        help="Run only the first sample per skill to record explorer stage values",
+    )
+    parser.add_argument(
         "--variant",
         choices=("cli", "mcp"),
         default="mcp",
@@ -1540,6 +1544,10 @@ def main() -> int:
     args = parser.parse_args()
 
     skills = find_skills(args.skills or None)
+    if args.stage_samples:
+        catalog = json.loads((REPO_ROOT / "catalog.json").read_text())
+        skills = [skill for skill in skills if skill.name in catalog["skills"]
+                  and (skill / f"pipeline-{args.variant}.yaml").exists()]
     if args.limit_skills:
         skills = skills[: args.limit_skills]
 
@@ -1671,6 +1679,8 @@ def main() -> int:
 
         test_yaml = load_yaml(test_yaml_path) or {}
         tests = test_yaml.get("tests", [])
+        if args.stage_samples:
+            tests = tests[:1]
         fixtures_dir = test_yaml.get("fixtures_dir")
 
         if not tests:

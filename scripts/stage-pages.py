@@ -26,11 +26,12 @@ def stage_observations(repository):
         with opener(path, "rt") as handle:
             report = json.load(handle)
         for skill in report.get("skills", []):
-            sample = next((test for test in skill.get("tests", []) if test.get("status") == "passed" and test.get("stages")), None)
+            sample = next((test for test in skill.get("tests", []) if test.get("status") == "passed" and (test.get("stages") or test.get("adapter_values"))), None)
             if sample:
                 observations[(skill["name"], report["variant"], skill["pipeline_sha256"])] = {
                     "stages": sample["stages"], "scope": sample["stage_scope"],
                     "date": report["finished_at"], "sample": sample["name"],
+                    "adapter_values": sample.get("adapter_values", {}),
                 }
     return observations
 
@@ -48,12 +49,17 @@ def explorer_data(directories, observations):
             for index, processor in enumerate(processors):
                 stages.append({"label": next(iter(processor)), "config": yaml.safe_dump(processor, sort_keys=False),
                                **(evidence.get("stages", [])[index] if index < len(evidence.get("stages", [])) else {})})
-            first = evidence.get("stages", [{}])[0].get("input") if evidence.get("stages") else None
-            last = evidence.get("stages", [{}])[-1].get("output") if evidence.get("stages") else None
+            first = evidence["stages"][0] if evidence.get("stages") else {}
+            last = evidence["stages"][-1] if evidence.get("stages") else {}
+            adapters = evidence.get("adapter_values", {})
+            if "input" in adapters:
+                first = {"input": adapters["input"]}
+            if "output" in adapters:
+                last = {"output": adapters["output"]}
             stages.insert(0, {"label": "input", "config": yaml.safe_dump(job["config"]["input"], sort_keys=False),
-                              **({"input": first, "output": first} if first is not None else {})})
+                              **({"input": first["input"], "output": first["input"]} if "input" in first else {})})
             stages.append({"label": "output", "config": yaml.safe_dump(job["config"]["output"], sort_keys=False),
-                           **({"input": last, "output": last} if last is not None else {})})
+                           **({"input": last["output"], "output": last["output"]} if "output" in last else {})})
             variants[path.name] = {"sha256": digest, "stages": stages,
                                    **{key: value for key, value in evidence.items() if key != "stages"}}
     return variants

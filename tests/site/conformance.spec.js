@@ -210,6 +210,6 @@ test('retains deep links, spec and pipeline tabs, theme, and job proof', async (
   await page.locator('.skill-card').first().click();
   await page.getByRole('button', { name: 'Pipeline', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Proof', exact: true })).toBeVisible();
-  await expect(page.locator('#modal-content .code-block:visible code').first())
+  await expect(page.locator('#modal-content .code-block:visible:not(.stage-config):not(.stage-input):not(.stage-output) code').first())
     .toContainText('type: pipeline');
 });

@@ -48,6 +48,7 @@ def check_publication(output):
         sources = staging.published_sources(ROOT)
         for name, directories in sources.items():
             expected = {p.relative_to(source) for source in directories for p in source.rglob("*") if p.is_file() and "__pycache__" not in p.parts}
+            expected.add(Path("explorer.json"))
             actual = {p.relative_to(output / name) for p in (output / name).rglob("*") if p.is_file()}
             assert actual == expected, (name, actual ^ expected)
             for pipeline in (pipeline for source in directories for pipeline in source.glob("pipeline*.yaml")):
