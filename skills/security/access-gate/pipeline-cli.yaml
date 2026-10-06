@@ -56,7 +56,7 @@ config:
           }
 
           # Parse policy rules: "agent:resource:action,agent:resource:action"
-          let policy_rules = $policy_env.split(",").map_each(rule -> rule.trim())
+          let policy_rules = $policy_env.split(",").map_each(rule -> rule.split(":").map_each(field -> field.trim()).join(":"))
 
           root.agent = $agent
           root.resource = $resource

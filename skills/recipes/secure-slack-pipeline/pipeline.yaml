@@ -88,7 +88,7 @@ config:
           }
 
           # Policy format: "agent:resource:action,agent:resource:action"
-          let rules = $policy.split(",").map_each(rule -> rule.trim())
+          let rules = $policy.split(",").map_each(rule -> rule.split(":").map_each(field -> field.trim()).join(":"))
           let matched = $rules.filter(rule -> rule == $agent + ":slack-read:read" || rule == "*:*:*" || rule == "*:slack-read:read" || rule == $agent + ":*:read" || rule == $agent + ":slack-read:*" || rule == "*:*:read" || rule == "*:slack-read:*" || rule == $agent + ":*:*").length() > 0
 
           if !$matched {

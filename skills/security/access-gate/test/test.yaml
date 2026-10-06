@@ -41,3 +41,19 @@ tests:
     input: '{"agent":"marketing-bot"}'
     expected:
       error_contains: "resource is required"
+
+  - name: "allows spaced policy fields"
+    input: '{"agent":"marketing-bot","resource":"slack-read","action":"read"}'
+    env:
+      ACCESS_POLICY: "marketing-bot : slack-read : read"
+    expected:
+      json_contains:
+        allowed: true
+
+  - name: "allows spaced wildcard policy fields"
+    input: '{"agent":"marketing-bot","resource":"slack-read","action":"read"}'
+    env:
+      ACCESS_POLICY: " * : slack-read : read "
+    expected:
+      json_contains:
+        allowed: true

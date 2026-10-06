@@ -57,8 +57,9 @@ config:
           value: '${! json("aggregation_level") }|${! json("group_key") }'
 
       - mapping: |
-          let temperatures = json("temperature").from_all()
-          let first = this
+          let events = json().from_all().sort_by(event -> event.timestamp.ts_parse("2006-01-02T15:04:05.999999999Z07:00").ts_unix_nano())
+          let temperatures = $events.map_each(event -> event.temperature)
+          let first = $events.index(0)
           let event_count = $temperatures.length()
           let temperature_change = $temperatures.index($event_count - 1) - $temperatures.index(0)
           root = if batch_index() == 0 {

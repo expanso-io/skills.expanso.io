@@ -86,7 +86,8 @@ config:
                   - try:
                       - mapping: |
                           let api = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1")
-                          let query = ("label:" + meta("folder") + " newer_than:" + meta("since_hours") + "h").escape_url_query()
+                          let cutoff = (now().ts_unix() - (meta("since_hours").number() * 3600)).floor().string()
+                          let query = ("label:" + meta("folder") + " after:" + $cutoff).escape_url_query()
                           root.url = $api + "/users/me/messages?q=" + $query + "&maxResults=" + meta("limit").string()
                           meta gmail_api = $api
                       - http:
