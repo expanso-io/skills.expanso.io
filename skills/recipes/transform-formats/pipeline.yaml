@@ -61,7 +61,6 @@ config:
           }
 
           root = this
-          root.target_format = $target_format
           meta target_format = $target_format
 
       # Step 4: Encode to target format
@@ -82,7 +81,7 @@ config:
 
       # Step 5: Add transformation metadata
       - mapping: |
-          root.data = this
+          root.data = if meta("target_format") == "json" { this } else { content().string() }
           root.transformation = {
             "source_format": meta("source_format"),
             "target_format": meta("target_format"),

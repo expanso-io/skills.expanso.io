@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T15:52:50Z",
+  "generated": "2026-10-06T16:24:41Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -26,8 +26,8 @@
   },
   "counts": {
     "failing": 0,
-    "fixed": 73,
-    "pass": 67,
+    "fixed": 74,
+    "pass": 66,
     "pulled": 24,
     "skipped": 230,
     "total": 394
@@ -3055,7 +3055,7 @@
     },
     {
       "pipeline": "skills/connectors/webhook-receive/pipeline-cli.yaml",
-      "sha256": "1c1753f62cfe880e27537b613fbb395a4e6ad4a919d1b710e92a3078f7989511",
+      "sha256": "8061f4e16acd71c9be8fcc37a79ac12e68b6cbe9ee106e4e868a87e87baed113",
       "category": "connectors",
       "skill": "webhook-receive",
       "variant": "cli",
@@ -3067,7 +3067,14 @@
           "report": ".conformance/full-cli.json",
           "tests": 4,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 2
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4219,14 +4226,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires source SQL databases, backup destination credentials, and a scheduled execution environment to verify durable backups.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -4590,7 +4590,7 @@
     },
     {
       "pipeline": "skills/recipes/transform-formats/pipeline.yaml",
-      "sha256": "cd3d4b249e0382f098d712ba67b24ac518ff7987831cc60f9ef0fe34b841e8f7",
+      "sha256": "ec8d62c309dff44bce7f281cf0efe36255e8ea694f395f7bd518ac702ae60c06",
       "category": "recipes",
       "skill": "transform-formats",
       "variant": "recipe",
@@ -4602,7 +4602,14 @@
           "report": ".conformance/recipe-execution.json",
           "reason": null,
           "published_adapters_intact": true,
-          "test_environment": null
+          "test_environment": null,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 4
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4626,7 +4633,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "fixed"
     },
     {
       "pipeline": "skills/security/access-gate/pipeline-cli.yaml",
@@ -16107,7 +16114,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
-      "sha256": "afc801ba4a2b54bd9ca4eadacc0075bb05bef55bb97327d66c0ad0e5c3213f72",
+      "sha256": "95608094c6a2843adc937f14c1ae5bcfae911944290a9394356785a2413922e4",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "cli",
@@ -16125,7 +16132,7 @@
             "method": "expanso-edge focused processor regression",
             "scope": "processor regression with loopback input/output and provider fixtures",
             "report": ".conformance/focused-regressions.json",
-            "tests": 5
+            "tests": 6
           }
         },
         "platform_realism": {
@@ -16154,7 +16161,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-mcp.yaml",
-      "sha256": "605984233c1392aeddb77022fd8a71eaa6148b5739a3fb9c5fbc261346d16cb5",
+      "sha256": "73ad3ee8bd6ac562beb31fd9d79e71cdaf9a58ec7c1c0b3313f2adbaae7b33a3",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "mcp",
@@ -16172,7 +16179,7 @@
             "method": "expanso-edge focused processor regression",
             "scope": "processor regression with loopback input/output and provider fixtures",
             "report": ".conformance/focused-regressions.json",
-            "tests": 5
+            "tests": 6
           }
         },
         "platform_realism": {

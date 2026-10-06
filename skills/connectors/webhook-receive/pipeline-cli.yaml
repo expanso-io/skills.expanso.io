@@ -41,11 +41,12 @@ config:
           let has_wrapper = $input.exists("body") && $input.exists("headers")
 
           let headers = if $has_wrapper { $input.headers } else { {} }
-          let body = if $has_wrapper { $input.body } else { $input }
 
           let raw_body = if $has_wrapper {
             $input.raw_body.or($input.body.format_json().string())
           } else { content().string() }
+          let body = $raw_body.parse_json()
+          meta body_matches = !$has_wrapper || $body == $input.body
           let event_type = $headers.get("X-GitHub-Event").or($headers.get("X-Stripe-Event")).or($headers.get("X-Event-Type")).or("unknown")
           meta headers = $headers
           meta raw_body = $raw_body
@@ -71,7 +72,7 @@ config:
           let sig_header = env("WEBHOOK_SIGNATURE_HEADER").or("X-Hub-Signature-256")
           let provided_sig = this.event.headers.get($sig_header).or("")
           let expected = "sha256=" + meta("raw_body").hash("hmac_sha256", $secret).encode("hex")
-          let verified = $secret != "" && $provided_sig != "" && $expected == $provided_sig
+          let verified = meta("body_matches") == "true" && $secret != "" && $provided_sig != "" && $expected == $provided_sig
           meta signature_status = if $verified { "verified" } else { "rejected" }
           root = if !$verified {
             deleted()
