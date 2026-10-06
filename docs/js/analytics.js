@@ -2,7 +2,7 @@
  * PostHog analytics for skills.expanso.io.
  *
  * Same project, proxy and privacy defaults as docs.expanso.io
- * (src/analytics/client.mjs there): events go through ph.expanso.io, no
+ * (src/analytics/client.mjs there): events go through web.t.expanso.io, no
  * autocapture, no session recording, no person profiles, Do Not Track is
  * respected, and URLs are reduced to origin + path. Nothing is stored in
  * cookies or localStorage unless the visitor accepted the shared
@@ -22,7 +22,7 @@
     'use strict';
 
     var POSTHOG_KEY = 'phc_f467hBf7ZUEc5HDT3xFcbhZ4tL7wUYJH0COw9Y2bzSK';
-    var API_HOST = 'https://ph.expanso.io';
+    var API_HOST = 'https://web.t.expanso.io';
     var SITE_HOST = 'skills.expanso.io';
     var CONSENT_COOKIE = 'expanso-cookie-consent';
     var SCHEMA_VERSION = '2026-09-18';
