@@ -148,6 +148,9 @@ tests:
 ```
 
 Run the new skill through [the test harness](README.md#run-the-skill-test-harness).
+Record its illustrative per-stage input and output with
+`scripts/record-explorer.py`; the shared site explorer requires SHA-bound
+`pipeline*.explorer.json` files. See the harness guide for their proof scope.
 
 ### 6. Add Documentation
 
@@ -241,6 +244,8 @@ All skills should return structured JSON with:
 2. Lint YAML files: `yamllint skills/[category]/my-skill-name/`
 3. Update the catalog: `uv run -s scripts/build-catalog.py`
 4. Ensure documentation is complete
+5. Follow the gates declared in [CI](.github/workflows/ci.yml), including
+   generated-report drift, stage records, publication, and retained features
 
 ### PR Checklist
 
@@ -250,6 +255,8 @@ All skills should return structured JSON with:
 - [ ] Tests pass
 - [ ] README.md included
 - [ ] Catalog updated
+- [ ] Stage records match the published pipeline bytes
+- [ ] Conformance evidence and staged Pages artifacts are current
 
 ### PR Description Template
 

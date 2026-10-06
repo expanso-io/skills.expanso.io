@@ -202,34 +202,20 @@ site-wide.
 
 ## Readiness
 
-Only the jobs in "If you are asked to build..." above were run end to end,
-as each one's `proof` block records (four through Cloud, four local-only).
-No other skill in this marketplace is confirmed by an end-to-end run on
-current Expanso Cloud. Machine-readable per-skill validation status:
+The repository README owns validation contracts and execution proof boundaries:
+https://github.com/expanso-io/skills.expanso.io#two-validators-two-different-questions
+https://github.com/expanso-io/skills.expanso.io#run-the-skill-test-harness
 
-- https://skills.expanso.io/validation-report.json
-
-Two validators answer different questions. `expanso-cli job validate --offline`
-checks job-spec structure and is what this repository's CI gates on;
-`expanso-edge validate` checks the inner pipeline config and catches unknown
-component fields, bloblang arity and type errors. Many skills are accepted by
-the first and rejected by the second, so a green CI run is not evidence of
-semantic validity. The report records both, as `job_spec_accepted` and
-`validates`.
-
-Every pipeline variant (CLI, MCP, recipe, and where present Cloud) is validated
-separately, and a skill is only labelled ready-to-validate when all of its
-variants pass. The report carries the current totals, the per-skill readiness
-and the validator version they were produced against; those numbers are not
-duplicated here, because a prose copy goes stale silently while the report is
-drift-checked. Local validation is not execution evidence; the report's
-readiness vocabulary caps at `validated-not-executed`.
+Use the machine-readable reports below for current per-skill validation,
+execution results, skips, and withdrawals. Local fixture execution and explorer
+samples do not establish live provider or Expanso Cloud execution.
 
 ## Machine-readable indexes
 
 - Full catalog: https://skills.expanso.io/catalog.json
 - Minimal catalog: https://skills.expanso.io/catalog-minimal.json
 - Validation report: https://skills.expanso.io/validation-report.json
+- Conformance report: https://skills.expanso.io/example-conformance.json
 - Installer: https://skills.expanso.io/install.sh
 - Source: https://github.com/expanso-io/skills.expanso.io
 
