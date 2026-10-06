@@ -66,7 +66,7 @@ config:
             "policy_id": env("TRANSFER_POLICY_ID"),
             "original_pii_fields": [
               "customer_id",
-              "customer_name", 
+              "customer_name",
               "customer_email",
               "customer_dob",
               "customer_address",
@@ -81,13 +81,13 @@ config:
       # These are deleted entirely, not recoverable
       - mapping: |
           root = this
-        
+
           # Full name - no analytics value, high risk
           root = root.without("customer_name")
-        
+
           # Full address - no analytics value
           root = root.without("customer_address")
-        
+
           # Date of birth - delete, keep only age bucket
           root.customer_age_bucket = match {
             this.customer_dob == null => "unknown",
@@ -104,7 +104,7 @@ config:
       # The stable keyed hashes are pseudonyms, not anonymous identifiers.
       - mapping: |
           root = this
-        
+
           # Customer ID → stable keyed pseudonym
           let pseudonym_key = env("PSEUDONYM_KEY").or("")
           root = if $pseudonym_key.length() < 32 {
@@ -112,7 +112,7 @@ config:
           } else { this }
           root.pseudonymous_customer_id = this.customer_id.string().hash("hmac_sha256", $pseudonym_key).encode("hex")
           root = root.without("customer_id")
-        
+
           # Email → domain only (for B2B vs B2C analysis)
           root.email_domain = if this.customer_email.contains("@") {
             this.customer_email.split("@").index(1).lowercase()
@@ -120,11 +120,11 @@ config:
             "unknown"
           }
           root = root.without("customer_email")
-        
+
           # IBAN → country code only (for geographic analysis)
           root.bank_country = this.iban.slice(0, 2)
           root = root.without("iban")
-        
+
           # IP address → /16 subnet (country-level geolocation possible)
           root.ip_subnet = if this.ip_address.contains(".") {
             this.ip_address.split(".").slice(0, 2).join(".") + ".0.0/16"
@@ -136,7 +136,7 @@ config:
       # Step 5: GENERALIZE - Reduce precision on remaining fields
       - mapping: |
           root = this
-        
+
           # Transaction amount → bucket (preserves distribution analysis)
           root.amount_bucket = match {
             this.transaction_amount < 10 => "0-10",
@@ -147,28 +147,28 @@ config:
             this.transaction_amount < 5000 => "1000-5000",
             _ => "5000+"
           }
-        
+
           # Keep exact amount for aggregate SUM calculations
           # (amount alone without identifier is not personal data)
           root.transaction_amount = this.transaction_amount
-        
+
           # Timestamp → hour bucket (sufficient for pattern analysis)
           root.transaction_hour = this.transaction_timestamp.ts_parse("2006-01-02T15:04:05Z").format("2006-01-02T15:00:00Z")
 
       # Step 6: Check that named direct identifiers were removed
       - mapping: |
           # Check no PII fields remain
-          let pii_fields = ["customer_id", "customer_name", "customer_email", 
+          let pii_fields = ["customer_id", "customer_name", "customer_email",
                            "customer_dob", "customer_address", "iban", "ip_address"]
-        
+
           let remaining_pii = $pii_fields.filter(f -> this.exists(f))
-        
+
           root = if $remaining_pii.length() > 0 {
             throw("TRANSFER BLOCKED: named direct identifiers remain: " + $remaining_pii.join(", "))
           } else {
             this
           }
-        
+
           # Record what this pipeline checked. This is not a legal attestation.
           root._transfer_controls.named_fields_check_passed = true
           root._transfer_controls.verification_timestamp = now()

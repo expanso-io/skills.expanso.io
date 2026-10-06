@@ -19,9 +19,15 @@ Route failed messages to a dead-letter queue with error metadata, automatic retr
 ## Quick Start
 
 ```bash
-export KAFKA_BROKERS=localhost:9092
+# Configure Kafka TLS/SASL on the executing node; see pipeline.yaml
 ./run.sh
 ```
+
+`run.sh` deploys the job; confirm assignment and output separately using
+[the execution checks](../../../README.md#confirm-it-actually-ran).
+Configure the profile, connected node, and input delivery as described in
+[Quick Start](../../../README.md#quick-start) and
+[Providing input](../../../README.md#providing-input).
 
 ## Features
 

@@ -22,6 +22,12 @@ Load JSON files from S3 into PostgreSQL with automatic schema mapping, upserts, 
 export AWS_ACCESS_KEY_ID=your-key
 export AWS_SECRET_ACCESS_KEY=your-secret
 export S3_BUCKET=your-bucket
-export POSTGRES_DSN=postgres://user:pass@localhost:5432/db
+# Configure POSTGRES_DSN with TLS; see pipeline.yaml
 ./run.sh
 ```
+
+`run.sh` deploys the job; confirm assignment and output separately using
+[the execution checks](../../../README.md#confirm-it-actually-ran).
+Configure the profile, connected node, and input delivery as described in
+[Quick Start](../../../README.md#quick-start) and
+[Providing input](../../../README.md#providing-input).

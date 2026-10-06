@@ -20,38 +20,11 @@ When an AI agent connects directly to Slack, it gets your bot token. With Expans
 expanso-edge validate pipeline-cli.yaml
 ```
 
-## Inputs
+## Inputs and outputs
 
-| Field | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `channel` | string | yes | — | Slack channel ID (e.g., C01234567) |
-| `limit` | integer | no | 20 | Max messages to retrieve (1-100) |
-| `query` | string | no | — | Filter messages containing this text |
-| `since_hours` | integer | no | 24 | Retrieve messages from last N hours |
-
-## Outputs
-
-```json
-{
-  "messages": [
-    {
-      "id": "1234567890.123456",
-      "user": "U01234567",
-      "text": "The deploy finished successfully",
-      "timestamp": "1234567890.123456",
-      "thread_ts": null,
-      "reactions": [{"name": "white_check_mark", "count": 2}]
-    }
-  ],
-  "metadata": {
-    "skill": "slack-read",
-    "channel": "C01234567",
-    "trace_id": "abc123...",
-    "message_count": 15,
-    "timestamp": "2026-02-23T..."
-  }
-}
-```
+See [skill.yaml](skill.yaml) for declared inputs and credentials. The final
+mapping in [pipeline-cli.yaml](pipeline-cli.yaml) and
+[pipeline-mcp.yaml](pipeline-mcp.yaml) defines the response envelope.
 
 ## Composable Security
 
@@ -66,11 +39,9 @@ Each skill in this chain is a separate job, and `expanso-edge run` cannot pipe o
 
 ## Credentials
 
-| Name | Required | Description |
-|------|----------|-------------|
-| `SLACK_BOT_TOKEN` | Yes | Slack Bot User OAuth Token (`xoxb-...`) |
-| `SLACK_CHANNEL_ID` | No | Default channel ID |
-| `SLACK_API_URL` | No | Override API URL (for testing or Slack Enterprise Grid) |
+Credential requirements are declared in [skill.yaml](skill.yaml). Credentials
+resolve on the executing node; see
+[the credential contract](../../../README.md#what-are-expanso-skills).
 
 ### Getting a Slack Bot Token
 

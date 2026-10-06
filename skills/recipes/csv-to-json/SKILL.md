@@ -23,3 +23,9 @@ export INPUT_DIR=/path/to/csv/files
 export OUTPUT_DIR=/path/to/json/output
 ./run.sh
 ```
+
+`run.sh` deploys the job; confirm assignment and output separately using
+[the execution checks](../../../README.md#confirm-it-actually-ran).
+Configure the profile, connected node, and input delivery as described in
+[Quick Start](../../../README.md#quick-start) and
+[Providing input](../../../README.md#providing-input).
