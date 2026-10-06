@@ -75,6 +75,10 @@ jobs:
             --max-reruns 1 \
             --report .conformance/full-mcp.json
 
+      - name: Audit negative inputs for every published CLI and MCP skill
+        run: |
+          uv run -s scripts/test-negative-inputs.py
+
       - name: Execute recipes and standalone variants on Expanso Edge
         run: |
           uv run -s scripts/test-recipes.py \
@@ -108,6 +112,7 @@ jobs:
           path: |
             .conformance/full-cli.json
             .conformance/full-mcp.json
+            .conformance/negative-inputs.json
             .conformance/recipe-execution.json
             playwright-report/
           if-no-files-found: error

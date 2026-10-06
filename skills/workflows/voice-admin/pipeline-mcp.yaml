@@ -92,5 +92,10 @@ config:
             "timestamp": now()
           }
 
+      - catch:
+          - mapping: |
+              meta http_status_code = 502
+              root = {"status": "error", "error": error()}
+
   output:
     sync_response: {}

@@ -76,6 +76,19 @@ def email_transports(node, endpoint):
                 email_transports(child, endpoint)
 
 
+def http_urls(node, endpoint):
+    """Redirect provider URLs without changing the published retry policy."""
+    if isinstance(node, list):
+        for child in node:
+            http_urls(child, endpoint)
+    elif isinstance(node, dict):
+        if "http" in node and isinstance(node["http"], dict):
+            node["http"]["url"] = endpoint
+        else:
+            for child in node.values():
+                http_urls(child, endpoint)
+
+
 def run_cases(suite, endpoint):
     auth = {"Authorization": f"Bearer {reg.TOKEN}"}
     for variant in ["cli", "mcp"]:
@@ -105,6 +118,36 @@ def run_cases(suite, endpoint):
                     assert "result" not in result and "tasks" not in result and "issues" not in result, result
                 else:
                     assert result["result"], result
+        for skill in ["jira-automate", "todoist-automate"]:
+            cfg = reg.config("workflows/" + skill, variant)
+            switch = next(
+                processor["switch"]
+                for processor in cfg["pipeline"]["processors"]
+                if "switch" in processor
+            )
+            branch = next(
+                item for item in switch if item.get("check") == 'this.action == "create"'
+            )
+            cfg["pipeline"]["processors"] = branch["processors"]
+            http_urls(
+                cfg["pipeline"],
+                endpoint + ("/jira" if skill == "jira-automate" else "/todoist"),
+            )
+            Provider.status = 500
+            Provider.calls.clear()
+            result = suite.execute(
+                cfg,
+                {
+                    "action": "create",
+                    "project": "TEST",
+                    "summary": "fixture",
+                    "content": "fixture",
+                },
+                auth,
+            )
+            assert len(Provider.calls) == 1, (skill, variant, Provider.calls)
+            assert result["status"] == "error" and result["error"], result
+        Provider.status = 200
         cfg = reg.config("workflows/stripe-reports", variant)
         reg.http_transports(cfg["pipeline"], endpoint + "/stripe")
         round_two.completion_transport(cfg["pipeline"], endpoint)
@@ -159,9 +202,10 @@ def db2_cases(suite, valid_key):
     cfg = reg.config("recipes/db2-to-bigquery", "recipe")
     for payload in [sample, sample | {"TRANSACTION_DATE": "2026-10-06"}, sample | {"USD_RATE": None}]:
         result = suite.execute(cfg, payload)
-        if valid_key and payload == sample:
+        if valid_key and payload.get("USD_RATE") is not None:
             assert result["account_number_masked"] == "****-****-9012", result
             assert len(result["account_number_pseudonym"]) == 64 and "ACCOUNT_NUMBER" not in result, result
+            assert result["_partition_date"] == "2026-10-06", result
         else:
             assert result is None, result
 

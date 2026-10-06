@@ -104,7 +104,16 @@ class Suite:
     def close(self):
         self.edge.stop()
 
-    def execute(self, cfg, payload, headers=None, retain_input=False, retain_output=False, repeat=1):
+    def execute(
+        self,
+        cfg,
+        payload,
+        headers=None,
+        retain_input=False,
+        retain_output=False,
+        repeat=1,
+        raw=False,
+    ):
         self.count += 1
         cfg = copy.deepcopy(cfg)
         source = cfg.pop("_source_pipeline", None)
@@ -126,7 +135,22 @@ class Suite:
             assert runner.wait_for_port(port), path.read_text()
             results = []
             for _ in range(repeat):
-                response = requests.post(f"http://127.0.0.1:{port}/test", json=payload, headers=headers or {}, timeout=15)
+                request_headers = dict(headers or {})
+                if raw:
+                    request_headers.setdefault("Content-Type", "text/plain")
+                    response = requests.post(
+                        f"http://127.0.0.1:{port}/test",
+                        data=payload,
+                        headers=request_headers,
+                        timeout=15,
+                    )
+                else:
+                    response = requests.post(
+                        f"http://127.0.0.1:{port}/test",
+                        json=payload,
+                        headers=request_headers,
+                        timeout=15,
+                    )
                 result = response.json() if response.content else None
                 if source:
                     EVIDENCE.append({

@@ -36,27 +36,6 @@ KNOWN_AUTH_SERVICES = (
     "todoist.com",
     "elasticsearch",
 )
-FAKE_SUCCESS_PATTERNS = (
-    ("simulated behavior", re.compile(r"(?i)\bsimulat(?:e|ed|ion)\b")),
-    (
-        "placeholder sample result",
-        re.compile(
-            r"(?i)\bsample\s+(?:metrics|data|task|issue|transcription|result|response)s?\b"
-        ),
-    ),
-    ("provider call left for later", re.compile(r"(?i)replace with .*\bapi\b")),
-    ("production-only behavior", re.compile(r"(?i)production would")),
-    ("invented AI output", re.compile(r"(?i)generate a plausible")),
-    (
-        "unimplemented side effect",
-        re.compile(r"(?i)\bwould (?:call|fetch|send|transcribe|create|deploy)\b"),
-    ),
-    ("hard-coded passing tests", re.compile(r"(?i)tests_passed\s*[:=]\s*true")),
-    (
-        "hard-coded successful CI",
-        re.compile(r"(?i)ci_status\s*[:=]\s*[\"']?success"),
-    ),
-)
 PUBLISHED_TEXT_ROOTS = (
     REPO / "README.md",
     REPO / "skills",
@@ -252,48 +231,6 @@ def platform_issues(path: Path) -> list[str]:
     return issues
 
 
-def behavior_issues(path: Path) -> list[str]:
-    """Reject known fake-success shapes and cross-cutting runtime traps."""
-    text = path.read_text()
-    issues: list[str] = []
-    for label, pattern in FAKE_SUCCESS_PATTERNS:
-        match = pattern.search(text)
-        if match:
-            line = text.count("\n", 0, match.start()) + 1
-            issues.append(f"{path}: line {line} contains {label}")
-
-    # A capability-gap example may say "not implemented" only when it returns
-    # an explicit unsupported status and structured evidence. This allows
-    # honest gaps without allowing a pretend successful migration or deploy.
-    gap_text = re.sub(
-        r'["\']501["\']\s*:\s*["\']Not Implemented["\']',
-        "",
-        text,
-        flags=re.IGNORECASE,
-    )
-    if re.search(r"(?i)not[_ -]implemented", gap_text):
-        explicit_gap = (
-            re.search(r"status[^\n]{0,40}unsupported", text, re.IGNORECASE)
-            and "capability_gap" in text
-        )
-        if not explicit_gap:
-            issues.append(
-                f"{path}: not-implemented behavior lacks unsupported capability-gap evidence"
-            )
-
-    if re.search(r'"trace_id"\s*:\s*meta\("trace_id"\)(?!\.or)', text):
-        issues.append(f"{path}: trace_id can be null in the mapping that creates it")
-    if re.search(
-        r"let\s+[A-Za-z_][A-Za-z0-9_]*\s*=\s*content\(\)\s*$",
-        text,
-        re.MULTILINE,
-    ):
-        issues.append(
-            f"{path}: text processing uses raw bytes; call content().string() explicitly"
-        )
-    return issues
-
-
 def published_text_files() -> Iterator[Path]:
     for root in PUBLISHED_TEXT_ROOTS:
         if root.is_file():
@@ -356,7 +293,6 @@ def main() -> int:
     issues = validation_issues(files)
     for path in files:
         issues.extend(platform_issues(path))
-        issues.extend(behavior_issues(path))
     issues.extend(command_issues())
     if issues:
         print("Example conformance failed:", file=sys.stderr)

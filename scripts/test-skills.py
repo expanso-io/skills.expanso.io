@@ -127,6 +127,17 @@ def load_yaml(path: Path) -> dict[str, Any] | None:
         return yaml.load(f, Loader=DupKeyLoader)  # type: ignore[arg-type]
 
 
+def contains_component(value: Any, prefix: str) -> bool:
+    if isinstance(value, dict):
+        return any(
+            str(key).startswith(prefix) or contains_component(child, prefix)
+            for key, child in value.items()
+        )
+    if isinstance(value, list):
+        return any(contains_component(child, prefix) for child in value)
+    return False
+
+
 def find_skills(names: list[str] | None) -> list[Path]:
     skill_dirs = []
     for category in sorted(SKILLS_DIR.iterdir()):
@@ -1110,6 +1121,13 @@ def execute_test(
             "output": {},
         }, True
 
+    original_processors = pipeline_spec.get("config", {}).get("pipeline", {})
+    processor_fixtures_used = bool(provider_responses) or (
+        mock_openai and contains_component(original_processors, "openai_")
+    )
+    published_adapters_intact = variant == "mcp"
+    published_processors_intact = not processor_fixtures_used
+
     port = find_free_port()
     config = pipeline_spec.setdefault("config", {})
     if variant == "cli":
@@ -1360,6 +1378,8 @@ def execute_test(
         "status_code": status_code,
         "output": output,
         "edge_errors": unexpected_errors,
+        "published_adapters_intact": published_adapters_intact,
+        "published_processors_intact": published_processors_intact,
     }
     if require_mcp_auth:
         result["auth_probe_status"] = auth_probe_status
@@ -1769,6 +1789,12 @@ def main() -> int:
                         "output": cache_entry.get("output", {}),
                         "cached": True,
                         "attempts": cache_entry.get("attempts", 0),
+                        "published_adapters_intact": cache_entry.get(
+                            "published_adapters_intact", False
+                        ),
+                        "published_processors_intact": cache_entry.get(
+                            "published_processors_intact", False
+                        ),
                     }
                 )
                 skill_result["tests"].append(test_entry)
@@ -1924,6 +1950,12 @@ def main() -> int:
             else:
                 skill["status"] = "passed"
                 summary["passed"] += 1
+            skill["intact_execution_passed"] = any(
+                test.get("status") == "passed"
+                and test.get("published_adapters_intact") is True
+                and test.get("published_processors_intact") is True
+                for test in skill.get("tests", [])
+            )
         report_data["summary"] = summary
 
     finalize_report(report)

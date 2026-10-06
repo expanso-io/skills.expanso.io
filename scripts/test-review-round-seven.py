@@ -31,6 +31,19 @@ class OSV(BaseHTTPRequestHandler):
         pass
 
 
+def fail_openai(node):
+    if isinstance(node, list):
+        for child in node:
+            fail_openai(child)
+    elif isinstance(node, dict):
+        if any(str(key).startswith("openai_") for key in node):
+            node.clear()
+            node["mapping"] = 'root = throw("provider fixture failure")'
+            return
+        for child in node.values():
+            fail_openai(child)
+
+
 def main():
     directory = ROOT / ".conformance" / f"review-round-seven-{time.time_ns()}"
     directory.mkdir(parents=True)
@@ -39,7 +52,16 @@ def main():
     thread.start()
     suite = None
     try:
-        suite = reg.Suite(directory, {"SEPARATOR": "."})
+        suite = reg.Suite(
+            directory,
+            {
+                "SEPARATOR": ".",
+                "MCP_BEARER_TOKEN": reg.TOKEN,
+                "FIELD_ENCRYPTION_KEY_HEX": "00" * 32,
+                "FIELD_MAC_KEY": reg.TOKEN,
+                "VERIFY_KEY": "",
+            },
+        )
         for variant in ("cli", "mcp"):
             payload = {"match_fields": ["sku", "name"], "catalogs": [
                 {"name": "first", "items": [{"sku": "A", "name": "widget", "price": 1}, {"sku": "A", "name": "widget", "price": 2}]},
@@ -85,6 +107,62 @@ def main():
             assert result["destination"] == destination, result
             if destination == "dead_letter":
                 assert result["invalid"] and result["original"] == item, result
+        for recipe, payload in [
+            (
+                "encrypt-data",
+                {
+                    "payment": {"card_number": "4111111111111111"},
+                    "customer": {"email": "private@example.test"},
+                    "address": {"zip": {"invalid": True}},
+                },
+            ),
+            (
+                "encryption-patterns",
+                {
+                    "payment": {"card_number": "4111111111111111"},
+                    "customer": {"email": "private@example.test"},
+                    "billing_address": {"zip": {"invalid": True}},
+                },
+            ),
+        ]:
+            result = suite.execute(reg.config("recipes/" + recipe, "recipe"), payload)
+            assert result is None, (recipe, result)
+        for skill in ["ai/audio-transcribe", "workflows/voice-admin"]:
+            for variant in ["cli", "mcp"]:
+                headers = (
+                    {"Authorization": f"Bearer {reg.TOKEN}"}
+                    if variant == "mcp"
+                    else None
+                )
+                cfg = reg.config(skill, variant)
+                fail_openai(cfg["pipeline"])
+                result = suite.execute(cfg, {}, headers=headers)
+                assert result["status"] == "error" and result["error"], result
+                assert not {
+                    "transcript",
+                    "actions",
+                    "execution_status",
+                }.intersection(result), result
+        envelope = {
+            "payload": {"data": "fixture"},
+            "hash": "0" * 64,
+            "signature": "0" * 64,
+            "algorithm": "hmac-sha256",
+        }
+        for variant in ["cli", "mcp"]:
+            headers = (
+                {"Authorization": f"Bearer {reg.TOKEN}"}
+                if variant == "mcp"
+                else None
+            )
+            payload = envelope if variant == "cli" else {"envelope": envelope}
+            result = suite.execute(
+                reg.config("security/verify-signature", variant),
+                payload,
+                headers=headers,
+            )
+            assert result["valid"] is False and result["error"], result
+            assert result.get("payload") is None, result
         reg.write_evidence()
         print(f"PASS {len(reg.EVIDENCE)} behavioral cases across eight changed pipeline variants")
     finally:

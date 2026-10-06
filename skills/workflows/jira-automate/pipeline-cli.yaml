@@ -111,7 +111,9 @@ config:
                         Accept: application/json
                         Content-Type: application/json
                       timeout: 30s
-                      retries: 3
+                      # Creating an issue is not idempotent. Do not replay a
+                      # request after an ambiguous transport failure.
+                      retries: 0
                       rate_limit: jira_api
                   - mapping: |
                       root.action = meta("jira_action")

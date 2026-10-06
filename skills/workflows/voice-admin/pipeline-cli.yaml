@@ -76,5 +76,9 @@ config:
           level: INFO
           message: "[voice-admin] extracted ${! this.actions.length() } proposed actions; none executed"
 
+      - catch:
+          - mapping: |
+              root = {"status": "error", "error": error()}
+
   output:
     stdout: {}

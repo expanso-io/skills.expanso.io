@@ -89,7 +89,9 @@ config:
                         Accept: application/json
                         Content-Type: application/json
                       timeout: 30s
-                      retries: 3
+                      # Todoist task creation is not idempotent without a
+                      # caller-supplied request id, so never replay it here.
+                      retries: 0
                       rate_limit: todoist_api
                   - mapping: |
                       root.action = meta("action")

@@ -122,12 +122,34 @@ def execution_evidence(
                 "reason": "published pipeline reports an unsupported capability instead of performing the named workflow",
                 "report": report_name,
             }
+        if result.get("status") == "passed" and not result.get(
+            "intact_execution_passed"
+        ):
+            if variant == "cli":
+                reason = (
+                    "The execution harness replaces stdin/stdout with loopback HTTP; "
+                    "no current-SHA intact-adapter execution is recorded."
+                )
+            else:
+                reason = (
+                    "The execution harness rewrites external provider processors with "
+                    "fixtures; no current-SHA intact-processor execution is recorded."
+                )
+            return {
+                "status": "skipped",
+                "method": "supplemental expanso-edge harness execution",
+                "report": report_name,
+                "tests": len(result.get("tests", [])),
+                "reason": reason,
+                "published_adapters_intact": False,
+            }
         return {
             "status": "pass" if result.get("status") == "passed" else "failing",
-            "method": "expanso-edge current-SHA harness execution",
+            "method": "expanso-edge current-SHA intact execution",
             "report": report_name,
             "tests": len(result.get("tests", [])),
             "reason": result.get("reason"),
+            "published_adapters_intact": result.get("intact_execution_passed"),
         }
     if variant == "recipe":
         result = recipe_index.get(relative)
@@ -226,9 +248,18 @@ def build_table(
         else:
             execution = execution_evidence(path, variant, cli_index, mcp_index, recipe_index, special_index)
         if execution.get("status") == "skipped":
-            if relative not in skip_reasons:
-                raise RuntimeError(f"missing per-example integration reason: {relative}")
-            execution = {"status": "skipped", "reason": skip_reasons[relative], "method": "external adapter integration unavailable"}
+            if variant in {"recipe", "cloud"}:
+                if relative not in skip_reasons:
+                    raise RuntimeError(
+                        f"missing per-example integration reason: {relative}"
+                    )
+                execution = {
+                    "status": "skipped",
+                    "reason": skip_reasons[relative],
+                    "method": "external adapter integration unavailable",
+                }
+            elif not execution.get("reason"):
+                raise RuntimeError(f"missing per-example execution reason: {relative}")
         if regression:
             execution["processor_regression"] = regression
         platform_realism = {
