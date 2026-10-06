@@ -206,43 +206,12 @@ def validate_pipeline(path: Path, edge_bin: str) -> tuple[bool, str]:
     return result.returncode == 0, (result.stdout + result.stderr).strip()
 
 
-def adapter_names(value: Any) -> set[str]:
-    names: set[str] = set()
-    if isinstance(value, dict):
-        for key, child in value.items():
-            if key in {
-                "aws_s3",
-                "file",
-                "gcp_bigquery",
-                "generate",
-                "http_client",
-                "http_server",
-                "kafka",
-                "sequence",
-                "sql_insert",
-                "sql_select",
-                "stdin",
-                "stdout",
-                "sync_response",
-            }:
-                names.add(key)
-            names.update(adapter_names(child))
-    elif isinstance(value, list):
-        for child in value:
-            names.update(adapter_names(child))
-    return names
-
-
 def unsupported_reason(path: Path) -> str:
-    document = yaml.safe_load(path.read_text())
-    config = document.get("config", {}) if isinstance(document, dict) else {}
-    adapters = sorted(
-        adapter_names(config.get("input", {})) | adapter_names(config.get("output", {}))
-    )
-    return (
-        "not executed: CI has no real integration environment for the "
-        f"published adapters ({', '.join(adapters) or 'unknown'})"
-    )
+    reasons = json.loads((REPO / "scripts/integration-skip-reasons.json").read_text())
+    relative = str(path.relative_to(REPO))
+    if relative not in reasons:
+        raise RuntimeError(f"missing per-example integration reason: {relative}")
+    return reasons[relative]
 
 
 def deploy(path: Path, cli: str, api_url: str) -> tuple[bool, str, str]:
@@ -625,7 +594,7 @@ def main() -> int:
 
     if not args.recipes:
         regressions = subprocess.run(
-            ["uv", "run", "-s", str(REPO / "scripts/test-review-regressions.py")],
+            ["uv", "run", "-s", str(REPO / "scripts/test-review-round-two.py")],
             cwd=REPO, check=False,
         )
         report["security_checks"].append({
@@ -644,10 +613,7 @@ def main() -> int:
         if valid:
             cloud |= {
                 "status": "skipped",
-                "reason": (
-                    "not executed: published stdin adapter requires an attached "
-                    "operator terminal and cannot receive scheduled Edge input"
-                ),
+                "reason": unsupported_reason(cloud_path),
                 "published_adapters_intact": True,
             }
         else:

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "total_skills": 185,
+  "total_skills": 183,
   "categories": {
     "jobs": {
       "skill_count": 8,
@@ -16,9 +16,8 @@
       ]
     },
     "workflows": {
-      "skill_count": 19,
+      "skill_count": 17,
       "skills": [
-        "auto-coder",
         "backup-verify",
         "catalog-reconcile",
         "devops-monitor",
@@ -31,7 +30,6 @@
         "morning-briefing",
         "multi-platform-chat",
         "seo-pipeline",
-        "site-migrate",
         "stripe-reports",
         "task-dashboard",
         "terminal-services",

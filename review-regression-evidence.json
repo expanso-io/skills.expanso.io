@@ -1,0 +1,4646 @@
+{
+  "generated": "2026-10-06T09:15:57.968875+00:00",
+  "engine": {
+    "path": "/usr/local/bin/expanso-edge",
+    "version": "v2.1.21",
+    "sha256": "0cc13bd6d1a14756f87f877f578941157b6f62047bab818c81205c5a0882fc3f"
+  },
+  "status": "pass",
+  "cases": [
+    {
+      "pipeline": "skills/ai/audio-transcribe/pipeline-mcp.yaml",
+      "sha256": "ff7400e7cec1857f136660f955550005d17a3833b53e6920b9e132f05f51de84",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-1.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/audio-transcribe/pipeline-mcp.yaml",
+      "sha256": "ff7400e7cec1857f136660f955550005d17a3833b53e6920b9e132f05f51de84",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-2.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/video-generate/pipeline-mcp.yaml",
+      "sha256": "7bc3511841d82593b6fe7e38636644907092c7cc525c97df6af08e740753dbd8",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-3.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/video-generate/pipeline-mcp.yaml",
+      "sha256": "7bc3511841d82593b6fe7e38636644907092c7cc525c97df6af08e740753dbd8",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-4.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/gmail-read/pipeline-mcp.yaml",
+      "sha256": "ee15aa30f234a01787a1cb7550dfdf54913dfd0b50e08a18de2da67d65de3cb2",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-5.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/gmail-read/pipeline-mcp.yaml",
+      "sha256": "ee15aa30f234a01787a1cb7550dfdf54913dfd0b50e08a18de2da67d65de3cb2",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-6.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/slack-read/pipeline-mcp.yaml",
+      "sha256": "3e4e01fbf97bcf3c9eb9e5c7e3b1c775ace63c0c88a5a3868948db8ab08dba49",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-7.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/slack-read/pipeline-mcp.yaml",
+      "sha256": "3e4e01fbf97bcf3c9eb9e5c7e3b1c775ace63c0c88a5a3868948db8ab08dba49",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-8.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
+      "sha256": "ea7c5f454e5d28f05c8827330e8f5844e04a7ba138cf53a68e2fe254808a2484",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-9.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
+      "sha256": "ea7c5f454e5d28f05c8827330e8f5844e04a7ba138cf53a68e2fe254808a2484",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-10.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/voice-admin/pipeline-mcp.yaml",
+      "sha256": "a9670cc3686812c40e17d756d5ba2a8fca97b9ec59ee7cb2422772d548960e5e",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-11.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/voice-admin/pipeline-mcp.yaml",
+      "sha256": "a9670cc3686812c40e17d756d5ba2a8fca97b9ec59ee7cb2422772d548960e5e",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-12.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-mcp.yaml",
+      "sha256": "fffdc996d18f38a2355d2641a18839c764a2e498ffaa972ca2a61604cb8cbb5a",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-13.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-mcp.yaml",
+      "sha256": "fffdc996d18f38a2355d2641a18839c764a2e498ffaa972ca2a61604cb8cbb5a",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-14.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-mcp.yaml",
+      "sha256": "fe252434f3a9a0b604b78fbab9aea9d72ebc4159dcbf71b7ffee1c2466e46b86",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-15.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-mcp.yaml",
+      "sha256": "fe252434f3a9a0b604b78fbab9aea9d72ebc4159dcbf71b7ffee1c2466e46b86",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-16.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/email-triage/pipeline-mcp.yaml",
+      "sha256": "f1a524092965925fc553dd59d72c3cafc7245b3c8cedc97b8c75f4e0893a601f",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-17.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/email-triage/pipeline-mcp.yaml",
+      "sha256": "f1a524092965925fc553dd59d72c3cafc7245b3c8cedc97b8c75f4e0893a601f",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/missing/regression-18.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/audio-transcribe/pipeline-mcp.yaml",
+      "sha256": "ff7400e7cec1857f136660f955550005d17a3833b53e6920b9e132f05f51de84",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-1.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/audio-transcribe/pipeline-mcp.yaml",
+      "sha256": "ff7400e7cec1857f136660f955550005d17a3833b53e6920b9e132f05f51de84",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-2.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/video-generate/pipeline-mcp.yaml",
+      "sha256": "7bc3511841d82593b6fe7e38636644907092c7cc525c97df6af08e740753dbd8",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-3.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/video-generate/pipeline-mcp.yaml",
+      "sha256": "7bc3511841d82593b6fe7e38636644907092c7cc525c97df6af08e740753dbd8",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-4.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/gmail-read/pipeline-mcp.yaml",
+      "sha256": "ee15aa30f234a01787a1cb7550dfdf54913dfd0b50e08a18de2da67d65de3cb2",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-5.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/gmail-read/pipeline-mcp.yaml",
+      "sha256": "ee15aa30f234a01787a1cb7550dfdf54913dfd0b50e08a18de2da67d65de3cb2",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-6.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/slack-read/pipeline-mcp.yaml",
+      "sha256": "3e4e01fbf97bcf3c9eb9e5c7e3b1c775ace63c0c88a5a3868948db8ab08dba49",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-7.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/slack-read/pipeline-mcp.yaml",
+      "sha256": "3e4e01fbf97bcf3c9eb9e5c7e3b1c775ace63c0c88a5a3868948db8ab08dba49",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-8.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
+      "sha256": "ea7c5f454e5d28f05c8827330e8f5844e04a7ba138cf53a68e2fe254808a2484",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-9.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
+      "sha256": "ea7c5f454e5d28f05c8827330e8f5844e04a7ba138cf53a68e2fe254808a2484",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-10.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/voice-admin/pipeline-mcp.yaml",
+      "sha256": "a9670cc3686812c40e17d756d5ba2a8fca97b9ec59ee7cb2422772d548960e5e",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-11.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/voice-admin/pipeline-mcp.yaml",
+      "sha256": "a9670cc3686812c40e17d756d5ba2a8fca97b9ec59ee7cb2422772d548960e5e",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-12.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-mcp.yaml",
+      "sha256": "fffdc996d18f38a2355d2641a18839c764a2e498ffaa972ca2a61604cb8cbb5a",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-13.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-mcp.yaml",
+      "sha256": "fffdc996d18f38a2355d2641a18839c764a2e498ffaa972ca2a61604cb8cbb5a",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-14.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-mcp.yaml",
+      "sha256": "fe252434f3a9a0b604b78fbab9aea9d72ebc4159dcbf71b7ffee1c2466e46b86",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-15.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-mcp.yaml",
+      "sha256": "fe252434f3a9a0b604b78fbab9aea9d72ebc4159dcbf71b7ffee1c2466e46b86",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-16.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/email-triage/pipeline-mcp.yaml",
+      "sha256": "f1a524092965925fc553dd59d72c3cafc7245b3c8cedc97b8c75f4e0893a601f",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-17.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/email-triage/pipeline-mcp.yaml",
+      "sha256": "f1a524092965925fc553dd59d72c3cafc7245b3c8cedc97b8c75f4e0893a601f",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/short/regression-18.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/audio-transcribe/pipeline-mcp.yaml",
+      "sha256": "ff7400e7cec1857f136660f955550005d17a3833b53e6920b9e132f05f51de84",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-1.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/audio-transcribe/pipeline-mcp.yaml",
+      "sha256": "ff7400e7cec1857f136660f955550005d17a3833b53e6920b9e132f05f51de84",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-2.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/audio-transcribe/pipeline-mcp.yaml",
+      "sha256": "ff7400e7cec1857f136660f955550005d17a3833b53e6920b9e132f05f51de84",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": {
+        "vulns": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-3.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/video-generate/pipeline-mcp.yaml",
+      "sha256": "7bc3511841d82593b6fe7e38636644907092c7cc525c97df6af08e740753dbd8",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-4.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/video-generate/pipeline-mcp.yaml",
+      "sha256": "7bc3511841d82593b6fe7e38636644907092c7cc525c97df6af08e740753dbd8",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-5.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/ai/video-generate/pipeline-mcp.yaml",
+      "sha256": "7bc3511841d82593b6fe7e38636644907092c7cc525c97df6af08e740753dbd8",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": {
+        "vulns": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-6.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/gmail-read/pipeline-mcp.yaml",
+      "sha256": "ee15aa30f234a01787a1cb7550dfdf54913dfd0b50e08a18de2da67d65de3cb2",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-7.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/gmail-read/pipeline-mcp.yaml",
+      "sha256": "ee15aa30f234a01787a1cb7550dfdf54913dfd0b50e08a18de2da67d65de3cb2",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-8.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/gmail-read/pipeline-mcp.yaml",
+      "sha256": "ee15aa30f234a01787a1cb7550dfdf54913dfd0b50e08a18de2da67d65de3cb2",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": {
+        "vulns": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-9.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/slack-read/pipeline-mcp.yaml",
+      "sha256": "3e4e01fbf97bcf3c9eb9e5c7e3b1c775ace63c0c88a5a3868948db8ab08dba49",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-10.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/slack-read/pipeline-mcp.yaml",
+      "sha256": "3e4e01fbf97bcf3c9eb9e5c7e3b1c775ace63c0c88a5a3868948db8ab08dba49",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-11.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/connectors/slack-read/pipeline-mcp.yaml",
+      "sha256": "3e4e01fbf97bcf3c9eb9e5c7e3b1c775ace63c0c88a5a3868948db8ab08dba49",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": {
+        "vulns": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-12.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
+      "sha256": "ea7c5f454e5d28f05c8827330e8f5844e04a7ba138cf53a68e2fe254808a2484",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-13.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
+      "sha256": "ea7c5f454e5d28f05c8827330e8f5844e04a7ba138cf53a68e2fe254808a2484",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-14.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
+      "sha256": "ea7c5f454e5d28f05c8827330e8f5844e04a7ba138cf53a68e2fe254808a2484",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": {
+        "vulns": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-15.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/voice-admin/pipeline-mcp.yaml",
+      "sha256": "a9670cc3686812c40e17d756d5ba2a8fca97b9ec59ee7cb2422772d548960e5e",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-16.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/voice-admin/pipeline-mcp.yaml",
+      "sha256": "a9670cc3686812c40e17d756d5ba2a8fca97b9ec59ee7cb2422772d548960e5e",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-17.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/voice-admin/pipeline-mcp.yaml",
+      "sha256": "a9670cc3686812c40e17d756d5ba2a8fca97b9ec59ee7cb2422772d548960e5e",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": {
+        "vulns": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-18.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-mcp.yaml",
+      "sha256": "fffdc996d18f38a2355d2641a18839c764a2e498ffaa972ca2a61604cb8cbb5a",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-19.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-mcp.yaml",
+      "sha256": "fffdc996d18f38a2355d2641a18839c764a2e498ffaa972ca2a61604cb8cbb5a",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-20.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-mcp.yaml",
+      "sha256": "fffdc996d18f38a2355d2641a18839c764a2e498ffaa972ca2a61604cb8cbb5a",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": {
+        "vulns": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-21.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-mcp.yaml",
+      "sha256": "fe252434f3a9a0b604b78fbab9aea9d72ebc4159dcbf71b7ffee1c2466e46b86",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-22.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-mcp.yaml",
+      "sha256": "fe252434f3a9a0b604b78fbab9aea9d72ebc4159dcbf71b7ffee1c2466e46b86",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-23.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-mcp.yaml",
+      "sha256": "fe252434f3a9a0b604b78fbab9aea9d72ebc4159dcbf71b7ffee1c2466e46b86",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": {
+        "vulns": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-24.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/email-triage/pipeline-mcp.yaml",
+      "sha256": "f1a524092965925fc553dd59d72c3cafc7245b3c8cedc97b8c75f4e0893a601f",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-25.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/email-triage/pipeline-mcp.yaml",
+      "sha256": "f1a524092965925fc553dd59d72c3cafc7245b3c8cedc97b8c75f4e0893a601f",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-26.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/email-triage/pipeline-mcp.yaml",
+      "sha256": "f1a524092965925fc553dd59d72c3cafc7245b3c8cedc97b8c75f4e0893a601f",
+      "input": {
+        "action": "create",
+        "content": "x"
+      },
+      "output": {
+        "vulns": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-27.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-cli.yaml",
+      "sha256": "b06a1af276ff5ca828ad46a66b735eae408d5479e9c06674e9580d96765ec3af",
+      "input": {
+        "action": "update",
+        "issue_key": "TEST-1",
+        "summary": "updated"
+      },
+      "output": {
+        "action": "update",
+        "error": "http://127.0.0.1:57393: HTTP request returned unexpected response code (400): 400 Bad Request, Error: {\"vulns\": []}",
+        "status": "error"
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-28.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-cli.yaml",
+      "sha256": "b06a1af276ff5ca828ad46a66b735eae408d5479e9c06674e9580d96765ec3af",
+      "input": {
+        "action": "update",
+        "issue_key": "TEST-1",
+        "summary": "updated"
+      },
+      "output": {
+        "action": "update",
+        "issues": [
+          {
+            "key": "TEST-1",
+            "updated": true
+          }
+        ],
+        "metadata": {
+          "action": "update",
+          "mode": "cli",
+          "skill": "jira-automate",
+          "source": "jira_api",
+          "timestamp": "2026-10-06T02:15:08.11462-07:00",
+          "trace_id": "null"
+        },
+        "result": {
+          "issue": {
+            "key": "TEST-1",
+            "updated": true
+          }
+        }
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-29.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-mcp.yaml",
+      "sha256": "fffdc996d18f38a2355d2641a18839c764a2e498ffaa972ca2a61604cb8cbb5a",
+      "input": {
+        "action": "update",
+        "issue_key": "TEST-1",
+        "summary": "updated"
+      },
+      "output": {
+        "action": "update",
+        "error": "http://127.0.0.1:57393: HTTP request returned unexpected response code (400): 400 Bad Request, Error: {\"vulns\": []}",
+        "status": "error"
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-30.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/jira-automate/pipeline-mcp.yaml",
+      "sha256": "fffdc996d18f38a2355d2641a18839c764a2e498ffaa972ca2a61604cb8cbb5a",
+      "input": {
+        "action": "update",
+        "issue_key": "TEST-1",
+        "summary": "updated"
+      },
+      "output": {
+        "action": "update",
+        "issues": [
+          {
+            "key": "TEST-1",
+            "updated": true
+          }
+        ],
+        "metadata": {
+          "action": "update",
+          "mode": "mcp",
+          "skill": "jira-automate",
+          "source": "jira_api",
+          "timestamp": "2026-10-06T02:15:10.620175-07:00",
+          "trace_id": "null"
+        },
+        "result": {
+          "issue": {
+            "key": "TEST-1",
+            "updated": true
+          }
+        }
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-31.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-cli.yaml",
+      "sha256": "aa87ac2ff800eb804c311a75bfdbb5215c328603507d8f1df566a665418136fd",
+      "input": {
+        "action": "complete",
+        "task_id": "123"
+      },
+      "output": {
+        "action": "complete",
+        "error": "http://127.0.0.1:57393: HTTP request returned unexpected response code (400): 400 Bad Request, Error: {\"vulns\": []}",
+        "status": "error"
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-32.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-cli.yaml",
+      "sha256": "aa87ac2ff800eb804c311a75bfdbb5215c328603507d8f1df566a665418136fd",
+      "input": {
+        "action": "complete",
+        "task_id": "123"
+      },
+      "output": {
+        "action": "complete",
+        "metadata": {
+          "action": "complete",
+          "mode": "cli",
+          "skill": "todoist-automate",
+          "source": "todoist_api",
+          "timestamp": "2026-10-06T02:15:13.124253-07:00",
+          "trace_id": "null"
+        },
+        "result": {
+          "completed": true,
+          "task_id": "123"
+        },
+        "tasks": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-33.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-mcp.yaml",
+      "sha256": "fe252434f3a9a0b604b78fbab9aea9d72ebc4159dcbf71b7ffee1c2466e46b86",
+      "input": {
+        "action": "complete",
+        "task_id": "123"
+      },
+      "output": {
+        "action": "complete",
+        "error": "http://127.0.0.1:57393: HTTP request returned unexpected response code (400): 400 Bad Request, Error: {\"vulns\": []}",
+        "status": "error"
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-34.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/todoist-automate/pipeline-mcp.yaml",
+      "sha256": "fe252434f3a9a0b604b78fbab9aea9d72ebc4159dcbf71b7ffee1c2466e46b86",
+      "input": {
+        "action": "complete",
+        "task_id": "123"
+      },
+      "output": {
+        "action": "complete",
+        "metadata": {
+          "action": "complete",
+          "mode": "mcp",
+          "skill": "todoist-automate",
+          "source": "todoist_api",
+          "timestamp": "2026-10-06T02:15:15.684665-07:00",
+          "trace_id": "null"
+        },
+        "result": {
+          "completed": true,
+          "task_id": "123"
+        },
+        "tasks": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-35.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/cross-border-gdpr/pipeline.yaml",
+      "sha256": "b58227ec61d188018abc75e483e4a4bf2faccbf98461c8c1756fa06ed1c90ae0",
+      "input": {
+        "customer_id": "123",
+        "customer_name": "Private",
+        "customer_email": "private@example.test",
+        "customer_dob": "1990-01-01",
+        "customer_address": "Private",
+        "iban": "DE123",
+        "ip_address": "192.0.2.1",
+        "transaction_amount": 12,
+        "transaction_timestamp": "2026-10-06T12:00:00Z"
+      },
+      "output": {
+        "_data_origin": {
+          "country": "DE",
+          "database": "transactions_eu",
+          "extracted_at": "2026-10-06T02:15:16.881468-07:00",
+          "pipeline": "eu-cross-border-minimization",
+          "region": "EU"
+        },
+        "_transfer_controls": {
+          "fields_pseudonymized": [
+            "customer_id"
+          ],
+          "fields_removed": [
+            "customer_name",
+            "customer_address",
+            "customer_dob"
+          ],
+          "named_fields_check_passed": true,
+          "original_pii_fields": [
+            "customer_id",
+            "customer_name",
+            "customer_email",
+            "customer_dob",
+            "customer_address",
+            "iban",
+            "ip_address"
+          ],
+          "policy_id": "fixture",
+          "pseudonymization_applied": true,
+          "transfer_type": "cross_border_eu_to_global",
+          "verification_timestamp": "2026-10-06T02:15:16.88157-07:00"
+        },
+        "amount_bucket": "10-50",
+        "bank_country": "DE",
+        "customer_age_bucket": "35-44",
+        "email_domain": "example.test",
+        "ip_subnet": "192.0.0.0/16",
+        "pseudonymous_customer_id": "3a4276195b1283554832c62867d2062d456128d2bba01c44f5992461a00e89eb",
+        "transaction_amount": 12,
+        "transaction_hour": "2026-10-06T12:00:00Z%!(EXTRA string=2006-01-02T15:00:00Z)",
+        "transaction_timestamp": "2026-10-06T12:00:00Z"
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-36.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/cross-border-gdpr/pipeline.yaml",
+      "sha256": "b58227ec61d188018abc75e483e4a4bf2faccbf98461c8c1756fa06ed1c90ae0",
+      "input": {
+        "customer_id": "123",
+        "customer_name": "Private",
+        "customer_email": "private@example.test",
+        "customer_dob": "invalid",
+        "customer_address": "Private",
+        "iban": "DE123",
+        "ip_address": "192.0.2.1",
+        "transaction_amount": 12,
+        "transaction_timestamp": "2026-10-06T12:00:00Z"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-37.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/smart-buffering/pipeline.yaml",
+      "sha256": "2c79fb26a54277ab57f26b1ff8a2bcaac3bba2990b1bf27c11c2e7ffb20b5da9",
+      "input": {
+        "message": "server error",
+        "level": "ERROR",
+        "category": "important"
+      },
+      "output": {
+        "age_boost": 0,
+        "age_escalated": false,
+        "age_seconds": 0,
+        "category": "important",
+        "classified_at": "2026-10-06T02:15:19.545837-07:00",
+        "edge_node_id": "unknown",
+        "level": "ERROR",
+        "message": "server error",
+        "priority_label": "important",
+        "priority_score": 1000,
+        "priority_tier": 1
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-38.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/production-log-pipeline/pipeline.yaml",
+      "sha256": "7bd60902e0857c6cf37ce42d9f89dd41456ea7d93026da7bb8c52deea4d04c92",
+      "input": {
+        "message": "server error",
+        "level": "ERROR",
+        "category": "important"
+      },
+      "output": {
+        "category": "important",
+        "level": "ERROR",
+        "message": "server error",
+        "metadata": {
+          "node_id": "unknown",
+          "received_at": "2026-10-06T02:15:20.788379-07:00",
+          "region": "unknown",
+          "request_id": "6d1af206-baa2-4d6c-a6f9-860a149713de"
+        },
+        "priority": "high",
+        "service": "unknown",
+        "severity_score": 4,
+        "timestamp": "2026-10-06T02:15:20.788363-07:00"
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-39.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/filter-severity/pipeline.yaml",
+      "sha256": "d19ac2d82907a218b90ec8e9aa665e262b273a5b46cb1e1a4483a51db8a9774f",
+      "input": "database connection failed",
+      "output": {
+        "filter_metadata": {
+          "filter_reason": "severity_match",
+          "filtering_timestamp": "2026-10-06T02:15:22.13164-07:00",
+          "passed_filter": true
+        },
+        "level": "ERROR",
+        "original_format": "unstructured_text",
+        "original_level": "UNKNOWN",
+        "original_message": "\"database connection failed\"",
+        "parsing_success": false,
+        "processing_metadata": {
+          "node_id": "unknown",
+          "pipeline_version": "1.0",
+          "processed_at": "2026-10-06T02:15:22.131598-07:00"
+        }
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-40.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/email-triage/pipeline-cli.yaml",
+      "sha256": "f1fb09c4c6fc66cccf444493ace3c10bc6491dea8c16e74a6082993c7516658d",
+      "input": {
+        "provider": "outlook",
+        "since_hours": 1
+      },
+      "output": {
+        "emails": [
+          {
+            "body": "",
+            "date": "2026-10-06T09:05:23.380378+00:00",
+            "from": "",
+            "has_attachment": false,
+            "id": "recent",
+            "subject": "recent",
+            "to": []
+          }
+        ]
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-41.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/security/cve-scan/pipeline-cli.yaml",
+      "sha256": "eb261eabb84788316f191054321e040177164d7b573bb2897cf4ba2132a612ed",
+      "input": {
+        "components": [
+          {
+            "name": "invalid-0"
+          },
+          {
+            "name": "invalid-1"
+          },
+          {
+            "name": "invalid-2"
+          },
+          {
+            "name": "invalid-3"
+          },
+          {
+            "name": "invalid-4"
+          },
+          {
+            "name": "invalid-5"
+          },
+          {
+            "name": "invalid-6"
+          },
+          {
+            "name": "invalid-7"
+          },
+          {
+            "name": "invalid-8"
+          },
+          {
+            "name": "invalid-9"
+          },
+          {
+            "name": "invalid-10"
+          },
+          {
+            "name": "invalid-11"
+          },
+          {
+            "name": "invalid-12"
+          },
+          {
+            "name": "invalid-13"
+          },
+          {
+            "name": "invalid-14"
+          },
+          {
+            "name": "invalid-15"
+          },
+          {
+            "name": "invalid-16"
+          },
+          {
+            "name": "invalid-17"
+          },
+          {
+            "name": "invalid-18"
+          },
+          {
+            "name": "invalid-19"
+          },
+          {
+            "name": "invalid-20"
+          },
+          {
+            "name": "invalid-21"
+          },
+          {
+            "name": "invalid-22"
+          },
+          {
+            "name": "invalid-23"
+          },
+          {
+            "name": "invalid-24"
+          },
+          {
+            "name": "invalid-25"
+          },
+          {
+            "name": "invalid-26"
+          },
+          {
+            "name": "invalid-27"
+          },
+          {
+            "name": "invalid-28"
+          },
+          {
+            "name": "invalid-29"
+          },
+          {
+            "name": "invalid-30"
+          },
+          {
+            "name": "invalid-31"
+          },
+          {
+            "name": "invalid-32"
+          },
+          {
+            "name": "invalid-33"
+          },
+          {
+            "name": "invalid-34"
+          },
+          {
+            "name": "invalid-35"
+          },
+          {
+            "name": "invalid-36"
+          },
+          {
+            "name": "invalid-37"
+          },
+          {
+            "name": "invalid-38"
+          },
+          {
+            "name": "invalid-39"
+          },
+          {
+            "name": "invalid-40"
+          },
+          {
+            "name": "invalid-41"
+          },
+          {
+            "name": "invalid-42"
+          },
+          {
+            "name": "invalid-43"
+          },
+          {
+            "name": "invalid-44"
+          },
+          {
+            "name": "invalid-45"
+          },
+          {
+            "name": "invalid-46"
+          },
+          {
+            "name": "invalid-47"
+          },
+          {
+            "name": "invalid-48"
+          },
+          {
+            "name": "invalid-49"
+          },
+          {
+            "name": "invalid-50"
+          },
+          {
+            "name": "invalid-51"
+          },
+          {
+            "name": "invalid-52"
+          },
+          {
+            "name": "invalid-53"
+          },
+          {
+            "name": "invalid-54"
+          },
+          {
+            "name": "invalid-55"
+          },
+          {
+            "name": "invalid-56"
+          },
+          {
+            "name": "invalid-57"
+          },
+          {
+            "name": "invalid-58"
+          },
+          {
+            "name": "invalid-59"
+          },
+          {
+            "name": "invalid-60"
+          },
+          {
+            "name": "invalid-61"
+          },
+          {
+            "name": "invalid-62"
+          },
+          {
+            "name": "invalid-63"
+          },
+          {
+            "name": "invalid-64"
+          },
+          {
+            "name": "invalid-65"
+          },
+          {
+            "name": "invalid-66"
+          },
+          {
+            "name": "invalid-67"
+          },
+          {
+            "name": "invalid-68"
+          },
+          {
+            "name": "invalid-69"
+          },
+          {
+            "name": "invalid-70"
+          },
+          {
+            "name": "invalid-71"
+          },
+          {
+            "name": "invalid-72"
+          },
+          {
+            "name": "invalid-73"
+          },
+          {
+            "name": "invalid-74"
+          },
+          {
+            "name": "invalid-75"
+          },
+          {
+            "name": "invalid-76"
+          },
+          {
+            "name": "invalid-77"
+          },
+          {
+            "name": "invalid-78"
+          },
+          {
+            "name": "invalid-79"
+          },
+          {
+            "name": "invalid-80"
+          },
+          {
+            "name": "invalid-81"
+          },
+          {
+            "name": "invalid-82"
+          },
+          {
+            "name": "invalid-83"
+          },
+          {
+            "name": "invalid-84"
+          },
+          {
+            "name": "invalid-85"
+          },
+          {
+            "name": "invalid-86"
+          },
+          {
+            "name": "invalid-87"
+          },
+          {
+            "name": "invalid-88"
+          },
+          {
+            "name": "invalid-89"
+          },
+          {
+            "name": "invalid-90"
+          },
+          {
+            "name": "invalid-91"
+          },
+          {
+            "name": "invalid-92"
+          },
+          {
+            "name": "invalid-93"
+          },
+          {
+            "name": "invalid-94"
+          },
+          {
+            "name": "invalid-95"
+          },
+          {
+            "name": "invalid-96"
+          },
+          {
+            "name": "invalid-97"
+          },
+          {
+            "name": "invalid-98"
+          },
+          {
+            "name": "invalid-99"
+          },
+          {
+            "name": "valid-0",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          }
+        ]
+      },
+      "output": {
+        "has_vulnerabilities": false,
+        "metadata": {
+          "completed_at": "2026-10-06T02:15:24.647827-07:00",
+          "database": "OSV",
+          "endpoint": "https://api.osv.dev/v1/query",
+          "mode": "cli",
+          "packages_scanned": 1,
+          "packages_skipped": 100,
+          "severity_threshold": "low",
+          "skill": "cve-scan",
+          "started_at": "2026-10-06T02:15:24.647145-07:00",
+          "timestamp": "2026-10-06T02:15:24.647828-07:00",
+          "trace_id": "b0775a80-c569-4cca-8342-8b7758e27272",
+          "vulnerabilities_found": 0
+        },
+        "scanned_packages": 1,
+        "skipped_packages": [
+          {
+            "name": "invalid-0",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-1",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-2",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-3",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-4",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-5",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-6",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-7",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-8",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-9",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-10",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-11",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-12",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-13",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-14",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-15",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-16",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-17",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-18",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-19",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-20",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-21",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-22",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-23",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-24",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-25",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-26",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-27",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-28",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-29",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-30",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-31",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-32",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-33",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-34",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-35",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-36",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-37",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-38",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-39",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-40",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-41",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-42",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-43",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-44",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-45",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-46",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-47",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-48",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-49",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-50",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-51",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-52",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-53",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-54",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-55",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-56",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-57",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-58",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-59",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-60",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-61",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-62",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-63",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-64",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-65",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-66",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-67",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-68",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-69",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-70",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-71",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-72",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-73",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-74",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-75",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-76",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-77",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-78",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-79",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-80",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-81",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-82",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-83",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-84",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-85",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-86",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-87",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-88",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-89",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-90",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-91",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-92",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-93",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-94",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-95",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-96",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-97",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-98",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-99",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          }
+        ],
+        "summary": {
+          "critical": 0,
+          "high": 0,
+          "low": 0,
+          "medium": 0,
+          "total": 0,
+          "unknown": 0
+        },
+        "vulnerabilities": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-42.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/security/cve-scan/pipeline-cli.yaml",
+      "sha256": "eb261eabb84788316f191054321e040177164d7b573bb2897cf4ba2132a612ed",
+      "input": {
+        "components": [
+          {
+            "name": "invalid-0"
+          },
+          {
+            "name": "valid-0",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-1",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-2",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-3",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-4",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-5",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-6",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-7",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-8",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-9",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-10",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-11",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-12",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-13",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-14",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-15",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-16",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-17",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-18",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-19",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-20",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-21",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-22",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-23",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-24",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-25",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-26",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-27",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-28",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-29",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-30",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-31",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-32",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-33",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-34",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-35",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-36",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-37",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-38",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-39",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-40",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-41",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-42",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-43",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-44",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-45",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-46",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-47",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-48",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-49",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-50",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-51",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-52",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-53",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-54",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-55",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-56",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-57",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-58",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-59",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-60",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-61",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-62",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-63",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-64",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-65",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-66",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-67",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-68",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-69",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-70",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-71",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-72",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-73",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-74",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-75",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-76",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-77",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-78",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-79",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-80",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-81",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-82",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-83",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-84",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-85",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-86",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-87",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-88",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-89",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-90",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-91",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-92",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-93",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-94",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-95",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-96",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-97",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-98",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-99",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          },
+          {
+            "name": "valid-100",
+            "version": "1.0",
+            "ecosystem": "PyPI"
+          }
+        ]
+      },
+      "output": {
+        "has_vulnerabilities": false,
+        "metadata": {
+          "completed_at": "2026-10-06T02:15:26.142017-07:00",
+          "database": "OSV",
+          "endpoint": "https://api.osv.dev/v1/query",
+          "mode": "cli",
+          "packages_scanned": 100,
+          "packages_skipped": 2,
+          "severity_threshold": "low",
+          "skill": "cve-scan",
+          "started_at": "2026-10-06T02:15:26.113798-07:00",
+          "timestamp": "2026-10-06T02:15:26.142018-07:00",
+          "trace_id": "e694e7bb-84cc-4f14-90c9-7d3dda79bdc6",
+          "vulnerabilities_found": 0
+        },
+        "scanned_packages": 100,
+        "skipped_packages": [
+          {
+            "name": "invalid-0",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "valid-100",
+            "reason": "This example caps each request at 100 packages",
+            "version": "1.0"
+          }
+        ],
+        "summary": {
+          "critical": 0,
+          "high": 0,
+          "low": 0,
+          "medium": 0,
+          "total": 0,
+          "unknown": 0
+        },
+        "vulnerabilities": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-43.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/email-triage/pipeline-mcp.yaml",
+      "sha256": "f1a524092965925fc553dd59d72c3cafc7245b3c8cedc97b8c75f4e0893a601f",
+      "input": {
+        "provider": "outlook",
+        "since_hours": 1
+      },
+      "output": {
+        "emails": [
+          {
+            "body": "",
+            "date": "2026-10-06T09:05:27.416540+00:00",
+            "from": "",
+            "has_attachment": false,
+            "id": "recent",
+            "subject": "recent",
+            "to": []
+          }
+        ]
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-44.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/security/cve-scan/pipeline-mcp.yaml",
+      "sha256": "fcc387acf34619e1173667a32d12b86c3469b8e2f22ea591e2c032247a9f7201",
+      "input": {
+        "sbom": {
+          "components": [
+            {
+              "name": "invalid-0"
+            },
+            {
+              "name": "invalid-1"
+            },
+            {
+              "name": "invalid-2"
+            },
+            {
+              "name": "invalid-3"
+            },
+            {
+              "name": "invalid-4"
+            },
+            {
+              "name": "invalid-5"
+            },
+            {
+              "name": "invalid-6"
+            },
+            {
+              "name": "invalid-7"
+            },
+            {
+              "name": "invalid-8"
+            },
+            {
+              "name": "invalid-9"
+            },
+            {
+              "name": "invalid-10"
+            },
+            {
+              "name": "invalid-11"
+            },
+            {
+              "name": "invalid-12"
+            },
+            {
+              "name": "invalid-13"
+            },
+            {
+              "name": "invalid-14"
+            },
+            {
+              "name": "invalid-15"
+            },
+            {
+              "name": "invalid-16"
+            },
+            {
+              "name": "invalid-17"
+            },
+            {
+              "name": "invalid-18"
+            },
+            {
+              "name": "invalid-19"
+            },
+            {
+              "name": "invalid-20"
+            },
+            {
+              "name": "invalid-21"
+            },
+            {
+              "name": "invalid-22"
+            },
+            {
+              "name": "invalid-23"
+            },
+            {
+              "name": "invalid-24"
+            },
+            {
+              "name": "invalid-25"
+            },
+            {
+              "name": "invalid-26"
+            },
+            {
+              "name": "invalid-27"
+            },
+            {
+              "name": "invalid-28"
+            },
+            {
+              "name": "invalid-29"
+            },
+            {
+              "name": "invalid-30"
+            },
+            {
+              "name": "invalid-31"
+            },
+            {
+              "name": "invalid-32"
+            },
+            {
+              "name": "invalid-33"
+            },
+            {
+              "name": "invalid-34"
+            },
+            {
+              "name": "invalid-35"
+            },
+            {
+              "name": "invalid-36"
+            },
+            {
+              "name": "invalid-37"
+            },
+            {
+              "name": "invalid-38"
+            },
+            {
+              "name": "invalid-39"
+            },
+            {
+              "name": "invalid-40"
+            },
+            {
+              "name": "invalid-41"
+            },
+            {
+              "name": "invalid-42"
+            },
+            {
+              "name": "invalid-43"
+            },
+            {
+              "name": "invalid-44"
+            },
+            {
+              "name": "invalid-45"
+            },
+            {
+              "name": "invalid-46"
+            },
+            {
+              "name": "invalid-47"
+            },
+            {
+              "name": "invalid-48"
+            },
+            {
+              "name": "invalid-49"
+            },
+            {
+              "name": "invalid-50"
+            },
+            {
+              "name": "invalid-51"
+            },
+            {
+              "name": "invalid-52"
+            },
+            {
+              "name": "invalid-53"
+            },
+            {
+              "name": "invalid-54"
+            },
+            {
+              "name": "invalid-55"
+            },
+            {
+              "name": "invalid-56"
+            },
+            {
+              "name": "invalid-57"
+            },
+            {
+              "name": "invalid-58"
+            },
+            {
+              "name": "invalid-59"
+            },
+            {
+              "name": "invalid-60"
+            },
+            {
+              "name": "invalid-61"
+            },
+            {
+              "name": "invalid-62"
+            },
+            {
+              "name": "invalid-63"
+            },
+            {
+              "name": "invalid-64"
+            },
+            {
+              "name": "invalid-65"
+            },
+            {
+              "name": "invalid-66"
+            },
+            {
+              "name": "invalid-67"
+            },
+            {
+              "name": "invalid-68"
+            },
+            {
+              "name": "invalid-69"
+            },
+            {
+              "name": "invalid-70"
+            },
+            {
+              "name": "invalid-71"
+            },
+            {
+              "name": "invalid-72"
+            },
+            {
+              "name": "invalid-73"
+            },
+            {
+              "name": "invalid-74"
+            },
+            {
+              "name": "invalid-75"
+            },
+            {
+              "name": "invalid-76"
+            },
+            {
+              "name": "invalid-77"
+            },
+            {
+              "name": "invalid-78"
+            },
+            {
+              "name": "invalid-79"
+            },
+            {
+              "name": "invalid-80"
+            },
+            {
+              "name": "invalid-81"
+            },
+            {
+              "name": "invalid-82"
+            },
+            {
+              "name": "invalid-83"
+            },
+            {
+              "name": "invalid-84"
+            },
+            {
+              "name": "invalid-85"
+            },
+            {
+              "name": "invalid-86"
+            },
+            {
+              "name": "invalid-87"
+            },
+            {
+              "name": "invalid-88"
+            },
+            {
+              "name": "invalid-89"
+            },
+            {
+              "name": "invalid-90"
+            },
+            {
+              "name": "invalid-91"
+            },
+            {
+              "name": "invalid-92"
+            },
+            {
+              "name": "invalid-93"
+            },
+            {
+              "name": "invalid-94"
+            },
+            {
+              "name": "invalid-95"
+            },
+            {
+              "name": "invalid-96"
+            },
+            {
+              "name": "invalid-97"
+            },
+            {
+              "name": "invalid-98"
+            },
+            {
+              "name": "invalid-99"
+            },
+            {
+              "name": "valid-0",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            }
+          ]
+        }
+      },
+      "output": {
+        "has_vulnerabilities": false,
+        "metadata": {
+          "database": "OSV",
+          "endpoint": "https://api.osv.dev/v1/query",
+          "mode": "mcp",
+          "packages_scanned": 1,
+          "packages_skipped": 100,
+          "severity_threshold": "low",
+          "skill": "cve-scan",
+          "timestamp": "2026-10-06T02:15:28.943461-07:00",
+          "trace_id": "af4ff00e-9648-4251-9b22-2db7f5c5ed3c",
+          "vulnerabilities_found": 0
+        },
+        "scanned_packages": 1,
+        "skipped_packages": [
+          {
+            "name": "invalid-0",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-1",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-2",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-3",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-4",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-5",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-6",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-7",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-8",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-9",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-10",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-11",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-12",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-13",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-14",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-15",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-16",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-17",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-18",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-19",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-20",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-21",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-22",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-23",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-24",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-25",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-26",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-27",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-28",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-29",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-30",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-31",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-32",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-33",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-34",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-35",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-36",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-37",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-38",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-39",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-40",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-41",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-42",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-43",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-44",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-45",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-46",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-47",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-48",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-49",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-50",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-51",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-52",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-53",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-54",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-55",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-56",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-57",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-58",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-59",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-60",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-61",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-62",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-63",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-64",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-65",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-66",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-67",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-68",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-69",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-70",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-71",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-72",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-73",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-74",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-75",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-76",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-77",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-78",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-79",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-80",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-81",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-82",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-83",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-84",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-85",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-86",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-87",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-88",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-89",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-90",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-91",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-92",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-93",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-94",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-95",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-96",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-97",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-98",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "invalid-99",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          }
+        ],
+        "summary": {
+          "critical": 0,
+          "high": 0,
+          "low": 0,
+          "medium": 0,
+          "total": 0,
+          "unknown": 0
+        },
+        "vulnerabilities": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-45.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/security/cve-scan/pipeline-mcp.yaml",
+      "sha256": "fcc387acf34619e1173667a32d12b86c3469b8e2f22ea591e2c032247a9f7201",
+      "input": {
+        "sbom": {
+          "components": [
+            {
+              "name": "invalid-0"
+            },
+            {
+              "name": "valid-0",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-1",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-2",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-3",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-4",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-5",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-6",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-7",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-8",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-9",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-10",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-11",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-12",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-13",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-14",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-15",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-16",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-17",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-18",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-19",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-20",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-21",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-22",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-23",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-24",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-25",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-26",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-27",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-28",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-29",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-30",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-31",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-32",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-33",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-34",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-35",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-36",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-37",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-38",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-39",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-40",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-41",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-42",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-43",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-44",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-45",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-46",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-47",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-48",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-49",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-50",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-51",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-52",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-53",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-54",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-55",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-56",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-57",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-58",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-59",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-60",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-61",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-62",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-63",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-64",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-65",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-66",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-67",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-68",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-69",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-70",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-71",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-72",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-73",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-74",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-75",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-76",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-77",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-78",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-79",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-80",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-81",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-82",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-83",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-84",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-85",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-86",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-87",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-88",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-89",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-90",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-91",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-92",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-93",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-94",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-95",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-96",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-97",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-98",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-99",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            },
+            {
+              "name": "valid-100",
+              "version": "1.0",
+              "ecosystem": "PyPI"
+            }
+          ]
+        }
+      },
+      "output": {
+        "has_vulnerabilities": false,
+        "metadata": {
+          "database": "OSV",
+          "endpoint": "https://api.osv.dev/v1/query",
+          "mode": "mcp",
+          "packages_scanned": 100,
+          "packages_skipped": 2,
+          "severity_threshold": "low",
+          "skill": "cve-scan",
+          "timestamp": "2026-10-06T02:15:30.196644-07:00",
+          "trace_id": "c08c4edf-f340-4d2a-b1d0-df78f12f3390",
+          "vulnerabilities_found": 0
+        },
+        "scanned_packages": 100,
+        "skipped_packages": [
+          {
+            "name": "invalid-0",
+            "reason": "OSV requires a version and either purl or name plus ecosystem",
+            "version": ""
+          },
+          {
+            "name": "valid-100",
+            "reason": "This example caps each request at 100 packages",
+            "version": "1.0"
+          }
+        ],
+        "summary": {
+          "critical": 0,
+          "high": 0,
+          "low": 0,
+          "medium": 0,
+          "total": 0,
+          "unknown": 0
+        },
+        "vulnerabilities": []
+      },
+      "job": ".conformance/review-regressions-1791278038403212000/valid/regression-46.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/cross-border-gdpr/pipeline.yaml",
+      "sha256": "b58227ec61d188018abc75e483e4a4bf2faccbf98461c8c1756fa06ed1c90ae0",
+      "input": {
+        "customer_id": "123",
+        "customer_name": "Private",
+        "customer_email": "private@example.test",
+        "customer_dob": "1990-01-01",
+        "customer_address": "Private",
+        "iban": "DE123",
+        "ip_address": "192.0.2.1",
+        "transaction_amount": 12,
+        "transaction_timestamp": "2026-10-06T12:00:00Z"
+      },
+      "output": null,
+      "job": ".conformance/review-regressions-1791278038403212000/gdpr-missing-key/regression-1.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/remove-pii/pipeline.yaml",
+      "sha256": "44f602708fa2dc746355aa6b05970702437e250641035b178df95cd992d4562b",
+      "input": {
+        "email": "private@example.test",
+        "ip_address": "192.0.2.1",
+        "user_name": "Private",
+        "payment_method": {
+          "full_number": "4111111111111111",
+          "expiry": "12/30"
+        },
+        "location": {
+          "latitude": 10,
+          "longitude": 20,
+          "city": "Fixture"
+        }
+      },
+      "output": null,
+      "job": ".conformance/review-round-two-1791278131201853000/missing/regression-1.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/remove-pii/pipeline.yaml",
+      "sha256": "44f602708fa2dc746355aa6b05970702437e250641035b178df95cd992d4562b",
+      "input": {
+        "email": "private@example.test",
+        "ip_address": "192.0.2.1",
+        "user_name": "Private",
+        "payment_method": {
+          "full_number": "4111111111111111",
+          "expiry": "12/30"
+        },
+        "location": {
+          "latitude": 10,
+          "longitude": 20,
+          "city": "Fixture"
+        }
+      },
+      "output": null,
+      "job": ".conformance/review-round-two-1791278131201853000/short/regression-1.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/remove-pii/pipeline.yaml",
+      "sha256": "44f602708fa2dc746355aa6b05970702437e250641035b178df95cd992d4562b",
+      "input": {
+        "email": "private@example.test",
+        "ip_address": "192.0.2.1",
+        "user_name": "Private",
+        "payment_method": {
+          "full_number": "4111111111111111",
+          "expiry": "12/30"
+        },
+        "location": {
+          "latitude": 10,
+          "longitude": 20,
+          "city": "Fixture"
+        }
+      },
+      "output": {
+        "email_domain": "example.test",
+        "email_hash": "830e2e63b527c2e05113183398e7bc3bb0b844d65746536ce6280ecb2e9fa01c",
+        "email_pseudonym": "830e2e63b527c2e05113183398e7bc3bb0b844d65746536ce6280ecb2e9fa01c",
+        "ip_hash": "07d283ebc60159634ca933e7cb763b66e71768137513c72a58d226e914ac5379",
+        "ip_pseudonym": "07d283ebc60159634ca933e7cb763b66e71768137513c72a58d226e914ac5379",
+        "location": {
+          "city": "Fixture"
+        },
+        "payment_method": {},
+        "user_id": "user_77b4f06ce36d",
+        "user_pseudonym": "77b4f06ce36dd87d7ccea7d11d278e1365fe3fb346ad835340939b86fa9c107b"
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-1.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/parse-logs/pipeline.yaml",
+      "sha256": "31097f1fde603c127ac9f8c9a5bb0f5ffcda7dbc58ac0c525b27a18025f19a3f",
+      "input": "{broken",
+      "output": {
+        "destination": "dead_letter",
+        "format": "parse_failed",
+        "level": "INFO",
+        "message": "",
+        "parse_error": "invalid JSON",
+        "processed_at": "2026-10-06T02:15:33.668688-07:00",
+        "raw_content": "{broken",
+        "timestamp": "2026-10-06T02:15:33.668669-07:00"
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-2.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/parse-logs/pipeline.yaml",
+      "sha256": "31097f1fde603c127ac9f8c9a5bb0f5ffcda7dbc58ac0c525b27a18025f19a3f",
+      "input": "2026-10-06,ERROR,\"billing,worker\",failed",
+      "output": {
+        "destination": "analytics",
+        "format": "csv",
+        "level": "ERROR",
+        "message": "failed",
+        "processed_at": "2026-10-06T02:15:34.686067-07:00",
+        "service": "billing,worker",
+        "timestamp": "2026-10-06"
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-3.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/recipes/parse-logs/pipeline.yaml",
+      "sha256": "31097f1fde603c127ac9f8c9a5bb0f5ffcda7dbc58ac0c525b27a18025f19a3f",
+      "input": "2026-10-06,ERROR,\"unclosed,failed",
+      "output": {
+        "destination": "dead_letter",
+        "format": "parse_failed",
+        "parse_error": "failed assignment (line 1): field `this.original`: parse error on line 1, column 34: extraneous or missing \" in quoted-field",
+        "processed_at": "2026-10-06T02:15:35.875375-07:00",
+        "raw_content": "2026-10-06,ERROR,\"unclosed,failed"
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-4.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/security/sbom-generate/pipeline-cli.yaml",
+      "sha256": "94852fdfcaefeb50fe3fc7eb6789a93f5ac9f3bdbc115f8219b704ee47a5b7f5",
+      "input": {
+        "name": "my-app",
+        "version": "1.0",
+        "dependencies": {
+          "@babel/core": "7.0.0"
+        }
+      },
+      "output": {
+        "metadata": {
+          "component_count": 1,
+          "format": "spdx",
+          "mode": "cli",
+          "skill": "sbom-generate",
+          "timestamp": "2026-10-06T02:15:36.898352-07:00",
+          "trace_id": "ac4de61f-47d3-4419-a1f1-1f038426d33a"
+        },
+        "sbom": {
+          "SPDXID": "SPDXRef-DOCUMENT",
+          "creationInfo": {
+            "created": "2026-10-06T02:15:36.898346-07:00",
+            "creators": [
+              "Tool: expanso-edge"
+            ]
+          },
+          "dataLicense": "CC0-1.0",
+          "documentNamespace": "https://expanso.io/spdx/ac4de61f-47d3-4419-a1f1-1f038426d33a",
+          "name": "my-app",
+          "packages": [
+            {
+              "SPDXID": "SPDXRef-Package--babel-core",
+              "downloadLocation": "NOASSERTION",
+              "filesAnalyzed": false,
+              "name": "@babel/core",
+              "versionInfo": "7.0.0"
+            }
+          ],
+          "spdxVersion": "SPDX-2.3"
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-5.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/backup-verify/pipeline-cli.yaml",
+      "sha256": "e314bae9b946862e46ce2503ccca29a6f30c289c2ec013cbb4a548d2161cc308",
+      "input": {},
+      "output": {
+        "error": "failed assignment (line 5): expected array value, got null from variable local",
+        "status": {
+          "verified": false
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-6.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/backup-verify/pipeline-cli.yaml",
+      "sha256": "e314bae9b946862e46ce2503ccca29a6f30c289c2ec013cbb4a548d2161cc308",
+      "input": {
+        "local_manifest": []
+      },
+      "output": {
+        "error": "failed assignment (line 6): expected array value, got null from variable backup",
+        "status": {
+          "verified": false
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-7.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/backup-verify/pipeline-cli.yaml",
+      "sha256": "e314bae9b946862e46ce2503ccca29a6f30c289c2ec013cbb4a548d2161cc308",
+      "input": {
+        "backup_manifest": []
+      },
+      "output": {
+        "error": "failed assignment (line 5): expected array value, got null from variable local",
+        "status": {
+          "verified": false
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-8.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/backup-verify/pipeline-cli.yaml",
+      "sha256": "e314bae9b946862e46ce2503ccca29a6f30c289c2ec013cbb4a548d2161cc308",
+      "input": {
+        "local_manifest": null,
+        "backup_manifest": []
+      },
+      "output": {
+        "error": "failed assignment (line 5): expected array value, got null from variable local",
+        "status": {
+          "verified": false
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-9.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/backup-verify/pipeline-cli.yaml",
+      "sha256": "e314bae9b946862e46ce2503ccca29a6f30c289c2ec013cbb4a548d2161cc308",
+      "input": {
+        "local_manifest": [],
+        "backup_manifest": []
+      },
+      "output": {
+        "differences": [],
+        "metadata": {
+          "bucket": null,
+          "cloud_provider": "unspecified",
+          "mode": "cli",
+          "skill": "backup-verify",
+          "trace_id": "04abe304-09ce-42b4-9b19-39e8ccfca577"
+        },
+        "status": {
+          "backup_bytes": 0,
+          "backup_files": 0,
+          "differences": 0,
+          "local_bytes": 0,
+          "local_files": 0,
+          "verified": true
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-10.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
+      "sha256": "c2948d01c0009936eb59226c1801aa1525b0c9238b7ad5ab1f62ba1073c3d22b",
+      "input": {
+        "html": "<title>Test</title><h1>Test</h1><meta name=\"viewport\" content=\"width=device-width\"><meta name=\"description\" content=\"Description\">"
+      },
+      "output": {
+        "analysis": {
+          "h1_count": 1,
+          "has_viewport": true,
+          "image_count": 0,
+          "images_missing_alt": 0,
+          "link_count": 0,
+          "meta_description": "Description",
+          "score": 100,
+          "title": "Test",
+          "url": null
+        },
+        "metadata": {
+          "mode": "cli",
+          "skill": "seo-pipeline",
+          "trace_id": "a843cb61-a0d9-44ce-b2ec-e7cc075837fb"
+        },
+        "recommendations": []
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-11.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
+      "sha256": "c2948d01c0009936eb59226c1801aa1525b0c9238b7ad5ab1f62ba1073c3d22b",
+      "input": {
+        "html": "<title>Test</title><h1>Test</h1><meta name=\"viewport\" content=\"width=device-width\"><meta content=\"Description\" name=\"description\">"
+      },
+      "output": {
+        "analysis": {
+          "h1_count": 1,
+          "has_viewport": true,
+          "image_count": 0,
+          "images_missing_alt": 0,
+          "link_count": 0,
+          "meta_description": "Description",
+          "score": 100,
+          "title": "Test",
+          "url": null
+        },
+        "metadata": {
+          "mode": "cli",
+          "skill": "seo-pipeline",
+          "trace_id": "b5038e30-7272-4aaf-bb19-ca8afbe24995"
+        },
+        "recommendations": []
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-12.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-cli.yaml",
+      "sha256": "890afbbb3d6e8d56b1d6c6f5fc80050a08426047eefe8fd100e398c45de65a67",
+      "input": {
+        "include_insights": true,
+        "include_quick_wins": true
+      },
+      "output": {
+        "insights": [
+          "fixture insight"
+        ],
+        "metadata": {
+          "mode": "cli",
+          "processing_time_ms": 0.913,
+          "skill": "stripe-reports",
+          "source": "stripe_api",
+          "timestamp": "2026-10-06T02:15:45.402612-07:00",
+          "trace_id": "140193ed-dd09-46bf-a5f5-36faa0b315b2"
+        },
+        "metrics": {
+          "revenue_by_currency": [
+            {
+              "currency": "USD",
+              "fees_minor": 100,
+              "gross_minor": 1200,
+              "minor_unit_exponent": 2,
+              "net_minor": 1100,
+              "refunds_minor": 0
+            }
+          ],
+          "transactions": {
+            "available": 0,
+            "has_more": false,
+            "pending": 0,
+            "total": 1
+          }
+        },
+        "quick_wins": [
+          "fixture quick win"
+        ],
+        "report": {
+          "date_range": {
+            "end_unix": 1791278145,
+            "start_unix": 1791191745
+          },
+          "generated_at": "2026-10-06T02:15:45.402597-07:00",
+          "period": "today",
+          "range": {
+            "end_unix": 1791278145,
+            "start_unix": 1791191745
+          },
+          "title": "Today Stripe balance report"
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-13.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-cli.yaml",
+      "sha256": "890afbbb3d6e8d56b1d6c6f5fc80050a08426047eefe8fd100e398c45de65a67",
+      "input": {
+        "include_insights": true,
+        "include_quick_wins": false
+      },
+      "output": {
+        "insights": [
+          "fixture insight"
+        ],
+        "metadata": {
+          "mode": "cli",
+          "processing_time_ms": 0.689,
+          "skill": "stripe-reports",
+          "source": "stripe_api",
+          "timestamp": "2026-10-06T02:15:46.38074-07:00",
+          "trace_id": "de6f24b6-869e-4a3e-9391-05b1bb643f1a"
+        },
+        "metrics": {
+          "revenue_by_currency": [
+            {
+              "currency": "USD",
+              "fees_minor": 100,
+              "gross_minor": 1200,
+              "minor_unit_exponent": 2,
+              "net_minor": 1100,
+              "refunds_minor": 0
+            }
+          ],
+          "transactions": {
+            "available": 0,
+            "has_more": false,
+            "pending": 0,
+            "total": 1
+          }
+        },
+        "quick_wins": [],
+        "report": {
+          "date_range": {
+            "end_unix": 1791278146,
+            "start_unix": 1791191746
+          },
+          "generated_at": "2026-10-06T02:15:46.380728-07:00",
+          "period": "today",
+          "range": {
+            "end_unix": 1791278146,
+            "start_unix": 1791191746
+          },
+          "title": "Today Stripe balance report"
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-14.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/security/sbom-generate/pipeline-mcp.yaml",
+      "sha256": "cfb56c9bdf237cb3cbba340770cf175c02ef7e639bf96ee61d0a53d1933a1248",
+      "input": {
+        "packages": {
+          "name": "my-app",
+          "version": "1.0",
+          "dependencies": {
+            "@babel/core": "7.0.0"
+          }
+        },
+        "format": "spdx"
+      },
+      "output": {
+        "metadata": {
+          "component_count": 1,
+          "format": "spdx",
+          "mode": "mcp",
+          "skill": "sbom-generate",
+          "timestamp": "2026-10-06T02:15:47.658013-07:00",
+          "trace_id": "ad1375da-800a-4533-83c8-5ffe0f776063"
+        },
+        "sbom": {
+          "SPDXID": "SPDXRef-DOCUMENT",
+          "creationInfo": {
+            "created": "2026-10-06T02:15:47.658004-07:00",
+            "creators": [
+              "Tool: expanso-edge"
+            ]
+          },
+          "dataLicense": "CC0-1.0",
+          "documentNamespace": "https://expanso.io/spdx/ad1375da-800a-4533-83c8-5ffe0f776063",
+          "name": "my-app",
+          "packages": [
+            {
+              "SPDXID": "SPDXRef-Package--babel-core",
+              "downloadLocation": "NOASSERTION",
+              "filesAnalyzed": false,
+              "name": "@babel/core",
+              "versionInfo": "7.0.0"
+            }
+          ],
+          "spdxVersion": "SPDX-2.3"
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-15.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/backup-verify/pipeline-mcp.yaml",
+      "sha256": "f9c153114ec3928a6e6d0b33076475817ee34b2c8e290435e3dd19027226a41d",
+      "input": {},
+      "output": {
+        "error": "failed assignment (line 4): expected array value, got null from variable local",
+        "status": {
+          "verified": false
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-16.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/backup-verify/pipeline-mcp.yaml",
+      "sha256": "f9c153114ec3928a6e6d0b33076475817ee34b2c8e290435e3dd19027226a41d",
+      "input": {
+        "local_manifest": []
+      },
+      "output": {
+        "error": "failed assignment (line 5): expected array value, got null from variable backup",
+        "status": {
+          "verified": false
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-17.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/backup-verify/pipeline-mcp.yaml",
+      "sha256": "f9c153114ec3928a6e6d0b33076475817ee34b2c8e290435e3dd19027226a41d",
+      "input": {
+        "backup_manifest": []
+      },
+      "output": {
+        "error": "failed assignment (line 4): expected array value, got null from variable local",
+        "status": {
+          "verified": false
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-18.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/backup-verify/pipeline-mcp.yaml",
+      "sha256": "f9c153114ec3928a6e6d0b33076475817ee34b2c8e290435e3dd19027226a41d",
+      "input": {
+        "local_manifest": null,
+        "backup_manifest": []
+      },
+      "output": {
+        "error": "failed assignment (line 4): expected array value, got null from variable local",
+        "status": {
+          "verified": false
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-19.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/backup-verify/pipeline-mcp.yaml",
+      "sha256": "f9c153114ec3928a6e6d0b33076475817ee34b2c8e290435e3dd19027226a41d",
+      "input": {
+        "local_manifest": [],
+        "backup_manifest": []
+      },
+      "output": {
+        "differences": [],
+        "metadata": {
+          "bucket": null,
+          "cloud_provider": "unspecified",
+          "mode": "mcp",
+          "skill": "backup-verify",
+          "trace_id": "fc04ae3f-0ca6-45ea-a626-8fc322be650e"
+        },
+        "status": {
+          "backup_bytes": 0,
+          "backup_files": 0,
+          "differences": 0,
+          "local_bytes": 0,
+          "local_files": 0,
+          "verified": true
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-20.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/seo-pipeline/pipeline-mcp.yaml",
+      "sha256": "f740fca90cc87a71a37cdbec1458b5cdb70052cfad11963f86d6f2c052ff5c46",
+      "input": {
+        "html": "<title>Test</title><h1>Test</h1><meta name=\"viewport\" content=\"width=device-width\"><meta name=\"description\" content=\"Description\">"
+      },
+      "output": {
+        "analysis": {
+          "h1_count": 1,
+          "has_viewport": true,
+          "image_count": 0,
+          "images_missing_alt": 0,
+          "link_count": 0,
+          "meta_description": "Description",
+          "score": 100,
+          "title": "Test",
+          "url": null
+        },
+        "metadata": {
+          "mode": "mcp",
+          "skill": "seo-pipeline",
+          "trace_id": "ea7c72c8-3b4b-49d9-82a1-a06d66410696"
+        },
+        "recommendations": []
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-21.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/seo-pipeline/pipeline-mcp.yaml",
+      "sha256": "f740fca90cc87a71a37cdbec1458b5cdb70052cfad11963f86d6f2c052ff5c46",
+      "input": {
+        "html": "<title>Test</title><h1>Test</h1><meta name=\"viewport\" content=\"width=device-width\"><meta content=\"Description\" name=\"description\">"
+      },
+      "output": {
+        "analysis": {
+          "h1_count": 1,
+          "has_viewport": true,
+          "image_count": 0,
+          "images_missing_alt": 0,
+          "link_count": 0,
+          "meta_description": "Description",
+          "score": 100,
+          "title": "Test",
+          "url": null
+        },
+        "metadata": {
+          "mode": "mcp",
+          "skill": "seo-pipeline",
+          "trace_id": "83c1f012-fc02-430c-bcf2-16eb54b4b8fd"
+        },
+        "recommendations": []
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-22.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
+      "sha256": "ea7c5f454e5d28f05c8827330e8f5844e04a7ba138cf53a68e2fe254808a2484",
+      "input": {
+        "include_insights": true,
+        "include_quick_wins": true
+      },
+      "output": {
+        "insights": [
+          "fixture insight"
+        ],
+        "metadata": {
+          "mode": "mcp",
+          "processing_time_ms": 0.6,
+          "skill": "stripe-reports",
+          "source": "stripe_api",
+          "timestamp": "2026-10-06T02:15:56.784679-07:00",
+          "trace_id": "25f3f7f6-e23f-41b5-9c2e-b45170714cc9"
+        },
+        "metrics": {
+          "revenue_by_currency": [
+            {
+              "currency": "USD",
+              "fees_minor": 100,
+              "gross_minor": 1200,
+              "minor_unit_exponent": 2,
+              "net_minor": 1100,
+              "refunds_minor": 0
+            }
+          ],
+          "transactions": {
+            "available": 0,
+            "has_more": false,
+            "pending": 0,
+            "total": 1
+          }
+        },
+        "quick_wins": [
+          "fixture quick win"
+        ],
+        "report": {
+          "date_range": {
+            "end_unix": 1791278156,
+            "start_unix": 1791191756
+          },
+          "generated_at": "2026-10-06T02:15:56.784668-07:00",
+          "period": "today",
+          "range": {
+            "end_unix": 1791278156,
+            "start_unix": 1791191756
+          },
+          "title": "Today Stripe balance report"
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-23.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    },
+    {
+      "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
+      "sha256": "ea7c5f454e5d28f05c8827330e8f5844e04a7ba138cf53a68e2fe254808a2484",
+      "input": {
+        "include_insights": true,
+        "include_quick_wins": false
+      },
+      "output": {
+        "insights": [
+          "fixture insight"
+        ],
+        "metadata": {
+          "mode": "mcp",
+          "processing_time_ms": 0.749,
+          "skill": "stripe-reports",
+          "source": "stripe_api",
+          "timestamp": "2026-10-06T02:15:57.934607-07:00",
+          "trace_id": "f64da949-6c2d-44fa-b107-f2cd4773290a"
+        },
+        "metrics": {
+          "revenue_by_currency": [
+            {
+              "currency": "USD",
+              "fees_minor": 100,
+              "gross_minor": 1200,
+              "minor_unit_exponent": 2,
+              "net_minor": 1100,
+              "refunds_minor": 0
+            }
+          ],
+          "transactions": {
+            "available": 0,
+            "has_more": false,
+            "pending": 0,
+            "total": 1
+          }
+        },
+        "quick_wins": [],
+        "report": {
+          "date_range": {
+            "end_unix": 1791278157,
+            "start_unix": 1791191757
+          },
+          "generated_at": "2026-10-06T02:15:57.934595-07:00",
+          "period": "today",
+          "range": {
+            "end_unix": 1791278157,
+            "start_unix": 1791191757
+          },
+          "title": "Today Stripe balance report"
+        }
+      },
+      "job": ".conformance/review-round-two-1791278131201853000/valid/regression-24.yaml",
+      "scope": "processor regression with loopback input/output and provider fixtures"
+    }
+  ]
+}

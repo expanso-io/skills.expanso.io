@@ -40,3 +40,7 @@ components:
   inputs: [stdin, http_server]
   processors: [mapping, log]
   outputs: [stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: Named source connectors, asset migration, site build, and deployment are not implemented.

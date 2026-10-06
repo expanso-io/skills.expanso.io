@@ -27,8 +27,8 @@ config:
           let pkg = content().parse_json()
 
           # Extract dependencies
-          let deps = pkg.dependencies.or({})
-          let dev_deps = pkg.devDependencies.or({})
+          let deps = $pkg.dependencies.or({})
+          let dev_deps = $pkg.devDependencies.or({})
 
           # Build component list
           let components = $deps.keys().map_each(name -> {
@@ -52,14 +52,14 @@ config:
               "timestamp": now(),
               "component": {
                 "type": "application",
-                "name": pkg.name.or("unknown"),
-                "version": pkg.version.or("0.0.0")
+                "name": $pkg.name.or("unknown"),
+                "version": $pkg.version.or("0.0.0")
               }
             },
             "components": $components
           }
           let spdx_packages = $components.map_each(component -> {
-            "SPDXID": "SPDXRef-Package-" + component.name.replace_all("[^A-Za-z0-9.-]", "-"),
+            "SPDXID": "SPDXRef-Package-" + component.name.re_replace_all("[^A-Za-z0-9.-]", "-"),
             "name": component.name,
             "versionInfo": component.version,
             "downloadLocation": "NOASSERTION",
@@ -69,7 +69,7 @@ config:
             "spdxVersion": "SPDX-2.3",
             "dataLicense": "CC0-1.0",
             "SPDXID": "SPDXRef-DOCUMENT",
-            "name": pkg.name.or("unknown"),
+            "name": $pkg.name.or("unknown"),
             "documentNamespace": "https://expanso.io/spdx/" + $trace_id,
             "creationInfo": {
               "created": now(),

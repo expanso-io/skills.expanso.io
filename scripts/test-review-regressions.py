@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import hashlib
 import json
 import shutil
 import sys
@@ -30,6 +31,7 @@ spec = importlib.util.spec_from_file_location("recipe_runner", ROOT / "scripts/t
 runner = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = runner
 spec.loader.exec_module(runner)
+EVIDENCE = []
 TOKEN = "regression-bearer-token-at-least-32-characters"
 AUTH_SKILLS = [
     "ai/audio-transcribe", "ai/video-generate", "connectors/gmail-read",
@@ -73,7 +75,7 @@ def config(skill, variant="cli"):
     path = ROOT / "skills" / skill / f"pipeline-{variant}.yaml"
     if variant == "recipe":
         path = ROOT / "skills" / skill / "pipeline.yaml"
-    return yaml.safe_load(path.read_text())["config"]
+    return yaml.safe_load(path.read_text())["config"] | {"_source_pipeline": str(path.relative_to(ROOT))}
 
 
 def http_transports(node, endpoint):
@@ -102,9 +104,10 @@ class Suite:
     def close(self):
         self.edge.stop()
 
-    def execute(self, cfg, payload, headers=None, retain_input=False):
+    def execute(self, cfg, payload, headers=None, retain_input=False, retain_output=False):
         self.count += 1
         cfg = copy.deepcopy(cfg)
+        source = cfg.pop("_source_pipeline", None)
         cfg.pop("http", None)
         port = runner.free_port()
         inbound = cfg.get("input", {}).get("http_server", {}) if retain_input else {}
@@ -112,7 +115,8 @@ class Suite:
         inbound.pop("cert_file", None)
         inbound.pop("key_file", None)
         cfg["input"] = {"http_server": inbound}
-        cfg["output"] = {"sync_response": {}}
+        if not retain_output:
+            cfg["output"] = {"sync_response": {}}
         name = f"regression-{self.count}"
         path = self.directory / f"{name}.yaml"
         path.write_text(yaml.safe_dump({"name": name, "type": "pipeline", "config": cfg}, sort_keys=False))
@@ -121,7 +125,16 @@ class Suite:
         try:
             assert runner.wait_for_port(port), path.read_text()
             response = requests.post(f"http://127.0.0.1:{port}/test", json=payload, headers=headers or {}, timeout=15)
-            return response.json() if response.content else None
+            result = response.json() if response.content else None
+            if source:
+                EVIDENCE.append({
+                    "pipeline": source,
+                    "sha256": hashlib.sha256((ROOT / source).read_bytes()).hexdigest(),
+                    "input": payload, "output": result,
+                    "job": str(path.relative_to(ROOT)),
+                    "scope": "processor regression with loopback input/output and provider fixtures",
+                })
+            return result
         finally:
             runner.delete_job(CLI, name, self.api)
 
@@ -148,7 +161,7 @@ def main():
             })
             for skill in AUTH_SKILLS:
                 guard = config(skill, "mcp")["pipeline"]["processors"][0]
-                cfg = {"pipeline": {"processors": [guard, {"http": {"url": endpoint, "verb": "POST", "retries": 0}}]}}
+                cfg = {"_source_pipeline": f"skills/{skill}/pipeline-mcp.yaml", "pipeline": {"processors": [guard, {"http": {"url": endpoint, "verb": "POST", "retries": 0}}]}}
                 for supplied in ([None, token] if token != TOKEN else [None, "wrong", TOKEN]):
                     Provider.calls.clear()
                     suite.execute(cfg, {"action": "create", "content": "x"}, {"Authorization": f"Bearer {supplied}"} if supplied is not None else {})
@@ -222,6 +235,7 @@ def main():
         rows.append("gdpr:missing-key")
         print(f"PASS {len(rows)} regression contracts on Expanso Edge")
         (directory / "report.json").write_text(json.dumps({"passed": rows}, indent=2) + "\n")
+        write_evidence()
         return 0
     finally:
         if suite:
@@ -229,6 +243,14 @@ def main():
         provider.shutdown()
         provider.server_close()
         thread.join(timeout=5)
+
+
+def write_evidence():
+    (ROOT / "review-regression-evidence.json").write_text(json.dumps({
+        "generated": datetime.now(timezone.utc).isoformat(),
+        "engine": runner.tool_evidence(shutil.which("expanso-edge")),
+        "status": "pass", "cases": EVIDENCE,
+    }, indent=2) + "\n")
 
 
 CLI = shutil.which("expanso-cli")
