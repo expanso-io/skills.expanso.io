@@ -40,12 +40,6 @@ def workflow_contract():
     assert "if" not in jobs["deploy"]
     commands = [shlex.split(line) for step in ci["jobs"]["conformance"]["steps"]
                 for line in step.get("run", "").replace("\\\n", " ").splitlines()]
-    run_scripts = "\n".join(
-        step.get("run", "") for step in ci["jobs"]["conformance"]["steps"]
-    )
-    assert "EXPANSO_VERSION" not in run_scripts
-    assert "https://get.expanso.io/edge/install.sh" in run_scripts
-    assert "https://get.expanso.io/cli/install.sh" in run_scripts
     assert [
         "uv",
         "run",

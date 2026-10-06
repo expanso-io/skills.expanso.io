@@ -23,7 +23,7 @@ inputs:
     type: string
     required: true
     description: Text containing PII to redact
-  - name: redaction_mask
+  - name: placeholder
     type: string
     default: "[REDACTED]"
     description: Replacement text for redacted content

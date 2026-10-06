@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-10-06T14:19:29.195464+00:00",
+  "generated": "2026-10-06T22:42:02.049062+00:00",
   "total_skills": 173,
   "categories": {
     "jobs": {
@@ -1677,7 +1677,11 @@
       "dependencies": {
         "network_egress": {
           "required": false,
-          "scope": "Only to the two databases."
+          "scope": "Only to the two databases.",
+          "tls": {
+            "required": true,
+            "verification": "PostgreSQL sslmode=verify-full with a trusted CA"
+          }
         },
         "third_party_apis": [],
         "credentials_transmitted": [
@@ -1715,6 +1719,7 @@
         "status": "executed-cloud-and-local",
         "date": "2026-09-18",
         "expanso_edge": "v2.1.21",
+        "tls_matches_current": false,
         "record": "skills/jobs/PROOF-2026-09-18.md",
         "runs": [
           {
@@ -1740,9 +1745,10 @@
         "not_proved": [
           "Change data capture. This is a batch copy; a CDC job (postgres_cdc) did not initialize in testing and is unproven.",
           "The top-level restart_policy never on Expanso Cloud with this spec; it was added after the Cloud run.",
-          "Negative balances on Expanso Cloud. The Cloud and 994/6 runs used the earlier formula and had only non-negative balances; the signed formula ran on a local-mode node only."
+          "Negative balances on Expanso Cloud. The Cloud and 994/6 runs used the earlier formula and had only non-negative balances; the signed formula ran on a local-mode node only.",
+          "The current sslmode=verify-full database connections, which were added after the dated runs."
         ],
-        "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. The top-level restart_policy never and the signed balance formula are newer than the Cloud run. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
+        "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. The top-level restart_policy never and the signed balance formula are newer than the Cloud run. The dated proof also predates the current verified-TLS requirement. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
       }
     },
     "log-reduction": {
@@ -2177,7 +2183,28 @@
       "version": "1.0.0",
       "description": "Accept events on one webhook and deliver every event to several endpoints, each retrying independently.",
       "category": "jobs",
-      "credentials": [],
+      "credentials": [
+        {
+          "name": "WEBHOOK_SECRET",
+          "required": true,
+          "description": "Shared HMAC-SHA256 secret used to authenticate inbound events."
+        },
+        {
+          "name": "RECEIVER_A_TOKEN",
+          "required": true,
+          "description": "Bearer token sent only to receiver A over HTTPS."
+        },
+        {
+          "name": "RECEIVER_B_TOKEN",
+          "required": true,
+          "description": "Bearer token sent only to receiver B over HTTPS."
+        },
+        {
+          "name": "RECEIVER_C_TOKEN",
+          "required": true,
+          "description": "Bearer token sent only to receiver C over HTTPS."
+        }
+      ],
       "inputs": [],
       "outputs": [],
       "backends": [
@@ -2193,13 +2220,41 @@
           "endpoints": [
             {
               "host": "each receiver",
-              "protocol": "http(s)",
-              "purpose": "POST each event"
+              "protocol": "https",
+              "purpose": "POST each event with receiver-specific bearer authentication"
             }
           ]
         },
         "third_party_apis": [],
-        "credentials_transmitted": [],
+        "credentials_transmitted": [
+          {
+            "name": "RECEIVER_A_TOKEN",
+            "to": "receiver A in the HTTPS Authorization header",
+            "not_to": [
+              "Expanso Cloud",
+              "pipeline definition",
+              "other receivers"
+            ]
+          },
+          {
+            "name": "RECEIVER_B_TOKEN",
+            "to": "receiver B in the HTTPS Authorization header",
+            "not_to": [
+              "Expanso Cloud",
+              "pipeline definition",
+              "other receivers"
+            ]
+          },
+          {
+            "name": "RECEIVER_C_TOKEN",
+            "to": "receiver C in the HTTPS Authorization header",
+            "not_to": [
+              "Expanso Cloud",
+              "pipeline definition",
+              "other receivers"
+            ]
+          }
+        ],
         "data_leaving_host": [
           {
             "what": "every event body",
@@ -2228,6 +2283,7 @@
         "status": "executed-local-only",
         "date": "2026-09-18",
         "expanso_edge": "v2.1.21",
+        "authentication_matches_current": false,
         "record": "skills/jobs/PROOF-2026-09-18.md",
         "runs": [
           {
@@ -2240,9 +2296,10 @@
           "10 events in; each of 3 receivers got all 10 exactly once, including one that answered 503 twice."
         ],
         "not_proved": [
-          "Any run through Cloud; real third-party receivers (receivers were local test sinks)."
+          "Any run through Cloud; real third-party receivers (receivers were local test sinks).",
+          "The current HMAC input verification, HTTPS requirement, and receiver bearer authentication, which were added after the dated run."
         ],
-        "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
+        "note": "The dated run predates the current authentication and TLS requirements, so it is not proof of the current security behavior. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
       }
     },
     "access-gate": {
@@ -2662,7 +2719,7 @@
           "description": "Text containing PII to redact"
         },
         {
-          "name": "redaction_mask",
+          "name": "placeholder",
           "type": "string",
           "default": "[REDACTED]",
           "description": "Replacement text for redacted content"

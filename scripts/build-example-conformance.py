@@ -186,6 +186,19 @@ def execution_evidence(
             "test_environment": result.get("test_environment"),
         }
 
+    job_report = REPO / "skills" / "jobs" / "execution-report.json"
+    if job_report.exists():
+        result = next((row for row in load_json(job_report).get("jobs", []) if row.get("pipeline") == relative), None)
+        if result is not None:
+            if result.get("sha256") != sha256(path):
+                return {"status": "failing", "reason": "job execution hash is stale"}
+            return {
+                "status": {"pass": "pass", "skipped": "skipped"}.get(result.get("status"), "failing"),
+                "method": "expanso-edge current-SHA intact job execution",
+                "report": "skills/jobs/execution-report.json",
+                "sha256": result["sha256"],
+                "reason": result.get("reason"),
+            }
     skill_doc = load_yaml(path.parent / "skill.yaml")
     proof = skill_doc.get("proof") if isinstance(skill_doc, dict) else None
     if not isinstance(proof, dict) or not str(proof.get("status", "")).startswith(
@@ -193,7 +206,8 @@ def execution_evidence(
     ):
         return {"status": "failing", "reason": "dated execution proof is missing"}
     return {
-        "status": "pass",
+        "status": "skipped",
+        "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded.",
         "method": "dated end-to-end execution proof",
         "proof_status": proof.get("status"),
         "proof_date": proof.get("date"),

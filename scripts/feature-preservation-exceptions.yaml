@@ -115,21 +115,6 @@ exceptions:
     replacement: /var/lib/expanso/minimized/events.jsonl
     reason: The nonfunctional example analytics destination was replaced by a persistent local minimized-data file with deployment-owned access controls.
 
-  - pipeline: skills/security/pii-redact/pipeline-*.yaml
-    category: declared_input
-    features:
-      - "place\
-        holder"
-    replacement: redaction_mask
-    reason: The redaction setting was renamed to describe the value it controls without changing its default or behavior.
-  - pipeline: skills/security/pii-redact/pipeline-*.yaml
-    category: optional_input
-    features:
-      - "place\
-        holder"
-    replacement: redaction_mask
-    reason: The optional redaction setting keeps the same default and behavior under its descriptive name.
-
   - pipeline: skills/recipes/s3-to-postgres/pipeline.yaml
     category: environment_control
     features: [POSTGRES_DSN]

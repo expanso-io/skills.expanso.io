@@ -1,0 +1,70 @@
+{
+  "generated": "2026-10-06T22:44:56.166838+00:00",
+  "expanso_edge": "v2.1.22",
+  "scope": "local Edge; published adapters and processors, fixture connection details only",
+  "jobs": [
+    {
+      "name": "webhook-fan-out",
+      "pipeline": "skills/jobs/webhook-fan-out/pipeline.yaml",
+      "sha256": "39ba0f02a822575626e47adc0056491d8634e5601a485d6251d4bd5c85e42687",
+      "status": "pass",
+      "outputs": [
+        [
+          "/notify",
+          "Bearer fixture-token",
+          {
+            "event": "fixture",
+            "received_at": "2026-10-06T15:44:52.700849-07:00"
+          }
+        ],
+        [
+          "/notify",
+          "Bearer fixture-token",
+          {
+            "event": "fixture",
+            "received_at": "2026-10-06T15:44:52.700849-07:00"
+          }
+        ],
+        [
+          "/notify",
+          "Bearer fixture-token",
+          {
+            "event": "fixture",
+            "received_at": "2026-10-06T15:44:52.700849-07:00"
+          }
+        ]
+      ]
+    },
+    {
+      "name": "data-migration-engine",
+      "pipeline": "skills/jobs/data-migration-engine/pipeline.yaml",
+      "sha256": "16cd64e901d28b9763df2d473f66aeedd220a13ca4a9bf5f4321fb5d9b5aa922",
+      "status": "pass",
+      "outputs": [
+        {
+          "id": 1,
+          "first_name": "Jane",
+          "last_name": "Doe",
+          "email": "jane@example.test",
+          "signed_up_on": "2026-01-02",
+          "status": "active",
+          "balance": -1.5,
+          "migrated_from": "legacy.customers"
+        }
+      ],
+      "rejects": [
+        {
+          "balance": "0.00",
+          "email": "bad",
+          "error": null,
+          "first_name": "Bad",
+          "id": 2,
+          "last_name": "Doe",
+          "reject_reason": "invalid email",
+          "signed_up_on": "2026-01-02",
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

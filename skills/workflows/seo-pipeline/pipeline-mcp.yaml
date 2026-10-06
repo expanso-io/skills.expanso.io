@@ -51,7 +51,7 @@ config:
                   "assigned": attr.0.contains("=")
                 })
               }
-              let html = this.html
+              let html = this.html.re_find_all("(?is)<!--.*?(?:-->|$)|<(?:script|style|textarea|xmp|iframe|noembed|noframes)\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>.*?(?:</(?:script|style|textarea|xmp|iframe|noembed|noframes)\\s*>|$)|<plaintext\\b[^>]*>.*|<(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>|[^<]+|<").filter(token -> !token.re_match("(?is)^(?:<!--|<(?:script|style|textarea|xmp|iframe|noembed|noframes|plaintext)\\b)")).join("")
               let title_matches = $html.re_find_all_submatch("(?is)<title[^>]*>\\s*([^<]+?)\\s*</title>")
               let meta_tags = $html.re_find_all("(?is)<meta\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>")
               let meta_attributes = $meta_tags.map_each(tag -> tag.apply("html_attributes"))

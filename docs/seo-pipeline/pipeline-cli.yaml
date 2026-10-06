@@ -10,72 +10,86 @@ config:
 
   pipeline:
     processors:
-      - mapping: |
-          meta trace_id = uuid_v4()
-          let input = content().parse_json()
-          let url = $input.url.or(env("DEFAULT_URL").or(""))
-          let html = $input.html.or("")
+      - try:
+          - mapping: |
+              meta trace_id = uuid_v4()
+              let input = content().parse_json()
+              let url = $input.url.or(env("DEFAULT_URL").or(""))
+              let html = $input.html.or("")
 
-          root = if $html.length() == 0 && !$url.has_prefix("https://") {
-            throw("url must use HTTPS when html is not supplied")
-          } else {
-            {"url": $url, "html": $html}
-          }
-          meta url = $url
-          meta supplied_html = $html
+              root = if $html.length() == 0 && !$url.has_prefix("https://") {
+                throw("url must use HTTPS when html is not supplied")
+              } else {
+                {"url": $url, "html": $html}
+              }
+              meta url = $url
+              meta supplied_html = $html
 
-      - switch:
-          - check: 'meta("supplied_html").length() > 0'
-            processors:
-              - mapping: 'root.html = meta("supplied_html")'
-          - processors:
-              - mapping: 'root = ""'
-              - http:
-                  url: '${! meta("url") }'
-                  verb: GET
-                  headers:
-                    User-Agent: Expanso-SEO-Audit/1.0
-                  timeout: 20s
-                  retries: 2
-              - mapping: 'root.html = content().string()'
+          - switch:
+              - check: 'meta("supplied_html").or("").length() > 0'
+                processors:
+                  - mapping: 'root.html = meta("supplied_html")'
+              - processors:
+                  - try:
+                      - mapping: 'root = ""'
+                      - http:
+                          url: '${! meta("url") }'
+                          verb: GET
+                          headers:
+                            User-Agent: Expanso-SEO-Audit/1.0
+                          timeout: 20s
+                          retries: 2
+                      - mapping: 'root.html = content().string()'
 
-      - mapping: |
-          let html = this.html
-          let title_matches = $html.re_find_all_submatch("(?is)<title[^>]*>\\s*([^<]+?)\\s*</title>")
-          let description_tags = $html.re_find_all("(?is)<meta\\s[^>]*>").filter(tag -> tag.re_match("(?is)\\sname\\s*=\\s*[\\\"']description[\\\"']"))
-          let description_matches = $description_tags.map_each(tag -> tag.re_find_all_submatch("(?is)\\scontent\\s*=\\s*[\\\"']([^\\\"']*)[\\\"']")).flatten()
-          let h1_count = $html.re_find_all("(?is)<h1(?:\\s|>)").length()
-          let link_count = $html.re_find_all("(?is)<a(?:\\s|>)").length()
-          let images = $html.re_find_all("(?is)<img(?:\\s|>)[^>]*>")
-          let images_missing_alt = $images.filter(tag -> !tag.re_match("(?is)\\salt=[\\\"'][^\\\"']*[\\\"']")).length()
-          let has_viewport = $html.re_match("(?is)<meta[^>]+name=[\\\"']viewport[\\\"']")
-          let title = if $title_matches.length() > 0 { $title_matches.0.1.trim() } else { "" }
-          let description = if $description_matches.length() > 0 { $description_matches.0.1.trim() } else { "" }
-          let score = 100 - if $title.length() == 0 { 25 } else { 0 } - if $description.length() == 0 { 25 } else { 0 } - if $h1_count == 0 { 20 } else { 0 } - if !$has_viewport { 15 } else { 0 } - if $images_missing_alt > 0 { 15 } else { 0 }
+          - mapping: |
+              map html_attributes {
+                root = this.re_replace_all("(?is)^<[^\\s>]+|>$", "").re_find_all_submatch("([^\\s\"'<>/=]+)(?:\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s\"'=<>`]+)))?").map_each(attr -> {
+                  "name": attr.1.lowercase(),
+                  "value": attr.slice(2).filter(value -> value != "").index(0).catch(""),
+                  "assigned": attr.0.contains("=")
+                })
+              }
+              let html = this.html.re_find_all("(?is)<!--.*?(?:-->|$)|<(?:script|style|textarea|xmp|iframe|noembed|noframes)\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>.*?(?:</(?:script|style|textarea|xmp|iframe|noembed|noframes)\\s*>|$)|<plaintext\\b[^>]*>.*|<(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>|[^<]+|<").filter(token -> !token.re_match("(?is)^(?:<!--|<(?:script|style|textarea|xmp|iframe|noembed|noframes|plaintext)\\b)")).join("")
+              let title_matches = $html.re_find_all_submatch("(?is)<title[^>]*>\\s*([^<]+?)\\s*</title>")
+              let meta_tags = $html.re_find_all("(?is)<meta\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>")
+              let meta_attributes = $meta_tags.map_each(tag -> tag.apply("html_attributes"))
+              let description_tags = $meta_attributes.filter(attrs -> attrs.filter(attr -> attr.name == "name" && attr.value.lowercase() == "description").length() > 0)
+              let descriptions = $description_tags.map_each(attrs -> attrs.filter(attr -> attr.name == "content").index(0).value.catch("")).filter(value -> value != "")
+              let h1_count = $html.re_find_all("(?is)<h1(?:\\s|>)").length()
+              let link_count = $html.re_find_all("(?is)<a(?:\\s|>)").length()
+              let images = $html.re_find_all("(?is)<img\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>")
+              let images_missing_alt = $images.filter(tag -> tag.apply("html_attributes").filter(attr -> attr.name == "alt" && attr.assigned).length() == 0).length()
+              let has_viewport = $meta_attributes.filter(attrs -> attrs.filter(attr -> attr.name == "name" && attr.value.lowercase() == "viewport").length() > 0).length() > 0
+              let title = if $title_matches.length() > 0 { $title_matches.0.1.trim() } else { "" }
+              let description = $descriptions.index(0).catch("").trim()
+              let score = 100 - if $title.length() == 0 { 25 } else { 0 } - if $description.length() == 0 { 25 } else { 0 } - if $h1_count == 0 { 20 } else { 0 } - if !$has_viewport { 15 } else { 0 } - if $images_missing_alt > 0 { 15 } else { 0 }
 
-          root.analysis = {
-            "url": meta("url"),
-            "score": $score,
-            "title": $title,
-            "meta_description": $description,
-            "h1_count": $h1_count,
-            "link_count": $link_count,
-            "image_count": $images.length(),
-            "images_missing_alt": $images_missing_alt,
-            "has_viewport": $has_viewport
-          }
-          root.recommendations = [
-            if $title.length() == 0 { {"priority": "high", "issue": "Missing title", "action": "Add a unique title element"} },
-            if $description.length() == 0 { {"priority": "high", "issue": "Missing meta description", "action": "Add a descriptive meta description"} },
-            if $h1_count == 0 { {"priority": "high", "issue": "Missing H1", "action": "Add one page-level H1"} },
-            if !$has_viewport { {"priority": "medium", "issue": "Missing viewport meta", "action": "Add a responsive viewport meta tag"} },
-            if $images_missing_alt > 0 { {"priority": "medium", "issue": "Images missing alt text", "action": "Add meaningful alt text or an empty alt for decorative images"} }
-          ].filter(item -> item != null)
-          root.metadata = {"skill": "seo-pipeline", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4())}
+              root.analysis = {
+                "url": meta("url"),
+                "score": $score,
+                "title": $title,
+                "meta_description": $description,
+                "h1_count": $h1_count,
+                "link_count": $link_count,
+                "image_count": $images.length(),
+                "images_missing_alt": $images_missing_alt,
+                "has_viewport": $has_viewport
+              }
+              root.recommendations = [
+                if $title.length() == 0 { {"priority": "high", "issue": "Missing title", "action": "Add a unique title element"} },
+                if $description.length() == 0 { {"priority": "high", "issue": "Missing meta description", "action": "Add a descriptive meta description"} },
+                if $h1_count == 0 { {"priority": "high", "issue": "Missing H1", "action": "Add one page-level H1"} },
+                if !$has_viewport { {"priority": "medium", "issue": "Missing viewport meta", "action": "Add a responsive viewport meta tag"} },
+                if $images_missing_alt > 0 { {"priority": "medium", "issue": "Images missing alt text", "action": "Add meaningful alt text or an empty alt for decorative images"} }
+              ].filter(item -> item != null)
+              root.metadata = {"skill": "seo-pipeline", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4())}
 
-      - log:
-          level: INFO
-          message: "[seo-pipeline] Analyzed ${! this.analysis.url }, score: ${! this.analysis.score }"
+          - log:
+              level: INFO
+              message: "[seo-pipeline] Analyzed ${! this.analysis.url }, score: ${! this.analysis.score }"
+      - catch:
+          - mapping: |
+              root = {"status": "error", "error": error(), "metadata": {"skill": "seo-pipeline", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4())}}
 
   output:
     stdout: {}
