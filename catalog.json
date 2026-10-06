@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-10-06T06:37:54.910972+00:00",
+  "generated": "2026-10-06T07:23:37.928568+00:00",
   "total_skills": 185,
   "categories": {
     "jobs": {
@@ -1359,14 +1359,44 @@
       ],
       "outputs": [
         {
-          "name": "emails",
+          "name": "source",
+          "type": "string",
+          "description": "Source identifier: gmail"
+        },
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "Resource identifier: messages"
+        },
+        {
+          "name": "schema_version",
+          "type": "string",
+          "description": "Response envelope schema version: 1.0"
+        },
+        {
+          "name": "trace_id",
+          "type": "string",
+          "description": "Request trace identifier"
+        },
+        {
+          "name": "data",
           "type": "array",
           "description": "Array of messages: {id, subject, from, to, date, snippet, labels, has_attachment}"
         },
         {
+          "name": "count",
+          "type": "integer",
+          "description": "Number of messages in data"
+        },
+        {
+          "name": "sensitivity",
+          "type": "string",
+          "description": "Data sensitivity: raw"
+        },
+        {
           "name": "metadata",
           "type": "object",
-          "description": "Processing metadata: {skill, trace_id, email_count, total_estimated, query, timestamp}"
+          "description": "Processing metadata: {skill, mode, query, label, fixture, email_count, total_estimated, trace_id, timestamp}"
         }
       ],
       "backends": [
@@ -1407,7 +1437,7 @@
           "name": "limit",
           "type": "integer",
           "default": 20,
-          "description": "Maximum messages to retrieve (1-100)"
+          "description": "Maximum messages to retrieve (1-200)"
         },
         {
           "name": "query",
@@ -1424,14 +1454,49 @@
       ],
       "outputs": [
         {
-          "name": "messages",
+          "name": "source",
+          "type": "string",
+          "description": "Source identifier: slack"
+        },
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "Resource identifier: conversations.history"
+        },
+        {
+          "name": "schema_version",
+          "type": "string",
+          "description": "Response envelope schema version: 1.0"
+        },
+        {
+          "name": "trace_id",
+          "type": "string",
+          "description": "Request trace identifier"
+        },
+        {
+          "name": "data",
           "type": "array",
           "description": "Array of messages: {id, user, text, timestamp, thread_ts, reactions}"
         },
         {
+          "name": "count",
+          "type": "integer",
+          "description": "Number of messages in data"
+        },
+        {
+          "name": "sensitivity",
+          "type": "string",
+          "description": "Data sensitivity: raw"
+        },
+        {
+          "name": "error",
+          "type": "string",
+          "description": "API error, present only when the Slack request fails"
+        },
+        {
           "name": "metadata",
           "type": "object",
-          "description": "Processing metadata: {skill, trace_id, message_count, total_available, timestamp}"
+          "description": "Processing metadata: {skill, mode, channel, query, success, fixture, message_count, total_available, trace_id, timestamp}"
         }
       ],
       "backends": [
