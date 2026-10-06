@@ -60,7 +60,7 @@ def main():
     workflow_contract()
     directory = ROOT / ".conformance" / f"publication-review-{time.time_ns()}"
     directory.mkdir(parents=True)
-    suite = reg.Suite(directory, {"PLACEHOLDER": "[HIDDEN]"})
+    suite = reg.Suite(directory, {"PLACEHOLDER": "[HIDDEN]", "ACCESS_POLICY": "*:slack-read:read", "EXPANSO_API_KEYS": "fixture-key:marketing-bot"})
     try:
         result = suite.execute(reg.config("recipes/transform-formats", "recipe"),
                                {"a.b": 1, "quoted,key": 'a"b'}, headers={"Accept": "text/csv"}, decode_json=False)
@@ -88,6 +88,13 @@ root = {"choices": [{"message": {"content": "{\\"redacted_text\\":\\"[HIDDEN]\\"
             assert result.get("metadata", {}).get("placeholder") == "[HIDDEN]", result
             assert "redaction_mask" not in result["metadata"], result
             assert result["redacted_text"] == "[HIDDEN]", result
+        cfg = reg.config("recipes/secure-slack-pipeline", "recipe")
+        cfg["pipeline"]["processors"] = cfg["pipeline"]["processors"][:4] + [
+            {"catch": [{"mapping": 'root = {"error": error()}'}]}
+        ]
+        result = suite.execute(cfg, {"channel": "C123", "limit": 1},
+                               headers={"X-Expanso-Api-Key": "fixture-key"})
+        assert result == {"channel": "C123", "limit": 1}, result
         reg.write_evidence()
         print(f"PASS {len(reg.EVIDENCE)} focused processor cases", flush=True)
     finally:

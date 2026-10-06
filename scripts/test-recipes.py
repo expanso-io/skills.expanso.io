@@ -342,7 +342,7 @@ def run_secure_slack(path: Path, cli: str, run_dir: Path) -> dict[str, Any]:
         cli,
         run_dir,
         {
-            "ACCESS_POLICY": "fixture-agent:slack-read:read",
+            "ACCESS_POLICY": "*:slack-read:read",
             "EXPANSO_API_KEYS": "fixture-key:fixture-agent",
             "SLACK_API_URL": f"http://127.0.0.1:{fixture_port}",
             "SLACK_BOT_TOKEN": "fixture-token",

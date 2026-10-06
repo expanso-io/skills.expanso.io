@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T14:19:29Z",
+  "generated": "2026-10-06T15:11:51Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -26,8 +26,8 @@
   },
   "counts": {
     "failing": 0,
-    "fixed": 69,
-    "pass": 71,
+    "fixed": 71,
+    "pass": 69,
     "pulled": 24,
     "skipped": 230,
     "total": 394
@@ -1067,14 +1067,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -1114,14 +1107,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -3638,14 +3624,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires a Kafka destination and persistent file outputs to verify all split messages.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 3
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -3830,14 +3809,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires Kafka source/destination topics and persistent output files to observe deduplicated delivery.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 4
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -3874,14 +3846,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires a file/stdout adapter execution fixture with encryption keys and plaintext-leak assertions; processor validation alone is insufficient.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -3921,14 +3886,7 @@
           "report": ".conformance/recipe-execution.json",
           "reason": null,
           "published_adapters_intact": true,
-          "test_environment": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "test_environment": null
         },
         "platform_realism": {
           "status": "pass",
@@ -4548,7 +4506,7 @@
     },
     {
       "pipeline": "skills/recipes/secure-slack-pipeline/pipeline.yaml",
-      "sha256": "8f6042623e5ac945749af7786c99f061f867506f278f3d0cb0655a912ad9d0fd",
+      "sha256": "3b092f31264c56df65bca6402f5a060f0ab1b973d604f9405f77212abaf4af57",
       "category": "recipes",
       "skill": "secure-slack-pipeline",
       "variant": "recipe",
@@ -4560,7 +4518,14 @@
           "report": ".conformance/recipe-execution.json",
           "reason": null,
           "published_adapters_intact": true,
-          "test_environment": "local Slack-compatible HTTP fixture"
+          "test_environment": "local Slack-compatible HTTP fixture",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4584,7 +4549,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "fixed"
     },
     {
       "pipeline": "skills/recipes/smart-buffering/pipeline.yaml",
@@ -4625,7 +4590,7 @@
     },
     {
       "pipeline": "skills/recipes/transform-formats/pipeline.yaml",
-      "sha256": "60d22f0c319cba5070c90382e3d58dc4903761a1ddfb57111f8a45985b85bbe5",
+      "sha256": "cd3d4b249e0382f098d712ba67b24ac518ff7987831cc60f9ef0fe34b841e8f7",
       "category": "recipes",
       "skill": "transform-formats",
       "variant": "recipe",
@@ -4637,7 +4602,14 @@
           "report": ".conformance/recipe-execution.json",
           "reason": null,
           "published_adapters_intact": true,
-          "test_environment": null
+          "test_environment": null,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4837,14 +4809,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 2,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 3
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -4884,14 +4849,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 2,
           "reason": null,
-          "published_adapters_intact": true,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 3
-          }
+          "published_adapters_intact": true
         },
         "platform_realism": {
           "status": "pass",
@@ -5391,7 +5349,7 @@
     },
     {
       "pipeline": "skills/security/pii-redact/pipeline-cli.yaml",
-      "sha256": "4e3d46ed413c157fcb65dd225c364eefd4ebca0bfdef49392184ce1c4dd14ec5",
+      "sha256": "7c9ccbe11f960073795a3a896002533838c3e4e8eeb27bd6ea69b92e44c15648",
       "category": "security",
       "skill": "pii-redact",
       "variant": "cli",
@@ -5403,7 +5361,14 @@
           "report": ".conformance/full-cli.json",
           "tests": 3,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -5431,7 +5396,7 @@
     },
     {
       "pipeline": "skills/security/pii-redact/pipeline-mcp.yaml",
-      "sha256": "d9e313bf146670d5587ac2b2297bffccb764e195e3a95b84ac0dea3c573b7347",
+      "sha256": "fbb74505be137b210891e5de574326a2bcb5aaf82fc82fdc0137029f08f98812",
       "category": "security",
       "skill": "pii-redact",
       "variant": "mcp",
@@ -5443,7 +5408,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 3,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -5867,14 +5839,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -5914,14 +5879,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": null,
-          "published_adapters_intact": true,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": true
         },
         "platform_realism": {
           "status": "pass",
@@ -9186,7 +9144,7 @@
     },
     {
       "pipeline": "skills/transforms/json-to-csv/pipeline-cli.yaml",
-      "sha256": "7536916e2d2a4335fad5a6a706f65d7f12e3bcd5b09423547da6349d1ffd7f58",
+      "sha256": "f9a8a2d6c48a1a00dd2b8adfe5763d8a267a91e7e3688237aa554f457c1bf78d",
       "category": "transforms",
       "skill": "json-to-csv",
       "variant": "cli",
@@ -9196,7 +9154,7 @@
           "status": "skipped",
           "method": "supplemental expanso-edge harness execution",
           "report": ".conformance/full-cli.json",
-          "tests": 1,
+          "tests": 2,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
           "published_adapters_intact": false
         },
@@ -9226,7 +9184,7 @@
     },
     {
       "pipeline": "skills/transforms/json-to-csv/pipeline-mcp.yaml",
-      "sha256": "9ab61ac16f9490298eafaccb3b424ded898f7f8d5307ec2c71d04aa93de68f52",
+      "sha256": "75b270f71c40106b8fbbbd2579fc7e5465dd41334e42ad46d1b4872cacd90d2c",
       "category": "transforms",
       "skill": "json-to-csv",
       "variant": "mcp",
@@ -9236,7 +9194,7 @@
           "status": "pass",
           "method": "expanso-edge current-SHA intact execution",
           "report": ".conformance/full-mcp.json",
-          "tests": 1,
+          "tests": 2,
           "reason": null,
           "published_adapters_intact": true
         },
@@ -9262,7 +9220,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "fixed"
     },
     {
       "pipeline": "skills/transforms/json-to-yaml/pipeline-cli.yaml",
@@ -11358,14 +11316,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 2,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -11405,14 +11356,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 2,
           "reason": null,
-          "published_adapters_intact": true,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 6
-          }
+          "published_adapters_intact": true
         },
         "platform_realism": {
           "status": "pass",
@@ -15420,14 +15364,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -15467,14 +15404,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": null,
-          "published_adapters_intact": true,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": true
         },
         "platform_realism": {
           "status": "pass",
@@ -16198,7 +16128,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
-      "sha256": "c2948d01c0009936eb59226c1801aa1525b0c9238b7ad5ab1f62ba1073c3d22b",
+      "sha256": "5254c143050db933a4a5786794b23947321c3a1a50dab69dc83e86648ab4937d",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "cli",
@@ -16210,7 +16140,14 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 3
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -16238,7 +16175,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-mcp.yaml",
-      "sha256": "f740fca90cc87a71a37cdbec1458b5cdb70052cfad11963f86d6f2c052ff5c46",
+      "sha256": "91bb7f5e1773dcfc16658dacce18f2b1d4db02dee7520de0a4555dbb1a62097e",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "mcp",
@@ -16250,7 +16187,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": null,
-          "published_adapters_intact": true
+          "published_adapters_intact": true,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 3
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -16674,14 +16618,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -16721,14 +16658,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",

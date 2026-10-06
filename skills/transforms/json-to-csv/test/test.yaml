@@ -8,3 +8,10 @@ tests:
       has_field: row_count
       has_field: columns
       metadata_has: [skill, trace_id, timestamp]
+
+  - name: "Preserves dotted literal keys"
+    input: '[{"a.b":1},{"a.b":2}]'
+    expected_output:
+      csv: "a.b\n1\n2"
+      columns: ["a.b"]
+      row_count: 2
