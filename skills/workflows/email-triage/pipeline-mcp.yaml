@@ -43,9 +43,9 @@ config:
           let nonce = "000000000000000000000000".decode("hex")
           let proof = "expanso-mcp-auth".encrypt_aes("gcm", $expected.hash("sha256"), $nonce)
           let authenticated = $proof.decrypt_aes("gcm", $supplied.hash("sha256"), $nonce).catch(null) != null
-          meta http_status_code = if $supplied == "" || !$authenticated { 401 } else { 200 }
+          meta http_status_code = if $expected.length() < 32 { 503 } else if $supplied == "" || !$authenticated { 401 } else { 200 }
           root = if $expected.length() < 32 {
-            throw("MCP_BEARER_TOKEN must contain at least 32 characters")
+            deleted()
           } else if $supplied == "" || !$authenticated {
             deleted()
           } else {
@@ -125,7 +125,7 @@ config:
                   let api = env("OUTLOOK_API_URL").or("https://graph.microsoft.com/v1.0")
                   let fields = "id,subject,from,toRecipients,receivedDateTime,bodyPreview,hasAttachments"
                   let since_date = (now().ts_unix() - (meta("since_hours").number() * 3600)).ts_format("2006-01-02T15:04:05Z")
-                  root.url = $api + "/me/mailFolders/" + meta("folder").escape_url_path() + "/messages?$top=" + meta("limit").string() + "&$select=" + fields + "&$filter=receivedDateTime%20ge%20" + $since_date.escape_url_query()
+                  root.url = $api + "/me/mailFolders/" + meta("folder").escape_url_path() + "/messages?$top=" + meta("limit").string() + "&$select=" + $fields + "&$filter=receivedDateTime%20ge%20" + $since_date.escape_url_query()
               - http:
                   url: '${! this.url }'
                   verb: GET

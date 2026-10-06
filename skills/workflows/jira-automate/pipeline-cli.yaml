@@ -123,42 +123,46 @@ config:
 
           - check: 'this.action == "update"'
             processors:
-              - mapping: |
-                  let base = env("JIRA_URL").trim_suffix("/")
-                  meta trace_id = this._trace_id
-                  meta jira_auth = "Basic " + (env("JIRA_EMAIL").or("") + ":" + env("JIRA_API_TOKEN").or("")).encode("base64")
-                  meta jira_action = this.action
-                  meta issue_key = this.issue_key
-                  meta jira_url = $base + "/rest/api/3/issue/" + this.issue_key.or("").escape_url_path()
-                  root = if !$base.re_match("^https://") {
-                    throw("JIRA_URL must be an https URL")
-                  } else if this.issue_key.or("").length() == 0 || this.summary.or("").length() == 0 {
-                    throw("issue_key and summary are required for update")
-                  } else {
-                    {"fields": {"summary": this.summary}}
-                  }
-              - http:
-                  url: '${! meta("jira_url") }'
-                  verb: PUT
-                  headers:
-                    Authorization: '${! meta("jira_auth") }'
-                    Accept: application/json
-                    Content-Type: application/json
-                  timeout: 30s
-                  retries: 3
-                  rate_limit: jira_api
-              - mapping: |
-                  root.action = meta("jira_action")
-                  root.result = {"issue": {"key": meta("issue_key"), "updated": true}}
-                  root.issues = [root.result.issue]
-                  root.metadata = {
-                    "skill": "jira-automate",
-                    "mode": "cli",
-                    "action": meta("jira_action"),
-                    "source": "jira_api",
-                    "trace_id": meta("trace_id").or(uuid_v4()),
-                    "timestamp": now()
-                  }
+              - try:
+                  - mapping: |
+                      let base = env("JIRA_URL").trim_suffix("/")
+                      meta trace_id = this._trace_id
+                      meta jira_auth = "Basic " + (env("JIRA_EMAIL").or("") + ":" + env("JIRA_API_TOKEN").or("")).encode("base64")
+                      meta jira_action = this.action
+                      meta issue_key = this.issue_key
+                      meta jira_url = $base + "/rest/api/3/issue/" + this.issue_key.or("").escape_url_path()
+                      root = if !$base.re_match("^https://") {
+                        throw("JIRA_URL must be an https URL")
+                      } else if this.issue_key.or("").length() == 0 || this.summary.or("").length() == 0 {
+                        throw("issue_key and summary are required for update")
+                      } else {
+                        {"fields": {"summary": this.summary}}
+                      }
+                  - http:
+                      url: '${! meta("jira_url") }'
+                      verb: PUT
+                      headers:
+                        Authorization: '${! meta("jira_auth") }'
+                        Accept: application/json
+                        Content-Type: application/json
+                      timeout: 30s
+                      retries: 3
+                      rate_limit: jira_api
+                  - mapping: |
+                      root.action = meta("jira_action")
+                      root.result = {"issue": {"key": meta("issue_key"), "updated": true}}
+                      root.issues = [root.result.issue]
+                      root.metadata = {
+                        "skill": "jira-automate",
+                        "mode": "cli",
+                        "action": meta("jira_action"),
+                        "source": "jira_api",
+                        "trace_id": meta("trace_id").or(uuid_v4()),
+                        "timestamp": now()
+                      }
+              - catch:
+                  - mapping: |
+                      root = {"status": "error", "action": meta("jira_action"), "error": error()}
 
           - processors:
               - mapping: |

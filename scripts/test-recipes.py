@@ -624,6 +624,14 @@ def main() -> int:
         print(f"{result['status'].upper():7} {result['name']}{suffix}")
 
     if not args.recipes:
+        regressions = subprocess.run(
+            ["uv", "run", "-s", str(REPO / "scripts/test-review-regressions.py")],
+            cwd=REPO, check=False,
+        )
+        report["security_checks"].append({
+            "name": "review-regressions",
+            "status": "pass" if regressions.returncode == 0 else "fail",
+        })
         webhook_check = run_webhook_fanout_rejection(cli, run_dir)
         report["security_checks"].append(webhook_check)
         print(f"{webhook_check['status'].upper():7} webhook-fan-out rejection")

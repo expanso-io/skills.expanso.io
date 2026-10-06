@@ -7,6 +7,12 @@ labels:
   pattern: production-pipeline
 
 config:
+  rate_limit_resources:
+    - label: ingest_http
+      local:
+        count: 1000
+        interval: 1s
+
   input:
     http_server:
       address: "0.0.0.0:8080"
@@ -137,9 +143,3 @@ logger:
 metrics:
   prometheus:
     path: /metrics
-
-  rate_limit_resources:
-    - label: ingest_http
-      local:
-        count: 1000
-        interval: 1s
