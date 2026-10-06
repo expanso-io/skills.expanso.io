@@ -17,13 +17,7 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          let action = this.action.or("campaign")
-
-          root.action = $action
-          root.content = []
-          root.schedule = []
-          root.metadata = {"skill": "marketing-auto", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4())}
+          root = {"status": "unsupported", "publication": "pulled", "skill": "marketing-auto", "reason": "Fabricates campaign content, scheduling, and analytics without generating content or invoking marketing services."}
 
   output:
     sync_response: {}

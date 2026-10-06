@@ -44,3 +44,7 @@ components:
   inputs: [stdin, http_server]
   processors: [mapping, openai_chat_completion, http, log]
   outputs: [http_client, stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: "Fabricates campaign content, scheduling, and analytics without generating content or invoking marketing services."

@@ -75,7 +75,7 @@ config:
     switch:
       cases:
       # Valid items → processing queue
-        - check: 'meta("is_valid") == true'
+        - check: 'meta("is_valid") == "true"'
           output:
             kafka:
               addresses: ["${KAFKA_BROKERS}"]

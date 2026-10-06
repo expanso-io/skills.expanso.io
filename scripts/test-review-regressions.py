@@ -104,7 +104,7 @@ class Suite:
     def close(self):
         self.edge.stop()
 
-    def execute(self, cfg, payload, headers=None, retain_input=False, retain_output=False):
+    def execute(self, cfg, payload, headers=None, retain_input=False, retain_output=False, repeat=1):
         self.count += 1
         cfg = copy.deepcopy(cfg)
         source = cfg.pop("_source_pipeline", None)
@@ -124,17 +124,20 @@ class Suite:
         assert ok, output
         try:
             assert runner.wait_for_port(port), path.read_text()
-            response = requests.post(f"http://127.0.0.1:{port}/test", json=payload, headers=headers or {}, timeout=15)
-            result = response.json() if response.content else None
-            if source:
-                EVIDENCE.append({
-                    "pipeline": source,
-                    "sha256": hashlib.sha256((ROOT / source).read_bytes()).hexdigest(),
-                    "input": payload, "output": result,
-                    "job": str(path.relative_to(ROOT)),
-                    "scope": "processor regression with loopback input/output and provider fixtures",
-                })
-            return result
+            results = []
+            for _ in range(repeat):
+                response = requests.post(f"http://127.0.0.1:{port}/test", json=payload, headers=headers or {}, timeout=15)
+                result = response.json() if response.content else None
+                if source:
+                    EVIDENCE.append({
+                        "pipeline": source,
+                        "sha256": hashlib.sha256((ROOT / source).read_bytes()).hexdigest(),
+                        "input": payload, "output": result,
+                        "job": str(path.relative_to(ROOT)),
+                        "scope": "processor regression with loopback input/output and provider fixtures",
+                    })
+                results.append(result)
+            return results if repeat > 1 else results[0]
         finally:
             runner.delete_job(CLI, name, self.api)
 

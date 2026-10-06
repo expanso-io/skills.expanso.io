@@ -50,26 +50,21 @@ config:
           meta dedup_key = root.dedup_key
 
       # Step 3: Check cache for existing entry
-      - cache:
-          resource: dedup_cache
-          operator: get
-          key: '${!meta("dedup_key")}'
-
-      - mapping: |
-          root = this
-          let is_duplicate = meta("cache_result") != null && meta("cache_result") != ""
-          root.is_duplicate = $is_duplicate
-          meta is_duplicate = $is_duplicate
-
-      # Step 4: Store new events in cache
-      - switch:
-          - check: 'this.is_duplicate == false'
-            processors:
-              - cache:
-                  resource: dedup_cache
-                  operator: set
-                  key: '${!meta("dedup_key")}'
-                  value: '${!json("received_at")}'
+      - try:
+          - cache:
+              resource: dedup_cache
+              operator: add
+              key: '${!meta("dedup_key")}'
+              value: 'seen'
+          - mapping: |
+              root = this
+              root.is_duplicate = false
+              meta is_duplicate = false
+      - catch:
+          - mapping: |
+              root = this
+              root.is_duplicate = true
+              meta is_duplicate = true
 
       # Step 5: Add dedup metadata
       - mapping: |

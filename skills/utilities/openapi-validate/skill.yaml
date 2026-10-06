@@ -43,3 +43,7 @@ components:
   inputs: [stdin, http_server]
   processors: [mapping, json_schema, log]
   outputs: [stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: "Reports request or response validity from a version field without validating against the OpenAPI contract."

@@ -53,3 +53,7 @@ components:
   inputs: [stdin, http_server]
   processors: [mapping, log]
   outputs: [stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: "Copies one input hash instead of executing the requested pipeline repeatedly and measuring its output stability."

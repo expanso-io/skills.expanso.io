@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "total_skills": 183,
+  "total_skills": 174,
   "categories": {
     "jobs": {
       "skill_count": 8,
@@ -16,23 +16,19 @@
       ]
     },
     "workflows": {
-      "skill_count": 17,
+      "skill_count": 13,
       "skills": [
         "backup-verify",
         "catalog-reconcile",
         "devops-monitor",
         "email-triage",
-        "health-integrate",
         "jira-automate",
         "llm-router",
-        "marketing-auto",
         "meal-planner",
         "morning-briefing",
-        "multi-platform-chat",
         "seo-pipeline",
         "stripe-reports",
         "task-dashboard",
-        "terminal-services",
         "todoist-automate",
         "voice-admin"
       ]
@@ -66,19 +62,17 @@
       ]
     },
     "security": {
-      "skill_count": 16,
+      "skill_count": 14,
       "skills": [
         "access-gate",
         "audit-envelope",
         "cve-scan",
         "data-fence",
         "hash-digest",
-        "jwt-verify",
         "log-sanitize",
         "password-generate",
         "pii-detect",
         "pii-redact",
-        "policy-check",
         "sbom-generate",
         "secrets-scan",
         "sign-envelope",
@@ -200,11 +194,10 @@
       ]
     },
     "utilities": {
-      "skill_count": 16,
+      "skill_count": 13,
       "skills": [
         "audio-duration",
         "config-normalize",
-        "determinism-test",
         "email-validate",
         "idempotent-cache",
         "image-dimensions",
@@ -213,9 +206,7 @@
         "media-info",
         "media-type-detect",
         "mime-type",
-        "openapi-validate",
         "random-number",
-        "retry-wrapper",
         "uuid-generate",
         "video-thumbnail"
       ]

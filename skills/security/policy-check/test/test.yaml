@@ -1,6 +1,7 @@
-# Test: policy-check
 tests:
-  - name: "Checks policy"
-    input: '{"config":{},"policy":{"deny":[]}}'
-    expected_output:
-      allowed: true
+- name: Withdrawn capability returns no success receipt
+  input: '{}'
+  expected_output:
+    status: unsupported
+    publication: pulled
+    skill: policy-check

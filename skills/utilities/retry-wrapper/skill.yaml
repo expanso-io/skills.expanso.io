@@ -46,3 +46,7 @@ components:
   inputs: [stdin, http_server]
   processors: [mapping, retry, command, log]
   outputs: [stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: "Reports command success and retry attempts without execution; running caller-supplied commands would introduce a security risk."

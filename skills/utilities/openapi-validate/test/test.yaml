@@ -1,6 +1,7 @@
-# Test: openapi-validate
 tests:
-  - name: "Validates OpenAPI spec"
-    input: '{"spec":{"openapi":"3.0.0"}}'
-    expected_output:
-      valid: true
+- name: Withdrawn capability returns no success receipt
+  input: '{}'
+  expected_output:
+    status: unsupported
+    publication: pulled
+    skill: openapi-validate

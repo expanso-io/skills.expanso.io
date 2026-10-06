@@ -17,10 +17,7 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          root.health_summary = {"readiness_score": 78}
-          root.recommendations = []
-          root.metadata = {"skill": "health-integrate", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4())}
+          root = {"status": "unsupported", "publication": "pulled", "skill": "health-integrate", "reason": "Fabricates wearable health observations and calendar recommendations without reading supplied data or integrating providers."}
 
   output:
     sync_response: {}
