@@ -30,24 +30,38 @@ config:
             })
           }
 
+      - mapping: |
+          let base = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1").trim_suffix("/")
+          meta context_json = this.format_json()
+          meta gmail_api = $base
+          meta list_url = $base + "/users/me/messages?q=" + this.query.escape_url_query() + "&labelIds=" + this.label.escape_url_query() + "&maxResults=" + this.limit.string()
+          root = if !$base.re_match("^https://") { throw("GMAIL_API_URL must be an https URL") } else { {} }
+      - http:
+          url: '${! meta("list_url") }'
+          verb: GET
+          headers:
+            Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
+            Accept: application/json
+          timeout: 30s
+          retries: 3
+          rate_limit: gmail_api
+      - mapping: |
+          let ids = this.messages.or([]).map_each(message -> message.id)
+          meta total_estimated = this.resultSizeEstimate.or(0)
+          root = if $ids.length() == 0 {
+            [{"_empty": true}]
+          } else {
+            $ids.map_each(id -> {"url": meta("gmail_api") + "/users/me/messages/" + id + "?format=metadata"})
+          }
+      - unarchive:
+          format: json_array
       - switch:
-          - check: 'this.fixture_mode.or(false)'
+          - check: 'this._empty.or(false)'
             processors:
-              - mapping: |
-                  root.emails = this.fixture_emails.or([])
-                  root._context = this
-                  root._fixture = true
-                  root._total_estimated = this.fixture_total_estimated.or(this.fixture_emails.or([]).length())
-
+              - mapping: 'root = this'
           - processors:
-              - mapping: |
-                  let base = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1").trim_suffix("/")
-                  meta context_json = this.format_json()
-                  meta gmail_api = $base
-                  meta list_url = $base + "/users/me/messages?q=" + this.query.escape_url_query() + "&labelIds=" + this.label.escape_url_query() + "&maxResults=" + this.limit.string()
-                  root = if !$base.re_match("^https://") { throw("GMAIL_API_URL must be an https URL") } else { {} }
               - http:
-                  url: '${! meta("list_url") }'
+                  url: '${! this.url }'
                   verb: GET
                   headers:
                     Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
@@ -56,48 +70,23 @@ config:
                   retries: 3
                   rate_limit: gmail_api
               - mapping: |
-                  let ids = this.messages.or([]).map_each(message -> message.id)
-                  meta total_estimated = this.resultSizeEstimate.or(0)
-                  root = if $ids.length() == 0 {
-                    [{"_empty": true}]
-                  } else {
-                    $ids.map_each(id -> {"url": meta("gmail_api") + "/users/me/messages/" + id + "?format=metadata"})
+                  let headers = this.payload.headers.or([]).fold({}, pair -> pair.tally.assign({(pair.value.name.lowercase()): pair.value.value}))
+                  root = {
+                    "id": this.id,
+                    "subject": $headers.get("subject").or(""),
+                    "from": $headers.get("from").or(""),
+                    "to": $headers.get("to").or(""),
+                    "date": $headers.get("date").or(""),
+                    "snippet": this.snippet.or(""),
+                    "labels": this.labelIds.or([]),
+                    "has_attachment": this.payload.parts.or([]).any(part -> part.filename.or("").length() > 0)
                   }
-              - unarchive:
-                  format: json_array
-              - switch:
-                  - check: 'this._empty.or(false)'
-                    processors:
-                      - mapping: 'root = this'
-                  - processors:
-                      - http:
-                          url: '${! this.url }'
-                          verb: GET
-                          headers:
-                            Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
-                            Accept: application/json
-                          timeout: 30s
-                          retries: 3
-                          rate_limit: gmail_api
-                      - mapping: |
-                          let headers = this.payload.headers.or([]).fold({}, pair -> pair.tally.assign({(pair.value.name.lowercase()): pair.value.value}))
-                          root = {
-                            "id": this.id,
-                            "subject": $headers.get("subject").or(""),
-                            "from": $headers.get("from").or(""),
-                            "to": $headers.get("to").or(""),
-                            "date": $headers.get("date").or(""),
-                            "snippet": this.snippet.or(""),
-                            "labels": this.labelIds.or([]),
-                            "has_attachment": this.payload.parts.or([]).any(part -> part.filename.or("").length() > 0)
-                          }
-              - archive:
-                  format: json_array
-              - mapping: |
-                  root.emails = this.filter(email -> !email._empty.or(false))
-                  root._context = meta("context_json").parse_json()
-                  root._fixture = false
-                  root._total_estimated = meta("total_estimated").or("0").number()
+      - archive:
+          format: json_array
+      - mapping: |
+          root.emails = this.filter(email -> !email._empty.or(false))
+          root._context = meta("context_json").parse_json()
+          root._total_estimated = meta("total_estimated").or("0").number()
 
       - mapping: |
           let context = this._context
@@ -113,7 +102,7 @@ config:
             "mode": "cli",
             "query": $context.query,
             "label": $context.label,
-            "fixture": this._fixture,
+            "source": "gmail_api",
             "email_count": this.emails.length(),
             "total_estimated": this._total_estimated,
             "trace_id": $context._trace_id,

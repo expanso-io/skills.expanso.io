@@ -1,6 +1,15 @@
 tests:
-  - name: "Summarizes explicit Todoist fixtures"
-    input: '{"action":"list","fixture_mode":true,"fixture_tasks":[{"id":"1","content":"Review roadmap","priority":4,"due":{"date":"2099-01-01"}},{"id":"2","content":"Send update","priority":2}]}'
+  - name: "Summarizes a Todoist API task list"
+    input: '{"action":"list"}'
+    provider_responses:
+      - results:
+          - id: "1"
+            content: Review roadmap
+            priority: 4
+            due: {date: "2099-01-01"}
+          - id: "2"
+            content: Send update
+            priority: 2
     expected_output:
       action: list
       summary:
@@ -9,4 +18,4 @@ tests:
         due_today: 0
       metadata:
         skill: todoist-automate
-        fixture: true
+        source: todoist_api

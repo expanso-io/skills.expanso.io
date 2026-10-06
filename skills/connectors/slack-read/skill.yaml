@@ -27,6 +27,9 @@ credentials:
   - name: SLACK_CHANNEL_ID
     required: false
     description: Default channel ID to read from
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
 
 # Skill inputs
 inputs:
@@ -75,7 +78,7 @@ outputs:
     description: API error, present only when the Slack request fails
   - name: metadata
     type: object
-    description: "Processing metadata: {skill, mode, channel, query, success, fixture, message_count, total_available, trace_id, timestamp}"
+    description: "Processing metadata: {skill, mode, channel, query, success, source, message_count, total_available, trace_id, timestamp}"
 
 # Backend options
 backends:
@@ -83,10 +86,6 @@ backends:
     type: remote
     requires: [SLACK_BOT_TOKEN]
     description: Slack Web API (requires bot token with channels:history scope)
-  - name: fixture
-    type: local
-    requires: []
-    description: Explicit deterministic Slack messages for CI
 
 # Expanso components used
 components:

@@ -29,6 +29,11 @@ config:
             this
           }
 
+      # A failed key check must remove the original plaintext before any
+      # downstream processor or output can observe it.
+      - catch:
+          - mapping: 'root = deleted()'
+
       # Encrypt the payment object as one envelope so a key/IV pair is never
       # reused for multiple values. The MAC covers the field name, IV, and
       # ciphertext; consumers must verify it before decrypting.

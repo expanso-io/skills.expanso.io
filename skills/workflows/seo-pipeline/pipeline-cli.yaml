@@ -22,12 +22,12 @@ config:
             {"url": $url, "html": $html}
           }
           meta url = $url
-          meta fixture_html = $html
+meta supplied_html = $html
 
       - switch:
-          - check: 'meta("fixture_html").length() > 0'
+- check: 'meta("supplied_html").length() > 0'
             processors:
-              - mapping: 'root.html = meta("fixture_html")'
+- mapping: 'root.html = meta("supplied_html")'
           - processors:
               - mapping: 'root = ""'
               - http:

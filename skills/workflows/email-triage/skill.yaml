@@ -29,13 +29,16 @@ credentials:
   - name: OPENAI_API_KEY
     required: true
     description: OpenAI API key for AI processing
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
 
 # Skill inputs
 inputs:
   - name: provider
     type: string
     required: true
-    enum: [gmail, outlook, fixture]
+    enum: [gmail, outlook]
     description: Email provider to connect
   - name: folder
     type: string
@@ -53,14 +56,6 @@ inputs:
     type: boolean
     default: true
     description: Extract proposed calendar events from meeting requests
-  - name: fixture_mode
-    type: boolean
-    default: false
-    description: Use supplied emails instead of a provider API; intended for tests
-  - name: emails
-    type: array
-    default: []
-    description: Normalized emails used only when fixture_mode is true
 
 # Skill outputs
 outputs:
@@ -94,10 +89,6 @@ backends:
     type: remote
     requires: [OPENAI_API_KEY]
     description: OpenAI GPT-4o-mini for classification and drafting
-  - name: fixture
-    type: local
-    requires: []
-    description: Explicit normalized email fixtures with mocked AI responses for CI
 # Expanso components used
 components:
   inputs:

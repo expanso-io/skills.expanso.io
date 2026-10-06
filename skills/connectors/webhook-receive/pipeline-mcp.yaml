@@ -51,24 +51,14 @@ config:
       - mapping: |
           let secret = env("WEBHOOK_SECRET").or("")
           let sig_header_name = env("WEBHOOK_SIGNATURE_HEADER").or("X-Hub-Signature-256")
-
-          if $secret == "" {
-            root = throw("webhook rejected: WEBHOOK_SECRET is required")
-          }
-
           let provided_sig = meta($sig_header_name).or("")
-          if $provided_sig == "" {
-            root = throw("webhook rejected: missing signature header " + $sig_header_name)
-          }
-
-          # Compute the provider-compatible HMAC-SHA256 and compare.
           let expected = "sha256=" + meta("raw_body").hash("hmac_sha256", $secret).encode("hex")
-          if $expected != $provided_sig {
-            root = throw("webhook rejected: invalid signature")
+          root = if $secret == "" || $provided_sig == "" || $expected != $provided_sig {
+            deleted()
+          } else {
+            meta signature_status = "verified"
+            this
           }
-
-          meta signature_status = "verified"
-          root = this
 
       # ═══════════════════════════════════════════════════════════════════════
       # STEP 3: Structure output with canonical envelope

@@ -1,6 +1,15 @@
 tests:
-  - name: "Reads and filters explicit Slack fixtures"
-    input: '{"channel":"C01234567","query":"deploy","fixture_mode":true,"fixture_messages":[{"ts":"1.0","user":"U1","text":"deploy finished"},{"ts":"2.0","user":"U2","text":"standup notes"}]}'
+  - name: "Reads and filters a Slack API response"
+    input: '{"channel":"C01234567","query":"deploy"}'
+    provider_responses:
+      - ok: true
+        messages:
+          - ts: "1.0"
+            user: U1
+            text: deploy finished
+          - ts: "2.0"
+            user: U2
+            text: standup notes
     expected_output:
       source: slack
       resource: conversations.history
@@ -14,5 +23,5 @@ tests:
           reactions: []
       metadata:
         success: true
-        fixture: true
+        source: slack_api
         total_available: 2

@@ -11,6 +11,9 @@ credentials:
   - name: TODOIST_TOKEN
     required: true
     description: Todoist API token
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
 
 inputs:
   - name: action
@@ -49,10 +52,6 @@ backends:
     type: remote
     requires: [TODOIST_TOKEN]
     description: Todoist API v1 over HTTPS
-  - name: fixture
-    type: local
-    requires: []
-    description: Explicit deterministic task fixtures for CI
 
 components:
   inputs: [stdin, http_server]

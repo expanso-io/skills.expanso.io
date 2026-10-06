@@ -22,9 +22,9 @@ config:
           let provided = meta("X-Webhook-Signature").or("")
           let expected = content().hash("hmac_sha256", $secret).encode("hex")
           root = if $secret == "" {
-            throw("WEBHOOK_SECRET is required")
+            deleted()
           } else if $provided != $expected {
-            throw("webhook rejected: invalid signature")
+            deleted()
           } else { this }
 
       # Add request metadata

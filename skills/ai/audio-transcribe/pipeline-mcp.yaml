@@ -16,41 +16,49 @@ config:
 
   pipeline:
     processors:
+      # Bearer verification uses AES-GCM tag validation so token comparison is
+      # constant-time inside the authenticated-cipher implementation.
+      - mapping: |
+          let expected = env("MCP_BEARER_TOKEN").or("")
+          let authorization = meta("Authorization").or("")
+          let supplied = if $authorization.has_prefix("Bearer ") { $authorization.trim_prefix("Bearer ") } else { "" }
+          let nonce = "000000000000000000000000".decode("hex")
+          let proof = "expanso-mcp-auth".encrypt_aes("gcm", $expected.hash("sha256"), $nonce)
+          let authenticated = $proof.decrypt_aes("gcm", $supplied.hash("sha256"), $nonce).catch(null) != null
+          meta http_status_code = if $supplied == "" || !$authenticated { 401 } else { 200 }
+          root = if $expected.length() < 32 {
+            throw("MCP_BEARER_TOKEN must contain at least 32 characters")
+          } else if $supplied == "" || !$authenticated {
+            deleted()
+          } else {
+            this
+          }
+
       - mapping: |
           root = this
           root._trace_id = uuid_v4()
 
-      - switch:
-          - check: 'this.fixture_mode.or(false)'
-            processors:
-              - mapping: |
-                  root.transcript = this.fixture_transcript.or("")
-                  root.audio_url = this.audio_url.or(null)
-                  root._trace_id = this._trace_id
-                  root._source = "fixture"
-
-          - processors:
-              - mapping: |
-                  let url = this.audio_url.or("").string()
-                  meta audio_url = $url
-                  meta language = this.language.or("")
-                  meta trace_id = this._trace_id
-                  root = if !$url.re_match("^https://") { throw("audio_url must be an https URL") } else { {} }
-              - http:
-                  url: '${! meta("audio_url") }'
-                  verb: GET
-                  timeout: 60s
-                  retries: 3
-              - openai_transcription:
-                  api_key: "${OPENAI_API_KEY}"
-                  model: whisper-1
-                  file: '${! content() }'
-                  language: '${! meta("language") }'
-              - mapping: |
-                  root.transcript = content().string()
-                  root.audio_url = meta("audio_url")
-                  root._trace_id = meta("trace_id")
-                  root._source = "openai_transcription"
+      - mapping: |
+          let url = this.audio_url.or("").string()
+          meta audio_url = $url
+          meta language = this.language.or("")
+          meta trace_id = this._trace_id
+          root = if !$url.re_match("^https://") { throw("audio_url must be an https URL") } else { {} }
+      - http:
+          url: '${! meta("audio_url") }'
+          verb: GET
+          timeout: 60s
+          retries: 3
+      - openai_transcription:
+          api_key: "${OPENAI_API_KEY}"
+          model: whisper-1
+          file: '${! content() }'
+          language: '${! meta("language") }'
+      - mapping: |
+          root.transcript = content().string()
+          root.audio_url = meta("audio_url")
+          root._trace_id = meta("trace_id")
+          root._source = "openai_transcription"
 
       - mapping: |
           root.transcript = this.transcript

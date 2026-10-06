@@ -37,6 +37,7 @@ config:
               root.enrichment_source = "primary_api"
       - catch:
           # Primary failed, try secondary
+          - mapping: 'root = this'
           - try:
               - http:
                   url: "https://${SECONDARY_API_HOST}/enrich/${!this.event_id}"
@@ -49,13 +50,13 @@ config:
                   root = this
                   root.enrichment = content().parse_json()
                   root.enrichment_source = "secondary_api"
-      - catch:
-          # Both APIs failed, continue without enrichment
-          - mapping: |
-              root = this
-              root.enrichment = null
-              root.enrichment_source = "none"
-              root.enrichment_failed = true
+          - catch:
+              # Both APIs failed, continue without enrichment.
+              - mapping: |
+                  root = this
+                  root.enrichment = null
+                  root.enrichment_source = "none"
+                  root.enrichment_failed = true
 
       # Add processing metadata
       - mapping: |

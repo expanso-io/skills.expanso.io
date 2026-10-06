@@ -36,6 +36,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SKILLS_DIR = REPO_ROOT / "skills"
 CONFORMANCE_DIR = REPO_ROOT / ".conformance"
+HARNESS_MCP_BEARER_TOKEN = "expanso-harness-mcp-token-32-chars"
 
 
 class DupKeyLoader(yaml.SafeLoader):
@@ -76,6 +77,7 @@ class EdgeProcess:
             raise RuntimeError("expanso-edge not found in PATH")
 
         env = os.environ.copy()
+        env.setdefault("MCP_BEARER_TOKEN", HARNESS_MCP_BEARER_TOKEN)
         if self.env:
             env.update(self.env)
 
@@ -186,6 +188,8 @@ def compute_test_fingerprint(
     test: dict[str, Any],
     input_value: str,
     env_overrides: dict[str, Any],
+    provider_responses: list[Any],
+    ai_responses: list[Any],
     mock_openai: bool,
     harness_hash: str,
 ) -> str:
@@ -200,6 +204,8 @@ def compute_test_fingerprint(
     h.update(json.dumps(test, sort_keys=True, default=str).encode())
     h.update(str(input_value).encode())
     h.update(json.dumps(env_overrides, sort_keys=True, default=str).encode())
+    h.update(json.dumps(provider_responses, sort_keys=True, default=str).encode())
+    h.update(json.dumps(ai_responses, sort_keys=True, default=str).encode())
     h.update(b"mock_openai=1" if mock_openai else b"mock_openai=0")
     h.update(f"variant={variant}".encode())
     h.update(harness_hash.encode())
@@ -463,6 +469,8 @@ def apply_openai_mocks(
     skill_name: str,
     expected: dict[str, Any],
     instruction: str,
+    responses: list[Any] | None = None,
+    response_index: list[int] | None = None,
 ) -> None:
     structured_response_skills = {
         "json-extract",
@@ -471,13 +479,27 @@ def apply_openai_mocks(
         "text-analyze",
         "text-to-command",
     }
+    response_values = responses or []
+    index = response_index or [0]
+
+    def next_response(default: Any) -> Any:
+        if not response_values:
+            return default
+        response = response_values[min(index[0], len(response_values) - 1)]
+        index[0] += 1
+        return response
+
     for idx, proc in enumerate(processors):
         if "openai_chat_completion" in proc:
             expects_json = (
                 mapping_uses_parse_json(processors, idx)
                 or skill_name in structured_response_skills
             )
-            content = mock_content_for_test(skill_name, expected, instruction, expects_json)
+            default_content = mock_content_for_test(
+                skill_name, expected, instruction, expects_json
+            )
+            response = next_response(default_content)
+            content = response if isinstance(response, str) else json.dumps(response)
             literal = json.dumps(content)
             mapping = (
                 "root = {\"choices\": [{\"message\": {\"content\": "
@@ -486,13 +508,21 @@ def apply_openai_mocks(
             )
             processors[idx] = {"mapping": mapping}
         elif "openai_image_generation" in proc:
-            processors[idx] = {"mapping": "root = {\"data\": [{\"url\": \"https://example.com/mock.png\", \"revised_prompt\": \"mock prompt\"}]}"}
+            response = next_response(
+                {"data": [{"url": "https://example.com/mock.png", "revised_prompt": "mock prompt"}]}
+            )
+            processors[idx] = {"mapping": f"root = {json.dumps(response)}"}
         elif "openai_embeddings" in proc:
-            processors[idx] = {"mapping": "root = {\"data\": [{\"embedding\": [0.0, 0.0, 0.0, 0.0]}]}"}
+            response = next_response(
+                {"data": [{"embedding": [0.0, 0.0, 0.0, 0.0]}]}
+            )
+            processors[idx] = {"mapping": f"root = {json.dumps(response)}"}
         elif "openai_speech" in proc:
-            processors[idx] = {"mapping": "root = \"MOCK_AUDIO\""}
+            response = next_response("MOCK_AUDIO")
+            processors[idx] = {"mapping": f"root = {json.dumps(str(response))}"}
         elif "openai_transcription" in proc:
-            processors[idx] = {"mapping": "root = \"Mock transcript.\""}
+            response = next_response("Mock transcript.")
+            processors[idx] = {"mapping": f"root = {json.dumps(str(response))}"}
         else:
             # AI processors can be nested under switch, branch, try/catch,
             # and other processor containers. Walk every nested processor
@@ -503,6 +533,8 @@ def apply_openai_mocks(
                     skill_name,
                     expected,
                     instruction,
+                    response_values,
+                    index,
                 )
 
 
@@ -511,10 +543,19 @@ def apply_openai_mocks_nested(
     skill_name: str,
     expected: dict[str, Any],
     instruction: str,
+    responses: list[Any],
+    response_index: list[int],
 ) -> None:
     if isinstance(value, list):
         if all(isinstance(item, dict) for item in value):
-            apply_openai_mocks(value, skill_name, expected, instruction)
+            apply_openai_mocks(
+                value,
+                skill_name,
+                expected,
+                instruction,
+                responses,
+                response_index,
+            )
         else:
             for item in value:
                 apply_openai_mocks_nested(
@@ -522,6 +563,8 @@ def apply_openai_mocks_nested(
                     skill_name,
                     expected,
                     instruction,
+                    responses,
+                    response_index,
                 )
     elif isinstance(value, dict):
         for nested in value.values():
@@ -530,7 +573,43 @@ def apply_openai_mocks_nested(
                 skill_name,
                 expected,
                 instruction,
+                responses,
+                response_index,
             )
+
+
+def apply_provider_mocks(
+    processors: list[dict[str, Any]],
+    responses: list[Any],
+    response_index: list[int] | None = None,
+) -> None:
+    """Replace outbound HTTP processors only in the disposable test job.
+
+    The published pipeline keeps its real provider adapter. Tests replace that
+    adapter with deterministic provider responses and still execute every
+    downstream mapping, branch, and output assertion.
+    """
+    if not responses:
+        return
+    index = response_index or [0]
+    for processor in processors:
+        if "http" in processor:
+            response = responses[min(index[0], len(responses) - 1)]
+            processor.clear()
+            processor["mapping"] = f"root = {json.dumps(response, separators=(',', ':'))}"
+            index[0] += 1
+            continue
+        for value in processor.values():
+            if isinstance(value, list) and all(
+                isinstance(item, dict) for item in value
+            ):
+                apply_provider_mocks(value, responses, index)
+            elif isinstance(value, dict):
+                for nested in value.values():
+                    if isinstance(nested, list) and all(
+                        isinstance(item, dict) for item in nested
+                    ):
+                        apply_provider_mocks(nested, responses, index)
 
 def missing_credentials(skill_yaml: dict[str, Any], ignore: set[str] | None = None) -> list[str]:
     credentials = []
@@ -947,6 +1026,9 @@ def execute_test(
     expected_output: Any = None,
     output_conditions: Any = None,
     fixture_env: dict[str, Any] | None = None,
+    provider_responses: list[Any] | None = None,
+    ai_responses: list[Any] | None = None,
+    require_mcp_auth: bool = False,
     edge_log: Path | None = None,
     repeat: int = 1,
     expected_sequence: list[Any] | None = None,
@@ -999,7 +1081,17 @@ def execute_test(
     if mock_openai:
         processors = config.get("pipeline", {}).get("processors", [])
         if isinstance(processors, list):
-            apply_openai_mocks(processors, skill_name, expected, str(input_value))
+            apply_openai_mocks(
+                processors,
+                skill_name,
+                expected,
+                str(input_value),
+                ai_responses,
+            )
+    if provider_responses:
+        processors = config.get("pipeline", {}).get("processors", [])
+        if isinstance(processors, list):
+            apply_provider_mocks(processors, provider_responses)
     if fixture_env:
         pipeline_spec = replace_fixture_env(pipeline_spec, fixture_env)
 
@@ -1072,6 +1164,17 @@ def execute_test(
                     },
                     separators=(",", ":"),
                 ).encode()
+        auth_probe_status: int | None = None
+        auth_probe_body = ""
+        if variant == "mcp" and require_mcp_auth:
+            auth_probe = requests.request(
+                method,
+                url,
+                json=request_payload,
+                timeout=30,
+            )
+            auth_probe_status = auth_probe.status_code
+            auth_probe_body = auth_probe.text
         for _ in range(max(1, repeat)):
             if skill_name == "webhook-receive":
                 response = requests.request(
@@ -1094,7 +1197,13 @@ def execute_test(
                     timeout=30,
                 )
             else:
-                response = requests.request(method, url, json=request_payload, timeout=30)
+                response = requests.request(
+                    method,
+                    url,
+                    json=request_payload,
+                    headers={"Authorization": f"Bearer {HARNESS_MCP_BEARER_TOKEN}"},
+                    timeout=30,
+                )
             status_code = response.status_code
             output = response.json() if response.text else {}
             responses.append(output)
@@ -1125,6 +1234,13 @@ def execute_test(
         errors.extend(check_expected_output(expected_output, output))
         ok = not errors
     errors.extend(check_output_conditions(output_conditions, output))
+    if require_mcp_auth and (
+        auth_probe_status is None
+        or (auth_probe_status < 400 and auth_probe_body.strip())
+    ):
+        errors.append(
+            "MCP endpoint accepted a request without its bearer token"
+        )
     if expected_sequence is not None:
         if len(expected_sequence) != len(responses):
             errors.append(
@@ -1143,7 +1259,10 @@ def execute_test(
     if expected_error and str(expected_error) not in edge_log_text:
         errors.append(f"edge log did not contain expected error: {expected_error}")
     unexpected_errors = [
-        line for line in edge_log_text.splitlines() if " ERR " in line
+        line
+        for line in edge_log_text.splitlines()
+        if " ERR " in line
+        and not (require_mcp_auth and "unauthorized" in line.lower())
     ]
     if unexpected_errors and not (expected_error or expected.get("error_or_empty")):
         errors.append("unexpected Edge errors: " + " | ".join(unexpected_errors))
@@ -1155,6 +1274,9 @@ def execute_test(
         "output": output,
         "edge_errors": unexpected_errors,
     }
+    if require_mcp_auth:
+        result["auth_probe_status"] = auth_probe_status
+        result["auth_probe_body"] = auth_probe_body
     if repeat > 1:
         result["responses"] = responses
         result["status_codes"] = status_codes
@@ -1340,7 +1462,13 @@ def main() -> int:
             print("  - skipped (tests marked skip)")
             continue
 
-        ignore_creds = {"OPENAI_API_KEY"} if args.mock_openai else set()
+        ignore_creds = {"MCP_BEARER_TOKEN"}
+        if args.mock_openai:
+            ignore_creds.add("OPENAI_API_KEY")
+        if any(test.get("provider_responses") for test in tests):
+            for credential in skill_yaml.get("credentials", []):
+                if isinstance(credential, dict) and credential.get("name"):
+                    ignore_creds.add(str(credential["name"]))
         missing = missing_credentials(skill_yaml, ignore=ignore_creds)
         if missing and not args.allow_external:
             skill_result["status"] = "skipped"
@@ -1396,6 +1524,13 @@ def main() -> int:
             expected_sequence = test.get("expected_sequence")
             repeat = int(test.get("repeat", 1))
             fixture_env = test.get("env", {}) or {}
+            provider_responses = test.get("provider_responses", []) or []
+            ai_responses = test.get("ai_responses", []) or []
+            require_mcp_auth = args.variant == "mcp" and any(
+                isinstance(credential, dict)
+                and credential.get("name") == "MCP_BEARER_TOKEN"
+                for credential in skill_yaml.get("credentials", [])
+            )
 
             fingerprint = compute_test_fingerprint(
                 skill_dir,
@@ -1404,6 +1539,8 @@ def main() -> int:
                 test,
                 str(input_value),
                 env_overrides,
+                provider_responses,
+                ai_responses,
                 args.mock_openai,
                 harness_hash,
             )
@@ -1444,6 +1581,9 @@ def main() -> int:
                 expected_output=expected_output,
                 output_conditions=output_conditions,
                 fixture_env=fixture_env,
+                provider_responses=provider_responses,
+                ai_responses=ai_responses,
+                require_mcp_auth=require_mcp_auth,
                 edge_log=edge.log_file if edge else None,
                 repeat=repeat,
                 expected_sequence=expected_sequence,
@@ -1479,6 +1619,9 @@ def main() -> int:
                     "expected_sequence": expected_sequence,
                     "repeat": repeat,
                     "fixture_env": fixture_env,
+                    "provider_responses": provider_responses,
+                    "ai_responses": ai_responses,
+                    "require_mcp_auth": require_mcp_auth,
                     "test_entry": test_entry,
                 })
 
@@ -1523,6 +1666,9 @@ def main() -> int:
                     expected_output=ctx["expected_output"],
                     output_conditions=ctx["output_conditions"],
                     fixture_env=ctx["fixture_env"],
+                    provider_responses=ctx["provider_responses"],
+                    ai_responses=ctx["ai_responses"],
+                    require_mcp_auth=ctx["require_mcp_auth"],
                     edge_log=edge.log_file if edge else None,
                     repeat=ctx["repeat"],
                     expected_sequence=ctx["expected_sequence"],
