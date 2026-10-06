@@ -686,8 +686,10 @@ audited skills. The `offline` tag is set only when a skill declares
 ## Analytics
 
 `docs/js/analytics.js` sends browser page views and clicks on
-skills.expanso.io to Expanso's PostHog project through ph.expanso.io, with
-the same privacy defaults as docs.expanso.io.
+skills.expanso.io to Expanso's PostHog project through web.t.expanso.io, with
+the same privacy defaults as docs.expanso.io. The site loads no other
+analytics: `scripts/check-site-tags.py` fails the build if the retired Google
+Tag Manager container or the old ph.expanso.io proxy comes back.
 
 It only sees visitors whose browser runs the script. It does NOT show
 whether pages are indexed, whether agents fetch `llms.txt` or pipeline

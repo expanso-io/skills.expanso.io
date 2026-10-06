@@ -72,6 +72,9 @@ jobs:
       - name: Generate SEO assets (sitemap, skill pages)
         run: python scripts/build-seo.py --catalog catalog.json --output docs
 
+      - name: Check for retired analytics tags
+        run: python scripts/check-site-tags.py docs
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
