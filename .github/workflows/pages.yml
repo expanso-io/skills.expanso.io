@@ -19,7 +19,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  conformance:
+    uses: ./.github/workflows/ci.yml
+
   deploy:
+    needs: conformance
     runs-on: ubuntu-latest
     environment:
       name: github-pages

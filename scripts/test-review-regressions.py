@@ -113,6 +113,7 @@ class Suite:
         retain_output=False,
         repeat=1,
         raw=False,
+        decode_json=True,
     ):
         self.count += 1
         cfg = copy.deepcopy(cfg)
@@ -151,7 +152,7 @@ class Suite:
                         headers=request_headers,
                         timeout=15,
                     )
-                result = response.json() if response.content else None
+                result = (response.json() if decode_json else response.text) if response.content else None
                 if source:
                     EVIDENCE.append({
                         "pipeline": source,

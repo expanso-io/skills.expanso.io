@@ -4,7 +4,7 @@
 # Usage:
 #   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/redact \
-#     -d '{"text": "Contact John at john@example.com", "redaction_mask": "[HIDDEN]"}'
+#     -d '{"text": "Contact John at john@example.com", "placeholder": "[HIDDEN]"}'
 
 name: "pii-redact-mcp"
 type: pipeline
@@ -27,13 +27,14 @@ config:
           meta input_hash = $input_text.hash("sha256").encode("hex")
           meta input_length = $input_text.length()
           meta trace_id = uuid_v4()
-          let redaction_mask = this.redaction_mask.or("[REDACTED]")
-          meta redaction_mask = $redaction_mask
+          meta placeholder = this.placeholder.or("[REDACTED]")
 
+      - mapping: |
+          let input_text = this.text.or(content())
           root.messages = [
             {
               "role": "system",
-              "content": "You are a PII redaction specialist. Analyze the text and replace ALL personally identifiable information with the redaction mask '" + $redaction_mask + "'. PII includes: names, emails, phone numbers, SSNs, addresses, credit card numbers, IP addresses, dates of birth, and any other identifying information. Return a JSON object with: redacted_text (the text with PII replaced), redaction_count (integer), redacted_types (array of PII types found like 'email', 'phone', 'name', etc.)."
+              "content": "You are a PII redaction specialist. Analyze the text and replace ALL personally identifiable information with the placeholder '" + meta("placeholder") + "'. PII includes: names, emails, phone numbers, SSNs, addresses, credit card numbers, IP addresses, dates of birth, and any other identifying information. Return a JSON object with: redacted_text (the text with PII replaced), redaction_count (integer), redacted_types (array of PII types found like 'email', 'phone', 'name', etc.)."
             },
             {
               "role": "user",
@@ -59,7 +60,7 @@ config:
             "skill": "pii-redact",
             "mode": "mcp",
             "model": "gpt-4o-mini",
-            "redaction_mask": meta("redaction_mask"),
+            "placeholder": meta("placeholder"),
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
             "trace_id": meta("trace_id").or(uuid_v4()),

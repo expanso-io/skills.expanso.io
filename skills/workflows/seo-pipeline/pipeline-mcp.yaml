@@ -52,8 +52,8 @@ config:
           let h1_count = $html.re_find_all("(?is)<h1(?:\\s|>)").length()
           let link_count = $html.re_find_all("(?is)<a(?:\\s|>)").length()
           let images = $html.re_find_all("(?is)<img(?:\\s|>)[^>]*>")
-          let images_missing_alt = $images.filter(tag -> !tag.re_match("(?is)\\salt=[\\\"'][^\\\"']*[\\\"']")).length()
-          let has_viewport = $html.re_match("(?is)<meta[^>]+name=[\\\"']viewport[\\\"']")
+          let images_missing_alt = $images.filter(tag -> !tag.re_match("(?is)\\salt\\s*=\\s*[\\\"'][^\\\"']*[\\\"']")).length()
+          let has_viewport = $html.re_match("(?is)<meta[^>]+name\\s*=\\s*[\\\"']viewport[\\\"']")
           let title = if $title_matches.length() > 0 { $title_matches.0.1.trim() } else { "" }
           let description = if $description_matches.length() > 0 { $description_matches.0.1.trim() } else { "" }
           let score = 100 - if $title.length() == 0 { 25 } else { 0 } - if $description.length() == 0 { 25 } else { 0 } - if $h1_count == 0 { 20 } else { 0 } - if !$has_viewport { 15 } else { 0 } - if $images_missing_alt > 0 { 15 } else { 0 }
