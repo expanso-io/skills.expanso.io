@@ -12,6 +12,7 @@ labels:
 config:
   input:
     http_server:
+      address: 0.0.0.0:4195
       path: /secure-slack-read
       allowed_verbs: [POST]
 
@@ -163,7 +164,7 @@ config:
           if this.exists("error") && this.exists("source") {
             root = this
           } else {
-            root.messages = this.messages.or([]).map_each(m -> m.merge({"text": m.text.or("").re_replace_all("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}", "[EMAIL]").re_replace_all("\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b", "[PHONE]").re_replace_all("\\b\\d{3}-\\d{2}-\\d{4}\\b", "[SSN]")}))
+            root.messages = this.messages.or([]).map_each(m -> m.without("text").merge({"text": m.text.or("").re_replace_all("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}", "[EMAIL]").re_replace_all("\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b", "[PHONE]").re_replace_all("\\b\\d{3}-\\d{2}-\\d{4}\\b", "[SSN]")}))
           }
 
       # ═══════════════════════════════════════════════════════════════════════
@@ -217,8 +218,8 @@ config:
   output:
     sync_response: {}
 
-rate_limit_resources:
-  - label: slack_api
-    local:
-      count: 10
-      interval: 1s
+  rate_limit_resources:
+    - label: slack_api
+      local:
+        count: 10
+        interval: 1s

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-10-06T07:23:37.928568+00:00",
+  "generated": "2026-10-06T08:24:35.341205+00:00",
   "total_skills": 185,
   "categories": {
     "jobs": {
@@ -77,7 +77,18 @@
       "version": "1.0.0",
       "description": "Transcribe audio content using AI",
       "category": "ai",
-      "credentials": [],
+      "credentials": [
+        {
+          "name": "OPENAI_API_KEY",
+          "required": true,
+          "description": "OpenAI API key for Whisper transcription"
+        },
+        {
+          "name": "MCP_BEARER_TOKEN",
+          "required": false,
+          "description": "Required caller bearer token for the MCP endpoint (32+ characters)"
+        }
+      ],
       "inputs": [
         {
           "name": "audio_url",
@@ -100,12 +111,11 @@
         }
       ],
       "backends": [
-        "openai",
-        "fixture"
+        "openai"
       ],
       "tags": [
         "ai",
-        "local",
+        "openai",
         "remote"
       ]
     },
@@ -1280,6 +1290,11 @@
           "name": "REPLICATE_API_TOKEN",
           "required": true,
           "description": "Replicate API token from replicate.com"
+        },
+        {
+          "name": "MCP_BEARER_TOKEN",
+          "required": false,
+          "description": "Required caller bearer token for the MCP endpoint (32+ characters)"
         }
       ],
       "inputs": [
@@ -1314,12 +1329,10 @@
         }
       ],
       "backends": [
-        "replicate",
-        "fixture"
+        "replicate"
       ],
       "tags": [
         "ai",
-        "local",
         "remote"
       ]
     },
@@ -1333,6 +1346,11 @@
           "name": "GMAIL_ACCESS_TOKEN",
           "required": true,
           "description": "Gmail OAuth2 access token"
+        },
+        {
+          "name": "MCP_BEARER_TOKEN",
+          "required": false,
+          "description": "Required caller bearer token for the MCP endpoint (32+ characters)"
         }
       ],
       "inputs": [
@@ -1384,6 +1402,11 @@
           "description": "Array of messages: {id, subject, from, to, date, snippet, labels, has_attachment}"
         },
         {
+          "name": "emails",
+          "type": "array",
+          "description": "Compatibility alias for data"
+        },
+        {
           "name": "count",
           "type": "integer",
           "description": "Number of messages in data"
@@ -1396,16 +1419,14 @@
         {
           "name": "metadata",
           "type": "object",
-          "description": "Processing metadata: {skill, mode, query, label, fixture, email_count, total_estimated, trace_id, timestamp}"
+          "description": "Processing metadata: {skill, mode, query, label, source, email_count, total_estimated, trace_id, timestamp}"
         }
       ],
       "backends": [
-        "gmail-api",
-        "fixture"
+        "gmail-api"
       ],
       "tags": [
         "connectors",
-        "local",
         "remote"
       ]
     },
@@ -1424,6 +1445,11 @@
           "name": "SLACK_CHANNEL_ID",
           "required": false,
           "description": "Default channel ID to read from"
+        },
+        {
+          "name": "MCP_BEARER_TOKEN",
+          "required": false,
+          "description": "Required caller bearer token for the MCP endpoint (32+ characters)"
         }
       ],
       "inputs": [
@@ -1479,6 +1505,11 @@
           "description": "Array of messages: {id, user, text, timestamp, thread_ts, reactions}"
         },
         {
+          "name": "messages",
+          "type": "array",
+          "description": "Compatibility alias for data"
+        },
+        {
           "name": "count",
           "type": "integer",
           "description": "Number of messages in data"
@@ -1496,16 +1527,14 @@
         {
           "name": "metadata",
           "type": "object",
-          "description": "Processing metadata: {skill, mode, channel, query, success, fixture, message_count, total_available, trace_id, timestamp}"
+          "description": "Processing metadata: {skill, mode, channel, query, success, source, message_count, total_available, trace_id, timestamp}"
         }
       ],
       "backends": [
-        "slack-api",
-        "fixture"
+        "slack-api"
       ],
       "tags": [
         "connectors",
-        "local",
         "remote",
         "slack"
       ]
@@ -7636,6 +7665,11 @@
           "name": "OPENAI_API_KEY",
           "required": true,
           "description": "OpenAI API key for AI processing"
+        },
+        {
+          "name": "MCP_BEARER_TOKEN",
+          "required": false,
+          "description": "Required caller bearer token for the MCP endpoint (32+ characters)"
         }
       ],
       "inputs": [
@@ -7645,8 +7679,7 @@
           "required": true,
           "enum": [
             "gmail",
-            "outlook",
-            "fixture"
+            "outlook"
           ],
           "description": "Email provider to connect"
         },
@@ -7673,18 +7706,6 @@
           "type": "boolean",
           "default": true,
           "description": "Extract proposed calendar events from meeting requests"
-        },
-        {
-          "name": "fixture_mode",
-          "type": "boolean",
-          "default": false,
-          "description": "Use supplied emails instead of a provider API; intended for tests"
-        },
-        {
-          "name": "emails",
-          "type": "array",
-          "default": [],
-          "description": "Normalized emails used only when fixture_mode is true"
         }
       ],
       "outputs": [
@@ -7717,11 +7738,9 @@
       "backends": [
         "gmail",
         "microsoft-graph",
-        "openai",
-        "fixture"
+        "openai"
       ],
       "tags": [
-        "local",
         "openai",
         "remote",
         "workflows"
@@ -7823,6 +7842,11 @@
           "name": "JIRA_API_TOKEN",
           "required": true,
           "description": "Jira API token"
+        },
+        {
+          "name": "MCP_BEARER_TOKEN",
+          "required": false,
+          "description": "Required caller bearer token for the MCP endpoint (32+ characters)"
         }
       ],
       "inputs": [
@@ -7886,12 +7910,10 @@
         }
       ],
       "backends": [
-        "jira-cloud",
-        "fixture"
+        "jira-cloud"
       ],
       "tags": [
         "jira",
-        "local",
         "remote",
         "workflows"
       ]
@@ -8334,7 +8356,7 @@
           "name": "html",
           "type": "string",
           "required": false,
-          "description": "Optional captured HTML fixture; when omitted the pipeline fetches url"
+          "description": "Optional caller-supplied HTML; when omitted the pipeline fetches url"
         }
       ],
       "outputs": [
@@ -8449,6 +8471,11 @@
           "name": "OPENAI_API_KEY",
           "required": true,
           "description": "OpenAI API key for AI insights"
+        },
+        {
+          "name": "MCP_BEARER_TOKEN",
+          "required": false,
+          "description": "Required caller bearer token for the MCP endpoint (32+ characters)"
         }
       ],
       "inputs": [
@@ -8487,7 +8514,7 @@
         {
           "name": "metrics",
           "type": "object",
-          "description": "Calculated revenue and balance-transaction counts"
+          "description": "Per-currency ISO 4217 minor-unit totals and balance-transaction counts"
         },
         {
           "name": "insights",
@@ -8507,11 +8534,9 @@
       ],
       "backends": [
         "stripe",
-        "openai",
-        "fixture"
+        "openai"
       ],
       "tags": [
-        "local",
         "openai",
         "remote",
         "workflows"
@@ -8637,6 +8662,11 @@
           "name": "TODOIST_TOKEN",
           "required": true,
           "description": "Todoist API token"
+        },
+        {
+          "name": "MCP_BEARER_TOKEN",
+          "required": false,
+          "description": "Required caller bearer token for the MCP endpoint (32+ characters)"
         }
       ],
       "inputs": [
@@ -8697,11 +8727,9 @@
         }
       ],
       "backends": [
-        "todoist",
-        "fixture"
+        "todoist"
       ],
       "tags": [
-        "local",
         "remote",
         "workflows"
       ]
@@ -8716,6 +8744,11 @@
           "name": "OPENAI_API_KEY",
           "required": true,
           "description": ""
+        },
+        {
+          "name": "MCP_BEARER_TOKEN",
+          "required": false,
+          "description": "Required caller bearer token for the MCP endpoint (32+ characters)"
         }
       ],
       "inputs": [
@@ -8768,11 +8801,9 @@
         }
       ],
       "backends": [
-        "openai",
-        "fixture"
+        "openai"
       ],
       "tags": [
-        "local",
         "openai",
         "remote",
         "workflows"

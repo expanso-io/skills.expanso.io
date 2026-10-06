@@ -67,6 +67,9 @@ outputs:
   - name: data
     type: array
     description: "Array of messages: {id, user, text, timestamp, thread_ts, reactions}"
+  - name: messages
+    type: array
+    description: Compatibility alias for data
   - name: count
     type: integer
     description: Number of messages in data

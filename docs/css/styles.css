@@ -925,7 +925,7 @@ code[class*="language-"] {
 }
 
 .token.boolean {
-    color: #cc6666 !important;
+color: #d27575 !important;
 }
 
 .token.comment {

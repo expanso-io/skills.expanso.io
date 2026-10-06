@@ -83,6 +83,7 @@ config:
           root.schema_version = "1.0"
           root.trace_id = $context._trace_id
           root.data = if this.ok.or(false) { $structured } else { [] }
+          root.messages = root.data
           root.count = root.data.length()
           root.sensitivity = "raw"
           root.error = if this.ok.or(false) { deleted() } else { this.error.or("unknown_error") }

@@ -32,16 +32,16 @@ config:
             this
           }
 
-      # Fail closed: never retain the original plaintext after validation or
-      # encryption fails.
-      - catch:
-          - mapping: 'root = deleted()'
-
           root.processing_metadata = {
             "pipeline_version": env("PIPELINE_VERSION").or("2.1.0"),
             "node_id": env("NODE_ID").or("unknown"),
             "processing_start": now()
           }
+
+      # Fail closed: never retain the original plaintext after validation or
+      # encryption fails.
+      - catch:
+          - mapping: 'root = deleted()'
 
       # Each object receives a fresh 128-bit IV. The HMAC covers the field
       # context, IV, and ciphertext and must be verified before decryption.

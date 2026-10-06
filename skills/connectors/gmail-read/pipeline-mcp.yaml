@@ -115,6 +115,7 @@ config:
           root.schema_version = "1.0"
           root.trace_id = $context._trace_id
           root.data = this.emails
+          root.emails = this.emails
           root.count = this.emails.length()
           root.sensitivity = "raw"
           root.metadata = {
