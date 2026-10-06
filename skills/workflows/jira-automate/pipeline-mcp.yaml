@@ -116,7 +116,7 @@ config:
                               "version": 1,
                               "content": [{
                                 "type": "paragraph",
-                                "content": [{"type": "text", "text": this.description.or("")}]
+                                "content": if this.description.or("").length() == 0 { [] } else { [{"type": "text", "text": this.description}] }
                               }]
                             },
                             "issuetype": {"name": this.issue_type.or("Task")}

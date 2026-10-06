@@ -17,67 +17,72 @@ config:
 
   pipeline:
     processors:
-      - mapping: |
-          let text = this.text.or("")
+      - try:
+          - mapping: |
+              let text = this.text.or("")
 
-          root.error = if $text.length() == 0 {
-            "text field is required"
-          } else { deleted() }
+              root.error = if $text.length() == 0 {
+                "text field is required"
+              } else { deleted() }
 
-          meta input_hash = $text.hash("sha256").encode("hex")
-          meta input_length = $text.length()
-          meta trace_id = uuid_v4()
+              meta input_hash = $text.hash("sha256").encode("hex")
+              meta input_length = $text.length()
+              meta trace_id = uuid_v4()
 
-          let secret_types = this.types.or(["api_key", "token", "password", "private_key"]).join(",")
+              let secret_types = this.types.or(["api_key", "token", "password", "private_key"]).join(",")
 
-          root.messages = [
-            {
-              "role": "system",
-              "content": "You are a security scanner specialized in detecting hardcoded secrets. Be thorough but avoid false positives. Do NOT flag placeholder values."
-            },
-            {
-              "role": "user",
-              "content": "Scan for: " + $secret_types + "\n\nReturn JSON:\n{\n  \"findings\": [{\"type\": \"...\", \"value\": \"partial\", \"line\": 1, \"severity\": \"high|medium|low\"}],\n  \"summary\": \"...\"\n}\n\nText:\n```\n" + $text + "\n```"
-            }
-          ]
+              root.messages = [
+                {
+                  "role": "system",
+                  "content": "You are a security scanner specialized in detecting hardcoded secrets. Be thorough but avoid false positives. Do NOT flag placeholder values."
+                },
+                {
+                  "role": "user",
+                  "content": "Scan for: " + $secret_types + "\n\nReturn JSON:\n{\n  \"findings\": [{\"type\": \"...\", \"value\": \"partial\", \"line\": 1, \"severity\": \"high|medium|low\"}],\n  \"summary\": \"...\"\n}\n\nText:\n```\n" + $text + "\n```"
+                }
+              ]
 
-      - switch:
-          - check: this.error == null
-            processors:
-              - openai_chat_completion:
-                  api_key: "${OPENAI_API_KEY}"
-                  model: gpt-4o-mini
-                  tools: []
+          - switch:
+              - check: this.error == null
+                processors:
+                  - openai_chat_completion:
+                      api_key: "${OPENAI_API_KEY}"
+                      model: gpt-4o-mini
+                      tools: []
 
-      - mapping: |
-          let raw = this.choices.0.message.content.or("")
-          let parsed = $raw.parse_json().catch({"findings": []})
-          root = if this.error != null {
-            {
-              "error": this.error,
-              "metadata": {
-                "skill": "secrets-scan",
-                "mode": "mcp",
-                "trace_id": meta("trace_id").or(uuid_v4()),
-                "timestamp": now()
+          - mapping: |
+              let raw = this.choices.0.message.content.or(content().string())
+              let response = $raw.parse_json()
+              let parsed = if $response.findings.type() != "array" { throw("scanner response must contain a findings array") } else { $response }
+              root = if this.error != null {
+                {
+                  "error": this.error,
+                  "metadata": {
+                    "skill": "secrets-scan",
+                    "mode": "mcp",
+                    "trace_id": meta("trace_id").or(uuid_v4()),
+                    "timestamp": now()
+                  }
+                }
+              } else {
+                {
+                  "findings": $parsed.findings.or([]),
+                  "has_secrets": $parsed.findings.or([]).length() > 0,
+                  "summary": $parsed.summary.or(""),
+                  "metadata": {
+                    "skill": "secrets-scan",
+                    "mode": "mcp",
+                    "model": "gpt-4o-mini",
+                    "input_hash": meta("input_hash"),
+                    "trace_id": meta("trace_id").or(uuid_v4()),
+                    "findings_count": $parsed.findings.or([]).length(),
+                    "timestamp": now()
+                  }
+                }
               }
-            }
-          } else {
-            {
-              "findings": $parsed.findings.or([]),
-              "has_secrets": $parsed.findings.or([]).length() > 0,
-              "summary": $parsed.summary.or(""),
-              "metadata": {
-                "skill": "secrets-scan",
-                "mode": "mcp",
-                "model": "gpt-4o-mini",
-                "input_hash": meta("input_hash"),
-                "trace_id": meta("trace_id").or(uuid_v4()),
-                "findings_count": $parsed.findings.or([]).length(),
-                "timestamp": now()
-              }
-            }
-          }
+      - catch:
+          - mapping: |
+              root = {"status": "error", "error": error(), "metadata": {"skill": "secrets-scan", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}}
 
   output:
     sync_response: {}

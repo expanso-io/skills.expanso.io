@@ -20,71 +20,76 @@ config:
 
   pipeline:
     processors:
-      - mapping: |
-          meta input_hash = content().hash("sha256").encode("hex")
-          meta input_length = content().length()
-          meta trace_id = uuid_v4()
-          root.error = if content().length() == 0 {
-            "input cannot be empty"
-          } else { deleted() }
+      - try:
+          - mapping: |
+              meta input_hash = content().hash("sha256").encode("hex")
+              meta input_length = content().length()
+              meta trace_id = uuid_v4()
+              root.error = if content().length() == 0 {
+                "input cannot be empty"
+              } else { deleted() }
 
-          let pii_types = env("PII_TYPES").or("email,phone,ssn,credit_card,name,address,dob,ip_address")
+              let pii_types = env("PII_TYPES").or("email,phone,ssn,credit_card,name,address,dob,ip_address")
 
-          root.messages = [
-            {
-              "role": "system",
-              "content": "You are a PII detection specialist. Scan text for personally identifiable information and return structured findings. Be thorough but avoid false positives. Only report actual PII, not generic references."
-            },
-            {
-              "role": "user",
-              "content": "Scan this text for the following PII types: " + $pii_types + "\n\nReturn a JSON object:\n{\n  \"findings\": [\n    {\"type\": \"email|phone|ssn|credit_card|name|address|dob|ip_address\", \"value\": \"the actual PII\", \"start\": 0, \"end\": 0, \"confidence\": 0.0-1.0}\n  ],\n  \"summary\": \"Brief summary of what was found\"\n}\n\nIf no PII is found, return {\"findings\": [], \"summary\": \"No PII detected\"}.\nReturn valid JSON only.\n\nText to scan:\n" + content()
-            }
-          ]
+              root.messages = [
+                {
+                  "role": "system",
+                  "content": "You are a PII detection specialist. Scan text for personally identifiable information and return structured findings. Be thorough but avoid false positives. Only report actual PII, not generic references."
+                },
+                {
+                  "role": "user",
+                  "content": "Scan this text for the following PII types: " + $pii_types + "\n\nReturn a JSON object:\n{\n  \"findings\": [\n    {\"type\": \"email|phone|ssn|credit_card|name|address|dob|ip_address\", \"value\": \"the actual PII\", \"start\": 0, \"end\": 0, \"confidence\": 0.0-1.0}\n  ],\n  \"summary\": \"Brief summary of what was found\"\n}\n\nIf no PII is found, return {\"findings\": [], \"summary\": \"No PII detected\"}.\nReturn valid JSON only.\n\nText to scan:\n" + content()
+                }
+              ]
 
-      - switch:
-          - check: this.error == null
-            processors:
-              - openai_chat_completion:
-                  api_key: "${OPENAI_API_KEY}"
-                  model: gpt-4o-mini
-                  tools: []
+          - switch:
+              - check: this.error == null
+                processors:
+                  - openai_chat_completion:
+                      api_key: "${OPENAI_API_KEY}"
+                      model: gpt-4o-mini
+                      tools: []
 
-      - mapping: |
-          let raw = this.choices.0.message.content.or("")
-          let parsed = $raw.parse_json().catch({"findings": [], "summary": "Parse error"})
-          root = if this.error != null {
-            {
-              "error": this.error,
-              "metadata": {
-                "skill": "pii-detect",
-                "mode": "cli",
-                "trace_id": meta("trace_id").or(uuid_v4()),
-                "timestamp": now()
+          - mapping: |
+              let raw = this.choices.0.message.content.or(content().string())
+              let response = $raw.parse_json()
+              let parsed = if $response.findings.type() != "array" { throw("scanner response must contain a findings array") } else { $response }
+              root = if this.error != null {
+                {
+                  "error": this.error,
+                  "metadata": {
+                    "skill": "pii-detect",
+                    "mode": "cli",
+                    "trace_id": meta("trace_id").or(uuid_v4()),
+                    "timestamp": now()
+                  }
+                }
+              } else {
+                {
+                  "findings": $parsed.findings.or([]),
+                  "has_pii": $parsed.findings.or([]).length() > 0,
+                  "summary": $parsed.summary.or(""),
+                  "metadata": {
+                    "skill": "pii-detect",
+                    "mode": "cli",
+                    "model": "gpt-4o-mini",
+                    "input_hash": meta("input_hash"),
+                    "input_length": meta("input_length"),
+                    "trace_id": meta("trace_id").or(uuid_v4()),
+                    "pii_types_scanned": env("PII_TYPES").or("all"),
+                    "findings_count": $parsed.findings.or([]).length(),
+                    "timestamp": now()
+                  }
+                }
               }
-            }
-          } else {
-            {
-              "findings": $parsed.findings.or([]),
-              "has_pii": $parsed.findings.or([]).length() > 0,
-              "summary": $parsed.summary.or(""),
-              "metadata": {
-                "skill": "pii-detect",
-                "mode": "cli",
-                "model": "gpt-4o-mini",
-                "input_hash": meta("input_hash"),
-                "input_length": meta("input_length"),
-                "trace_id": meta("trace_id").or(uuid_v4()),
-                "pii_types_scanned": env("PII_TYPES").or("all"),
-                "findings_count": $parsed.findings.or([]).length(),
-                "timestamp": now()
-              }
-            }
-          }
 
-      - log:
-          level: INFO
-          message: |
-            [pii-detect] Request complete (trace: ${! meta("trace_id").slice(0, 8) })
+          - log:
+              level: INFO
+              message: |
+                [pii-detect] Request complete (trace: ${! meta("trace_id").slice(0, 8) })
+      - catch:
+          - mapping: |
+              root = {"status": "error", "error": error(), "metadata": {"skill": "pii-detect", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}}
 
   output:
     stdout: {}

@@ -593,7 +593,7 @@ def main() -> int:
         print(f"{result['status'].upper():7} {result['name']}{suffix}")
 
     if not args.recipes:
-        for regression_script in ["test-review-round-two.py", "test-review-round-four.py", "test-review-round-six.py", "test-review-round-seven.py", "test-circuit-failover.py", "test-publication-review.py", "test-time-and-policy.py", "test-backup-and-html.py", "test-auth-html-formats.py"]:
+        for regression_script in ["test-review-round-two.py", "test-review-round-four.py", "test-review-round-six.py", "test-review-round-seven.py", "test-circuit-failover.py", "test-publication-review.py", "test-time-and-policy.py", "test-backup-and-html.py", "test-auth-html-formats.py", "test-provider-and-cache.py"]:
             regressions = subprocess.run(
                 ["uv", "run", "-s", str(REPO / "scripts" / regression_script)],
                 cwd=REPO, check=False,

@@ -22,65 +22,68 @@ config:
 
   pipeline:
     processors:
-      - mapping: |
-          let input = this.input
-          let trace_id = uuid_v4()
-          meta trace_id = $trace_id
+      - try:
+          - mapping: |
+              let input = this.input
+              let trace_id = uuid_v4()
+              meta trace_id = $trace_id
 
-          root = if $input == null { throw("input field is required") } else { {} }
+              root = if $input == null { throw("input field is required") } else { {} }
 
-          let canonical = $input.format_json().catch($input.string())
-          let hash = $canonical.hash("sha256").encode("hex")
+              let canonical = $input.format_json().catch($input.string())
+              let hash = $canonical.hash("sha256").encode("hex")
 
-          root.hash = $hash
-          root.input = $input
-          root.ttl_seconds = this.ttl_seconds.or(3600)
-          root.trace_id = $trace_id
+              root.hash = $hash
+              root.input = $input
+              root.ttl_seconds = this.ttl_seconds.or(3600)
+              root.trace_id = $trace_id
 
-      - branch:
-          request_map: root = this
-          processors:
-            - cache:
-                resource: idempotent_results
-                operator: get
-                key: '${! this.hash }'
-          result_map: |
-            root.result = this
-            root.cached = true
+          - branch:
+              request_map: root = this
+              processors:
+                - try:
+                    - cache:
+                        resource: idempotent_results
+                        operator: get
+                        key: '${! this.hash }'
+                    - mapping: 'root = {"found": true, "value": this}'
+                - catch:
+                    - mapping: 'root = {"found": false}'
+              result_map: |
+                root.cached = this.found
+                root.result = if this.found { this.value } else { deleted() }
 
+          - switch:
+              - check: '!this.cached'
+                processors:
+                  - mapping: |
+                      root = this
+                      root.result = this.input
+                  - cache:
+                      resource: idempotent_results
+                      operator: set
+                      key: '${! this.hash }'
+                      value: '${! this.result.format_json() }'
+                      ttl: '${! this.ttl_seconds.string() + "s" }'
+
+          - mapping: |
+              let input_size = this.input.format_json().catch(this.input.string()).length()
+              root = this.without("input", "ttl_seconds", "trace_id")
+              root.metadata = {
+                "skill": "idempotent-cache",
+                "mode": "mcp",
+                "input_size": $input_size,
+                "ttl_seconds": this.ttl_seconds,
+                "trace_id": this.trace_id,
+                "timestamp": now()
+              }
+
+          - log:
+              level: INFO
+              message: "[idempotent-cache] MCP hash: ${! this.hash.slice(0, 16) }..."
       - catch:
           - mapping: |
-              root = this
-              root.cached = false
-
-      - switch:
-          - check: '!this.cached'
-            processors:
-              - mapping: |
-                  root = this
-                  root.result = this.input
-              - cache:
-                  resource: idempotent_results
-                  operator: set
-                  key: '${! this.hash }'
-                  value: '${! this.result.format_json() }'
-                  ttl: '${! this.ttl_seconds.string() + "s" }'
-
-      - mapping: |
-          let input_size = this.input.format_json().catch(this.input.string()).length()
-          root = this.without("input", "ttl_seconds", "trace_id")
-          root.metadata = {
-            "skill": "idempotent-cache",
-            "mode": "mcp",
-            "input_size": $input_size,
-            "ttl_seconds": this.ttl_seconds,
-            "trace_id": this.trace_id,
-            "timestamp": now()
-          }
-
-      - log:
-          level: INFO
-          message: "[idempotent-cache] MCP hash: ${! this.hash.slice(0, 16) }..."
+              root = {"status": "error", "error": error(), "metadata": {"skill": "idempotent-cache", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4())}}
 
   output:
     sync_response: {}

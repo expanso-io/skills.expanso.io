@@ -82,7 +82,7 @@ config:
                 "currency": entry.key.uppercase(),
                 "minor_unit_exponent": if ["bhd", "iqd", "jod", "kwd", "lyd", "omr", "tnd"].contains(entry.key) {
                   3
-                } else if ["bif", "clp", "djf", "gnf", "isk", "jpy", "kmf", "krw", "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf"].contains(entry.key) {
+                } else if ["bif", "clp", "djf", "gnf", "jpy", "kmf", "krw", "mga", "pyg", "rwf", "vnd", "vuv", "xaf", "xof", "xpf"].contains(entry.key) {
                   0
                 } else {
                   2
