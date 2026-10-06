@@ -16,6 +16,24 @@ config:
 
   pipeline:
     processors:
+      # Bearer verification uses AES-GCM tag validation so token comparison is
+      # constant-time inside the authenticated-cipher implementation.
+      - mapping: |
+          let expected = env("MCP_BEARER_TOKEN").or("")
+          let authorization = meta("Authorization").or("")
+          let supplied = if $authorization.has_prefix("Bearer ") { $authorization.trim_prefix("Bearer ") } else { "" }
+          let nonce = "000000000000000000000000".decode("hex")
+          let proof = "expanso-mcp-auth".encrypt_aes("gcm", $expected.hash("sha256"), $nonce)
+          let authenticated = $proof.decrypt_aes("gcm", $supplied.hash("sha256"), $nonce).catch(null) != null
+          meta http_status_code = if $supplied == "" || !$authenticated { 401 } else { 200 }
+          root = if $expected.length() < 32 {
+            throw("MCP_BEARER_TOKEN must contain at least 32 characters")
+          } else if $supplied == "" || !$authenticated {
+            deleted()
+          } else {
+            this
+          }
+
       - mapping: |
           let period = this.period.or("today").string()
           meta start_time = now()
@@ -38,53 +56,55 @@ config:
           root._include_insights = this.include_insights.or(false)
           root._include_quick_wins = this.include_quick_wins.or(true)
 
-      - switch:
-          - check: 'this.fixture_mode.or(false)'
-            processors:
-              - mapping: |
-                  root = this
-                  root.transactions = this.fixture_transactions.or([])
-                  root.has_more = false
-                  root._fixture = true
-
-          - processors:
-              - mapping: |
-                  let base = env("STRIPE_API_URL").or("https://api.stripe.com/v1").trim_suffix("/")
-                  meta period = this.period
-                  meta trace_id = this._trace_id
-                  meta include_insights = this._include_insights
-                  meta start_unix = this._start_unix
-                  meta end_unix = this._end_unix
-                  meta stripe_url = $base + "/balance_transactions?created%5Bgte%5D=" + this._start_unix.string() + "&created%5Blte%5D=" + this._end_unix.string() + "&limit=100"
-                  root = if !$base.re_match("^https://") { throw("STRIPE_API_URL must be an https URL") } else { {} }
-              - http:
-                  url: '${! meta("stripe_url") }'
-                  verb: GET
-                  headers:
-                    Authorization: "Bearer ${STRIPE_API_KEY}"
-                    Accept: application/json
-                  timeout: 30s
-                  retries: 3
-                  rate_limit: stripe_api
-              - mapping: |
-                  root.period = meta("period")
-                  root._trace_id = meta("trace_id")
-                  root._include_insights = meta("include_insights") == "true"
-                  root._start_unix = meta("start_unix").number()
-                  root._end_unix = meta("end_unix").number()
-                  root.transactions = this.data.or([])
-                  root.has_more = this.has_more.or(false)
-                  root._fixture = false
+      - mapping: |
+          let base = env("STRIPE_API_URL").or("https://api.stripe.com/v1").trim_suffix("/")
+          meta period = this.period
+          meta trace_id = this._trace_id
+          meta include_insights = this._include_insights
+          meta start_unix = this._start_unix
+          meta end_unix = this._end_unix
+          meta stripe_url = $base + "/balance_transactions?created%5Bgte%5D=" + this._start_unix.string() + "&created%5Blte%5D=" + this._end_unix.string() + "&limit=100"
+          root = if !$base.re_match("^https://") { throw("STRIPE_API_URL must be an https URL") } else { {} }
+      - http:
+          url: '${! meta("stripe_url") }'
+          verb: GET
+          headers:
+            Authorization: "Bearer ${STRIPE_API_KEY}"
+            Accept: application/json
+          timeout: 30s
+          retries: 3
+          rate_limit: stripe_api
+      - mapping: |
+          root.period = meta("period")
+          root._trace_id = meta("trace_id")
+          root._include_insights = meta("include_insights") == "true"
+          root._start_unix = meta("start_unix").number()
+          root._end_unix = meta("end_unix").number()
+          root.transactions = this.data.or([])
+          root.has_more = this.has_more.or(false)
 
       - mapping: |
           let transactions = this.transactions
-          let totals = $transactions.fold({"gross": 0, "net": 0, "fees": 0, "refunds": 0}, txn -> txn.tally.assign({
-            "gross": txn.tally.gross + if txn.value.type.or("") == "charge" { txn.value.amount.or(0) } else { 0 },
-            "net": txn.tally.net + txn.value.net.or(0),
-            "fees": txn.tally.fees + txn.value.fee.or(0),
-            "refunds": txn.tally.refunds + if txn.value.type.or("") == "refund" { txn.value.amount.or(0).abs() } else { 0 }
+          let keyed = $transactions.map_each(txn -> txn.assign({
+            "_currency": txn.currency.or("").lowercase()
           }))
-          let currency = $transactions.index(0).currency.or("").uppercase()
+          let totals = $keyed.fold({}, pair -> pair.tally.assign({
+            (pair.value._currency): {
+              "gross_minor": pair.tally.get(pair.value._currency).or({"gross_minor": 0}).gross_minor + if pair.value.type.or("") == "charge" { pair.value.amount.or(0) } else { 0 },
+              "net_minor": pair.tally.get(pair.value._currency).or({"net_minor": 0}).net_minor + pair.value.net.or(0),
+              "fees_minor": pair.tally.get(pair.value._currency).or({"fees_minor": 0}).fees_minor + pair.value.fee.or(0),
+              "refunds_minor": pair.tally.get(pair.value._currency).or({"refunds_minor": 0}).refunds_minor + if pair.value.type.or("") == "refund" { pair.value.amount.or(0).abs() } else { 0 }
+            }
+          })).key_values().map_each(entry -> entry.value.assign({
+            "currency": entry.key.uppercase(),
+            "minor_unit_exponent": if ["bhd", "iqd", "jod", "kwd", "lyd", "omr", "tnd"].contains(entry.key) {
+              3
+            } else if ["bif", "clp", "djf", "gnf", "isk", "jpy", "kmf", "krw", "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf"].contains(entry.key) {
+              0
+            } else {
+              2
+            }
+          }))
 
           root.report = {
             "title": this.period.capitalize() + " Stripe balance report",
@@ -94,13 +114,7 @@ config:
             "generated_at": now()
           }
           root.metrics = {
-            "revenue": {
-              "gross": $totals.gross / 100.0,
-              "net": $totals.net / 100.0,
-              "fees": $totals.fees / 100.0,
-              "refunds": $totals.refunds / 100.0,
-              "currency": $currency
-            },
+            "revenue_by_currency": $totals,
             "transactions": {
               "total": $transactions.length(),
               "available": $transactions.filter(txn -> txn.status.or("") == "available").length(),
@@ -113,7 +127,7 @@ config:
           root.metadata = {
             "skill": "stripe-reports",
             "mode": "mcp",
-            "source": if this._fixture { "fixture" } else { "stripe_api" },
+            "source": "stripe_api",
             "trace_id": this._trace_id,
             "processing_time_ms": now().ts_sub(meta("start_time")).abs() / 1000000,
             "timestamp": now()

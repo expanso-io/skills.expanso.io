@@ -1,13 +1,20 @@
 # Test: video-generate
 tests:
-  - name: "Returns an explicit deterministic video fixture"
-    input: '{"prompt":"A cat playing piano","fixture_mode":true,"fixture_video_url":"https://fixtures.example/cat-piano.mp4"}'
+  - name: "Normalizes a successful Replicate prediction"
+    input: '{"prompt":"A cat playing piano"}'
+    provider_responses:
+      - id: prediction-001
+        status: succeeded
+        urls:
+          get: https://api.replicate.com/v1/predictions/prediction-001
+        output:
+          - https://cdn.example.test/cat-piano.mp4
     expected_output:
-      video_url: "https://fixtures.example/cat-piano.mp4"
+      video_url: "https://cdn.example.test/cat-piano.mp4"
       status: "succeeded"
       error: null
       metadata:
         skill: video-generate
         model: minimax/video-01
-        prediction_id: fixture-video-001
-        fixture: true
+        prediction_id: prediction-001
+        source: replicate_api

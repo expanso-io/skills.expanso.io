@@ -24,6 +24,24 @@ config:
 
   pipeline:
     processors:
+      # Bearer verification uses AES-GCM tag validation so token comparison is
+      # constant-time inside the authenticated-cipher implementation.
+      - mapping: |
+          let expected = env("MCP_BEARER_TOKEN").or("")
+          let authorization = meta("Authorization").or("")
+          let supplied = if $authorization.has_prefix("Bearer ") { $authorization.trim_prefix("Bearer ") } else { "" }
+          let nonce = "000000000000000000000000".decode("hex")
+          let proof = "expanso-mcp-auth".encrypt_aes("gcm", $expected.hash("sha256"), $nonce)
+          let authenticated = $proof.decrypt_aes("gcm", $supplied.hash("sha256"), $nonce).catch(null) != null
+          meta http_status_code = if $supplied == "" || !$authenticated { 401 } else { 200 }
+          root = if $expected.length() < 32 {
+            throw("MCP_BEARER_TOKEN must contain at least 32 characters")
+          } else if $supplied == "" || !$authenticated {
+            deleted()
+          } else {
+            this
+          }
+
       # 1. Validate and parse input
       - mapping: |
           let body = content().parse_json()
@@ -34,84 +52,63 @@ config:
           }
 
           root.prompt = $prompt
-          root.fixture_mode = $body.fixture_mode.or(false)
-          root.fixture_video_url = $body.fixture_video_url.or("https://fixtures.example/video.mp4")
           root._trace_id = uuid_v4()
           root._start_time = now()
 
-      # 2. Use an explicit deterministic fixture or call Replicate.
-      - switch:
-          - check: 'this.fixture_mode.or(false)'
-            processors:
-              - mapping: |
-                  root.video_url = this.fixture_video_url
-                  root.status = "succeeded"
-                  root.error = null
-                  root.metadata = {
-                    "skill": "video-generate",
-                    "mode": "mcp",
-                    "model": "minimax/video-01",
-                    "prediction_id": "fixture-video-001",
-                    "fixture": true,
-                    "trace_id": this._trace_id,
-                    "started_at": this._start_time,
-                    "completed_at": now()
-                  }
+      # 2. Submit the request to Replicate and poll until it finishes.
+      - mapping: |
+          meta trace_id = this._trace_id
+          meta start_time = this._start_time
+          root = {
+            "version": "5522017e7bc92c4b2d90cc09a65051d7ade8e26c2932444ba16ca0f7a9b5cbb2",
+            "input": {
+              "prompt": this.prompt,
+              "prompt_optimizer": true
+            }
+          }
+      - http:
+          url: "https://api.replicate.com/v1/predictions"
+          verb: POST
+          headers:
+            Authorization: "Bearer ${REPLICATE_API_TOKEN}"
+            Content-Type: "application/json"
+      - mapping: |
+          meta prediction_id = this.id
+          meta poll_url = this.urls.get
+          meta status = this.status
+          root = this
+      - while:
+          at_least_once: true
+          max_loops: 60
+          check: 'meta("status") == "starting" || meta("status") == "processing"'
+          processors:
+            - sleep:
+                duration: "3s"
+            - http:
+                url: '${! meta("poll_url") }'
+                verb: GET
+                headers:
+                  Authorization: "Bearer ${REPLICATE_API_TOKEN}"
+            - mapping: |
+                meta status = this.status
+                root = this
+      - mapping: |
+          let status = this.status
+          let output = this.output
 
-          - processors:
-              - mapping: |
-                  meta trace_id = this._trace_id
-                  meta start_time = this._start_time
-                  root = {
-                    "version": "5522017e7bc92c4b2d90cc09a65051d7ade8e26c2932444ba16ca0f7a9b5cbb2",
-                    "input": {
-                      "prompt": this.prompt,
-                      "prompt_optimizer": true
-                    }
-                  }
-              - http:
-                  url: "https://api.replicate.com/v1/predictions"
-                  verb: POST
-                  headers:
-                    Authorization: "Bearer ${REPLICATE_API_TOKEN}"
-                    Content-Type: "application/json"
-              - mapping: |
-                  meta prediction_id = this.id
-                  meta poll_url = this.urls.get
-                  meta status = this.status
-                  root = this
-              - while:
-                  at_least_once: true
-                  max_loops: 60
-                  check: 'meta("status") == "starting" || meta("status") == "processing"'
-                  processors:
-                    - sleep:
-                        duration: "3s"
-                    - http:
-                        url: '${! meta("poll_url") }'
-                        verb: GET
-                        headers:
-                          Authorization: "Bearer ${REPLICATE_API_TOKEN}"
-                    - mapping: |
-                        meta status = this.status
-                        root = this
-              - mapping: |
-                  let status = this.status
-                  let output = this.output
-
-                  root.video_url = if $status == "succeeded" { $output.index(0).or("") } else { "" }
-                  root.status = $status
-                  root.error = if $status == "failed" { this.error } else { null }
-                  root.metadata = {
-                    "skill": "video-generate",
-                    "mode": "mcp",
-                    "model": "minimax/video-01",
-                    "prediction_id": meta("prediction_id"),
-                    "fixture": false,
-                    "trace_id": meta("trace_id").or(uuid_v4()),
-                    "started_at": meta("start_time"),
-                    "completed_at": now()
-                  }
+          root.video_url = if $status == "succeeded" { $output.index(0).or("") } else { "" }
+          root.status = $status
+          root.error = if $status == "failed" { this.error } else { null }
+          root.metadata = {
+            "skill": "video-generate",
+            "mode": "mcp",
+            "model": "minimax/video-01",
+            "prediction_id": meta("prediction_id"),
+            "source": "replicate_api",
+            "trace_id": meta("trace_id").or(uuid_v4()),
+            "started_at": meta("start_time"),
+            "completed_at": now()
+          }
 
       - log:
           level: INFO

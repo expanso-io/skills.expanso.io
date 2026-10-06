@@ -387,12 +387,11 @@
 
         skill.backends.forEach(function(b) {
             var badge = document.createElement('span');
-            badge.className = 'badge';
+        badge.className = 'badge';
 
-            if (b === 'local' || b === 'ollama') {
-                badge.style.background = 'var(--success)';
-                badge.style.color = 'black';
-            } else {
+        if (b === 'local' || b === 'ollama') {
+            badge.classList.add('badge-local');
+        } else {
                 badge.style.background = 'var(--bg-tertiary)';
                 badge.style.color = 'var(--text-primary)';
             }

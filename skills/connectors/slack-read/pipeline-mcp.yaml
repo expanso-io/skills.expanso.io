@@ -15,6 +15,24 @@ config:
 
   pipeline:
     processors:
+      # Bearer verification uses AES-GCM tag validation so token comparison is
+      # constant-time inside the authenticated-cipher implementation.
+      - mapping: |
+          let expected = env("MCP_BEARER_TOKEN").or("")
+          let authorization = meta("Authorization").or("")
+          let supplied = if $authorization.has_prefix("Bearer ") { $authorization.trim_prefix("Bearer ") } else { "" }
+          let nonce = "000000000000000000000000".decode("hex")
+          let proof = "expanso-mcp-auth".encrypt_aes("gcm", $expected.hash("sha256"), $nonce)
+          let authenticated = $proof.decrypt_aes("gcm", $supplied.hash("sha256"), $nonce).catch(null) != null
+          meta http_status_code = if $supplied == "" || !$authenticated { 401 } else { 200 }
+          root = if $expected.length() < 32 {
+            throw("MCP_BEARER_TOKEN must contain at least 32 characters")
+          } else if $supplied == "" || !$authenticated {
+            deleted()
+          } else {
+            this
+          }
+
       - mapping: |
           let input = content().parse_json()
           let channel = $input.channel.or(env("SLACK_CHANNEL_ID").or("")).string()
@@ -35,40 +53,29 @@ config:
             })
           }
 
-      - switch:
-          - check: 'this.fixture_mode.or(false)'
-            processors:
-              - mapping: |
-                  root.ok = true
-                  root.messages = this.fixture_messages.or([])
-                  root._context = this
-                  root._fixture = true
-
-          - processors:
-              - mapping: |
-                  let base = env("SLACK_API_URL").or("https://slack.com/api").trim_suffix("/")
-                  let oldest = now().ts_unix() - (this.since_hours * 3600)
-                  meta context_json = this.format_json()
-                  meta slack_url = $base + "/conversations.history?channel=" + this.channel.escape_url_query() + "&limit=" + this.limit.string() + "&oldest=" + $oldest.string()
-                  root = if !$base.re_match("^https://") { throw("SLACK_API_URL must be an https URL") } else { {} }
-              - try:
-                  - http:
-                      url: '${! meta("slack_url") }'
-                      verb: GET
-                      headers:
-                        Authorization: "Bearer ${SLACK_BOT_TOKEN}"
-                        Accept: application/json
-                      timeout: 30s
-                      retries: 3
-                      rate_limit: slack_api
-              - catch:
-                  - mapping: |
-                      root.ok = false
-                      root.error = error()
-              - mapping: |
-                  root = this
-                  root._context = meta("context_json").parse_json()
-                  root._fixture = false
+      - mapping: |
+          let base = env("SLACK_API_URL").or("https://slack.com/api").trim_suffix("/")
+          let oldest = now().ts_unix() - (this.since_hours * 3600)
+          meta context_json = this.format_json()
+          meta slack_url = $base + "/conversations.history?channel=" + this.channel.escape_url_query() + "&limit=" + this.limit.string() + "&oldest=" + $oldest.string()
+          root = if !$base.re_match("^https://") { throw("SLACK_API_URL must be an https URL") } else { {} }
+      - try:
+          - http:
+              url: '${! meta("slack_url") }'
+              verb: GET
+              headers:
+                Authorization: "Bearer ${SLACK_BOT_TOKEN}"
+                Accept: application/json
+              timeout: 30s
+              retries: 3
+              rate_limit: slack_api
+      - catch:
+          - mapping: |
+              root.ok = false
+              root.error = error()
+      - mapping: |
+          root = this
+          root._context = meta("context_json").parse_json()
 
       - mapping: |
           let context = this._context
@@ -105,7 +112,7 @@ config:
             "channel": $context.channel,
             "query": $query,
             "success": this.ok.or(false),
-            "fixture": this._fixture,
+            "source": "slack_api",
             "message_count": root.count,
             "total_available": $messages.length(),
             "trace_id": $context._trace_id,

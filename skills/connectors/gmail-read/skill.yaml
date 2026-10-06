@@ -24,6 +24,9 @@ credentials:
   - name: GMAIL_ACCESS_TOKEN
     required: true
     description: Gmail OAuth2 access token
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
 
 # Skill inputs
 inputs:
@@ -67,7 +70,7 @@ outputs:
     description: 'Data sensitivity: raw'
   - name: metadata
     type: object
-    description: "Processing metadata: {skill, mode, query, label, fixture, email_count, total_estimated, trace_id, timestamp}"
+    description: "Processing metadata: {skill, mode, query, label, source, email_count, total_estimated, trace_id, timestamp}"
 
 # Backend options
 backends:
@@ -75,10 +78,6 @@ backends:
     type: remote
     requires: [GMAIL_ACCESS_TOKEN]
     description: Gmail API via OAuth2 (requires gmail.readonly scope)
-  - name: fixture
-    type: local
-    requires: []
-    description: Explicit deterministic Gmail messages for CI
 
 # Expanso components used
 components:

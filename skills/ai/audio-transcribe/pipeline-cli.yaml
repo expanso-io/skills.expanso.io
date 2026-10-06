@@ -17,37 +17,27 @@ config:
           root = $input
           root._trace_id = uuid_v4()
 
-      - switch:
-          - check: 'this.fixture_mode.or(false)'
-            processors:
-              - mapping: |
-                  root.transcript = this.fixture_transcript.or("")
-                  root.audio_url = this.audio_url.or(null)
-                  root._trace_id = this._trace_id
-                  root._source = "fixture"
-
-          - processors:
-              - mapping: |
-                  let url = this.audio_url.or("").string()
-                  meta audio_url = $url
-                  meta language = this.language.or("")
-                  meta trace_id = this._trace_id
-                  root = if !$url.re_match("^https://") { throw("audio_url must be an https URL") } else { {} }
-              - http:
-                  url: '${! meta("audio_url") }'
-                  verb: GET
-                  timeout: 60s
-                  retries: 3
-              - openai_transcription:
-                  api_key: "${OPENAI_API_KEY}"
-                  model: whisper-1
-                  file: '${! content() }'
-                  language: '${! meta("language") }'
-              - mapping: |
-                  root.transcript = content().string()
-                  root.audio_url = meta("audio_url")
-                  root._trace_id = meta("trace_id")
-                  root._source = "openai_transcription"
+      - mapping: |
+          let url = this.audio_url.or("").string()
+          meta audio_url = $url
+          meta language = this.language.or("")
+          meta trace_id = this._trace_id
+          root = if !$url.re_match("^https://") { throw("audio_url must be an https URL") } else { {} }
+      - http:
+          url: '${! meta("audio_url") }'
+          verb: GET
+          timeout: 60s
+          retries: 3
+      - openai_transcription:
+          api_key: "${OPENAI_API_KEY}"
+          model: whisper-1
+          file: '${! content() }'
+          language: '${! meta("language") }'
+      - mapping: |
+          root.transcript = content().string()
+          root.audio_url = meta("audio_url")
+          root._trace_id = meta("trace_id")
+          root._source = "openai_transcription"
 
       - mapping: |
           root.transcript = this.transcript

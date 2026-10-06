@@ -21,21 +21,6 @@ config:
           root._trace_id = uuid_v4()
 
       - switch:
-          - check: 'this.fixture_mode.or(false)'
-            processors:
-              - mapping: |
-                  root.action = this.action
-                  root.result = this.fixture_response.or({})
-                  root.issues = this.fixture_response.issues.or([])
-                  root.metadata = {
-                    "skill": "jira-automate",
-                    "mode": "cli",
-                    "action": this.action,
-                    "fixture": true,
-                    "trace_id": this._trace_id,
-                    "timestamp": now()
-                  }
-
           - check: 'this.action == "search"'
             processors:
               - mapping: |
@@ -79,7 +64,7 @@ config:
                     "skill": "jira-automate",
                     "mode": "cli",
                     "action": meta("jira_action"),
-                    "fixture": false,
+                    "source": "jira_api",
                     "trace_id": meta("trace_id").or(uuid_v4()),
                     "timestamp": now()
                   }
@@ -131,7 +116,7 @@ config:
                     "skill": "jira-automate",
                     "mode": "cli",
                     "action": meta("jira_action"),
-                    "fixture": false,
+                    "source": "jira_api",
                     "trace_id": meta("trace_id").or(uuid_v4()),
                     "timestamp": now()
                   }
@@ -170,7 +155,7 @@ config:
                     "skill": "jira-automate",
                     "mode": "cli",
                     "action": meta("jira_action"),
-                    "fixture": false,
+                    "source": "jira_api",
                     "trace_id": meta("trace_id").or(uuid_v4()),
                     "timestamp": now()
                   }

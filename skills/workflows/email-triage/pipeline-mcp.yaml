@@ -34,6 +34,24 @@ config:
 
   pipeline:
     processors:
+      # Bearer verification uses AES-GCM tag validation so token comparison is
+      # constant-time inside the authenticated-cipher implementation.
+      - mapping: |
+          let expected = env("MCP_BEARER_TOKEN").or("")
+          let authorization = meta("Authorization").or("")
+          let supplied = if $authorization.has_prefix("Bearer ") { $authorization.trim_prefix("Bearer ") } else { "" }
+          let nonce = "000000000000000000000000".decode("hex")
+          let proof = "expanso-mcp-auth".encrypt_aes("gcm", $expected.hash("sha256"), $nonce)
+          let authenticated = $proof.decrypt_aes("gcm", $supplied.hash("sha256"), $nonce).catch(null) != null
+          meta http_status_code = if $supplied == "" || !$authenticated { 401 } else { 200 }
+          root = if $expected.length() < 32 {
+            throw("MCP_BEARER_TOKEN must contain at least 32 characters")
+          } else if $supplied == "" || !$authenticated {
+            deleted()
+          } else {
+            this
+          }
+
       # Initialize and validate
       - mapping: |
           meta trace_id = uuid_v4()
@@ -50,14 +68,10 @@ config:
           meta since_hours = $since_hours
           meta extract_calendar_events = this.extract_calendar_events.or(true)
 
-          root = if !["gmail", "outlook", "fixture"].contains($provider) {
-            throw("Invalid provider. Use: gmail, outlook, or fixture")
+          root = if !["gmail", "outlook"].contains($provider) {
+            throw("Invalid provider. Use: gmail or outlook")
           } else {
-            {
-              "provider": $provider,
-              "fixture_mode": this.fixture_mode.or(false),
-              "fixture_emails": this.emails.or([])
-            }
+            {"provider": $provider}
           }
 
       - log:
@@ -66,9 +80,6 @@ config:
             [email-triage] MCP request: provider=${! meta("provider") } (trace: ${! meta("trace_id").slice(0, 8) })
 
       - switch:
-          - check: 'this.fixture_mode.or(false)'
-            processors:
-              - mapping: 'root.emails = this.fixture_emails.slice(0, meta("limit").number())'
           - check: 'meta("provider") == "gmail"'
             processors:
               - mapping: |
@@ -126,7 +137,7 @@ config:
               - mapping: |
                   root.emails = this.value.or([]).map_each(email -> {"id": email.id, "subject": email.subject.or(""), "from": email.from.emailAddress.address.or(""), "to": email.toRecipients.or([]).map_each(recipient -> recipient.emailAddress.address), "date": email.receivedDateTime, "body": email.bodyPreview.or(""), "has_attachment": email.hasAttachments.or(false)})
           - processors:
-              - mapping: 'root = throw("provider must be gmail, outlook, or fixture")'
+              - mapping: 'root = throw("provider must be gmail or outlook")'
 
       - mapping: |
           meta emails_json = this.emails.format_json()

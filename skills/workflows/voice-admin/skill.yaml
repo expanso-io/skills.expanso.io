@@ -10,6 +10,9 @@ description: Transcribe voice commands and extract proposed admin actions withou
 credentials:
   - name: OPENAI_API_KEY
     required: true
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
 
 inputs:
   - name: audio
@@ -44,10 +47,6 @@ backends:
   - name: openai
     type: remote
     requires: [OPENAI_API_KEY]
-  - name: fixture
-    type: local
-    requires: []
-    description: Explicit deterministic transcript and actions for CI
 
 components:
   inputs: [stdin, http_server]

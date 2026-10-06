@@ -7,6 +7,9 @@ credentials:
   - name: REPLICATE_API_TOKEN
     required: true
     description: Replicate API token from replicate.com
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
 
 inputs:
   - name: prompt
@@ -33,10 +36,6 @@ backends:
   - name: replicate
     type: remote
     requires: [REPLICATE_API_TOKEN]
-  - name: fixture
-    type: local
-    requires: []
-    description: Explicit deterministic video result for CI
 
 components:
   inputs: [stdin, http_server]

@@ -5,13 +5,31 @@
 
 tests:
   - name: "Processes emails and categorizes correctly"
-    input: '{"provider":"fixture","fixture_mode":true,"emails":[{"id":"1","subject":"Urgent incident","from":"ops@example.test","body":"Please investigate"},{"id":"2","subject":"FYI","from":"team@example.test","body":"Weekly update"}]}'
+    input: '{"provider":"gmail"}'
+    provider_responses:
+      - messages: [{id: "1"}]
+      - id: "1"
+        snippet: Please investigate
+        payload:
+          headers:
+            - {name: Subject, value: Urgent incident}
+            - {name: From, value: ops@example.test}
+          parts: []
     expected_output:
       summary:
-        processed: 2
+        processed: 1
 
   - name: "Extracts meeting requests"
-    input: '{"provider":"fixture","fixture_mode":true,"emails":[{"id":"1","subject":"Meeting","from":"pm@example.test","body":"Friday at 3pm"}],"extract_calendar_events":true}'
+    input: '{"provider":"gmail","extract_calendar_events":true}'
+    provider_responses:
+      - messages: [{id: "1"}]
+      - id: "1"
+        snippet: Friday at 3pm
+        payload:
+          headers:
+            - {name: Subject, value: Meeting}
+            - {name: From, value: pm@example.test}
+          parts: []
     output_conditions:
       - path: "calendar_events"
         condition: "length >= 0"
@@ -21,7 +39,9 @@ tests:
         condition: "< 10000"
 
   - name: "Handles empty inbox"
-    input: '{"provider":"fixture","fixture_mode":true,"emails":[]}'
+    input: '{"provider":"gmail"}'
+    provider_responses:
+      - messages: []
     expected_output:
       summary:
         processed: 0

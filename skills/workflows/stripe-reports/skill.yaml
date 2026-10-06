@@ -5,7 +5,7 @@
 #
 # Features:
 # - Fetch balance transactions using Stripe API v1
-# - Calculate gross, net, fee, and refund totals
+# - Group gross, net, fee, and refund minor-unit totals per currency
 # - Optionally generate AI insights from those calculated metrics
 #
 # Security: the Stripe API key is read from the executing node's environment and
@@ -22,6 +22,9 @@ credentials:
   - name: OPENAI_API_KEY
     required: true
     description: OpenAI API key for AI insights
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
 
 inputs:
   - name: period
@@ -44,7 +47,7 @@ outputs:
     description: Report period, Unix time range, and generation timestamp
   - name: metrics
     type: object
-    description: Calculated revenue and balance-transaction counts
+    description: Per-currency ISO 4217 minor-unit totals and balance-transaction counts
   - name: insights
     type: array
     description: AI-generated insights and observations
@@ -64,10 +67,6 @@ backends:
     type: remote
     requires: [OPENAI_API_KEY]
     description: OpenAI for insights generation
-  - name: fixture
-    type: local
-    requires: []
-    description: Explicit deterministic Stripe transaction fixtures for CI
 
 components:
   inputs: [stdin, http_server]
