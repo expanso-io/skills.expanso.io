@@ -13,6 +13,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ("catalog.json", "catalog-minimal.json", "validation-report.json", "example-conformance.json")
+REPORT_DIRECTORIES = ("reports",)
 
 
 def published_sources(repository):
@@ -45,6 +46,11 @@ def stage(repository, output):
             shutil.rmtree(child)
     for name in REPORTS:
         shutil.copyfile(repository / name, output / name)
+    for name in REPORT_DIRECTORIES:
+        destination = output / name
+        if destination.exists():
+            shutil.rmtree(destination)
+        shutil.copytree(repository / name, destination)
     for name, directories in sources.items():
         for source in directories:
             for path in source.rglob("*"):

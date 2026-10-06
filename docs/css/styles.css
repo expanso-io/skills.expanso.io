@@ -751,7 +751,7 @@ body {
 
 .code-block pre {
     margin: 0;
-    padding: 1rem;
+    padding: 3.25rem 1rem 1rem;
     padding-right: 3rem;
     overflow-x: hidden;
     font-size: 0.8rem;
@@ -765,6 +765,38 @@ body {
     white-space: break-spaces;
     overflow-wrap: anywhere;
     word-break: break-word;
+}
+
+.code-classification {
+    position: absolute;
+    top: 0.625rem;
+    left: 0.75rem;
+    z-index: 10;
+    max-width: calc(100% - 5rem);
+    padding: 0.2rem 0.55rem;
+    border: 1px solid #86efac;
+    border-radius: 999px;
+    background: #27272a;
+    color: #f4f4f5;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.code-classification-fragment {
+    border-color: #fde68a;
+    color: #fef3c7;
+}
+
+a.code-classification:hover {
+    background: #3f3f46;
+    color: #fff7d6;
+}
+
+a.code-classification:focus-visible {
+    outline: 2px solid #bfdbfe;
+    outline-offset: 2px;
 }
 
 .code-block pre code {

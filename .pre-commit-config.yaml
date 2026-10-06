@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: expanso-edge-validate
+        name: Validate staged Expanso pipelines
+        entry: scripts/validate-staged-pipelines.sh
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]

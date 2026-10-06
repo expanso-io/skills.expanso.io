@@ -247,6 +247,15 @@ All skills should return structured JSON with:
 5. Follow the gates declared in [CI](.github/workflows/ci.yml), including
    generated-report drift, stage records, publication, and retained features
 
+Install the staged-pipeline hook before committing:
+
+```bash
+uvx pre-commit install
+```
+
+The hook validates the staged version of each changed pipeline with
+`expanso-edge`. CI still runs the complete uncached catalog sweep.
+
 ### PR Checklist
 
 - [ ] Skill follows naming conventions
@@ -257,6 +266,7 @@ All skills should return structured JSON with:
 - [ ] Catalog updated
 - [ ] Stage records match the published pipeline bytes
 - [ ] Conformance evidence and staged Pages artifacts are current
+- [ ] Staged pipeline YAML passes the local pre-commit hook
 
 ### PR Description Template
 

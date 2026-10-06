@@ -316,6 +316,63 @@ def build_table(
             }
         )
 
+    published_rows = [row for row in rows if row["status"] != "pulled"]
+    variant_priority = {
+        "job": 0,
+        "recipe": 0,
+        "cloud": 1,
+        "query": 2,
+        "cli": 3,
+        "mcp": 4,
+    }
+    primary_rows: dict[str, dict[str, Any]] = {}
+    for row in published_rows:
+        if row["category"] == "recipes":
+            continue
+        skill = str(row["skill"])
+        current = primary_rows.get(skill)
+        if current is None or variant_priority.get(str(row["variant"]), 9) < (
+            variant_priority.get(str(current["variant"]), 9)
+        ):
+            primary_rows[skill] = row
+
+    fragments: list[dict[str, Any]] = []
+    for skill, row in sorted(primary_rows.items()):
+        metadata = Path(str(row["pipeline"])).parent / "skill.yaml"
+        if not (REPO / metadata).exists():
+            continue
+        fragments.append(
+            {
+                "fragment": f"skill/{skill}/spec",
+                "source": str(metadata),
+                "category": row["category"],
+                "skill": skill,
+                "classification": "fragment",
+                "canonical_pipeline": row["pipeline"],
+                "validation_context": "complete pipeline",
+                "status": row["status"],
+                "reason": row["criteria"]["runs"].get("reason"),
+            }
+        )
+    for row in published_rows:
+        if row["category"] == "recipes":
+            continue
+        fragments.append(
+            {
+                "fragment": (
+                    f"skill/{row['skill']}/deploy/{row['variant']}"
+                ),
+                "source": "docs/js/app.js",
+                "category": row["category"],
+                "skill": row["skill"],
+                "classification": "fragment",
+                "canonical_pipeline": row["pipeline"],
+                "validation_context": "complete pipeline",
+                "status": row["status"],
+                "reason": row["criteria"]["runs"].get("reason"),
+            }
+        )
+
     counts = Counter(str(row["status"]) for row in rows)
     for status in ("pass", "fixed", "failing", "skipped", "pulled"):
         counts.setdefault(status, 0)
@@ -355,6 +412,9 @@ def build_table(
             "automated_gate": "tests/site/conformance.spec.js",
         },
         "counts": dict(sorted(counts.items())),
+        "fragment_counts": dict(
+            sorted(Counter(str(row["status"]) for row in fragments).items())
+        ),
         "skipped_reasons": [
             {
                 "pipeline": row["pipeline"],
@@ -368,6 +428,7 @@ def build_table(
             for row in rows if row["status"] == "pulled"
         ],
         "examples": rows,
+        "fragments": fragments,
     }
     return table
 
@@ -403,6 +464,10 @@ def verify_table(actual: dict[str, Any]) -> list[str]:
     calculated["total"] = len(actual_rows)
     if actual.get("counts") != dict(sorted(calculated.items())):
         errors.append("count drift")
+    if actual.get("fragments") != expected.get("fragments"):
+        errors.append("fragment classification drift")
+    if actual.get("fragment_counts") != expected.get("fragment_counts"):
+        errors.append("fragment count drift")
     return errors
 
 

@@ -1,0 +1,243 @@
+name: Nightly Expanso Edge conformance
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  pinned:
+    name: Pinned Expanso Edge
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - name: Install pinned Expanso validators
+        shell: bash
+        run: |
+          set -euo pipefail
+          bin_dir="$RUNNER_TEMP/expanso-bin"
+          edge_version=$(<.github/expanso-edge-version)
+          mkdir -p "$bin_dir"
+          curl -fsSL https://get.expanso.io/edge/install.sh \
+            | EXPANSO_INSTALL_DIR="$bin_dir" \
+              EXPANSO_VERSION="$edge_version" \
+              USE_SUDO=false \
+              bash
+          curl -fsSL https://get.expanso.io/cli/install.sh \
+            | EXPANSO_INSTALL_DIR="$bin_dir" \
+              EXPANSO_VERSION=v2.1.21 \
+              USE_SUDO=false \
+              bash
+          echo "$bin_dir" >> "$GITHUB_PATH"
+          test "$("$bin_dir/expanso-edge" version)" = "$edge_version"
+      - name: Validate and execute with the pin
+        run: scripts/run-edge-conformance.sh check
+
+  latest:
+    name: Latest Expanso Edge
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      version: ${{ steps.install.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - name: Install latest Expanso Edge and pinned CLI
+        id: install
+        shell: bash
+        run: |
+          set -euo pipefail
+          bin_dir="$RUNNER_TEMP/expanso-bin"
+          mkdir -p "$bin_dir"
+          curl -fsSL https://get.expanso.io/edge/install.sh \
+            | EXPANSO_INSTALL_DIR="$bin_dir" \
+              USE_SUDO=false \
+              bash
+          curl -fsSL https://get.expanso.io/cli/install.sh \
+            | EXPANSO_INSTALL_DIR="$bin_dir" \
+              EXPANSO_VERSION=v2.1.21 \
+              USE_SUDO=false \
+              bash
+          echo "$bin_dir" >> "$GITHUB_PATH"
+          version=$("$bin_dir/expanso-edge" version)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Validate and execute with latest
+        run: |
+          scripts/run-edge-conformance.sh \
+            generate \
+            .conformance/nightly
+      - name: Upload latest-version reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-latest-reports
+          path: .conformance/nightly/
+          if-no-files-found: error
+
+  track-drift:
+    name: Track Expanso Edge drift
+    if: always()
+    needs: [pinned, latest]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open, update, or close the single drift issue
+        uses: actions/github-script@v7
+        env:
+          PINNED_RESULT: ${{ needs.pinned.result }}
+          LATEST_RESULT: ${{ needs.latest.result }}
+          LATEST_VERSION: ${{ needs.latest.outputs.version }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const label = 'expanso-edge-drift';
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: label });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.issues.createLabel({
+                owner,
+                repo,
+                name: label,
+                color: 'B91C1C',
+                description: 'Latest Expanso Edge breaks published examples'
+              });
+            }
+            const issues = await github.paginate(
+              github.rest.issues.listForRepo,
+              { owner, repo, state: 'open', labels: label, per_page: 100 }
+            );
+            const issue = issues.find((item) => !item.pull_request);
+            const latestOnlyFailure =
+              process.env.PINNED_RESULT === 'success' &&
+              process.env.LATEST_RESULT !== 'success';
+            const runUrl =
+              `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            if (latestOnlyFailure) {
+              const title = 'Latest Expanso Edge breaks public example conformance';
+              const body = [
+                `Pinned conformance passed; latest (${process.env.LATEST_VERSION || 'unknown'}) failed.`,
+                '',
+                `[Nightly run](${runUrl})`,
+                '',
+                'This issue is updated in place and closes after latest is green.'
+              ].join('\n');
+              if (issue) {
+                await github.rest.issues.update({
+                  owner, repo, issue_number: issue.number, title, body
+                });
+              } else {
+                await github.rest.issues.create({
+                  owner, repo, title, body, labels: [label]
+                });
+              }
+            } else if (process.env.LATEST_RESULT === 'success' && issue) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issue.number,
+                body: `Latest Expanso Edge is green again: ${runUrl}`
+              });
+              await github.rest.issues.update({
+                owner, repo, issue_number: issue.number, state: 'closed'
+              });
+            }
+
+  bump-pin:
+    name: Propose a green pin bump
+    if: >-
+      always() &&
+      needs.pinned.result == 'success' &&
+      needs.latest.result == 'success'
+    needs: [pinned, latest]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/download-artifact@v4
+        with:
+          name: nightly-latest-reports
+          path: nightly-reports
+      - name: Compare latest with the pin
+        id: compare
+        env:
+          LATEST_VERSION: ${{ needs.latest.outputs.version }}
+        run: |
+          uv run -s python - <<'PY'
+          import os
+          import re
+
+          def version(value):
+              match = re.search(r"(\d+)\.(\d+)\.(\d+)", value)
+              if not match:
+                  raise SystemExit(f"could not parse version: {value!r}")
+              return tuple(int(part) for part in match.groups())
+
+          pinned = open(".github/expanso-edge-version").read().strip()
+          latest = os.environ["LATEST_VERSION"].strip()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"newer={'true' if version(latest) > version(pinned) else 'false'}\n")
+          PY
+      - name: Open a pin-bump pull request
+        if: steps.compare.outputs.newer == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LATEST_VERSION: ${{ needs.latest.outputs.version }}
+        run: |
+          set -euo pipefail
+          branch="automation/expanso-edge-${LATEST_VERSION#v}"
+          existing=$(gh pr list \
+            --state open \
+            --head "$branch" \
+            --json url \
+            --jq '.[0].url // empty')
+          if [[ -n "$existing" ]]; then
+            echo "Pin-bump pull request already open: $existing"
+            exit 0
+          fi
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+            branch="$branch-$GITHUB_RUN_ID"
+          fi
+          cp nightly-reports/validation-report.json validation-report.json
+          cp nightly-reports/example-conformance.json example-conformance.json
+          printf '%s\n' "$LATEST_VERSION" > .github/expanso-edge-version
+          uv run -s scripts/render-validation-report.py
+          git config user.name "Expanso automation"
+          git config user.email "automation@expanso.io"
+          git checkout -b "$branch"
+          git add \
+            .github/expanso-edge-version \
+            validation-report.json \
+            example-conformance.json \
+            reports/validation
+          git commit -m "Bump Expanso Edge pin to $LATEST_VERSION"
+          git push origin "HEAD:refs/heads/$branch"
+          body="$RUNNER_TEMP/pin-bump.md"
+          printf '%s\n' \
+            "The nightly conformance run passed every published example" \
+            "against $LATEST_VERSION." \
+            "" \
+            "Validation and conformance reports were regenerated with the" \
+            "new version." > "$body"
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "Bump Expanso Edge pin to $LATEST_VERSION" \
+            --body-file "$body"

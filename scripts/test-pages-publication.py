@@ -45,6 +45,23 @@ def check_publication(output):
         for name in staging.REPORTS:
             with urlopen(f"{endpoint}/{name}") as response:
                 assert response.read() == (ROOT / name).read_bytes(), name
+        for name in staging.REPORT_DIRECTORIES:
+            source = ROOT / name
+            staged = output / name
+            expected = {
+                path.relative_to(source)
+                for path in source.rglob("*")
+                if path.is_file()
+            }
+            actual = {
+                path.relative_to(staged)
+                for path in staged.rglob("*")
+                if path.is_file()
+            }
+            assert actual == expected, (name, actual ^ expected)
+            for path in expected:
+                with urlopen(f"{endpoint}/{name}/{path}") as response:
+                    assert response.read() == (source / path).read_bytes(), path
         sources = staging.published_sources(ROOT)
         for name, directories in sources.items():
             expected = {p.relative_to(source) for source in directories for p in source.rglob("*") if p.is_file() and "__pycache__" not in p.parts}

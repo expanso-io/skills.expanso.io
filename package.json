@@ -2,6 +2,7 @@
   "name": "skills-expanso-site-tests",
   "private": true,
   "scripts": {
+    "check:browser-runtime": "node --test tests/check-playwright-runtime.test.js && node scripts/check-playwright-runtime.js",
     "test:site": "playwright test"
   },
   "devDependencies": {

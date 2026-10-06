@@ -17,26 +17,43 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check whether conformance inputs changed
+        id: changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: scripts/conformance-changed.sh "$BASE_SHA"
+
+      - name: Report fast no-op
+        if: steps.changes.outputs.run != 'true'
+        run: |
+          echo "Public example conformance is unchanged."
+          echo "The stable required-check job still reports success."
+
       - uses: actions/setup-python@v5
+        if: steps.changes.outputs.run == 'true'
         with:
           python-version: "3.12"
 
       - uses: astral-sh/setup-uv@v6
+        if: steps.changes.outputs.run == 'true'
 
       - uses: actions/setup-node@v4
+        if: steps.changes.outputs.run == 'true'
         with:
           node-version: "22"
           cache: npm
 
       - name: Install pinned Expanso validators
+        if: steps.changes.outputs.run == 'true'
         shell: bash
         run: |
           set -euo pipefail
           bin_dir="$RUNNER_TEMP/expanso-bin"
+          edge_version=$(<.github/expanso-edge-version)
           mkdir -p "$bin_dir"
           curl -fsSL https://get.expanso.io/edge/install.sh \
             | EXPANSO_INSTALL_DIR="$bin_dir" \
-              EXPANSO_VERSION=v2.1.21 \
+              EXPANSO_VERSION="$edge_version" \
               USE_SUDO=false \
               bash
           curl -fsSL https://get.expanso.io/cli/install.sh \
@@ -45,67 +62,42 @@ jobs:
               USE_SUDO=false \
               bash
           echo "$bin_dir" >> "$GITHUB_PATH"
-          test "$("$bin_dir/expanso-edge" version)" = "v2.1.21"
+          test "$("$bin_dir/expanso-edge" version)" = "$edge_version"
           test "$("$bin_dir/expanso-cli" version)" = \
             "Expanso CLI version v2.1.21"
 
-      - name: Validate YAML and skill structure
-        run: |
-          uv run -s scripts/audit-skills.py
+      - name: Validate and execute every published example
+        if: steps.changes.outputs.run == 'true'
+        run: scripts/run-edge-conformance.sh check
 
-      - name: Validate every job spec and pipeline config
-        run: |
-          ./scripts/validate-pipelines.sh
-          uv run -s scripts/check-example-conformance.py
-          uv run -s scripts/check-feature-preservation.py
-
-      - name: Execute CLI variants on Expanso Edge
-        run: |
-          uv run -s scripts/test-skills.py \
-            --variant cli \
-            --no-cache \
-            --max-reruns 1 \
-            --report .conformance/full-cli.json
-
-      - name: Execute MCP variants on Expanso Edge
-        run: |
-          uv run -s scripts/test-skills.py \
-            --variant mcp \
-            --no-cache \
-            --max-reruns 1 \
-            --report .conformance/full-mcp.json
-
-      - name: Audit negative inputs for every published CLI and MCP skill
-        run: |
-          uv run -s scripts/test-negative-inputs.py
-
-      - name: Execute recipes and standalone variants on Expanso Edge
-        run: |
-          uv run -s scripts/test-recipes.py \
-            --report .conformance/recipe-execution.json
-
-      - name: Check generated reports and catalogs
-        run: |
-          uv run -s scripts/validate-skills.py --check
-          uv run -s scripts/build-catalog.py --check
-          uv run -s scripts/build-plugin.py --check
-          uv run -s scripts/build-example-conformance.py --check
+      - name: Check linked validation reports
+        if: steps.changes.outputs.run == 'true'
+        run: uv run -s scripts/render-validation-report.py --check
 
       - name: Install browser test dependencies
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
+        if: steps.changes.outputs.run == 'true'
+        run: npm ci
+
+      - name: Enforce bundled headless Chromium
+        if: steps.changes.outputs.run == 'true'
+        run: npm run check:browser-runtime
+
+      - name: Install bundled Chromium
+        if: steps.changes.outputs.run == 'true'
+        run: npx playwright install --with-deps chromium
 
       - name: Stage and check published Pages artifacts
+        if: steps.changes.outputs.run == 'true'
         run: |
           uv run -s scripts/stage-pages.py
           uv run -s scripts/test-pages-publication.py
 
-      - name: Test copy feedback, accessibility, and phone layout
+      - name: Test copy feedback, classification, accessibility, and phone layout
+        if: steps.changes.outputs.run == 'true'
         run: npm run test:site
 
       - name: Upload execution evidence
-        if: always()
+        if: always() && steps.changes.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: example-conformance-evidence

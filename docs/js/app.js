@@ -356,6 +356,11 @@
 
     function buildModalContent(skillName, skill, skillYaml, pipelineCli, pipelineMcp, pipelineCloud, jobSpecs) {
         jobSpecs = jobSpecs || [];
+
+        var primaryPipelineFile = jobSpecs.length ? jobSpecs[0].file
+            : (pipelineCloud ? 'pipeline-cloud.yaml'
+                : (pipelineCli ? 'pipeline-cli.yaml' : 'pipeline-mcp.yaml'));
+
         // ── Header ──
         var headerDiv = document.createElement('div');
         headerDiv.className = 'modal-header';
@@ -466,7 +471,10 @@
             var yamlH3 = document.createElement('h3');
             yamlH3.textContent = 'skill.yaml';
             yamlSection.appendChild(yamlH3);
-            yamlSection.appendChild(createCodeBlock(skillYaml, 'yaml'));
+yamlSection.appendChild(createCodeBlock(skillYaml, 'yaml', {
+classification: 'fragment',
+completePipeline: getSkillUrl(skillName, primaryPipelineFile)
+}));
             specContent.appendChild(yamlSection);
         }
 
@@ -624,8 +632,10 @@
 
                 subDiv.appendChild(readinessEl);
 
-                // Code block
-                subDiv.appendChild(createCodeBlock(sub.yaml, 'yaml'));
+// Code block
+subDiv.appendChild(createCodeBlock(sub.yaml, 'yaml', {
+classification: 'complete'
+}));
 
                 // Deploy section
                 var deployDiv = document.createElement('div');
@@ -658,7 +668,10 @@
                         'expanso-cli job describe <job-name>\n' +
                         'expanso-cli execution list --job-id <job-id>';
 
-                    deployDiv.appendChild(createCodeBlock(deployCmd, 'bash'));
+deployDiv.appendChild(createCodeBlock(deployCmd, 'bash', {
+classification: 'fragment',
+completePipeline: skillUrl
+}));
                 }
 
                 subDiv.appendChild(deployDiv);
@@ -733,9 +746,38 @@
 
     // ── Helpers ──────────────────────────────────────────────
 
-    function createCodeBlock(code, language) {
+    function createCodeBlock(code, language, example) {
+        if (!example || ['complete', 'fragment'].indexOf(example.classification) === -1) {
+            throw new Error('Every code block must be classified as complete or fragment.');
+        }
+
         var wrapper = document.createElement('div');
         wrapper.className = 'code-block';
+        wrapper.dataset.exampleClassification = example.classification;
+
+        var classification;
+
+        if (example.classification === 'fragment') {
+            if (!example.completePipeline) {
+                throw new Error('A fragment must link to its complete pipeline.');
+            }
+
+            classification = document.createElement('a');
+            classification.href = example.completePipeline;
+            classification.target = '_blank';
+            classification.rel = 'noopener';
+            classification.textContent = 'Fragment';
+            classification.title = 'Part of an example. Open the complete pipeline.';
+            classification.setAttribute(
+                'aria-label', 'Fragment. Open the complete pipeline.'
+            );
+        } else {
+            classification = document.createElement('span');
+            classification.textContent = 'Complete pipeline';
+        }
+
+        classification.className = 'code-classification code-classification-' +
+            example.classification;
 
         var pre = document.createElement('pre');
         var codeEl = document.createElement('code');
@@ -746,6 +788,7 @@
         var copyBtn = createCopyButton(code);
         copyBtn.className = 'copy-btn code-copy-btn';
 
+        wrapper.appendChild(classification);
         wrapper.appendChild(pre);
         wrapper.appendChild(copyBtn);
 

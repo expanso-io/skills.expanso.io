@@ -62,6 +62,32 @@ async function expectVisibleCopiesSucceed(page) {
   }
 }
 
+async function expectVisibleCodeBlocksClassified(page) {
+  const blocks = page.locator('#modal-content .code-block:visible');
+
+  await expect(blocks.first()).toBeVisible();
+  const count = await blocks.count();
+
+  expect(count).toBeGreaterThan(0);
+
+  for (let index = 0; index < count; index += 1) {
+    const block = blocks.nth(index);
+
+    const classification = await block.getAttribute(
+      'data-example-classification'
+    );
+
+    expect(['complete', 'fragment']).toContain(classification);
+    await expect(block.locator(`.code-classification-${classification}`))
+      .toBeVisible();
+
+    if (classification === 'fragment') {
+      await expect(block.locator('.code-classification-fragment'))
+        .toHaveAttribute('href', /pipeline.*\.yaml$/);
+    }
+  }
+}
+
 test('copy controls report success and failure on the clicked control', async ({
   context,
   page
@@ -106,6 +132,45 @@ test('copy controls report success and failure on the clicked control', async ({
       await expect(control).toHaveText('Copy failed');
     }
   }
+});
+
+test('every example code block is classified and fragments link to context', async ({
+  context,
+  page
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await waitForCatalog(page);
+  await page.locator('.skill-card[data-skill="json-pretty"]').click();
+
+  await expectVisibleCodeBlocksClassified(page);
+  const specBlocks = page.locator('#modal-content .code-block:visible');
+  await expect(specBlocks).toHaveCount(1);
+  await expect(specBlocks.first()).toHaveAttribute(
+    'data-example-classification',
+    'fragment'
+  );
+  const specBadge = specBlocks.first().locator('.code-classification-fragment');
+  await expect(specBadge).toHaveText('Fragment');
+  await expect(specBadge).toHaveAttribute('href', /pipeline-(cloud|cli)\.yaml$/);
+  await specBlocks.first().locator('.code-copy-btn').click();
+  await expect(specBlocks.first().locator('.code-copy-btn')).toHaveText('Copied');
+
+  await page.getByRole('button', { name: 'Pipeline', exact: true }).click();
+  await expectVisibleCodeBlocksClassified(page);
+  const pipelineBlocks = page.locator('#modal-content .code-block:visible');
+  await expect(pipelineBlocks).toHaveCount(2);
+  await expect(pipelineBlocks.nth(0)).toHaveAttribute(
+    'data-example-classification',
+    'complete'
+  );
+  await expect(pipelineBlocks.nth(0).locator('.code-classification-complete'))
+    .toHaveText('Complete pipeline');
+  await expect(pipelineBlocks.nth(1)).toHaveAttribute(
+    'data-example-classification',
+    'fragment'
+  );
+  await expect(pipelineBlocks.nth(1).locator('.code-classification-fragment'))
+    .toHaveAttribute('href', /pipeline-cloud\.yaml$/);
 });
 
 test('light and dark surfaces have no serious accessibility violations', async ({
@@ -163,6 +228,7 @@ test('every skill uses the page template and preserves features, copy feedback, 
       .toBeVisible();
 
     await expect(page.locator(".modal-description")).not.toHaveText("");
+    await expectVisibleCodeBlocksClassified(page);
     await expectVisibleCopiesSucceed(page);
     await page.waitForTimeout(250);
     await expectNoSeriousAxeViolations(page);
@@ -180,6 +246,7 @@ test('every skill uses the page template and preserves features, copy feedback, 
     for (let variant = 0; variant < variantCount; variant += 1) {
       await variants.nth(variant).click();
       await expect(page.getByRole("heading", { name: "Deploy", exact: true })).toBeVisible();
+      await expectVisibleCodeBlocksClassified(page);
       await expectVisibleCopiesSucceed(page);
     }
 
