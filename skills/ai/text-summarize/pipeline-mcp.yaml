@@ -34,12 +34,9 @@ type: pipeline
 
 config:
   # HTTP server configuration
-  http:
-    enabled: true
-    address: "0.0.0.0:${PORT:-8080}"
-
   input:
     http_server:
+      address: "0.0.0.0:${PORT:-8080}"
       path: /summarize
       allowed_verbs: [POST]
       timeout: 60s

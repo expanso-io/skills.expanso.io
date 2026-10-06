@@ -16,12 +16,9 @@ name: meeting-notes-mcp
 type: pipeline
 
 config:
-  http:
-    enabled: true
-    address: "0.0.0.0:${PORT:-8080}"
-
   input:
     http_server:
+      address: "0.0.0.0:${PORT:-8080}"
       path: /extract
       allowed_verbs: [POST]
       timeout: 120s

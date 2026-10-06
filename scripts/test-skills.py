@@ -1159,8 +1159,13 @@ def execute_test(
                 "output": {},
             }, True
 
-    http_server["address"] = f"127.0.0.1:{port}"
-    config.pop("http", None)
+    if variant == "mcp":
+        # Substitute only the advertised PORT; never repair a missing adapter
+        # address in a test copy, which would hide an unreachable publication.
+        address = http_server.get("address", "")
+        if not re.search(r"\$\{PORT(?::[^}]*)?\}", address):
+            return {"status": "failed", "reason": "MCP input must bind its advertised PORT", "errors": [], "status_code": 0, "output": {}}, True
+        http_server["address"] = re.sub(r"\$\{PORT(?::[^}]*)?\}", str(port), address)
     path = http_server.get("path", "/")
     allowed = http_server.get("allowed_verbs", ["POST"])
     method = allowed[0] if isinstance(allowed, list) and allowed else "POST"
@@ -1181,6 +1186,18 @@ def execute_test(
             apply_provider_mocks(processors, provider_responses)
     if fixture_env:
         pipeline_spec = replace_fixture_env(pipeline_spec, fixture_env)
+
+    # Log the actual bytes on each side of every published top-level stage.
+    # Probes do not map data or replace the stage's work. Provider fixtures,
+    # when used, remain explicitly scoped as fixtures in the report.
+    processors = pipeline_spec["config"].get("pipeline", {}).get("processors", [])
+    observed = []
+    for index, processor in enumerate(processors):
+        for side in ("input", "output"):
+            if side == "output":
+                observed.append(processor)
+            observed.append({"log": {"level": "WARN", "message": f"EXPLORER_STAGE_{index}_{side} ${{! content().string().quote() }}"}})
+    pipeline_spec["config"].setdefault("pipeline", {})["processors"] = observed
 
     pipeline_spec["name"] = f"{skill_name}-{variant}-test-{port}"
 
@@ -1381,6 +1398,16 @@ def execute_test(
         "published_adapters_intact": published_adapters_intact,
         "published_processors_intact": published_processors_intact,
     }
+    stages = {}
+    for match in re.finditer(r'EXPLORER_STAGE_(\d+)_(input|output) ("(?:[^"\\]|\\.)*")', edge_log_text):
+        value = json.loads(match[3])
+        try:
+            value = json.loads(value)
+        except ValueError:
+            pass
+        stages.setdefault(int(match[1]), {})[match[2]] = value
+    result["stages"] = [stages.get(index, {}) for index in range(len(processors))]
+    result["stage_scope"] = "Observed Edge stage boundaries; disposable CLI transport and provider fixtures may apply"
     if require_mcp_auth:
         result["auth_probe_status"] = auth_probe_status
         result["auth_probe_body"] = auth_probe_body

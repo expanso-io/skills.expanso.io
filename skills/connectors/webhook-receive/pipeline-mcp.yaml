@@ -18,6 +18,7 @@ type: pipeline
 config:
   input:
     http_server:
+      address: "0.0.0.0:${PORT:-4195}"
       path: /webhook
       allowed_verbs: [POST]
 

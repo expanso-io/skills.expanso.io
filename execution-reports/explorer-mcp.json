@@ -1,0 +1,450 @@
+{
+  "schema": "expanso-local-execution/1",
+  "started_at": "2026-10-06T17:33:46Z",
+  "run_directory": ".conformance/20261006T173346Z-34578",
+  "mode": "expanso-edge local API; mcp variant; explicit fixtures; OpenAI processors mocked",
+  "variant": "mcp",
+  "skills": [
+    {
+      "name": "json-to-csv",
+      "category": "transforms",
+      "path": "skills/transforms/json-to-csv",
+      "status": "passed",
+      "reason": null,
+      "tests": [
+        {
+          "name": "Convert JSON array",
+          "fingerprint": "0cb9977a20c80fb07d0f6456a35104e8f94fd811d9e8101ae4b7d284272480ac",
+          "history": [
+            {
+              "status": "passed",
+              "reason": null,
+              "errors": [],
+              "status_code": 200
+            }
+          ],
+          "status": "passed",
+          "errors": [],
+          "status_code": 200,
+          "output": {
+            "columns": [
+              "age",
+              "name"
+            ],
+            "csv": "age,name\n30,Alice",
+            "metadata": {
+              "delimiter": ",",
+              "mode": "mcp",
+              "skill": "json-to-csv",
+              "timestamp": "2026-10-06T10:33:47.016883-07:00",
+              "trace_id": "c014af48-5fc8-48b8-90bd-896513d76d34"
+            },
+            "row_count": 1
+          },
+          "edge_errors": [],
+          "published_adapters_intact": true,
+          "published_processors_intact": true,
+          "stages": [
+            {
+              "input": {
+                "data": [
+                  {
+                    "name": "Alice",
+                    "age": 30
+                  }
+                ]
+              },
+              "output": {
+                "columns": [
+                  "age",
+                  "name"
+                ],
+                "csv": "age,name\n30,Alice",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "mcp",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:33:47.016883-07:00",
+                  "trace_id": "c014af48-5fc8-48b8-90bd-896513d76d34"
+                },
+                "row_count": 1
+              }
+            },
+            {
+              "input": {
+                "columns": [
+                  "age",
+                  "name"
+                ],
+                "csv": "age,name\n30,Alice",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "mcp",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:33:47.016883-07:00",
+                  "trace_id": "c014af48-5fc8-48b8-90bd-896513d76d34"
+                },
+                "row_count": 1
+              },
+              "output": {
+                "columns": [
+                  "age",
+                  "name"
+                ],
+                "csv": "age,name\n30,Alice",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "mcp",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:33:47.016883-07:00",
+                  "trace_id": "c014af48-5fc8-48b8-90bd-896513d76d34"
+                },
+                "row_count": 1
+              }
+            }
+          ],
+          "stage_scope": "Observed Edge stage boundaries; disposable CLI transport and provider fixtures may apply",
+          "attempts": 1
+        },
+        {
+          "name": "Preserves dotted literal keys",
+          "fingerprint": "2c04be86c78be678b716265a18f6aedb1aa05438e0dbae50d337535f4b3a2411",
+          "history": [
+            {
+              "status": "passed",
+              "reason": null,
+              "errors": [],
+              "status_code": 200
+            }
+          ],
+          "status": "passed",
+          "errors": [],
+          "status_code": 200,
+          "output": {
+            "columns": [
+              "a.b"
+            ],
+            "csv": "a.b\n1\n2",
+            "metadata": {
+              "delimiter": ",",
+              "mode": "mcp",
+              "skill": "json-to-csv",
+              "timestamp": "2026-10-06T10:33:47.77083-07:00",
+              "trace_id": "0b1ef200-9b40-48c5-b2ce-492a03b6f15a"
+            },
+            "row_count": 2
+          },
+          "edge_errors": [],
+          "published_adapters_intact": true,
+          "published_processors_intact": true,
+          "stages": [
+            {
+              "input": {
+                "data": [
+                  {
+                    "a.b": 1
+                  },
+                  {
+                    "a.b": 2
+                  }
+                ]
+              },
+              "output": {
+                "columns": [
+                  "a.b"
+                ],
+                "csv": "a.b\n1\n2",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "mcp",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:33:47.77083-07:00",
+                  "trace_id": "0b1ef200-9b40-48c5-b2ce-492a03b6f15a"
+                },
+                "row_count": 2
+              }
+            },
+            {
+              "input": {
+                "columns": [
+                  "a.b"
+                ],
+                "csv": "a.b\n1\n2",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "mcp",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:33:47.77083-07:00",
+                  "trace_id": "0b1ef200-9b40-48c5-b2ce-492a03b6f15a"
+                },
+                "row_count": 2
+              },
+              "output": {
+                "columns": [
+                  "a.b"
+                ],
+                "csv": "a.b\n1\n2",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "mcp",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:33:47.77083-07:00",
+                  "trace_id": "0b1ef200-9b40-48c5-b2ce-492a03b6f15a"
+                },
+                "row_count": 2
+              }
+            }
+          ],
+          "stage_scope": "Observed Edge stage boundaries; disposable CLI transport and provider fixtures may apply",
+          "attempts": 1
+        }
+      ],
+      "pipeline_sha256": "bf68ab6b8ac94a64e46b7feb8d00ade82b6a0d63ee0f444fea7dc6131c580803",
+      "intact_execution_passed": true
+    },
+    {
+      "name": "slug-generate",
+      "category": "transforms",
+      "path": "skills/transforms/slug-generate",
+      "status": "passed",
+      "reason": null,
+      "tests": [
+        {
+          "name": "Generate slug",
+          "fingerprint": "d76e16bf3ff7a6f7d31ea79712cca4bb8497fd802297e2992f0c5e8f59f2ce0f",
+          "history": [
+            {
+              "status": "passed",
+              "reason": null,
+              "errors": [],
+              "status_code": 200
+            }
+          ],
+          "status": "passed",
+          "errors": [],
+          "status_code": 200,
+          "output": {
+            "metadata": {
+              "mode": "mcp",
+              "skill": "slug-generate",
+              "timestamp": "2026-10-06T10:33:48.826573-07:00",
+              "trace_id": "3b00fbec-bb87-44dc-a641-d0c0e19e8926"
+            },
+            "original": "Hello World! This is a Test",
+            "separator": "-",
+            "slug": "hello-world-this-is-a-test"
+          },
+          "edge_errors": [],
+          "published_adapters_intact": true,
+          "published_processors_intact": true,
+          "stages": [
+            {
+              "input": {
+                "text": "Hello World! This is a Test"
+              },
+              "output": {
+                "text": "Hello World! This is a Test"
+              }
+            },
+            {
+              "input": {
+                "text": "Hello World! This is a Test"
+              },
+              "output": {
+                "metadata": {
+                  "mode": "mcp",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:33:48.826573-07:00",
+                  "trace_id": "3b00fbec-bb87-44dc-a641-d0c0e19e8926"
+                },
+                "original": "Hello World! This is a Test",
+                "separator": "-",
+                "slug": "hello-world-this-is-a-test"
+              }
+            },
+            {
+              "input": {
+                "metadata": {
+                  "mode": "mcp",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:33:48.826573-07:00",
+                  "trace_id": "3b00fbec-bb87-44dc-a641-d0c0e19e8926"
+                },
+                "original": "Hello World! This is a Test",
+                "separator": "-",
+                "slug": "hello-world-this-is-a-test"
+              },
+              "output": {
+                "metadata": {
+                  "mode": "mcp",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:33:48.826573-07:00",
+                  "trace_id": "3b00fbec-bb87-44dc-a641-d0c0e19e8926"
+                },
+                "original": "Hello World! This is a Test",
+                "separator": "-",
+                "slug": "hello-world-this-is-a-test"
+              }
+            },
+            {
+              "input": {
+                "metadata": {
+                  "mode": "mcp",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:33:48.826573-07:00",
+                  "trace_id": "3b00fbec-bb87-44dc-a641-d0c0e19e8926"
+                },
+                "original": "Hello World! This is a Test",
+                "separator": "-",
+                "slug": "hello-world-this-is-a-test"
+              },
+              "output": {
+                "metadata": {
+                  "mode": "mcp",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:33:48.826573-07:00",
+                  "trace_id": "3b00fbec-bb87-44dc-a641-d0c0e19e8926"
+                },
+                "original": "Hello World! This is a Test",
+                "separator": "-",
+                "slug": "hello-world-this-is-a-test"
+              }
+            }
+          ],
+          "stage_scope": "Observed Edge stage boundaries; disposable CLI transport and provider fixtures may apply",
+          "attempts": 1
+        },
+        {
+          "name": "Custom separator",
+          "fingerprint": "52bca71459b160f283fdbc7e93de09e93a702f5d30ed9b96355f6adf260bd7dd",
+          "history": [
+            {
+              "status": "passed",
+              "reason": null,
+              "errors": [],
+              "status_code": 200
+            }
+          ],
+          "status": "passed",
+          "errors": [],
+          "status_code": 200,
+          "output": {
+            "metadata": {
+              "mode": "mcp",
+              "skill": "slug-generate",
+              "timestamp": "2026-10-06T10:33:49.863823-07:00",
+              "trace_id": "6d929cd9-7808-4fc9-b8d9-759c0ef4aed0"
+            },
+            "original": "Hello World",
+            "separator": "_",
+            "slug": "hello_world"
+          },
+          "edge_errors": [],
+          "published_adapters_intact": true,
+          "published_processors_intact": true,
+          "stages": [
+            {
+              "input": {
+                "text": "Hello World",
+                "separator": "_"
+              },
+              "output": {
+                "separator": "_",
+                "text": "Hello World"
+              }
+            },
+            {
+              "input": {
+                "separator": "_",
+                "text": "Hello World"
+              },
+              "output": {
+                "metadata": {
+                  "mode": "mcp",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:33:49.863823-07:00",
+                  "trace_id": "6d929cd9-7808-4fc9-b8d9-759c0ef4aed0"
+                },
+                "original": "Hello World",
+                "separator": "_",
+                "slug": "hello_world"
+              }
+            },
+            {
+              "input": {
+                "metadata": {
+                  "mode": "mcp",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:33:49.863823-07:00",
+                  "trace_id": "6d929cd9-7808-4fc9-b8d9-759c0ef4aed0"
+                },
+                "original": "Hello World",
+                "separator": "_",
+                "slug": "hello_world"
+              },
+              "output": {
+                "metadata": {
+                  "mode": "mcp",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:33:49.863823-07:00",
+                  "trace_id": "6d929cd9-7808-4fc9-b8d9-759c0ef4aed0"
+                },
+                "original": "Hello World",
+                "separator": "_",
+                "slug": "hello_world"
+              }
+            },
+            {
+              "input": {
+                "metadata": {
+                  "mode": "mcp",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:33:49.863823-07:00",
+                  "trace_id": "6d929cd9-7808-4fc9-b8d9-759c0ef4aed0"
+                },
+                "original": "Hello World",
+                "separator": "_",
+                "slug": "hello_world"
+              },
+              "output": {
+                "metadata": {
+                  "mode": "mcp",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:33:49.863823-07:00",
+                  "trace_id": "6d929cd9-7808-4fc9-b8d9-759c0ef4aed0"
+                },
+                "original": "Hello World",
+                "separator": "_",
+                "slug": "hello_world"
+              }
+            }
+          ],
+          "stage_scope": "Observed Edge stage boundaries; disposable CLI transport and provider fixtures may apply",
+          "attempts": 1
+        }
+      ],
+      "pipeline_sha256": "7278903f3b14b5e85161c294761576407ea163f611a01e128554e26cee41c67a",
+      "intact_execution_passed": true
+    }
+  ],
+  "summary": {
+    "total_skills": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "manual": 0
+  },
+  "tools": {
+    "expanso_edge": {
+      "path": "/usr/local/bin/expanso-edge",
+      "version": "v2.1.21",
+      "sha256": "0cc13bd6d1a14756f87f877f578941157b6f62047bab818c81205c5a0882fc3f"
+    },
+    "expanso_cli": {
+      "path": "/usr/local/bin/expanso-cli",
+      "version": "Expanso CLI version v2.1.21",
+      "sha256": "cdedaf7784efae0396095954d5cefab2f638857782b47f764d3d1da50077309d"
+    }
+  },
+  "finished_at": "2026-10-06T17:33:50Z"
+}

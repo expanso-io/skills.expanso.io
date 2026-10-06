@@ -10,12 +10,9 @@ config:
         default_ttl: 1h
         compaction_interval: 1m
 
-  http:
-    enabled: true
-    address: "0.0.0.0:${PORT:-8080}"
-
   input:
     http_server:
+      address: "0.0.0.0:${PORT:-8080}"
       path: /cache
       allowed_verbs: [POST]
       timeout: 30s

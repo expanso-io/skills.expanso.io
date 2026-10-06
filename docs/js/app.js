@@ -339,7 +339,8 @@
             .filter(function(j) { return !!j.yaml; });
 
         while (modalContent.firstChild) modalContent.removeChild(modalContent.firstChild);
-        buildModalContent(skillName, skill, results[0], results[1], results[2], results[3], jobSpecs);
+        var explorerJson = await fetchSkillFile(skillName, 'explorer.json', skill.category);
+        buildModalContent(skillName, skill, results[0], results[1], results[2], results[3], jobSpecs, explorerJson ? JSON.parse(explorerJson) : {});
 
         if (window.Prism) Prism.highlightAllUnder(modalContent);
     }
@@ -354,7 +355,7 @@
             : 'run end to end on a local-mode node only. It has not been run through Expanso Cloud.');
     }
 
-    function buildModalContent(skillName, skill, skillYaml, pipelineCli, pipelineMcp, pipelineCloud, jobSpecs) {
+    function buildModalContent(skillName, skill, skillYaml, pipelineCli, pipelineMcp, pipelineCloud, jobSpecs, explorers) {
         jobSpecs = jobSpecs || [];
         // ── Header ──
         var headerDiv = document.createElement('div');
@@ -624,6 +625,8 @@
 
                 subDiv.appendChild(readinessEl);
 
+                subDiv.appendChild(createStageExplorer(explorers[sub.file]));
+
                 // Code block
                 subDiv.appendChild(createCodeBlock(sub.yaml, 'yaml'));
 
@@ -732,6 +735,68 @@
     }
 
     // ── Helpers ──────────────────────────────────────────────
+
+    function createStageExplorer(data) {
+        var section = document.createElement('section');
+        section.className = 'stage-explorer modal-section';
+        var title = document.createElement('h3');
+        title.textContent = 'Step explorer';
+        section.appendChild(title);
+        var note = document.createElement('p');
+        note.className = 'readiness-note';
+        note.textContent = data && data.date ? data.sample + ' · ' + data.date + '. ' + data.scope
+            : 'No current execution trace recorded. Stage configuration is shown; input and output are unavailable.';
+        section.appendChild(note);
+        var stages = data ? data.stages : [];
+        var nav = document.createElement('div');
+        nav.className = 'stage-navigation';
+        nav.setAttribute('aria-label', 'Pipeline stages');
+        section.appendChild(nav);
+        var details = document.createElement('div');
+        details.className = 'stage-details';
+        section.appendChild(details);
+        var selected = 0;
+        var buttons = [];
+
+        function select(index) {
+            var scroll = modalOverlay.querySelector('.modal').scrollTop;
+            selected = Math.max(0, Math.min(index, stages.length - 1));
+            buttons.forEach(function(button, i) { button.setAttribute('aria-pressed', String(i === selected)); });
+            details.replaceChildren();
+            var stage = stages[selected];
+
+            if (!stage) return;
+            [['Stage configuration', stage.config, 'stage-config'], ['Input', stage.input, 'stage-input'], ['Output', stage.output, 'stage-output']].forEach(function(part) {
+                var heading = document.createElement('h4');
+                heading.textContent = part[0];
+                details.appendChild(heading);
+                var text = part[1] === undefined ? 'Not recorded' : typeof part[1] === 'string' ? part[1] : JSON.stringify(part[1], null, 2);
+                var block = createCodeBlock(text, part[2] === 'stage-config' ? 'yaml' : 'json');
+                block.classList.add(part[2]);
+                details.appendChild(block);
+            });
+            modalOverlay.querySelector('.modal').scrollTop = scroll;
+        }
+
+        stages.forEach(function(stage, index) {
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'stage-button';
+            button.textContent = 'Stage ' + (index + 1) + ': ' + stage.label;
+            button.addEventListener('click', function() { select(index); });
+            buttons.push(button);
+            nav.appendChild(button);
+        });
+        section.addEventListener('keydown', function(event) {
+            if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+            event.preventDefault();
+            select(selected + (event.key === 'ArrowRight' ? 1 : -1));
+            buttons[selected].focus({ preventScroll: true });
+        });
+        select(0);
+
+        return section;
+    }
 
     function createCodeBlock(code, language) {
         var wrapper = document.createElement('div');

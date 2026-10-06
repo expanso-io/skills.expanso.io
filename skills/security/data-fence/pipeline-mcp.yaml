@@ -14,6 +14,7 @@ type: pipeline
 config:
   input:
     http_server:
+      address: "0.0.0.0:${PORT:-4195}"
       path: /data-fence
       allowed_verbs: [POST]
 

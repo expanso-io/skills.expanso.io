@@ -491,6 +491,29 @@ body {
     transform: scale(1);
 }
 
+.stage-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.stage-navigation button {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-width: 0;
+}
+
+.stage-navigation [aria-pressed="true"] {
+    color: var(--text-primary);
+    border-bottom: 2px solid currentColor;
+}
+
+.stage-details {
+    min-width: 0;
+    height: 32rem;
+    overflow-y: auto;
+}
+
 .modal-close {
     position: absolute;
     top: 1rem;
@@ -997,7 +1020,8 @@ color: #d27575 !important;
     margin-bottom: 1rem;
 }
 
-.pipeline-sub-tab {
+.pipeline-sub-tab,
+.stage-button {
     padding: 0.5rem 1rem;
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
@@ -1009,7 +1033,8 @@ color: #d27575 !important;
     transition: all var(--transition);
 }
 
-.pipeline-sub-tab:hover {
+.pipeline-sub-tab:hover,
+.stage-button:hover {
     color: var(--text-primary);
     border-color: var(--text-muted);
 }

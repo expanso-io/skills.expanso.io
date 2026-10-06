@@ -1,0 +1,375 @@
+{
+  "schema": "expanso-local-execution/1",
+  "started_at": "2026-10-06T17:32:54Z",
+  "run_directory": ".conformance/20261006T173254Z-3952",
+  "mode": "expanso-edge local API; cli variant; explicit fixtures; OpenAI processors mocked",
+  "variant": "cli",
+  "skills": [
+    {
+      "name": "json-to-csv",
+      "category": "transforms",
+      "path": "skills/transforms/json-to-csv",
+      "status": "passed",
+      "reason": null,
+      "tests": [
+        {
+          "name": "Convert JSON array",
+          "fingerprint": "7aa1cad565d01b14fe7ca2f1ebed3690b3bb764d0f051d641687f0e973587328",
+          "history": [
+            {
+              "status": "passed",
+              "reason": null,
+              "errors": [],
+              "status_code": 200
+            }
+          ],
+          "status": "passed",
+          "errors": [],
+          "status_code": 200,
+          "output": {
+            "columns": [
+              "age",
+              "name"
+            ],
+            "csv": "age,name\n30,Alice",
+            "metadata": {
+              "delimiter": ",",
+              "mode": "cli",
+              "skill": "json-to-csv",
+              "timestamp": "2026-10-06T10:32:54.979776-07:00",
+              "trace_id": "c88c11ad-8265-4942-a83e-c79f59282580"
+            },
+            "row_count": 1
+          },
+          "edge_errors": [],
+          "published_adapters_intact": false,
+          "published_processors_intact": true,
+          "stages": [
+            {
+              "input": [
+                {
+                  "name": "Alice",
+                  "age": 30
+                }
+              ],
+              "output": {
+                "columns": [
+                  "age",
+                  "name"
+                ],
+                "csv": "age,name\n30,Alice",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "cli",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:32:54.979776-07:00",
+                  "trace_id": "c88c11ad-8265-4942-a83e-c79f59282580"
+                },
+                "row_count": 1
+              }
+            },
+            {
+              "input": {
+                "columns": [
+                  "age",
+                  "name"
+                ],
+                "csv": "age,name\n30,Alice",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "cli",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:32:54.979776-07:00",
+                  "trace_id": "c88c11ad-8265-4942-a83e-c79f59282580"
+                },
+                "row_count": 1
+              },
+              "output": {
+                "columns": [
+                  "age",
+                  "name"
+                ],
+                "csv": "age,name\n30,Alice",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "cli",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:32:54.979776-07:00",
+                  "trace_id": "c88c11ad-8265-4942-a83e-c79f59282580"
+                },
+                "row_count": 1
+              }
+            }
+          ],
+          "stage_scope": "Observed Edge stage boundaries; disposable CLI transport and provider fixtures may apply",
+          "attempts": 1
+        },
+        {
+          "name": "Preserves dotted literal keys",
+          "fingerprint": "3b0f958de10d6ea1fd2f1f472cdf85f106c4c59b4fcbfe24da5aaf4ce27c86fb",
+          "history": [
+            {
+              "status": "passed",
+              "reason": null,
+              "errors": [],
+              "status_code": 200
+            }
+          ],
+          "status": "passed",
+          "errors": [],
+          "status_code": 200,
+          "output": {
+            "columns": [
+              "a.b"
+            ],
+            "csv": "a.b\n1\n2",
+            "metadata": {
+              "delimiter": ",",
+              "mode": "cli",
+              "skill": "json-to-csv",
+              "timestamp": "2026-10-06T10:32:55.748649-07:00",
+              "trace_id": "d70d6d5a-b31f-48b4-ac3a-4a13dbb42f41"
+            },
+            "row_count": 2
+          },
+          "edge_errors": [],
+          "published_adapters_intact": false,
+          "published_processors_intact": true,
+          "stages": [
+            {
+              "input": [
+                {
+                  "a.b": 1
+                },
+                {
+                  "a.b": 2
+                }
+              ],
+              "output": {
+                "columns": [
+                  "a.b"
+                ],
+                "csv": "a.b\n1\n2",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "cli",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:32:55.748649-07:00",
+                  "trace_id": "d70d6d5a-b31f-48b4-ac3a-4a13dbb42f41"
+                },
+                "row_count": 2
+              }
+            },
+            {
+              "input": {
+                "columns": [
+                  "a.b"
+                ],
+                "csv": "a.b\n1\n2",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "cli",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:32:55.748649-07:00",
+                  "trace_id": "d70d6d5a-b31f-48b4-ac3a-4a13dbb42f41"
+                },
+                "row_count": 2
+              },
+              "output": {
+                "columns": [
+                  "a.b"
+                ],
+                "csv": "a.b\n1\n2",
+                "metadata": {
+                  "delimiter": ",",
+                  "mode": "cli",
+                  "skill": "json-to-csv",
+                  "timestamp": "2026-10-06T10:32:55.748649-07:00",
+                  "trace_id": "d70d6d5a-b31f-48b4-ac3a-4a13dbb42f41"
+                },
+                "row_count": 2
+              }
+            }
+          ],
+          "stage_scope": "Observed Edge stage boundaries; disposable CLI transport and provider fixtures may apply",
+          "attempts": 1
+        }
+      ],
+      "pipeline_sha256": "f9a8a2d6c48a1a00dd2b8adfe5763d8a267a91e7e3688237aa554f457c1bf78d",
+      "intact_execution_passed": false
+    },
+    {
+      "name": "slug-generate",
+      "category": "transforms",
+      "path": "skills/transforms/slug-generate",
+      "status": "passed",
+      "reason": null,
+      "tests": [
+        {
+          "name": "Generate slug",
+          "fingerprint": "1b2c1aaa1082ec2b2641ffea3dc37adb0c155fbb0f90cbd681e90e221cde04d6",
+          "history": [
+            {
+              "status": "passed",
+              "reason": null,
+              "errors": [],
+              "status_code": 200
+            }
+          ],
+          "status": "passed",
+          "errors": [],
+          "status_code": 200,
+          "output": {
+            "metadata": {
+              "mode": "cli",
+              "skill": "slug-generate",
+              "timestamp": "2026-10-06T10:32:56.799741-07:00",
+              "trace_id": "7feabf96-13fe-464d-869b-a48515d9aede"
+            },
+            "original": "SGVsbG8gV29ybGQhIFRoaXMgaXMgYSBUZXN0",
+            "separator": "-",
+            "slug": "hello-world-this-is-a-test"
+          },
+          "edge_errors": [],
+          "published_adapters_intact": false,
+          "published_processors_intact": true,
+          "stages": [
+            {
+              "input": "Hello World! This is a Test",
+              "output": {
+                "metadata": {
+                  "mode": "cli",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:32:56.799741-07:00",
+                  "trace_id": "7feabf96-13fe-464d-869b-a48515d9aede"
+                },
+                "original": "SGVsbG8gV29ybGQhIFRoaXMgaXMgYSBUZXN0",
+                "separator": "-",
+                "slug": "hello-world-this-is-a-test"
+              }
+            },
+            {
+              "input": {
+                "metadata": {
+                  "mode": "cli",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:32:56.799741-07:00",
+                  "trace_id": "7feabf96-13fe-464d-869b-a48515d9aede"
+                },
+                "original": "SGVsbG8gV29ybGQhIFRoaXMgaXMgYSBUZXN0",
+                "separator": "-",
+                "slug": "hello-world-this-is-a-test"
+              },
+              "output": {
+                "metadata": {
+                  "mode": "cli",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:32:56.799741-07:00",
+                  "trace_id": "7feabf96-13fe-464d-869b-a48515d9aede"
+                },
+                "original": "SGVsbG8gV29ybGQhIFRoaXMgaXMgYSBUZXN0",
+                "separator": "-",
+                "slug": "hello-world-this-is-a-test"
+              }
+            }
+          ],
+          "stage_scope": "Observed Edge stage boundaries; disposable CLI transport and provider fixtures may apply",
+          "attempts": 1
+        },
+        {
+          "name": "Custom separator",
+          "fingerprint": "34796e4902829e6554d1d8e354971fb946fb8bb6eb2584c604b8d908d6aa9d5a",
+          "history": [
+            {
+              "status": "passed",
+              "reason": null,
+              "errors": [],
+              "status_code": 200
+            }
+          ],
+          "status": "passed",
+          "errors": [],
+          "status_code": 200,
+          "output": {
+            "metadata": {
+              "mode": "cli",
+              "skill": "slug-generate",
+              "timestamp": "2026-10-06T10:32:57.848544-07:00",
+              "trace_id": "bb8e67e5-96a0-4b8b-b101-e6957e836064"
+            },
+            "original": "SGVsbG8gV29ybGQ=",
+            "separator": "_",
+            "slug": "hello_world"
+          },
+          "edge_errors": [],
+          "published_adapters_intact": false,
+          "published_processors_intact": true,
+          "stages": [
+            {
+              "input": "Hello World",
+              "output": {
+                "metadata": {
+                  "mode": "cli",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:32:57.848544-07:00",
+                  "trace_id": "bb8e67e5-96a0-4b8b-b101-e6957e836064"
+                },
+                "original": "SGVsbG8gV29ybGQ=",
+                "separator": "_",
+                "slug": "hello_world"
+              }
+            },
+            {
+              "input": {
+                "metadata": {
+                  "mode": "cli",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:32:57.848544-07:00",
+                  "trace_id": "bb8e67e5-96a0-4b8b-b101-e6957e836064"
+                },
+                "original": "SGVsbG8gV29ybGQ=",
+                "separator": "_",
+                "slug": "hello_world"
+              },
+              "output": {
+                "metadata": {
+                  "mode": "cli",
+                  "skill": "slug-generate",
+                  "timestamp": "2026-10-06T10:32:57.848544-07:00",
+                  "trace_id": "bb8e67e5-96a0-4b8b-b101-e6957e836064"
+                },
+                "original": "SGVsbG8gV29ybGQ=",
+                "separator": "_",
+                "slug": "hello_world"
+              }
+            }
+          ],
+          "stage_scope": "Observed Edge stage boundaries; disposable CLI transport and provider fixtures may apply",
+          "attempts": 1
+        }
+      ],
+      "pipeline_sha256": "bb4d05375d1bde16cb3694adecefbcbe7bb224bc1eaee27f23d1b3ebaa055b42",
+      "intact_execution_passed": false
+    }
+  ],
+  "summary": {
+    "total_skills": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "manual": 0
+  },
+  "tools": {
+    "expanso_edge": {
+      "path": "/usr/local/bin/expanso-edge",
+      "version": "v2.1.21",
+      "sha256": "0cc13bd6d1a14756f87f877f578941157b6f62047bab818c81205c5a0882fc3f"
+    },
+    "expanso_cli": {
+      "path": "/usr/local/bin/expanso-cli",
+      "version": "Expanso CLI version v2.1.21",
+      "sha256": "cdedaf7784efae0396095954d5cefab2f638857782b47f764d3d1da50077309d"
+    }
+  },
+  "finished_at": "2026-10-06T17:32:58Z"
+}
