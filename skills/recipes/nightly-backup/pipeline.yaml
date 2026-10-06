@@ -72,6 +72,7 @@ config:
           root._backup_metadata = {
             "backup_date": now().format("2006-01-02"),
             "backup_timestamp": now(),
+            "row_id": uuid_v4(),
             "source_host": env("DB_HOST").or("unknown"),
             "source_database": env("DB_NAME").or("unknown"),
             "pipeline_version": "1.0.0",
@@ -93,7 +94,7 @@ config:
           output:
             gcp_cloud_storage:
               bucket: "${GCS_BACKUP_BUCKET}"
-              path: "backups/orders/${!this._backup_metadata.backup_date}/orders-${!timestamp_unix()}.jsonl"
+              path: "backups/orders/${!this._backup_metadata.backup_date}/orders-${!this._backup_metadata.row_id}.jsonl"
               content_type: application/x-ndjson
               batching:
                 count: 10000
@@ -103,7 +104,7 @@ config:
           output:
             gcp_cloud_storage:
               bucket: "${GCS_BACKUP_BUCKET}"
-              path: "backups/inventory/${!this._backup_metadata.backup_date}/inventory-full.jsonl"
+              path: "backups/inventory/${!this._backup_metadata.backup_date}/inventory-${!this._backup_metadata.row_id}.jsonl"
               content_type: application/x-ndjson
               batching:
                 count: 50000  # Inventory is full backup, larger batches
@@ -113,7 +114,7 @@ config:
           output:
             gcp_cloud_storage:
               bucket: "${GCS_BACKUP_BUCKET}"
-              path: "backups/order_items/${!this._backup_metadata.backup_date}/items-${!timestamp_unix()}.jsonl"
+              path: "backups/order_items/${!this._backup_metadata.backup_date}/items-${!this._backup_metadata.row_id}.jsonl"
               content_type: application/x-ndjson
               batching:
                 count: 10000
@@ -123,7 +124,7 @@ config:
         - output:
             gcp_cloud_storage:
               bucket: "${GCS_BACKUP_BUCKET}"
-              path: "backups/unknown/${!this._table}/${!this._backup_metadata.backup_date}/data-${!timestamp_unix()}.json"
+              path: "backups/unknown/${!this._table}/${!this._backup_metadata.backup_date}/data-${!this._backup_metadata.row_id}.json"
               content_type: application/json
               batching:
                 count: 1000

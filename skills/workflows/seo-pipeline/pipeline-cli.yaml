@@ -42,15 +42,15 @@ config:
       - mapping: |
           let html = this.html
           let title_matches = $html.re_find_all_submatch("(?is)<title[^>]*>\\s*([^<]+?)\\s*</title>")
-          let description_tags = $html.re_find_all("(?is)<meta\\s[^>]*>").filter(tag -> tag.re_match("(?is)\\sname\\s*=\\s*[\\\"']description[\\\"']"))
-          let description_matches = $description_tags.map_each(tag -> tag.re_find_all_submatch("(?is)\\scontent\\s*=\\s*[\\\"']([^\\\"']*)[\\\"']")).flatten()
+          let description_tags = $html.re_find_all("(?is)<meta\\s[^>]*>").filter(tag -> tag.re_match("(?is)\\sname\\s*=\\s*(?:[\\\"']description[\\\"']|description(?:\\s|/?>))"))
+          let description_matches = $description_tags.map_each(tag -> tag.re_find_all_submatch("(?is)\\scontent\\s*=\\s*(?:[\\\"']([^\\\"']*)[\\\"']|([^\\s\\\"'=<>`]+))")).flatten()
           let h1_count = $html.re_find_all("(?is)<h1(?:\\s|>)").length()
           let link_count = $html.re_find_all("(?is)<a(?:\\s|>)").length()
           let images = $html.re_find_all("(?is)<img(?:\\s|>)[^>]*>")
-          let images_missing_alt = $images.filter(tag -> !tag.re_match("(?is)\\salt\\s*=\\s*[\\\"'][^\\\"']*[\\\"']")).length()
-          let has_viewport = $html.re_match("(?is)<meta[^>]+name\\s*=\\s*[\\\"']viewport[\\\"']")
+          let images_missing_alt = $images.filter(tag -> !tag.re_match("(?is)\\salt\\s*=\\s*(?:[\\\"'][^\\\"']*[\\\"']|[^\\s\\\"'=<>`]+)")).length()
+          let has_viewport = $html.re_match("(?is)<meta[^>]+name\\s*=\\s*(?:[\\\"']viewport[\\\"']|viewport(?:\\s|/?>))")
           let title = if $title_matches.length() > 0 { $title_matches.0.1.trim() } else { "" }
-          let description = if $description_matches.length() > 0 { $description_matches.0.1.trim() } else { "" }
+          let description = if $description_matches.length() > 0 { $description_matches.0.slice(1).filter(value -> value != "").index(0).catch("").trim() } else { "" }
           let score = 100 - if $title.length() == 0 { 25 } else { 0 } - if $description.length() == 0 { 25 } else { 0 } - if $h1_count == 0 { 20 } else { 0 } - if !$has_viewport { 15 } else { 0 } - if $images_missing_alt > 0 { 15 } else { 0 }
 
           root.analysis = {

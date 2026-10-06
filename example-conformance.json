@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T15:43:16Z",
+  "generated": "2026-10-06T15:52:50Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -26,8 +26,8 @@
   },
   "counts": {
     "failing": 0,
-    "fixed": 72,
-    "pass": 68,
+    "fixed": 73,
+    "pass": 67,
     "pulled": 24,
     "skipped": 230,
     "total": 394
@@ -3513,14 +3513,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires a Kafka broker with topic data and TLS/SASL credentials to verify five-minute window closure.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 4
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -4217,7 +4210,7 @@
     },
     {
       "pipeline": "skills/recipes/nightly-backup/pipeline.yaml",
-      "sha256": "0c972ada283c7160fcf31d04f35d3812444076af2e8561085877e9ac2037e198",
+      "sha256": "1c5ded256d64aa9b4327d8c7c350a14ac6a6673c01d259cd1c58b437a1220fcd",
       "category": "recipes",
       "skill": "nightly-backup",
       "variant": "recipe",
@@ -4226,7 +4219,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires source SQL databases, backup destination credentials, and a scheduled execution environment to verify durable backups.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4525,14 +4525,7 @@
           "report": ".conformance/recipe-execution.json",
           "reason": null,
           "published_adapters_intact": true,
-          "test_environment": "local Slack-compatible HTTP fixture",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 2
-          }
+          "test_environment": "local Slack-compatible HTTP fixture"
         },
         "platform_realism": {
           "status": "pass",
@@ -4649,14 +4642,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 8,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 2
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -4696,14 +4682,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 8,
           "reason": null,
-          "published_adapters_intact": true,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 2
-          }
+          "published_adapters_intact": true
         },
         "platform_realism": {
           "status": "pass",
@@ -15524,14 +15503,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 3,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 3
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -15571,14 +15543,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 3,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 3
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -16142,7 +16107,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
-      "sha256": "5254c143050db933a4a5786794b23947321c3a1a50dab69dc83e86648ab4937d",
+      "sha256": "afc801ba4a2b54bd9ca4eadacc0075bb05bef55bb97327d66c0ad0e5c3213f72",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "cli",
@@ -16154,7 +16119,14 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 5
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -16182,7 +16154,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-mcp.yaml",
-      "sha256": "91bb7f5e1773dcfc16658dacce18f2b1d4db02dee7520de0a4555dbb1a62097e",
+      "sha256": "605984233c1392aeddb77022fd8a71eaa6148b5739a3fb9c5fbc261346d16cb5",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "mcp",
@@ -16194,7 +16166,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": null,
-          "published_adapters_intact": true
+          "published_adapters_intact": true,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 5
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -16218,7 +16197,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "fixed"
     },
     {
       "pipeline": "skills/workflows/site-migrate/pipeline-cli.yaml",
