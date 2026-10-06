@@ -22,7 +22,7 @@ config:
           let match_fields = this.match_fields.or(["sku", "upc", "name"])
           let items = $catalogs.map_each(c -> c.items.or([]).map_each(item -> item.merge({"_source": c.name}))).flatten()
           let keyed_items = $items.map_each(item -> item.merge({
-            "_match_key": $match_fields.map_each(field -> item.get(field).or("").string().trim().lowercase()).join("|")
+            "_match_key": $match_fields.map_each(field -> item.get(field).or("").string().trim().lowercase()).format_json().encode("hex")
           }))
           let groups = $keyed_items.fold({}, pair -> pair.tally.assign({
             (pair.value._match_key): pair.tally.get(pair.value._match_key).or([]).append(pair.value)
@@ -32,7 +32,7 @@ config:
 
           root = if $catalogs.length() < 2 {
             throw("catalogs must contain at least two named source manifests")
-          } else if $keyed_items.any(item -> item._match_key.replace_all("|", "").length() == 0) {
+          } else if $keyed_items.any(item -> !item._match_key.decode("hex").parse_json().any(value -> value.length() > 0)) {
             throw("every item must contain at least one configured match field")
           } else {
             {}

@@ -21,7 +21,7 @@ config:
           let local_by_path = $local_keyed.fold({}, pair -> pair.tally.assign({(pair.value._manifest_key): pair.value}))
           let local_differences = $local_keyed.map_each(file -> if $backup_by_path.get(file._manifest_key) == null {
             {"path": file.path, "status": "missing_in_backup"}
-          } else if $backup_by_path.get(file._manifest_key).sha256 != file.sha256 || $backup_by_path.get(file._manifest_key).size != file.size {
+          } else if $backup_by_path.get(file._manifest_key).sha256.lowercase() != file.sha256.lowercase() || $backup_by_path.get(file._manifest_key).size != file.size {
             {
               "path": file.path,
               "status": "content_mismatch",
