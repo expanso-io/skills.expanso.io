@@ -28,8 +28,6 @@ config:
             "text"
           }
 
-          root = this
-          root.source_format = $source_format
           root.raw = $content
           meta source_format = $source_format
 
@@ -73,10 +71,9 @@ config:
             processors:
               - mapping: |
                   let rows = if this.type() == "array" { this } else { [this] }
-                  let first = $rows.index(0)
-                  let keys = if $first.type() == "object" { $first.keys().sort() } else { ["value"] }
+                  let keys = $rows.map_each(row -> row.keys()).flatten().unique().sort()
                   let header = $keys.map_each(key -> "\"" + key.replace_all("\"", "\"\"") + "\"").join(",")
-                  let data_rows = $rows.map_each(row -> $keys.map_each(key -> "\"" + row.key_values().filter(entry -> entry.key == key).index(0).value.string().replace_all("\"", "\"\"") + "\"").join(","))
+                  let data_rows = $rows.map_each(row -> $keys.map_each(key -> "\"" + row.key_values().filter(entry -> entry.key == key).index(0).value.catch("").or("").string().replace_all("\"", "\"\"") + "\"").join(","))
                   root = $header + "\n" + $data_rows.join("\n")
 
       # Step 5: Add transformation metadata

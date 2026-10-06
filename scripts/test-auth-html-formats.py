@@ -54,6 +54,18 @@ def main():
         assert result["event"]["body"] == json.loads(raw_body), result
         assert result["metadata"]["signature_status"] == "verified", result
         assert suite.execute(cfg, wrapped | {"body": {"action": "danger"}}) is None
+        assert suite.execute(cfg, wrapped | {"raw_body": "{broken"}) is None
+        assert suite.execute(cfg, wrapped | {"raw_body": 42}) is None
+        assert suite.execute(cfg, wrapped | {"headers": {}}) is None
+        assert suite.execute(cfg, "{broken", raw=True) is None
+        cfg = reg.config("connectors/webhook-receive", "mcp")
+        result = suite.execute(cfg, raw_body, {"X-Hub-Signature-256": signature}, raw=True)
+        assert result["metadata"]["signature_status"] == "verified", result
+        assert result["event"]["body"] == json.loads(raw_body), result
+        broken = "{broken"
+        broken_signature = "sha256=" + hmac.new(secret.encode(), broken.encode(), hashlib.sha256).hexdigest()
+        assert suite.execute(cfg, broken, {"X-Hub-Signature-256": broken_signature}, raw=True) is None
+        assert suite.execute(cfg, raw_body, raw=True) is None
         for variant in ["cli", "mcp"]:
             cfg = reg.config("workflows/seo-pipeline", variant)
             for attrs in [
@@ -67,6 +79,17 @@ def main():
                 assert result["analysis"]["score"] == 100, result
             result = suite.execute(cfg, {"html": '<title>Chart</title><h1>Chart</h1><meta name=description content=D><meta name=viewport content=x><img src="x > y">'})
             assert result["analysis"]["images_missing_alt"] == 1 and result["analysis"]["score"] == 85, result
+            for attrs, score, description, viewport, missing_alt in [
+                ('<meta name=description content=D><meta name=viewport content=x><img src=x title="Set alt=Chart">', 85, "D", True, 1),
+                ("<meta name=description content=D><meta name=viewport content=x><img src=x title='Set alt=Chart'>", 85, "D", True, 1),
+                ('<meta title="Set name=description content=D"><meta title="Set name=viewport"><img alt=Chart>', 60, "", False, 0),
+                ('<meta name=description title="Set content=D"><meta name=viewport><img alt=Chart>', 75, "", True, 0),
+                ('<meta title="Set name=viewport" name=description content=D><meta name=viewport><img title="Set alt=wrong" alt=Chart>', 100, "D", True, 0),
+            ]:
+                result = suite.execute(cfg, {"html": '<title>Chart</title><h1>Chart</h1>' + attrs})
+                analysis = result["analysis"]
+                assert analysis["score"] == score and analysis["meta_description"] == description, result
+                assert analysis["has_viewport"] is viewport and analysis["images_missing_alt"] == missing_alt, result
             reg.http_transports(cfg["pipeline"], f"http://127.0.0.1:{server.server_port}")
             for status in [503, 200]:
                 Page.status = status
@@ -86,14 +109,43 @@ def main():
             assert result["transformation"]["target_format"] == "csv", result
             result = suite.execute(cfg, payload, {"Accept": "application/json"}, retain_input=True)
             assert result["data"] == payload, result
+        for payload, expected in [
+            ([{"a": 1}, {"a": 2, "b": 3}], [{"a": "1", "b": ""}, {"a": "2", "b": "3"}]),
+            ([{}, {"a.b": 3}, {"later": "x"}], [{"a.b": "", "later": ""}, {"a.b": "3", "later": ""}, {"a.b": "", "later": "x"}]),
+        ]:
+            result = suite.execute(cfg, payload, {"Accept": "text/csv"}, retain_input=True)
+            assert list(csv.DictReader(io.StringIO(result["data"]))) == expected, result
+        for variant in ["cli", "mcp"]:
+            cfg = reg.config("utilities/idempotent-cache", variant)
+            request = {"input": {"value": "cached result"}, "ttl_seconds": 3600}
+            results = suite.execute(cfg, request, repeat=2)
+            assert [result["cached"] for result in results] == [False, True], results
+            assert all(result["result"] == request["input"] for result in results), results
+            cfg = reg.config("utilities/idempotent-cache", variant)
+            cfg["cache_resources"][0]["memory"]["compaction_interval"] = "10ms"
+            delay_cache_get(cfg["pipeline"])
+            results = suite.execute(cfg, request | {"ttl_seconds": 0.1}, repeat=2)
+            assert [result["cached"] for result in results] == [False, False], results
+            assert all(result["result"] == request["input"] for result in results), results
         reg.write_evidence()
-        print("PASS webhook replay mismatch rejected; quote-aware SEO and fetch errors; CSV payload preservation")
+        print("PASS malformed webhooks discarded; actual HTML attributes; CSV union; cache hits and expiry")
     finally:
         if suite:
             suite.close()
         server.shutdown()
         server.server_close()
         thread.join()
+
+
+def delay_cache_get(node):
+    if isinstance(node, list):
+        for child in list(node):
+            if isinstance(child, dict) and child.get("cache", {}).get("operator") == "get":
+                node.insert(node.index(child), {"sleep": {"duration": "200ms"}})
+            delay_cache_get(child)
+    elif isinstance(node, dict):
+        for child in node.values():
+            delay_cache_get(child)
 
 
 if __name__ == "__main__":

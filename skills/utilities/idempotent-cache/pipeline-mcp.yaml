@@ -42,21 +42,18 @@ config:
           processors:
             - cache:
                 resource: idempotent_results
-                operator: exists
+                operator: get
                 key: '${! this.hash }'
-          result_map: root.cached = this
+          result_map: |
+            root.result = this
+            root.cached = true
+
+      - catch:
+          - mapping: |
+              root = this
+              root.cached = false
 
       - switch:
-          - check: this.cached
-            processors:
-              - branch:
-                  request_map: root = this
-                  processors:
-                    - cache:
-                        resource: idempotent_results
-                        operator: get
-                        key: '${! this.hash }'
-                  result_map: root.result = this
           - check: '!this.cached'
             processors:
               - mapping: |
