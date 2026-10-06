@@ -29,10 +29,11 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           root.description = this.choices.0.message.content
-          root.metadata = {"skill": "image-describe", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "image-describe", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

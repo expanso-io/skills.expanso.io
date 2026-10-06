@@ -1,4 +1,7 @@
 # Expanso Pipeline: voice-admin (CLI mode)
+#
+# Transcribes an HTTPS audio object and extracts proposed administrative
+# actions. It never claims to schedule, invoice, or send a reminder.
 
 name: voice-admin-cli
 type: pipeline
@@ -11,20 +14,85 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          # Simulated voice processing
-          root.transcript = "Schedule appointment with Johnson family for Tuesday at 2pm, need to fix their water heater"
-          root.actions = [
-            {"type": "schedule", "customer": "Johnson family", "date": "Tuesday 2pm", "service": "water heater repair"},
-            {"type": "reminder", "message": "Bring water heater parts", "time": "Tuesday 1pm"}
-          ]
-          root.confirmations = ["Appointment scheduled for Tuesday 2pm", "Reminder set for parts"]
-          root.metadata = {"skill": "voice-admin", "mode": "cli", "trace_id": meta("trace_id")}
+          let input = content().parse_json()
+          root = $input
+          root._trace_id = uuid_v4()
+
+      - switch:
+          - check: 'this.fixture_mode.or(false)'
+            processors:
+              - mapping: |
+                  root = this
+                  root.transcript = this.fixture_transcript.or("")
+                  root._source = "fixture"
+
+          - processors:
+              - mapping: |
+                  let url = this.audio_url.or("").string()
+                  meta audio_url = $url
+                  meta language = this.language.or("")
+                  meta trace_id = this._trace_id
+                  root = if !$url.re_match("^https://") { throw("audio_url must be an https URL") } else { {} }
+              - http:
+                  url: '${! meta("audio_url") }'
+                  verb: GET
+                  timeout: 60s
+                  retries: 3
+              - openai_transcription:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: whisper-1
+                  file: '${! content() }'
+                  language: '${! meta("language") }'
+              - mapping: |
+                  root.transcript = content().string()
+                  root.audio_url = meta("audio_url")
+                  root._trace_id = meta("trace_id")
+                  root._source = "openai_transcription"
+                  root.fixture_mode = false
+
+      - switch:
+          - check: 'this.fixture_mode.or(false)'
+            processors:
+              - mapping: |
+                  root = this
+                  root.actions = this.fixture_actions.or([])
+
+          - processors:
+              - mapping: |
+                  meta state_json = this.format_json()
+                  root.messages = [
+                    {
+                      "role": "system",
+                      "content": "Extract proposed administrative actions from the transcript. Do not claim any action was executed. Return JSON: {\"actions\":[{\"type\":\"schedule|invoice|task|reminder|other\",\"subject\":\"\",\"details\":{},\"needs_confirmation\":true}]}"
+                    },
+                    {"role": "user", "content": this.transcript}
+                  ]
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  tools: []
+              - mapping: |
+                  let state = meta("state_json").parse_json()
+                  let parsed = this.choices.0.message.content.parse_json().catch({"actions": []})
+                  root = $state
+                  root.actions = $parsed.actions.or([])
+
+      - mapping: |
+          root.transcript = this.transcript
+          root.actions = this.actions
+          root.confirmations = []
+          root.execution_status = "proposed_only"
+          root.metadata = {
+            "skill": "voice-admin",
+            "mode": "cli",
+            "source": this._source,
+            "trace_id": this._trace_id,
+            "timestamp": now()
+          }
 
       - log:
           level: INFO
-          message: "[voice-admin] ${! this.actions.length() } actions extracted"
+          message: "[voice-admin] extracted ${! this.actions.length() } proposed actions; none executed"
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

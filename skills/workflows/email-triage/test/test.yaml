@@ -5,22 +5,23 @@
 
 tests:
   - name: "Processes emails and categorizes correctly"
-    skip: true  # Requires API credentials
-    input: '{"provider": "gmail", "limit": 5}'
+    input: '{"provider":"fixture","fixture_mode":true,"emails":[{"id":"1","subject":"Urgent incident","from":"ops@example.test","body":"Please investigate"},{"id":"2","subject":"FYI","from":"team@example.test","body":"Weekly update"}]}'
     expected_output:
       summary:
-        processed: 5
+        processed: 2
 
   - name: "Extracts meeting requests"
-    skip: true
-    input: '{"provider": "gmail", "create_calendar_events": true}'
+    input: '{"provider":"fixture","fixture_mode":true,"emails":[{"id":"1","subject":"Meeting","from":"pm@example.test","body":"Friday at 3pm"}],"extract_calendar_events":true}'
     output_conditions:
       - path: "calendar_events"
         condition: "length >= 0"
+      - path: metadata.processing_time_ms
+        condition: ">= 0"
+      - path: metadata.processing_time_ms
+        condition: "< 10000"
 
   - name: "Handles empty inbox"
-    skip: true
-    input: '{"provider": "gmail", "folder": "EMPTY"}'
+    input: '{"provider":"fixture","fixture_mode":true,"emails":[]}'
     expected_output:
       summary:
         processed: 0

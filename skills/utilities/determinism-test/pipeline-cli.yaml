@@ -22,7 +22,7 @@ config:
 
           # Run determinism check by hashing input N times (same hash = deterministic)
           let outputs = [input_hash, input_hash, input_hash].slice(0, $runs)
-          let all_same = outputs.all(o -> o == outputs.index(0))
+          let all_same = $outputs.all(o -> o == $outputs.index(0))
 
           root.stable = $all_same
           root.stability_score = if $all_same { 100 } else { 0 }
@@ -34,7 +34,7 @@ config:
             "skill": "determinism-test",
             "mode": "cli",
             "runs": $runs,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -44,5 +44,4 @@ config:
             [determinism-test] Stability: ${! this.stability_score }% over ${! this.runs } runs (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

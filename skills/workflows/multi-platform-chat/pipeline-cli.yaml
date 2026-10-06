@@ -27,6 +27,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let response = this.choices.0.message.content
@@ -35,12 +36,11 @@ config:
           root.response = $response
           root.platform = $platform
           root.sent_to = if $platform == "all" { ["telegram", "discord", "slack"] } else { [$platform] }
-          root.metadata = {"skill": "multi-platform-chat", "mode": "cli", "trace_id": meta("trace_id")}
+          root.metadata = {"skill": "multi-platform-chat", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4())}
 
       - log:
           level: INFO
           message: "[multi-platform-chat] Sent to ${! this.platform }"
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

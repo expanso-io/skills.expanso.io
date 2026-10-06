@@ -30,7 +30,7 @@ config:
       outputs:
         # Local file for debugging
         - file:
-            path: /tmp/events.jsonl
+            path: /var/lib/expanso/fan-out/events.jsonl
             codec: lines
 
         # Kafka for real-time streaming (with fallback)
@@ -42,8 +42,15 @@ config:
                 batching:
                   count: 100
                   period: 5s
+                ack_replicas: true
+                tls:
+                  enabled: true
+                sasl:
+                  mechanism: SCRAM-SHA-512
+                  user: "${KAFKA_USERNAME}"
+                  password: "${KAFKA_PASSWORD}"
             - file:
-                path: /tmp/kafka-fallback.jsonl
+                path: /var/lib/expanso/fan-out/kafka-fallback.jsonl
                 codec: lines
 
         # S3 for long-term archival (with fallback)
@@ -55,19 +62,19 @@ config:
                 batching:
                   count: 100
                   period: 30s
+                server_side_encryption: AES256
             - file:
-                path: /tmp/s3-fallback.jsonl
+                path: /var/lib/expanso/fan-out/s3-fallback.jsonl
                 codec: lines
 
         # Elasticsearch for search (with fallback)
         - fallback:
-            - elasticsearch:
-                urls: ["${ES_ENDPOINT}"]
-                index: "sensor-events-${!timestamp_unix()}"
-                id: "${!this.event_id.or(uuid_v4())}"
-                batching:
-                  count: 50
-                  period: 10s
+            - http_client:
+                url: "${ES_ENDPOINT}/sensor-events/_doc/${!this.event_id.or(uuid_v4())}"
+                verb: POST
+                headers:
+                  Authorization: "ApiKey ${ES_API_KEY}"
+                  Content-Type: application/json
             - file:
-                path: /tmp/es-fallback.jsonl
+                path: /var/lib/expanso/fan-out/elasticsearch-fallback.jsonl
                 codec: lines

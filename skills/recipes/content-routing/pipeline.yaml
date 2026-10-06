@@ -57,18 +57,19 @@ config:
             "payment" => 20, "authentication" => 15, _ => 10
           }
 
-          root.priority_score = severity_score + tier_score + family_score
-          root.priority = if this.priority_score >= 60 { "critical" }
-                         else if this.priority_score >= 45 { "high" }
-                         else if this.priority_score >= 30 { "normal" }
+          let priority_score = $severity_score + $tier_score + $family_score
+          root.priority_score = $priority_score
+          root.priority = if $priority_score >= 60 { "critical" }
+                         else if $priority_score >= 45 { "high" }
+                         else if $priority_score >= 30 { "normal" }
                          else { "low" }
 
       # Step 4: Add routing metadata
       - mapping: |
           root = this
           root.routed_at = now()
-          meta priority = root.priority
-          meta event_family = root.event_family
+          meta priority = this.priority
+          meta event_family = this.event_family
 
   output:
     switch:
@@ -80,27 +81,48 @@ config:
               pattern: fan_out
               outputs:
                 - kafka:
-                    addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+                    addresses: ["${KAFKA_BROKERS}"]
                     topic: critical-events
                     ack_replicas: true
+                    tls:
+                      enabled: true
+                    sasl:
+                      mechanism: SCRAM-SHA-512
+                      user: "${KAFKA_USERNAME}"
+                      password: "${KAFKA_PASSWORD}"
                 - http_client:
-                    url: "${ALERT_ENDPOINT:http://alerts:8080}/critical"
+                    url: "https://${ALERT_HOST}/critical"
                     verb: POST
+                    headers:
+                      Authorization: "Bearer ${ALERT_TOKEN}"
 
         # Payment events → fraud detection
         - check: 'meta("event_family") == "payment"'
           output:
             kafka:
-              addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+              addresses: ["${KAFKA_BROKERS}"]
               topic: payment-events
               ack_replicas: true
+              tls:
+                enabled: true
+              sasl:
+                mechanism: SCRAM-SHA-512
+                user: "${KAFKA_USERNAME}"
+                password: "${KAFKA_PASSWORD}"
 
         # Authentication events → security monitoring
         - check: 'meta("event_family") == "authentication"'
           output:
             kafka:
-              addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+              addresses: ["${KAFKA_BROKERS}"]
               topic: auth-events
+              ack_replicas: true
+              tls:
+                enabled: true
+              sasl:
+                mechanism: SCRAM-SHA-512
+                user: "${KAFKA_USERNAME}"
+                password: "${KAFKA_PASSWORD}"
 
         # Telemetry → batch processing
         - check: 'meta("event_family") == "telemetry"'
@@ -108,15 +130,19 @@ config:
             file:
               path: "/var/expanso/telemetry/${!timestamp_unix_date('2006-01-02')}.jsonl"
               codec: lines
-              batching:
-                count: 1000
-                period: 60s
 
         # Default → standard queue
         - output:
             kafka:
-              addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+              addresses: ["${KAFKA_BROKERS}"]
               topic: general-events
+              ack_replicas: true
+              tls:
+                enabled: true
+              sasl:
+                mechanism: SCRAM-SHA-512
+                user: "${KAFKA_USERNAME}"
+                password: "${KAFKA_PASSWORD}"
               batching:
                 count: 100
                 period: 10s

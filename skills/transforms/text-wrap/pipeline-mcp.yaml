@@ -27,7 +27,7 @@ config:
           root.word_count = $words.length()
           root.estimated_lines = $line_count
           root.width = $width
-          root.metadata = {"skill": "text-wrap", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "text-wrap", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

@@ -7,10 +7,16 @@ config:
   input:
     kafka:
       addresses:
-        - ${KAFKA_BROKERS:localhost:9092}
+        - ${KAFKA_BROKERS}
       topics:
         - ${INPUT_TOPIC:input-events}
       consumer_group: expanso-rate-limiter
+      tls:
+        enabled: true
+      sasl:
+        mechanism: SCRAM-SHA-512
+        user: "${KAFKA_USERNAME}"
+        password: "${KAFKA_PASSWORD}"
 
   pipeline:
     processors:
@@ -28,11 +34,18 @@ config:
   output:
     kafka:
       addresses:
-        - ${KAFKA_BROKERS:localhost:9092}
+        - ${KAFKA_BROKERS}
       topic: ${OUTPUT_TOPIC:rate-limited-events}
+      ack_replicas: true
+      tls:
+        enabled: true
+      sasl:
+        mechanism: SCRAM-SHA-512
+        user: "${KAFKA_USERNAME}"
+        password: "${KAFKA_PASSWORD}"
 
   rate_limit_resources:
     - label: output-rate
       local:
-        count: ${RATE_LIMIT:1000}
+        count: 1000
         interval: 1s

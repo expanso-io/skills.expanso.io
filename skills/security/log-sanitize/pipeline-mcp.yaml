@@ -2,7 +2,7 @@
 # ==========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/sanitize \
 #     -d '{"log": "password=secret123 token=abc123"}'
 #
@@ -57,7 +57,7 @@ config:
             "mode": "mcp",
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

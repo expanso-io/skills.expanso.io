@@ -48,6 +48,9 @@ config:
           meta input_hash = content().hash("sha256").encode("hex")
           meta input_length = content().length()
           meta trace_id = uuid_v4()
+          root.error = if content().length() == 0 {
+            "input cannot be empty"
+          } else { deleted() }
 
           # Prepare prompt for summarization
           root.messages = [
@@ -63,32 +66,48 @@ config:
 
       # 2. Call OpenAI (key read from the executing node's environment,
       #    then sent to OpenAI)
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
-          # Required by the component schema on expanso-edge v2.1.21.
-          # Empty list = no tool/function calling for this request.
-          tools: []
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  # Required by the component schema on expanso-edge v2.1.21.
+                  # Empty list = no tool/function calling for this request.
+                  tools: []
 
       # 3. Format output with metadata
       - mapping: |
-          root.summary = this.choices.0.message.content
-          root.metadata = {
-            "skill": "text-summarize",
-            "mode": "cli",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "text-summarize",
+                "mode": "cli",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "summary": this.choices.0.message.content,
+              "metadata": {
+                "skill": "text-summarize",
+                "mode": "cli",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "input_length": meta("input_length"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
           }
 
       # 4. Audit log (appears in expanso-edge logs, not in output)
       - log:
           level: INFO
           message: |
-            [text-summarize] Summarized ${! meta("input_length") } chars → ${! this.summary.length() } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [text-summarize] Processed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -24,8 +24,10 @@ config:
       # Enrich from API with circuit breaker protection
       - try:
           - http:
-              url: "${PRIMARY_API:http://api:8080}/enrich/${!this.event_id}"
+              url: "https://${PRIMARY_API_HOST}/enrich/${!this.event_id}"
               verb: GET
+              headers:
+                Authorization: "Bearer ${PRIMARY_API_TOKEN}"
               timeout: 3s
               retries: 2
               retry_period: 1s
@@ -33,25 +35,27 @@ config:
               root = this
               root.enrichment = content().parse_json()
               root.enrichment_source = "primary_api"
-        catch:
+      - catch:
           # Primary failed, try secondary
           - try:
               - http:
-                  url: "${SECONDARY_API:http://backup-api:8080}/enrich/${!this.event_id}"
+                  url: "https://${SECONDARY_API_HOST}/enrich/${!this.event_id}"
                   verb: GET
+                  headers:
+                    Authorization: "Bearer ${SECONDARY_API_TOKEN}"
                   timeout: 5s
                   retries: 1
               - mapping: |
                   root = this
                   root.enrichment = content().parse_json()
                   root.enrichment_source = "secondary_api"
-            catch:
-              # Both APIs failed, continue without enrichment
-              - mapping: |
-                  root = this
-                  root.enrichment = null
-                  root.enrichment_source = "none"
-                  root.enrichment_failed = true
+      - catch:
+          # Both APIs failed, continue without enrichment
+          - mapping: |
+              root = this
+              root.enrichment = null
+              root.enrichment_source = "none"
+              root.enrichment_failed = true
 
       # Add processing metadata
       - mapping: |
@@ -63,18 +67,24 @@ config:
     fallback:
       # Level 1: Primary destination (Elasticsearch)
       - http_client:
-          url: "${ELASTICSEARCH:http://es:9200}/events/_doc"
+          url: "https://${ELASTICSEARCH_HOST}/events/_doc"
           verb: POST
           timeout: 5s
-          max_retries: 2
           headers:
+            Authorization: "ApiKey ${ELASTICSEARCH_API_KEY}"
             Content-Type: application/json
 
       # Level 2: Secondary destination (Kafka)
       - kafka:
-          addresses: ["${KAFKA_BROKERS:localhost:9092}"]
+          addresses: ["${KAFKA_BROKERS}"]
           topic: events-fallback
-          max_retries: 3
+          ack_replicas: true
+          tls:
+            enabled: true
+          sasl:
+            mechanism: SCRAM-SHA-512
+            user: "${KAFKA_USERNAME}"
+            password: "${KAFKA_PASSWORD}"
 
       # Level 3: Local buffer (filesystem)
       - file:
@@ -85,11 +95,11 @@ config:
       - file:
           path: "/var/expanso/dlq/${!timestamp_unix_date('2006-01-02')}/failed.jsonl"
           codec: lines
-          processors:
-            - mapping: |
-                root = this
-                root.dlq_reason = "all_destinations_failed"
-                root.dlq_time = now()
+        processors:
+          - mapping: |
+              root = this
+              root.dlq_reason = "all_destinations_failed"
+              root.dlq_time = now()
 
 logger:
   level: INFO

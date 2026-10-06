@@ -1,4 +1,6 @@
-name: "audio-transcribe-mcp"
+# Expanso Pipeline: audio-transcribe (MCP mode)
+
+name: audio-transcribe-mcp
 type: pipeline
 
 config:
@@ -15,22 +17,51 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          let url = this.audio_url.or("").string()
-          let desc = this.description.or("").string()
+          root = this
+          root._trace_id = uuid_v4()
 
-          root.messages = [
-            {"role": "system", "content": "You are an audio transcription assistant. Generate a transcript based on the description provided."},
-            {"role": "user", "content": "Audio URL: " + $url + "\nDescription: " + $desc + "\n\nGenerate a transcript."}
-          ]
+      - switch:
+          - check: 'this.fixture_mode.or(false)'
+            processors:
+              - mapping: |
+                  root.transcript = this.fixture_transcript.or("")
+                  root.audio_url = this.audio_url.or(null)
+                  root._trace_id = this._trace_id
+                  root._source = "fixture"
 
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+          - processors:
+              - mapping: |
+                  let url = this.audio_url.or("").string()
+                  meta audio_url = $url
+                  meta language = this.language.or("")
+                  meta trace_id = this._trace_id
+                  root = if !$url.re_match("^https://") { throw("audio_url must be an https URL") } else { {} }
+              - http:
+                  url: '${! meta("audio_url") }'
+                  verb: GET
+                  timeout: 60s
+                  retries: 3
+              - openai_transcription:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: whisper-1
+                  file: '${! content() }'
+                  language: '${! meta("language") }'
+              - mapping: |
+                  root.transcript = content().string()
+                  root.audio_url = meta("audio_url")
+                  root._trace_id = meta("trace_id")
+                  root._source = "openai_transcription"
 
       - mapping: |
-          root.transcript = this.choices.0.message.content
-          root.metadata = {"skill": "audio-transcribe", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.transcript = this.transcript
+          root.audio_url = this.audio_url
+          root.metadata = {
+            "skill": "audio-transcribe",
+            "mode": "mcp",
+            "source": this._source,
+            "trace_id": this._trace_id,
+            "timestamp": now()
+          }
 
   output:
     sync_response: {}

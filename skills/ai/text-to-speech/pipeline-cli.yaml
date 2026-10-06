@@ -4,8 +4,8 @@
 # Convert text to speech audio.
 #
 # Usage:
-#   echo "Hello world" | expanso-edge run pipeline-cli.yaml > output.mp3
-#   echo "Hello world" | expanso-edge run pipeline-cli.yaml --format json
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -44,7 +44,7 @@ config:
             "model": "tts-1",
             "voice": env("VOICE").or("alloy"),
             "text_length": meta("text_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -54,5 +54,4 @@ config:
             [text-to-speech] Generated audio for ${! meta("text_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

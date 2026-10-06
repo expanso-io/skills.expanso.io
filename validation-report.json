@@ -1,6 +1,6 @@
 {
   "disclaimer": "Local validation only. It checks pipeline syntax, structure and component types. It does not run the orchestrator's submission validation and it is NOT evidence that a pipeline executes. No entry here may be promoted to verified-executed without a dated Expanso Cloud run record.",
-  "generated": "2026-09-18T06:25:57.084333+00:00",
+  "generated": "2026-10-06T06:46:11.476513+00:00",
   "job_spec_validator": {
     "tool": "expanso-cli job validate --offline",
     "version": "Expanso CLI version v2.1.21"
@@ -14,36 +14,33 @@
   "skills": {
     "access-gate": {
       "category": "security",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/security/access-gate/pipeline-cli.yaml: 2 error(s) - (line 44) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"age' instead) - (line 86) bloblang syntax error in pipeline.processors.2.mapping. Invalid syntax in call to filter(). filter() takes 1 argument(s): test (query expression). Example: root.new_nums = this.nums.filter(num -> num > 10). See: https://docs.expanso.io/guides/bloblang/methods#filter hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/access-gate/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/security/access-gate/pipeline-mcp.yaml: 2 error(s) - (line 32) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"age' instead) - (line 61) bloblang syntax error in pipeline.processors.1.mapping. Invalid syntax in call to filter(). filter() takes 1 argument(s): test (query expression). Example: root.new_nums = this.nums.filter(num -> num > 10). See: https://docs.expanso.io/guides/bloblang/methods#filter hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/access-gate/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "aggregate-time-windows": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/aggregate-time-windows/pipeline.yaml: 8 error(s) - (line 154, col 11) [output.broker.outputs.0.http_client]. Unknown field 'max_retries' in broker component. Check the documentation for valid fields in the 'broker' component. - (line 21, col 9) [pipeline.processors.0.try]. Expected array, got object - (line 26) bloblang syntax error in pipeline.processors.0.try.processors.1.mapping. Wrong number of arguments, expected 0, got 1: } if - (line 91, col 19) [pipeline.processors.1.branch.processors.0.group_by.0]. Missing required field 'check' in branch component - (line 91, col 19) [pipeline.processors.1.branch.processors.0.group_by.0]. Unknown field 'key' in branch component. Check the documentation for valid fields in the 'branch' component. - (line 91, col 19) [pipeline.processors.1.branch.processors.0.group_by.0]. Unknown field 'size' in branch component. Check the documentation for valid fields in the 'branch' component. - (line 91, col 19) [pipeline.processors.1.branch.processors.0.group_by.0]. Unknown field 'value' in branch component. Check the documentation for valid fields in the 'branch' component. - (line 97) bloblang syntax error in pipeline.processors.1.branch.processors.1.mapping. Dynamic array indexing requires .index() method. Use .index(expr) for dynamic array access. Example: this.items.index(0) instead of this.items[0]. See: https://docs.expanso.io/guides/bloblang/methods#index hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/aggregate-time-windows/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -353,22 +350,20 @@
     },
     "audio-transcribe": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/audio-transcribe/pipeline-cli.yaml: 1 error(s) - (line 24, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/audio-transcribe/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/audio-transcribe/pipeline-mcp.yaml: 1 error(s) - (line 27, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/audio-transcribe/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -412,15 +407,14 @@
     },
     "backup-verify": {
       "category": "workflows",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/workflows/backup-verify/pipeline-cli.yaml: 1 error(s) - (line 23) bloblang syntax error in pipeline.processors.0.mapping. Field t2: parsing time \"2h\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"2h\" as \"2006\": , \" hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/backup-verify/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
           "job_spec_accepted": true,
@@ -521,36 +515,33 @@
     },
     "circuit-breakers": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/circuit-breakers/pipeline.yaml: 4 error(s) - (line 25, col 9) [pipeline.processors.1]. Unknown component or field 'try'. Check that the component name is spelled correctly. - (line 38, col 13) [pipeline.processors.1.catch.0]. Unknown field 'catch' in catch component. Check the documentation for valid fields in the 'catch' component. - (line 65, col 9) [output.fallback.0.http_client]. Unknown field 'max_retries' in fallback component. Check the documentation for valid fields in the 'fallback' component. - (line 85, col 9) [output.fallback.3.file]. Unknown field 'processors' in fallback component. Check the documentation for valid fields in the 'fallback' component. hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/circuit-breakers/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "code-explain": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/code-explain/pipeline-cli.yaml: 1 error(s) - (line 55, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/code-explain/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/code-explain/pipeline-mcp.yaml: 1 error(s) - (line 63, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/code-explain/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -613,64 +604,59 @@
     },
     "content-routing": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/content-routing/pipeline.yaml: 1 error(s) - (line 108, col 13) [output.switch.cases.3.output.file]. Unknown field 'batching' in switch component. Check the documentation for valid fields in the 'switch' component. hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/content-routing/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "content-splitting": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/content-splitting/pipeline.yaml: 3 error(s) - (line 25) bloblang syntax error in pipeline.processors.0.mapping. Missing parameter: path: && t - (line 69) bloblang syntax error in pipeline.processors.4.mapping. Expected } (found '= tru' instead) - (line 77, col 5) [output.switch]. Expected object, got array hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/content-splitting/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "cron-explain": {
       "category": "transforms",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/transforms/cron-explain/pipeline-cli.yaml: 1 error(s) - (line 37, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/transforms/cron-explain/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/transforms/cron-explain/pipeline-mcp.yaml: 1 error(s) - (line 41, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/transforms/cron-explain/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "cross-border-gdpr": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/cross-border-gdpr/pipeline.yaml: 1 error(s) - (line 206, col 11) [output.broker.outputs.1.gcp_cloud_storage]. Unknown field 'storage_class' in broker component. Check the documentation for valid fields in the 'broker' component. hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/cross-border-gdpr/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -695,15 +681,14 @@
     },
     "cve-scan": {
       "category": "security",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/security/cve-scan/pipeline-cli.yaml: 1 error(s) - (line 67) bloblang syntax error in pipeline.processors.3.mapping. Invalid syntax in call to map_each(). map_each() takes 1 argument(s): query (query expression). Example: root.new_nums = this.nums.map_each(num -> if num < 10 { deleted() } else { num - 10 }). See: https://docs.expanso.io/guides/bloblang/methods#map_each hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/cve-scan/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
           "job_spec_accepted": true,
@@ -715,22 +700,20 @@
     },
     "data-fence": {
       "category": "security",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/security/data-fence/pipeline-cli.yaml: 1 error(s) - (line 92) bloblang syntax error in pipeline.processors.2.mapping. Invalid syntax in call to map_each(). map_each() takes 1 argument(s): query (query expression). Example: root.new_nums = this.nums.map_each(num -> if num < 10 { deleted() } else { num - 10 }). See: https://docs.expanso.io/guides/bloblang/methods#map_each hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/data-fence/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/security/data-fence/pipeline-mcp.yaml: 1 error(s) - (line 57) bloblang syntax error in pipeline.processors.1.mapping. Invalid syntax in call to map_each(). map_each() takes 1 argument(s): query (query expression). Example: root.new_nums = this.nums.map_each(num -> if num < 10 { deleted() } else { num - 10 }). See: https://docs.expanso.io/guides/bloblang/methods#map_each hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/data-fence/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -825,15 +808,14 @@
     },
     "db2-to-bigquery": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/db2-to-bigquery/pipeline.yaml: 1 error(s) - (line 143, col 5) [output.gcp_bigquery]. Unknown field 'time_partitioning' in gcp_bigquery component. Check the documentation for valid fields in the 'gcp_bigquery' component. hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/db2-to-bigquery/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -852,15 +834,14 @@
     },
     "deduplicate-events": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/deduplicate-events/pipeline.yaml: 5 error(s) - (line 25, col 9) [pipeline.processors.0]. Unknown component or field 'json_documents'. Check that the component name is spelled correctly. - (line 33) bloblang syntax error in pipeline.processors.1.mapping. Missing parameter: path: { - (line 47) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 64) bloblang syntax error in pipeline.processors.4.mapping. Missing parameter: path: && m - (line 87, col 5) [output.switch]. Expected object, got array hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/deduplicate-events/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -885,22 +866,20 @@
     },
     "devops-monitor": {
       "category": "workflows",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/workflows/devops-monitor/pipeline-cli.yaml: 3 error(s) - (line 107) bloblang syntax error in pipeline.processors.5.mapping. Invalid syntax in call to filter(). filter() takes 1 argument(s): test (query expression). Example: root.new_nums = this.nums.filter(num -> num > 10). See: https://docs.expanso.io/guides/bloblang/methods#filter - (line 44) bloblang syntax error in pipeline.processors.2.mapping. Field t2: parsing time \"30m\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"30m\" as \"2006\": }, - (line 93, col 9) [pipeline.processors.4.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/devops-monitor/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/workflows/devops-monitor/pipeline-mcp.yaml: 1 error(s) - (line 35, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/devops-monitor/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -925,22 +904,20 @@
     },
     "email-triage": {
       "category": "workflows",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/workflows/email-triage/pipeline-cli.yaml: 6 error(s) - (line 128) bloblang syntax error in pipeline.processors.4.mapping. Invalid syntax in call to map_each(). map_each() takes 1 argument(s): query (query expression). Example: root.new_nums = this.nums.map_each(num -> if num < 10 { deleted() } else { num - 10 }). See: https://docs.expanso.io/guides/bloblang/methods#map_each - (line 147, col 9) [pipeline.processors.5.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component - (line 168) bloblang syntax error in pipeline.processors.6.mapping. Invalid syntax in call to map_each(). map_each() takes 1 argument(s): query (query expression). Example: root.new_nums = this.nums.map_each(num -> if num < 10 { deleted() } else { num - 10 }). See: https://docs.expanso.io/guides/bloblang/methods#map_each - (line 223) bloblang syntax error in pipeline.processors.7.mapping. Invalid syntax in call to filter(). filter() takes 1 argument(s): test (query expression). Example: root.new_nums = this.nums.filter(num -> num > 10). See: https://docs.expanso.io/guides/bloblang/methods#filter - (line 48) bloblang syntax error in pipeline.processors.0.mapping. Field t2: parsing time \"${! meta(\\\"since_hours\\\") }h\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"${! meta(\\\"since_hours\\\") }h\" as \"2006\": meta - (line 72) bloblang syntax error in pipeline.processors.2.mapping. Field t2: parsing time \"2h\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"2h\" as \"2006\": , hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/email-triage/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/workflows/email-triage/pipeline-mcp.yaml: 1 error(s) - (line 81, col 9) [pipeline.processors.3.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/email-triage/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -984,57 +961,53 @@
     },
     "encrypt-data": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/encrypt-data/pipeline.yaml: 7 error(s) - (line 23) bloblang syntax error in pipeline.processors.0.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 24) bloblang syntax error in pipeline.processors.0.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 27) bloblang syntax error in pipeline.processors.0.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 49) bloblang syntax error in pipeline.processors.1.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 50) bloblang syntax error in pipeline.processors.1.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 67) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 68) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/encrypt-data/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "encryption-patterns": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/encryption-patterns/pipeline.yaml: 7 error(s) - (line 104) bloblang syntax error in pipeline.processors.3.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 131) bloblang syntax error in pipeline.processors.4.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 132) bloblang syntax error in pipeline.processors.4.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 153) bloblang syntax error in pipeline.processors.5.mapping. Missing parameter: path: { \"p - (line 177, col 11) [output.broker.outputs.1.file]. Unknown field 'processors' in broker component. Check the documentation for valid fields in the 'broker' component. - (line 42) bloblang syntax error in pipeline.processors.1.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 71) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/encryption-patterns/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "enforce-schema": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/enforce-schema/pipeline.yaml: 5 error(s) - (line 26, col 9) [pipeline.processors.1]. Unknown component or field 'catch'. Check that the component name is spelled correctly. - (line 27, col 13) [pipeline.processors.1.try.0]. Unknown field 'json_documents' in try component. Check the documentation for valid fields in the 'try' component. - (line 37) bloblang syntax error in pipeline.processors.1.catch.0.mapping. Wrong number of arguments, expected 0, got 2: , \" - (line 48, col 17) [pipeline.processors.2.switch.0.processors.0]. Unknown field 'catch' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 78, col 5) [output.switch]. Expected object, got array hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/enforce-schema/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "enrich-export": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/enrich-export/pipeline.yaml: 4 error(s) - (line 114, col 15) [output.broker.outputs.0.aws_s3.batching.count]. Expected number, got string - (line 116, col 15) [output.broker.outputs.0.aws_s3.batching.byte_size]. Expected number, got string - (line 129, col 11) [output.broker.outputs.1.aws_s3]. Unknown field 'processors' in broker component. Check the documentation for valid fields in the 'broker' component. - (line 13, col 7) [input.generate.count]. Expected number, got string hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/enrich-export/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -1072,15 +1045,14 @@
     },
     "fan-out-pattern": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/fan-out-pattern/pipeline.yaml: 1 error(s) - (line 64, col 15) [output.broker.outputs.3.fallback.0]. Unknown field 'elasticsearch' in broker component. Check the documentation for valid fields in the 'broker' component. hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/fan-out-pattern/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -1118,57 +1090,52 @@
     },
     "filter-severity": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/filter-severity/pipeline.yaml: 2 error(s) - (line 28) bloblang syntax error in pipeline.processors.0.mapping. Invalid syntax in call to re_find_all(). re_find_all() takes 1 argument(s): pattern (string). Example: root.matches = this.value.re_find_all(\"a.\"). See: https://docs.expanso.io/guides/bloblang/methods#re_find_all - (line 86) bloblang syntax error in pipeline.processors.3.mapping. Expected } (found '= {' instead) hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/filter-severity/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "gmail-read": {
       "category": "connectors",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/connectors/gmail-read/pipeline-cli.yaml: 2 error(s) - (line 43) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"lim' instead) - (line 75, col 9) [pipeline.processors.3]. Unknown component or field 'try'. Check that the component name is spelled correctly. hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/connectors/gmail-read/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/connectors/gmail-read/pipeline-mcp.yaml: 2 error(s) - (line 35) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"lim' instead) - (line 59, col 9) [pipeline.processors.2]. Unknown component or field 'try'. Check that the component name is spelled correctly. hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/connectors/gmail-read/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "grammar-check": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/grammar-check/pipeline-cli.yaml: 1 error(s) - (line 36, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/grammar-check/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/grammar-check/pipeline-mcp.yaml: 1 error(s) - (line 41, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/grammar-check/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -1301,85 +1268,77 @@
     },
     "image-alttext": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/image-alttext/pipeline-cli.yaml: 1 error(s) - (line 45, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/image-alttext/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/image-alttext/pipeline-mcp.yaml: 1 error(s) - (line 57, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/image-alttext/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "image-analyze": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/image-analyze/pipeline-cli.yaml: 1 error(s) - (line 39, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/image-analyze/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/image-analyze/pipeline-mcp.yaml: 1 error(s) - (line 57, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/image-analyze/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "image-caption": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/image-caption/pipeline-cli.yaml: 1 error(s) - (line 26, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/image-caption/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/image-caption/pipeline-mcp.yaml: 1 error(s) - (line 29, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/image-caption/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "image-describe": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/image-describe/pipeline-cli.yaml: 1 error(s) - (line 26, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/image-describe/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/image-describe/pipeline-mcp.yaml: 1 error(s) - (line 29, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/image-describe/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -1423,22 +1382,20 @@
     },
     "image-moderate": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/image-moderate/pipeline-cli.yaml: 1 error(s) - (line 39, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/image-moderate/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/image-moderate/pipeline-mcp.yaml: 1 error(s) - (line 56, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/image-moderate/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -1558,22 +1515,20 @@
     },
     "json-extract": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/json-extract/pipeline-cli.yaml: 1 error(s) - (line 54, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/json-extract/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/json-extract/pipeline-mcp.yaml: 1 error(s) - (line 71, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/json-extract/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -1750,43 +1705,39 @@
     },
     "keyword-extract": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/keyword-extract/pipeline-cli.yaml: 1 error(s) - (line 37, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/keyword-extract/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/keyword-extract/pipeline-mcp.yaml: 1 error(s) - (line 42, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/keyword-extract/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "language-detect": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/language-detect/pipeline-cli.yaml: 1 error(s) - (line 19, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/language-detect/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/language-detect/pipeline-mcp.yaml: 1 error(s) - (line 25, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/language-detect/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -1811,22 +1762,20 @@
     },
     "llm-router": {
       "category": "workflows",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/workflows/llm-router/pipeline-cli.yaml: 1 error(s) - (line 87, col 9) [pipeline.processors.2.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/llm-router/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/workflows/llm-router/pipeline-mcp.yaml: 1 error(s) - (line 32, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/llm-router/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -1921,15 +1870,14 @@
     },
     "marketing-auto": {
       "category": "workflows",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/workflows/marketing-auto/pipeline-cli.yaml: 1 error(s) - (line 21) bloblang syntax error in pipeline.processors.0.mapping. Unrecognised method 'ts_add': }, hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/marketing-auto/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
           "job_spec_accepted": true,
@@ -2093,22 +2041,20 @@
     },
     "meal-planner": {
       "category": "workflows",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/workflows/meal-planner/pipeline-cli.yaml: 1 error(s) - (line 24, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/meal-planner/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/workflows/meal-planner/pipeline-mcp.yaml: 1 error(s) - (line 29, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/meal-planner/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -2152,22 +2098,20 @@
     },
     "meeting-notes": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/meeting-notes/pipeline-cli.yaml: 1 error(s) - (line 40, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/meeting-notes/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/meeting-notes/pipeline-mcp.yaml: 1 error(s) - (line 57, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/meeting-notes/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -2192,71 +2136,65 @@
     },
     "morning-briefing": {
       "category": "workflows",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/workflows/morning-briefing/pipeline-cli.yaml: 1 error(s) - (line 79, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/morning-briefing/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/workflows/morning-briefing/pipeline-mcp.yaml: 1 error(s) - (line 37, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/morning-briefing/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "multi-platform-chat": {
       "category": "workflows",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/workflows/multi-platform-chat/pipeline-cli.yaml: 1 error(s) - (line 27, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/multi-platform-chat/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/workflows/multi-platform-chat/pipeline-mcp.yaml: 1 error(s) - (line 28, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/multi-platform-chat/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "nightly-backup": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/nightly-backup/pipeline.yaml: 7 error(s) - (line 103, col 13) [output.switch.cases.1.output.gcp_cloud_storage]. Unknown field 'parquet_encoding' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 103, col 13) [output.switch.cases.1.output.gcp_cloud_storage]. Unknown field 'storage_class' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 116, col 13) [output.switch.cases.2.output.gcp_cloud_storage]. Unknown field 'parquet_encoding' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 116, col 13) [output.switch.cases.2.output.gcp_cloud_storage]. Unknown field 'storage_class' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 129, col 13) [output.switch.cases.3.output.gcp_cloud_storage]. Unknown field 'storage_class' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 88, col 13) [output.switch.cases.0.output.gcp_cloud_storage]. Unknown field 'parquet_encoding' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 88, col 13) [output.switch.cases.0.output.gcp_cloud_storage]. Unknown field 'storage_class' in switch component. Check the documentation for valid fields in the 'switch' component. hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/nightly-backup/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "normalize-timestamps": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/normalize-timestamps/pipeline.yaml: 10 error(s) - (line 101) bloblang syntax error in pipeline.processors.4.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 102) bloblang syntax error in pipeline.processors.4.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 103) bloblang syntax error in pipeline.processors.4.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 104) bloblang syntax error in pipeline.processors.4.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 105) bloblang syntax error in pipeline.processors.4.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 106) bloblang syntax error in pipeline.processors.4.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 140) bloblang syntax error in pipeline.processors.5.mapping. Expected line break (found '_coun' instead) - (line 25) bloblang syntax error in pipeline.processors.0.mapping. Unrecognised method 'format_timestamp_iso8601': , \" - (line 59) bloblang syntax error in pipeline.processors.2.catch.0.mapping. Unrecognised method 'parse_timestamp_iso8601': } el - (line 88) bloblang syntax error in pipeline.processors.3.mapping. Expected } (found '= thi' instead) hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/normalize-timestamps/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -2408,15 +2346,14 @@
     },
     "parse-logs": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/parse-logs/pipeline.yaml: 5 error(s) - (line 110, col 5) [output.switch]. Expected object, got array - (line 29) bloblang syntax error in pipeline.processors.0.mapping. Unrecognised method 'count': >= 2 - (line 43, col 17) [pipeline.processors.1.switch.0.processors.0]. Unknown field 'catch' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 44, col 21) [pipeline.processors.1.switch.0.processors.0.try.0]. Unknown field 'json_documents' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 89, col 17) [pipeline.processors.1.switch.3.processors.0]. Unknown field 'csv' in switch component. Check the documentation for valid fields in the 'switch' component. hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/parse-logs/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -2479,43 +2416,39 @@
     },
     "pii-detect": {
       "category": "security",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/security/pii-detect/pipeline-cli.yaml: 1 error(s) - (line 42, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/pii-detect/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/security/pii-detect/pipeline-mcp.yaml: 1 error(s) - (line 44, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/pii-detect/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "pii-redact": {
       "category": "security",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/security/pii-redact/pipeline-cli.yaml: 1 error(s) - (line 38, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/pii-redact/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/security/pii-redact/pipeline-mcp.yaml: 1 error(s) - (line 43, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/pii-redact/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -2540,29 +2473,27 @@
     },
     "priority-queues": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/priority-queues/pipeline.yaml: 4 error(s) - (line 19, col 9) [pipeline.processors.0]. Unknown component or field 'json_documents'. Check that the component name is spelled correctly. - (line 51) bloblang syntax error in pipeline.processors.2.mapping. Expected => (found 'if x.' instead) - (line 79) bloblang syntax error in pipeline.processors.4.mapping. Missing parameter: path: { - (line 89, col 5) [output.switch]. Expected object, got array hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/priority-queues/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "production-log-pipeline": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/production-log-pipeline/pipeline.yaml: 5 error(s) - (line 100, col 11) [output.broker.outputs.1.aws_s3]. Unknown field 'compression' in broker component. Check the documentation for valid fields in the 'broker' component. - (line 109, col 11) [output.broker.outputs.2.switch]. Expected object, got array - (line 20, col 9) [pipeline.processors.0]. Unknown component or field 'json_documents'. Check that the component name is spelled correctly. - (line 78) bloblang syntax error in pipeline.processors.5.mapping. Missing parameter: path: { - (line 87, col 11) [output.broker.outputs.0.switch]. Expected object, got array hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/production-log-pipeline/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -2625,15 +2556,14 @@
     },
     "rate-limiting": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/rate-limiting/pipeline.yaml: 1 error(s) - (line 37, col 9) [rate_limit_resources.0.local.count]. Expected number, got string hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/rate-limiting/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -2748,36 +2678,33 @@
     },
     "secrets-scan": {
       "category": "security",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/security/secrets-scan/pipeline-cli.yaml: 1 error(s) - (line 39, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/secrets-scan/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/security/secrets-scan/pipeline-mcp.yaml: 1 error(s) - (line 44, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/secrets-scan/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "secure-slack-pipeline": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/secure-slack-pipeline/pipeline.yaml: 6 error(s) - (line 119, col 9) [pipeline.processors.6]. Unknown component or field 'try'. Check that the component name is spelled correctly. - (line 159) bloblang syntax error in pipeline.processors.7.mapping. Expected line break (found 'else' instead) - (line 174) bloblang syntax error in pipeline.processors.8.mapping. Invalid syntax in call to merge(). merge() takes 1 argument(s): with (unknown). Example: root = this.foo.merge(this.bar). See: https://docs.expanso.io/guides/bloblang/methods#merge - (line 35) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"no' instead) - (line 65) bloblang syntax error in pipeline.processors.2.mapping. Expected whitespace (found '(\"cha' instead) - (line 89) bloblang syntax error in pipeline.processors.3.mapping. Expected whitespace (found '(\"no' instead) hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/secure-slack-pipeline/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -2815,22 +2742,20 @@
     },
     "sentiment-score": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/sentiment-score/pipeline-cli.yaml: 1 error(s) - (line 19, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/sentiment-score/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/sentiment-score/pipeline-mcp.yaml: 1 error(s) - (line 25, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/sentiment-score/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -2893,22 +2818,20 @@
     },
     "slack-read": {
       "category": "connectors",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/connectors/slack-read/pipeline-cli.yaml: 2 error(s) - (line 44) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"cha' instead) - (line 81, col 9) [pipeline.processors.3]. Unknown component or field 'try'. Check that the component name is spelled correctly. hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/connectors/slack-read/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/connectors/slack-read/pipeline-mcp.yaml: 2 error(s) - (line 32) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"cha' instead) - (line 60, col 9) [pipeline.processors.2]. Unknown component or field 'try'. Check that the component name is spelled correctly. hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/connectors/slack-read/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -2933,57 +2856,52 @@
     },
     "smart-buffering": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/smart-buffering/pipeline.yaml: 8 error(s) - (line 105, col 13) [output.switch.cases.0.output.http_client]. Unknown field 'backoff' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 105, col 13) [output.switch.cases.0.output.http_client]. Unknown field 'max_retries' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 127, col 13) [output.switch.cases.1.output.http_client]. Unknown field 'backoff' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 127, col 13) [output.switch.cases.1.output.http_client]. Unknown field 'max_retries' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 147, col 13) [output.switch.cases.2.output.http_client]. Unknown field 'backoff' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 147, col 13) [output.switch.cases.2.output.http_client]. Unknown field 'max_retries' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 17, col 9) [pipeline.processors.0]. Unknown component or field 'json_documents'. Check that the component name is spelled correctly. - (line 74) bloblang syntax error in pipeline.processors.1.mapping. Missing parameter: format: let hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/smart-buffering/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "speaker-diarize": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/speaker-diarize/pipeline-cli.yaml: 1 error(s) - (line 37, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/speaker-diarize/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/speaker-diarize/pipeline-mcp.yaml: 1 error(s) - (line 52, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/speaker-diarize/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "sql-generate": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/sql-generate/pipeline-cli.yaml: 1 error(s) - (line 42, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/sql-generate/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/sql-generate/pipeline-mcp.yaml: 1 error(s) - (line 48, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/sql-generate/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -3179,36 +3097,33 @@
     },
     "stripe-reports": {
       "category": "workflows",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/workflows/stripe-reports/pipeline-cli.yaml: 2 error(s) - (line 127, col 15) [pipeline.processors.4.branch.processors.0.openai_chat_completion]. Missing required field 'tools' in branch component - (line 40) bloblang syntax error in pipeline.processors.0.mapping. Field t2: parsing time \"24h\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"24h\" as \"2006\": .ts_s hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/stripe-reports/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/workflows/stripe-reports/pipeline-mcp.yaml: 1 error(s) - (line 37, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
     "task-dashboard": {
       "category": "workflows",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/workflows/task-dashboard/pipeline-cli.yaml: 1 error(s) - (line 24) bloblang syntax error in pipeline.processors.0.mapping. Field t2: parsing time \"2h\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"2h\" as \"2006\": } ] r hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/workflows/task-dashboard/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
           "job_spec_accepted": true,
@@ -3239,22 +3154,20 @@
     },
     "text-analyze": {
       "category": "transforms",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/transforms/text-analyze/pipeline-cli.yaml: 1 error(s) - (line 41, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/transforms/text-analyze/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/transforms/text-analyze/pipeline-mcp.yaml: 1 error(s) - (line 46, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/transforms/text-analyze/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -3450,22 +3363,20 @@
     },
     "text-to-command": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/text-to-command/pipeline-cli.yaml: 1 error(s) - (line 45, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/text-to-command/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/text-to-command/pipeline-mcp.yaml: 1 error(s) - (line 48, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/text-to-command/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -3509,22 +3420,20 @@
     },
     "text-translate": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/ai/text-translate/pipeline-cli.yaml: 1 error(s) - (line 27, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/text-translate/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/text-translate/pipeline-mcp.yaml: 1 error(s) - (line 32, col 9) [pipeline.processors.1.openai_chat_completion]. Missing required field 'tools' in openai_chat_completion component hint: Check the pipeline configuration for unknown fields, missing required fields, or invalid component types. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/text-translate/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -3625,15 +3534,14 @@
     },
     "tls-inspect": {
       "category": "security",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/security/tls-inspect/pipeline-cli.yaml: 10 error(s) - (line 28) bloblang syntax error in pipeline.processors.0.mapping. Statement keyword `meta` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `meta` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 30) bloblang syntax error in pipeline.processors.0.mapping. Statement keyword `meta` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `meta` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 39, col 9) [pipeline.processors.1.command]. Unknown field 'args' in command component. Check the documentation for valid fields in the 'command' component. - (line 60) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 61) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 62) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 63) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 64) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 65) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables - (line 68) bloblang syntax error in pipeline.processors.2.mapping. Statement keyword `let` is not allowed inside an expression-position `if`/`else`/`match` body \u2014 only a single query expression is permitted there. Hoist the `let` statement above the `root = ...` assignment, or inline its value at the use site. See: https://docs.expanso.io/guides/bloblang/walkthrough#variables hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/security/tls-inspect/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
           "job_spec_accepted": true,
@@ -3664,15 +3572,14 @@
     },
     "transform-formats": {
       "category": "recipes",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "recipe": {
-          "error": "[FAIL] skills/recipes/transform-formats/pipeline.yaml: 4 error(s) - (line 27) bloblang syntax error in pipeline.processors.0.mapping. Unrecognised method 'count': >= 1 - (line 40, col 17) [pipeline.processors.1.switch.0.processors.0]. Unknown field 'json_documents' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 50, col 17) [pipeline.processors.1.switch.2.processors.0]. Unknown field 'csv' in switch component. Check the documentation for valid fields in the 'switch' component. - (line 96, col 5) [output.http_server]. Unknown field 'sync_response' in http_server component. Check the documentation for valid fields in the 'http_server' component. hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/recipes/transform-formats/pipeline.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -3792,8 +3699,8 @@
     },
     "video-generate": {
       "category": "ai",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
           "job_spec_accepted": true,
@@ -3802,11 +3709,10 @@
           "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/ai/video-generate/pipeline-mcp.yaml: 3 error(s) - (line 103, col 5) [output.sync_response]. Unknown field 'headers' in sync_response component. Check the documentation for valid fields in the 'sync_response' component. - (line 103, col 5) [output.sync_response]. Unknown field 'status' in sync_response component. Check the documentation for valid fields in the 'sync_response' component. - (line 36) bloblang syntax error in pipeline.processors.0.mapping. Expected whitespace (found '(\"pro' instead) hint: Check your Bloblang mapping syntax and pipeline configuration structure. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/ai/video-generate/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -3863,22 +3769,20 @@
     },
     "webhook-receive": {
       "category": "connectors",
-      "readiness": "invalid-does-not-validate",
-      "validates": false,
+      "readiness": "validated-not-executed",
+      "validates": true,
       "variants": {
         "cli": {
-          "error": "[FAIL] skills/connectors/webhook-receive/pipeline-cli.yaml: 2 error(s) - (line 47) bloblang syntax error in pipeline.processors.0.mapping. Invalid syntax in call to or(). or() takes 1 argument(s): fallback (query expression). Example: root.doc.id = this.thing.id.or(uuid_v4()). See: https://docs.expanso.io/guides/bloblang/methods#or - (line 75) bloblang syntax error in pipeline.processors.2.mapping. Expected whitespace (found '(\"web' instead) hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/connectors/webhook-receive/pipeline-cli.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         },
         "mcp": {
-          "error": "[FAIL] skills/connectors/webhook-receive/pipeline-mcp.yaml: 1 error(s) - (line 60) bloblang syntax error in pipeline.processors.1.mapping. Expected whitespace (found '(\"web' instead) hint: Check your Bloblang mapping syntax. See documentation for valid expressions. Error = 1 of 1 input(s) failed validation Code = VALIDATION_ERROR",
           "job_spec_accepted": true,
           "pipeline": "skills/connectors/webhook-receive/pipeline-mcp.yaml",
-          "readiness": "invalid-does-not-validate",
-          "validates": false
+          "readiness": "validated-not-executed",
+          "validates": true
         }
       }
     },
@@ -3979,13 +3883,13 @@
     }
   },
   "totals": {
-    "fails_validation": 62,
+    "fails_validation": 0,
     "skills": 215,
-    "validates": 153,
+    "validates": 215,
     "variants": {
       "cli": {
         "pipelines": 177,
-        "validates": 138
+        "validates": 177
       },
       "cloud": {
         "pipelines": 1,
@@ -3993,7 +3897,7 @@
       },
       "mcp": {
         "pipelines": 177,
-        "validates": 142
+        "validates": 177
       },
       "query": {
         "pipelines": 1,
@@ -4001,7 +3905,7 @@
       },
       "recipe": {
         "pipelines": 38,
-        "validates": 16
+        "validates": 38
       }
     }
   },

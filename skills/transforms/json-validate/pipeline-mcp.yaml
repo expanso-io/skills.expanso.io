@@ -2,7 +2,7 @@
 # ===========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/validate \
 #     -d '{"json": "{\"key\": \"value\"}"}'
 
@@ -23,7 +23,12 @@ config:
   pipeline:
     processors:
       - mapping: |
-          let json_content = this.json.or(content())
+          let source = this.json.or(content())
+          let json_content = if $source.type() == "string" {
+            $source
+          } else {
+            $source.format_json()
+          }
           meta input_hash = $json_content.hash("sha256").encode("hex")
           meta input_length = $json_content.length()
           meta trace_id = uuid_v4()
@@ -45,14 +50,14 @@ config:
             "mode": "mcp",
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [json-validate] Valid: ${! root.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+            [json-validate] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     sync_response: {}

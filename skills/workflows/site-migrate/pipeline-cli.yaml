@@ -16,17 +16,26 @@ config:
 
           root.source = $input.source.or("notion")
           root.destination = $input.destination.or("astro")
-          root.pages_migrated = 18
-          root.assets_migrated = 45
-          root.errors = []
-          root.deploy_url = "https://new-site.pages.dev"
-          root.status = "complete"
-          root.metadata = {"skill": "site-migrate", "mode": "cli", "trace_id": meta("trace_id")}
+          root.pages_migrated = 0
+          root.assets_migrated = 0
+          root.errors = ["migration_not_implemented"]
+          root.deploy_url = null
+          root.status = "unsupported"
+          root.capability_gap = {
+            "edge_version": "2.1.21",
+            "missing_components": [
+              "native Notion, WordPress, and Ghost export connectors",
+              "framework project writer with persistent workspace semantics",
+              "Astro, Hugo, and Next.js build verification",
+              "authenticated deployment output with deployment receipt"
+            ],
+            "command_processor_note": "The command processor can invoke a preinstalled executable, but this recipe does not define or prove the required platform CLIs, filesystem layout, build, or deployment receipt."
+          }
+          root.metadata = {"skill": "site-migrate", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4())}
 
       - log:
           level: INFO
-          message: "[site-migrate] Migrated ${! this.pages_migrated } pages to ${! this.destination }"
+          message: "[site-migrate] Unsupported migration: ${! this.source } to ${! this.destination }"
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

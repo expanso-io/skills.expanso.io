@@ -40,8 +40,7 @@ config:
           root.path = $clean_path
           root.query = $query
           root.valid = $has_protocol && $host != ""
-          root.metadata = {"skill": "url-parse", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "url-parse", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -1,4 +1,7 @@
 # Expanso Pipeline: task-dashboard (CLI mode)
+#
+# Summarizes task records supplied by an upstream system. This stateless
+# pipeline does not claim to mutate or persist an external task queue.
 
 name: task-dashboard-cli
 type: pipeline
@@ -11,21 +14,48 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
+          let trace_id = uuid_v4()
           let input = content().parse_json()
-          let action = $input.action.or("status")
+          let action = $input.action.or("status").string()
+          let tasks = $input.tasks.or([])
+          let today = now().ts_format("2006-01-02")
+          let active = $tasks.filter(task -> task.status.or("pending") != "completed")
+          let completed_today = $tasks.filter(task -> task.status.or("") == "completed" && task.completed_at.or("").slice(0, 10) == $today)
 
-          root.queue = [
-            {"id": "1", "task": "Review PR #42", "priority": 1, "status": "pending"},
-            {"id": "2", "task": "Update documentation", "priority": 2, "status": "in_progress"},
-            {"id": "3", "task": "Fix bug in auth", "priority": 1, "status": "pending"}
-          ]
-          root.completed_today = [
-            {"id": "0", "task": "Deploy v2.1", "completed_at": now().ts_sub("2h")}
-          ]
-          root.status = {"total_pending": 3, "in_progress": 1, "completed_today": 1}
-          root.metadata = {"skill": "task-dashboard", "mode": "cli", "action": $action, "trace_id": meta("trace_id")}
+          root = if $action != "status" {
+            {
+              "status": "unsupported",
+              "capability_gap": {
+                "requested_action": $action,
+                "missing": "a persistent task-system connector",
+                "evidence": "This stateless example only summarizes task records supplied in the request."
+              },
+              "queue": $tasks,
+              "completed_today": [],
+              "metadata": {
+                "skill": "task-dashboard",
+                "mode": "cli",
+                "action": $action,
+                "trace_id": $trace_id
+              }
+            }
+          } else {
+            {
+              "queue": $active,
+              "completed_today": $completed_today,
+              "status": {
+                "total_pending": $active.filter(task -> task.status.or("pending") == "pending").length(),
+                "in_progress": $active.filter(task -> task.status.or("") == "in_progress").length(),
+                "completed_today": $completed_today.length()
+              },
+              "metadata": {
+                "skill": "task-dashboard",
+                "mode": "cli",
+                "action": $action,
+                "trace_id": $trace_id
+              }
+            }
+          }
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

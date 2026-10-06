@@ -52,12 +52,9 @@ outputs:
   - name: messages
     type: array
     description: "Array of messages: {id, user, text, timestamp, thread_ts, reactions}"
-  - name: channel_info
-    type: object
-    description: "Channel metadata: {id, name, topic, purpose, member_count}"
   - name: metadata
     type: object
-    description: "Processing metadata: {skill, trace_id, message_count, timestamp}"
+    description: "Processing metadata: {skill, trace_id, message_count, total_available, timestamp}"
 
 # Backend options
 backends:
@@ -65,6 +62,10 @@ backends:
     type: remote
     requires: [SLACK_BOT_TOKEN]
     description: Slack Web API (requires bot token with channels:history scope)
+  - name: fixture
+    type: local
+    requires: []
+    description: Explicit deterministic Slack messages for CI
 
 # Expanso components used
 components:

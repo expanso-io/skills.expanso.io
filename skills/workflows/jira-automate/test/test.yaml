@@ -1,8 +1,13 @@
-# Test: jira-automate
 tests:
-  - name: "Searches issues"
-    skip: true
-    input: '{"action": "search", "project": "TEST"}'
+  - name: "Normalizes Jira search results"
+    input: '{"action":"search","project":"TEST","fixture_mode":true,"fixture_response":{"issues":[{"key":"TEST-101","summary":"Fix login","status":"To Do","assignee":"dev@example.test"}]}}'
     expected_output:
+      action: search
+      issues:
+        - key: TEST-101
+          summary: Fix login
+          status: To Do
+          assignee: dev@example.test
       metadata:
-        action: "search"
+        skill: jira-automate
+        fixture: true

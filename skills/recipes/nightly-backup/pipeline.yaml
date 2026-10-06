@@ -2,14 +2,20 @@
 # Simple, reliable replication to cloud storage for DR
 #
 # Use case: Nightly backup of orders and inventory tables from
-# on-premise database to cloud cold storage (GCS Nearline/S3 Glacier)
+# on-premise PostgreSQL to Google Cloud Storage
 #
 # Key features:
 # - Full table extract via SQL
 # - Minimal transformation (just add metadata)
-# - Compressed Parquet format for cost efficiency
+# - Newline-delimited JSON with one checksum per source row
 # - Date-partitioned storage for easy recovery
 # - Checksum verification
+#
+# Expanso Edge v2.1.21 does include parquet_encode, but that processor requires
+# an explicit column schema. This recipe selects wildcard table schemas, so it
+# cannot truthfully emit Parquet until each table's columns and types are pinned
+# in this file. The bundled gcp_cloud_storage output also has no storage_class
+# field; configure Nearline or another lifecycle class on the bucket itself.
 
 name: nightly-backup-orders
 description: Backup orders and inventory to cloud cold storage
@@ -23,7 +29,7 @@ config:
         # Orders table
         - sql_select:
             driver: postgres  # Or: mysql, odbc, mssql
-            dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=require"
+            dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=verify-full"
             table: orders
             columns: ["*"]
             where: "updated_at >= CURRENT_DATE - INTERVAL '1 day'"
@@ -36,7 +42,7 @@ config:
         # Inventory table (full backup - smaller table)
         - sql_select:
             driver: postgres
-            dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=require"
+            dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=verify-full"
             table: inventory
             columns: ["*"]
           processors:
@@ -48,7 +54,7 @@ config:
         # Order line items
         - sql_select:
             driver: postgres
-            dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=require"
+            dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=verify-full"
             table: order_items
             columns: ["*"]
             where: "created_at >= CURRENT_DATE - INTERVAL '1 day'"
@@ -87,42 +93,31 @@ config:
           output:
             gcp_cloud_storage:
               bucket: "${GCS_BACKUP_BUCKET}"
-              path: "backups/orders/${!this._backup_metadata.backup_date}/orders-${!timestamp_unix()}.parquet"
-              content_type: application/octet-stream
-              # Use Nearline for backups (accessed < 1x/month)
-              storage_class: NEARLINE
+              path: "backups/orders/${!this._backup_metadata.backup_date}/orders-${!timestamp_unix()}.jsonl"
+              content_type: application/x-ndjson
               batching:
                 count: 10000
                 period: 60s
-              # Enable Parquet encoding for compression
-              parquet_encoding:
-                compression: SNAPPY
 
         - check: this._table == "inventory"
           output:
             gcp_cloud_storage:
               bucket: "${GCS_BACKUP_BUCKET}"
-              path: "backups/inventory/${!this._backup_metadata.backup_date}/inventory-full.parquet"
-              content_type: application/octet-stream
-              storage_class: NEARLINE
+              path: "backups/inventory/${!this._backup_metadata.backup_date}/inventory-full.jsonl"
+              content_type: application/x-ndjson
               batching:
                 count: 50000  # Inventory is full backup, larger batches
                 period: 120s
-              parquet_encoding:
-                compression: SNAPPY
 
         - check: this._table == "order_items"
           output:
             gcp_cloud_storage:
               bucket: "${GCS_BACKUP_BUCKET}"
-              path: "backups/order_items/${!this._backup_metadata.backup_date}/items-${!timestamp_unix()}.parquet"
-              content_type: application/octet-stream
-              storage_class: NEARLINE
+              path: "backups/order_items/${!this._backup_metadata.backup_date}/items-${!timestamp_unix()}.jsonl"
+              content_type: application/x-ndjson
               batching:
                 count: 10000
                 period: 60s
-              parquet_encoding:
-                compression: SNAPPY
 
         # Fallback for unknown tables
         - output:
@@ -130,7 +125,6 @@ config:
               bucket: "${GCS_BACKUP_BUCKET}"
               path: "backups/unknown/${!this._table}/${!this._backup_metadata.backup_date}/data-${!timestamp_unix()}.json"
               content_type: application/json
-              storage_class: NEARLINE
               batching:
                 count: 1000
                 period: 30s

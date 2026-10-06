@@ -1,8 +1,26 @@
-# Test: stripe-reports
 tests:
-  - name: "Generates daily report"
-    skip: true
-    input: '{"period": "today"}'
+  - name: "Calculates report from explicit Stripe balance fixtures"
+    input: '{"period":"today","fixture_mode":true,"include_insights":false,"fixture_transactions":[{"id":"txn_charge","type":"charge","amount":12000,"fee":400,"net":11600,"currency":"usd","status":"available"},{"id":"txn_refund","type":"refund","amount":-2000,"fee":0,"net":-2000,"currency":"usd","status":"available"}]}'
     expected_output:
       report:
-        period: "today"
+        period: today
+      metrics:
+        revenue:
+          gross: 120
+          net: 96
+          fees: 4
+          refunds: 20
+          currency: USD
+        transactions:
+          total: 2
+          available: 2
+          pending: 0
+          has_more: false
+      metadata:
+        source: fixture
+      quick_wins: []
+    output_conditions:
+      - path: metadata.processing_time_ms
+        condition: ">= 0"
+      - path: metadata.processing_time_ms
+        condition: "< 10000"

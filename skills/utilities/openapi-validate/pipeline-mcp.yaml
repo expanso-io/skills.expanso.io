@@ -20,7 +20,7 @@ config:
           let spec = this.spec
           meta trace_id = uuid_v4()
 
-          root = if $spec == null { throw("spec field is required") } else { "" }
+          root = if $spec == null { throw("spec field is required") } else { {} }
 
           let valid = $spec.openapi.or("").length() > 0 || $spec.swagger.or("").length() > 0
 
@@ -30,7 +30,7 @@ config:
             "skill": "openapi-validate",
             "mode": "mcp",
             "spec_version": $spec.openapi.or($spec.swagger).or("unknown"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

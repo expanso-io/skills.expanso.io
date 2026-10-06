@@ -4,7 +4,7 @@
 # Generate embedding vectors from text.
 #
 # Usage:
-#   echo "your text here" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -42,7 +42,7 @@ config:
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
             "usage": this.usage,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -53,5 +53,4 @@ config:
             [text-embed] Generated ${! this.metadata.dimensions }d vector (${! meta("input_length") } chars, trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

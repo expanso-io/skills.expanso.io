@@ -6,11 +6,10 @@
 #
 # Usage:
 #   # Process a GitHub webhook payload
-#   cat github-event.json | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 #   # Process with signature verification (wrapped format)
-#   echo '{"headers":{"X-Hub-Signature-256":"sha256=abc..."},"body":{...}}' | \
-#     WEBHOOK_SECRET=mysecret expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Why Expanso Edge?
 #   Webhooks arrive at YOUR edge node — data never passes through a third party.
@@ -31,8 +30,10 @@ config:
       # STEP 1: Parse webhook payload
       # ═══════════════════════════════════════════════════════════════════════
       - mapping: |
-          meta trace_id = uuid_v4()
-          meta start_time = now()
+          let trace_id = uuid_v4()
+          let start_time = now()
+          meta trace_id = $trace_id
+          meta start_time = $start_time
 
           let input = content().parse_json()
 
@@ -42,16 +43,16 @@ config:
           let headers = if $has_wrapper { $input.headers } else { {} }
           let body = if $has_wrapper { $input.body } else { $input }
 
+          let raw_body = if $has_wrapper {
+            $input.raw_body.or($input.body.format_json().string())
+          } else { content().string() }
+          let event_type = $headers.get("X-GitHub-Event").or($headers.get("X-Stripe-Event")).or($headers.get("X-Event-Type")).or("unknown")
           meta headers = $headers
-          meta raw_body = if $has_wrapper { $input.body.string() } else { content() }
-          meta event_type = $headers.index("X-GitHub-Event").or(
-            $headers.index("X-Stripe-Event").or(
-              $headers.index("X-Event-Type").or("unknown")
-            )
-          )
+          meta raw_body = $raw_body
+          meta event_type = $event_type
 
           root.event = {
-            "type": meta("event_type"),
+            "type": $event_type,
             "headers": $headers,
             "body": $body,
             "received_at": now()
@@ -69,23 +70,22 @@ config:
           let secret = env("WEBHOOK_SECRET").or("")
           let sig_header = env("WEBHOOK_SIGNATURE_HEADER").or("X-Hub-Signature-256")
 
-          if $secret != "" {
-            let provided_sig = meta("headers").index($sig_header).or("")
-            if $provided_sig == "" {
-              throw("webhook rejected: missing signature header " + $sig_header)
-            }
-
-            # Compute HMAC-SHA256 and compare
-            let expected = "sha256=" + hash("hmac_sha256", $secret, meta("raw_body")).encode("hex")
-            if $expected != $provided_sig {
-              throw("webhook rejected: invalid signature")
-            }
-
-            meta signature_status = "verified"
-          } else {
-            # No secret configured — allow but flag as unverified
-            meta signature_status = "unverified_no_secret"
+          if $secret == "" {
+            root = throw("webhook rejected: WEBHOOK_SECRET is required")
           }
+
+          let provided_sig = this.event.headers.get($sig_header).or("")
+          if $provided_sig == "" {
+            root = throw("webhook rejected: missing signature header " + $sig_header)
+          }
+
+          # Compute the provider-compatible HMAC-SHA256 and compare.
+          let expected = "sha256=" + meta("raw_body").hash("hmac_sha256", $secret).encode("hex")
+          if $expected != $provided_sig {
+            root = throw("webhook rejected: invalid signature")
+          }
+
+          meta signature_status = "verified"
           root = this
 
       # ═══════════════════════════════════════════════════════════════════════
@@ -93,6 +93,7 @@ config:
       # ═══════════════════════════════════════════════════════════════════════
       - mapping: |
           root.source = "webhook"
+          root.event = this.event
           root.resource = "event." + meta("event_type")
           root.schema_version = "1.0"
           root.trace_id = meta("trace_id")
@@ -104,7 +105,7 @@ config:
             "mode": "cli",
             "event_type": meta("event_type"),
             "signature_status": meta("signature_status"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -114,5 +115,4 @@ config:
             [webhook-receive] Processed event type=${! meta("event_type") } sig=${! meta("signature_status") } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -4,7 +4,7 @@
 # HTTP endpoint for JSON canonicalization.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/canonicalize \
 #     -H "Content-Type: application/json" \
@@ -34,9 +34,9 @@ config:
 
           root = if $input == null {
             throw("json field is required")
-          } else { "" }
+          } else { {} }
 
-          let canonical = $input.format_json()
+          let canonical = $input.format_json("").string()
           let hash = $canonical.hash("sha256").encode("hex")
 
           root.canonical = $canonical
@@ -45,7 +45,7 @@ config:
             "skill": "json-canonicalize",
             "mode": "mcp",
             "canonical_size": $canonical.length(),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

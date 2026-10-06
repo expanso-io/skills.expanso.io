@@ -4,7 +4,7 @@
 # Check image for content policy violations.
 #
 # Usage:
-#   echo "https://example.com/image.jpg" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -39,6 +39,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let content = this.choices.0.message.content
@@ -58,7 +59,7 @@ config:
             "mode": "cli",
             "model": "gpt-4o-mini",
             "image_url": meta("image_url"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -68,5 +69,4 @@ config:
             [image-moderate] Flagged: ${! this.flagged } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -7,86 +7,102 @@ on:
     branches: [main]
 
 jobs:
-  validate:
-    name: Validate Skills
+  conformance:
+    name: Public example conformance
     runs-on: ubuntu-latest
+    timeout-minutes: 120
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Install yamllint
-        run: pip install yamllint
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      - name: Lint YAML files
+      - uses: astral-sh/setup-uv@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install pinned Expanso validators
+        shell: bash
         run: |
-          yamllint -d relaxed skills/ || true
+          set -euo pipefail
+          bin_dir="$RUNNER_TEMP/expanso-bin"
+          mkdir -p "$bin_dir"
+          curl -fsSL https://get.expanso.io/edge/install.sh \
+            | EXPANSO_INSTALL_DIR="$bin_dir" \
+              EXPANSO_VERSION=v2.1.21 \
+              USE_SUDO=false \
+              bash
+          curl -fsSL https://get.expanso.io/cli/install.sh \
+            | EXPANSO_INSTALL_DIR="$bin_dir" \
+              EXPANSO_VERSION=v2.1.21 \
+              USE_SUDO=false \
+              bash
+          echo "$bin_dir" >> "$GITHUB_PATH"
+          test "$("$bin_dir/expanso-edge" version)" = "v2.1.21"
+          test "$("$bin_dir/expanso-cli" version)" = \
+            "Expanso CLI version v2.1.21"
 
-      - name: Validate skill structure
+      - name: Validate YAML and skill structure
         run: |
-          echo "Checking skill directory structure..."
-          ERRORS=0
+          uv run -s scripts/audit-skills.py
 
-          for category_dir in skills/*/; do
-            for skill_dir in "$category_dir"*/; do
-              if [ -d "$skill_dir" ]; then
-                # Recipes use pipeline.yaml; standard skills use skill.yaml + pipeline-cli.yaml
-                HAS_PIPELINE=0
-
-                [ -f "$skill_dir/pipeline-cli.yaml" ] && HAS_PIPELINE=1
-                [ -f "$skill_dir/pipeline-mcp.yaml" ] && HAS_PIPELINE=1
-                [ -f "$skill_dir/pipeline.yaml" ] && HAS_PIPELINE=1
-
-                if [ "$HAS_PIPELINE" -eq 0 ]; then
-                  echo "❌ Missing pipeline YAML in $skill_dir"
-                  ERRORS=$((ERRORS + 1))
-                fi
-              fi
-            done
-          done
-
-          SKILL_COUNT=$(find skills -name "skill.yaml" -o -name "pipeline.yaml" | wc -l)
-          echo "✅ Validated $SKILL_COUNT skills"
-
-          if [ "$ERRORS" -gt 0 ]; then
-            echo "Found $ERRORS structural errors"
-            exit 1
-          fi
-
-      - name: Validate pipeline job specs (expanso-cli)
-        # Repository-owned command lives in scripts/validate-pipelines.sh so it
-        # can be reproduced locally before pushing. Fail-closed: if the
-        # validator cannot be installed or run, this FAILS rather than passing
-        # by skipping. It previously skipped silently because its installer URL
-        # 404'd, so no pipeline was ever actually validated on a green run.
-        #
-        # Scope: job-spec structure only. It does not prove a pipeline's inner
-        # component configuration is valid; `expanso-edge validate` is stricter
-        # and still rejects most recipes.
-        run: ./scripts/validate-pipelines.sh
-
-      - name: Run skills audit
+      - name: Validate every job spec and pipeline config
         run: |
-          if command -v uv &>/dev/null; then
-            uv run -s scripts/audit-skills.py
-          elif [ -f scripts/audit-skills.py ]; then
-            python3 scripts/audit-skills.py
-          else
-            echo "⚠️  Audit script not found — skipping"
-          fi
+          ./scripts/validate-pipelines.sh
+          uv run -s scripts/check-example-conformance.py
+          uv run -s scripts/check-feature-preservation.py
 
-      - name: Check Claude plugin (plugin/)
-        # Fails if plugin/skills/find-expanso-skill/references/proven-jobs.md
-        # drifts from skills/jobs/*/skill.yaml, or if the plugin breaks a
-        # directory pre-submission rule that can be checked offline.
+      - name: Execute CLI variants on Expanso Edge
         run: |
-          pip install pyyaml
-          python3 scripts/build-plugin.py --check
+          uv run -s scripts/test-skills.py \
+            --variant cli \
+            --no-cache \
+            --max-reruns 1 \
+            --report .conformance/full-cli.json
 
-      - name: Validate catalog
+      - name: Execute MCP variants on Expanso Edge
         run: |
-          if [ -f catalog.json ]; then
-            python3 -c 'import json; data=json.load(open("catalog.json")); print("catalog.json valid —", len(data) if isinstance(data, list) else len(data.get("skills", [])), "entries")'
-          fi
-          if [ -f catalog-minimal.json ]; then
-            python3 -c 'import json; json.load(open("catalog-minimal.json")); print("catalog-minimal.json valid")'
-          fi
+          uv run -s scripts/test-skills.py \
+            --variant mcp \
+            --no-cache \
+            --max-reruns 1 \
+            --report .conformance/full-mcp.json
+
+      - name: Execute recipes and standalone variants on Expanso Edge
+        run: |
+          uv run -s scripts/test-recipes.py \
+            --report .conformance/recipe-execution.json
+
+      - name: Check generated reports and catalogs
+        run: |
+          uv run -s scripts/validate-skills.py --check
+          uv run -s scripts/build-catalog.py --check
+          uv run -s scripts/build-plugin.py --check
+          uv run -s scripts/build-example-conformance.py --check
+
+      - name: Install browser test dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Test copy feedback, accessibility, and phone layout
+        run: npm run test:site
+
+      - name: Upload execution evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: example-conformance-evidence
+          path: |
+            .conformance/full-cli.json
+            .conformance/full-mcp.json
+            .conformance/recipe-execution.json
+            playwright-report/
+          if-no-files-found: error

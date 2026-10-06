@@ -28,6 +28,10 @@ build/
 htmlcov/
 .tox/
 .nox/
+node_modules/
+playwright-report/
+test-results/
+.conformance/
 
 # Credentials (never commit!)
 credentials.yaml

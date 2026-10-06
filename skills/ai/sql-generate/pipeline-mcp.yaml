@@ -2,7 +2,7 @@
 # ==========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/generate \
 #     -d '{"description": "Get all users who signed up last month"}'
 
@@ -48,6 +48,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let response = this.choices.0.message.content.parse_json().catch({
@@ -64,7 +65,7 @@ config:
             "model": "gpt-4o-mini",
             "dialect": meta("dialect"),
             "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

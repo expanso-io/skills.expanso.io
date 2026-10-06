@@ -2,7 +2,7 @@
 # ===========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/truncate \
 #     -d '{"text": "This is a long text", "length": 15, "suffix": "..."}'
 
@@ -46,14 +46,14 @@ config:
             "mode": "mcp",
             "max_length": $length,
             "suffix": $suffix,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [text-truncate] ${! root.original_length } -> ${! root.final_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [text-truncate] ${! this.original_length } -> ${! this.final_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     sync_response: {}

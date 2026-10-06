@@ -23,8 +23,7 @@ config:
           root.picked_keys = $picked_keys
           root.picked_count = $picked_keys.length()
           root.omitted_count = $all_keys.length() - $picked_keys.length()
-          root.metadata = {"skill": "object-pick", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "object-pick", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

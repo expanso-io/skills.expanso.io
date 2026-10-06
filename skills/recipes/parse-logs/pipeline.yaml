@@ -20,19 +20,19 @@ config:
           root = this
           let content = this.string()
 
-          root.detected_format = if content.has_prefix("{") || content.has_prefix("[") {
+          root.detected_format = if $content.has_prefix("{") || $content.has_prefix("[") {
             "json"
-          } else if content.re_match("^<\\d+>") {
+          } else if $content.re_match("^<\\d+>") {
             "syslog"
-          } else if content.re_match("\\d+\\.\\d+\\.\\d+\\.\\d+.*HTTP/") {
+          } else if $content.re_match("\\d+\\.\\d+\\.\\d+\\.\\d+.*HTTP/") {
             "access_log"
-          } else if content.count(",") >= 2 && !content.contains("{") {
+          } else if $content.contains(",") && !$content.contains("{") {
             "csv"
           } else {
             "unknown"
           }
 
-          root.original = content
+          root.original = $content
           meta log_format = root.detected_format
 
       # Step 2: Parse based on detected format
@@ -40,19 +40,12 @@ config:
           # JSON logs
           - check: 'meta("log_format") == "json"'
             processors:
-              - try:
-                  - json_documents:
-                      parts: []
-                  - mapping: |
-                      root = this
-                      root.timestamp = this.timestamp.or(this."@timestamp").or(now())
-                      root.level = this.level.or(this.severity).or("INFO").uppercase()
-                      root.message = this.message.or(this.msg).or("")
-                catch:
-                  - mapping: |
-                      root.parse_error = error()
-                      root.format = "json"
-                      meta log_format = "parse_failed"
+              - mapping: |
+                  let parsed = this.original.parse_json().catch(null)
+                  root = if $parsed == null { {"raw_content": this.original, "parse_error": "invalid JSON"} } else { $parsed }
+                  root.timestamp = root.timestamp.or(root."@timestamp").or(now())
+                  root.level = root.level.or(root.severity).or("INFO").uppercase()
+                  root.message = root.message.or(root.msg).or("")
 
           # Access logs (Apache/Nginx)
           - check: 'meta("log_format") == "access_log"'
@@ -86,11 +79,12 @@ config:
           # CSV logs
           - check: 'meta("log_format") == "csv"'
             processors:
-              - csv:
-                  columns: ["timestamp", "level", "service", "message"]
               - mapping: |
-                  root = this
-                  root.level = this.level.uppercase()
+                  let fields = this.original.split(",")
+                  root.timestamp = $fields.index(0).or("")
+                  root.level = $fields.index(1).or("INFO").uppercase()
+                  root.service = $fields.index(2).or("")
+                  root.message = $fields.slice(3).join(",")
 
           # Unknown format - keep original
           - processors:
@@ -108,23 +102,25 @@ config:
 
   output:
     switch:
+      cases:
       # Parsed logs → analytics
-      - check: 'meta("log_format") != "parse_failed" && meta("log_format") != "unknown"'
-        output:
-          http_client:
-            url: "${ANALYTICS_ENDPOINT:http://analytics:8080}/logs"
-            verb: POST
-            headers:
-              Content-Type: application/json
-            batching:
-              count: 100
-              period: 5s
+        - check: 'meta("log_format") != "parse_failed" && meta("log_format") != "unknown"'
+          output:
+            http_client:
+              url: "https://${ANALYTICS_HOST}/logs"
+              verb: POST
+              headers:
+                Authorization: "Bearer ${ANALYTICS_TOKEN}"
+                Content-Type: application/json
+              batching:
+                count: 100
+                period: 5s
 
       # Failed/unknown → DLQ
-      - output:
-          file:
-            path: "/var/log/expanso/dlq/${!timestamp_unix_date('2006-01-02')}/unparsed.jsonl"
-            codec: lines
+        - output:
+            file:
+              path: "/var/log/expanso/dlq/${!timestamp_unix_date('2006-01-02')}/unparsed.jsonl"
+              codec: lines
 
 logger:
   level: INFO

@@ -33,7 +33,7 @@ config:
             "skill": "policy-check",
             "mode": "cli",
             "rules_checked": $deny_rules.length(),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -43,5 +43,4 @@ config:
             [policy-check] Allowed: ${! this.allowed } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

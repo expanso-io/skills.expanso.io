@@ -27,8 +27,7 @@ config:
           root.original = $input
           root.original_length = $input.length()
           root.target_length = $target
-          root.metadata = {"skill": "string-pad", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "string-pad", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

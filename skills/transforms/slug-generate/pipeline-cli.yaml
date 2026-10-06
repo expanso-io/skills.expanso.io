@@ -2,8 +2,8 @@
 # ===========================================
 #
 # Usage:
-#   echo "Hello World! This is a Test" | expanso-edge run pipeline-cli.yaml
-#   SEPARATOR=_ echo "Hello World" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -20,35 +20,35 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          meta separator = env("SEPARATOR").or("-")
+          let separator = env("SEPARATOR").or("-")
+          meta separator = $separator
           let text = content().trim()
 
           # Convert to slug
           let slug = $text.lowercase()
           # Replace spaces with separator
-          let slug = $slug.re_replace_all("\\s+", meta("separator"))
+          let slug = $slug.re_replace_all("\\s+", $separator)
           # Remove special characters
-          let slug = $slug.re_replace_all("[^a-z0-9" + meta("separator") + "]", "")
+          let slug = $slug.re_replace_all("[^a-z0-9" + $separator + "]", "")
           # Remove multiple separators
-          let slug = $slug.re_replace_all(meta("separator") + "+", meta("separator"))
+          let slug = $slug.re_replace_all($separator + "+", $separator)
           # Trim separators from ends
-          let slug = $slug.trim(meta("separator"))
+          let slug = $slug.trim($separator)
 
           root.slug = $slug
           root.original = $text
-          root.separator = meta("separator")
+          root.separator = $separator
           root.metadata = {
             "skill": "slug-generate",
             "mode": "cli",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [slug-generate] "${! root.original }" -> "${! root.slug }" (trace: ${! meta("trace_id").slice(0, 8) })
+            [slug-generate] "${! this.original }" -> "${! this.slug }" (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

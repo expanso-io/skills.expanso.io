@@ -5,7 +5,7 @@
 #
 # Usage:
 #   # Start the server
-#   GMAIL_TOKEN=... OPENAI_API_KEY=... PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   # Call from OpenClaw
 #   "Triage my inbox and find any urgent emails"
@@ -42,30 +42,94 @@ config:
           let provider = this.provider.or("gmail")
           let folder = this.folder.or("INBOX")
           let limit = this.limit.or(50)
+          let since_hours = this.since_hours.or(24)
 
           meta provider = $provider
           meta folder = $folder
           meta limit = $limit
+          meta since_hours = $since_hours
+          meta extract_calendar_events = this.extract_calendar_events.or(true)
 
-          root = if !["gmail", "outlook", "imap"].contains($provider) {
-            throw("Invalid provider. Use: gmail, outlook, or imap")
-          } else { "" }
+          root = if !["gmail", "outlook", "fixture"].contains($provider) {
+            throw("Invalid provider. Use: gmail, outlook, or fixture")
+          } else {
+            {
+              "provider": $provider,
+              "fixture_mode": this.fixture_mode.or(false),
+              "fixture_emails": this.emails.or([])
+            }
+          }
 
       - log:
           level: INFO
           message: |
             [email-triage] MCP request: provider=${! meta("provider") } (trace: ${! meta("trace_id").slice(0, 8) })
 
-      # Fetch emails (simulated for demo)
-      - mapping: |
-          let sample_emails = [
-            {"id": "msg-001", "subject": "URGENT: Production issue", "from": "ops@company.com", "body": "Server needs attention.", "date": now()},
-            {"id": "msg-002", "subject": "Meeting: Sprint Review", "from": "pm@company.com", "body": "Let's meet Friday 3pm.", "date": now()},
-            {"id": "msg-003", "subject": "Weekly Digest", "from": "news@digest.com", "body": "This week's updates...", "date": now()}
-          ]
+      - switch:
+          - check: 'this.fixture_mode.or(false)'
+            processors:
+              - mapping: 'root.emails = this.fixture_emails.slice(0, meta("limit").number())'
+          - check: 'meta("provider") == "gmail"'
+            processors:
+              - mapping: |
+                  let api = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1")
+                  let query = ("label:" + meta("folder") + " newer_than:" + meta("since_hours") + "h").escape_url_query()
+                  root.url = $api + "/users/me/messages?q=" + $query + "&maxResults=" + meta("limit").string()
+                  meta gmail_api = $api
+              - http:
+                  url: '${! this.url }'
+                  verb: GET
+                  headers:
+                    Authorization: "Bearer ${GMAIL_TOKEN}"
+                  timeout: 30s
+                  retries: 3
+                  rate_limit: email_api
+              - mapping: |
+                  let ids = this.messages.or([]).map_each(message -> message.id)
+                  root = if $ids.length() == 0 { [{"_empty": true}] } else { $ids.map_each(id -> {"url": meta("gmail_api") + "/users/me/messages/" + id + "?format=metadata"}) }
+              - unarchive:
+                  format: json_array
+              - switch:
+                  - check: 'this._empty.or(false)'
+                    processors:
+                      - mapping: 'root = this'
+                  - processors:
+                      - http:
+                          url: '${! this.url }'
+                          verb: GET
+                          headers:
+                            Authorization: "Bearer ${GMAIL_TOKEN}"
+                          timeout: 30s
+                          retries: 3
+                          rate_limit: email_api
+                      - mapping: |
+                          let headers = this.payload.headers.or([]).fold({}, pair -> pair.tally.assign({(pair.value.name.lowercase()): pair.value.value}))
+                          root = {"id": this.id, "subject": $headers.get("subject").or(""), "from": $headers.get("from").or(""), "to": $headers.get("to").or(""), "date": $headers.get("date").or(""), "body": this.snippet.or(""), "has_attachment": this.payload.parts.or([]).any(part -> part.filename.or("").length() > 0)}
+              - archive:
+                  format: json_array
+              - mapping: 'root.emails = this.filter(email -> !email._empty.or(false))'
+          - check: 'meta("provider") == "outlook"'
+            processors:
+              - mapping: |
+                  let api = env("OUTLOOK_API_URL").or("https://graph.microsoft.com/v1.0")
+                  let fields = "id,subject,from,toRecipients,receivedDateTime,bodyPreview,hasAttachments"
+                  let since_date = (now().ts_unix() - (meta("since_hours").number() * 3600)).ts_format("2006-01-02T15:04:05Z")
+                  root.url = $api + "/me/mailFolders/" + meta("folder").escape_url_path() + "/messages?$top=" + meta("limit").string() + "&$select=" + fields + "&$filter=receivedDateTime%20ge%20" + $since_date.escape_url_query()
+              - http:
+                  url: '${! this.url }'
+                  verb: GET
+                  headers:
+                    Authorization: "Bearer ${OUTLOOK_TOKEN}"
+                  timeout: 30s
+                  retries: 3
+                  rate_limit: email_api
+              - mapping: |
+                  root.emails = this.value.or([]).map_each(email -> {"id": email.id, "subject": email.subject.or(""), "from": email.from.emailAddress.address.or(""), "to": email.toRecipients.or([]).map_each(recipient -> recipient.emailAddress.address), "date": email.receivedDateTime, "body": email.bodyPreview.or(""), "has_attachment": email.hasAttachments.or(false)})
+          - processors:
+              - mapping: 'root = throw("provider must be gmail, outlook, or fixture")'
 
-          root.emails = $sample_emails.slice(0, meta("limit"))
-          meta emails = root.emails
+      - mapping: |
+          meta emails_json = this.emails.format_json()
 
           root.messages = [
             {
@@ -81,32 +145,65 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       # Process results
       - mapping: |
-          let classifications = this.choices.0.message.content.parse_json().catch([])
-          let emails = meta("emails")
+          let parsed = this.choices.0.message.content.parse_json().catch([])
+          let classifications = if $parsed.type() == "array" { $parsed } else { [] }
+          let emails = meta("emails_json").parse_json().catch([])
 
           let processed = $emails.map_each(email -> email.merge($classifications.filter(x -> x.id == email.id).index(0).or({"category": "fyi", "priority": 3, "action": "review"})))
 
           let urgent = $processed.filter(e -> e.category == "urgent").length()
+          let action_count = $processed.filter(e -> e.category == "action-required").length()
+          let meeting_count = $processed.filter(e -> e.category == "meeting").length()
+          let calendar_events = if meta("extract_calendar_events") == "true" {
+            $processed.filter(e -> e.calendar_event != null).map_each(e -> e.calendar_event.merge({"email_id": e.id, "from": e.from, "subject": e.subject}))
+          } else {
+            []
+          }
+          let action_emails = $processed.filter(e -> e.category == "urgent" || e.category == "action-required")
 
           root.summary = {
             "processed": $processed.length(),
             "urgent_count": $urgent,
+            "action_required_count": $action_count,
+            "meetings_found": $meeting_count,
             "by_category": {
               "urgent": $urgent,
-              "action-required": $processed.filter(e -> e.category == "action-required").length(),
-              "meeting": $processed.filter(e -> e.category == "meeting").length(),
-              "fyi": $processed.filter(e -> e.category == "fyi").length()
+              "action-required": $action_count,
+              "meeting": $meeting_count,
+              "fyi": $processed.filter(e -> e.category == "fyi").length(),
+              "newsletter": $processed.filter(e -> e.category == "newsletter").length(),
+              "spam": $processed.filter(e -> e.category == "spam").length()
             }
           }
-          root.emails = $processed
+          root.emails = $processed.map_each(e -> {
+            "id": e.id,
+            "subject": e.subject,
+            "from": e.from,
+            "category": e.category,
+            "priority": e.priority,
+            "action": e.action,
+            "calendar_event": e.calendar_event.or(null)
+          })
+          root.calendar_events = $calendar_events
+          root.draft_responses = $action_emails.map_each(e -> {
+            "email_id": e.id,
+            "subject": "RE: " + e.subject,
+            "suggested_response": if e.category == "urgent" {
+              "I'm looking into this now. Will update you within the hour."
+            } else {
+              "Thank you for your email. I'll review and get back to you by [deadline]."
+            }
+          })
           root.metadata = {
             "skill": "email-triage",
             "mode": "mcp",
             "provider": meta("provider"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
+            "processing_time_ms": now().ts_sub(meta("start_time")).abs() / 1000000,
             "timestamp": now()
           }
 
@@ -117,6 +214,12 @@ config:
 
   output:
     sync_response: {}
+
+  rate_limit_resources:
+    - label: email_api
+      local:
+        count: 10
+        interval: 1s
 
 selector:
   match_labels:

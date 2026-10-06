@@ -4,7 +4,7 @@ description: Fan-out single stream to multiple destinations
 metadata:
   openclaw:
     requires:
-      bins: [expanso]
+      bins: [expanso-edge, expanso-cli]
     tags: [expanso, data-routing, data-pipeline, recipe]
 ---
 
@@ -23,7 +23,7 @@ Fan-out single stream to multiple destinations
 ./run.sh
 
 # Or run directly with Expanso CLI
-expanso run -c pipeline.yaml
+./run.sh
 ```
 
 ## Pipeline
@@ -32,7 +32,7 @@ The `pipeline.yaml` contains the complete Expanso configuration.
 
 ## Requirements
 
-- Expanso Edge installed (`clawhub install expanso`)
+- Expanso Edge and CLI v2.1.21 or newer installed
 - Required credentials configured (see pipeline.yaml for env vars)
 
 ## Testing

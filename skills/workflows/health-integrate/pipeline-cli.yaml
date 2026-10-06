@@ -29,12 +29,11 @@ config:
           root.schedule_adjustments = [
             {"event": "Gym session", "original": "6am", "suggested": "5pm", "reason": "Better recovery in evening"}
           ]
-          root.metadata = {"skill": "health-integrate", "mode": "cli", "trace_id": meta("trace_id")}
+          root.metadata = {"skill": "health-integrate", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4())}
 
       - log:
           level: INFO
           message: "[health-integrate] Readiness: ${! this.health_summary.readiness_score }%"
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

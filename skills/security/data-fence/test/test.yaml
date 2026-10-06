@@ -10,7 +10,6 @@ tests:
       json_contains:
         metadata:
           skill: "data-fence"
-          mode: "cli"
 
   - name: "removes blocked fields"
     input: '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"blocked_fields":["ssn"]}'

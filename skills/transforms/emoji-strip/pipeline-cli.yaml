@@ -25,8 +25,7 @@ config:
           root.original_length = $input.length()
           root.clean_length = $final.trim().length()
           root.removed_count = $input.length() - $final.trim().length()
-          root.metadata = {"skill": "emoji-strip", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "emoji-strip", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

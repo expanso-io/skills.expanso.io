@@ -34,8 +34,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Python dependencies
-        run: pip install pyyaml
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Build site with skills
         run: |
@@ -43,6 +43,7 @@ jobs:
           # copies are build leftovers and are overwritten here.
           cp catalog.json docs/
           cp catalog-minimal.json docs/
+          cp example-conformance.json docs/
 
           # Machine-readable per-skill validation status. Generated locally by
           # scripts/validate-skills.py against a recorded expanso-edge version,
@@ -70,7 +71,7 @@ jobs:
           echo "Total skills: $(find docs -mindepth 2 -maxdepth 2 -name pipeline-cli.yaml -print | wc -l)"
 
       - name: Generate SEO assets (sitemap, skill pages)
-        run: python scripts/build-seo.py --catalog catalog.json --output docs
+        run: uv run -s scripts/build-seo.py --catalog catalog.json --output docs
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -4,7 +4,7 @@
 # HTTP endpoint for image analysis.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/analyze \
 #     -H "Content-Type: application/json" \
@@ -57,17 +57,20 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let content = this.choices.0.message.content
-          let analysis = $content.parse_json().catch({
+          let parsed = $content.parse_json().catch({
             "raw_analysis": $content,
-            "objects": [],
-            "colors": [],
-            "text": "",
-            "scene_type": "unknown",
-            "composition": "unknown",
-            "mood": "neutral"
+          })
+          let analysis = $parsed.merge({
+            "objects": $parsed.objects.or([]),
+            "colors": $parsed.colors.or([]),
+            "text": $parsed.text.or(""),
+            "scene_type": $parsed.scene_type.or("unknown"),
+            "composition": $parsed.composition.or("unknown"),
+            "mood": $parsed.mood.or("neutral")
           })
 
           root.analysis = $analysis
@@ -77,7 +80,7 @@ config:
             "model": "gpt-4o-mini",
             "image_url": meta("image_url"),
             "object_count": $analysis.objects.length(),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

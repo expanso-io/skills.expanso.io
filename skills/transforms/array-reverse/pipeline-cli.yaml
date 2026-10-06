@@ -22,8 +22,7 @@ config:
           root.reversed = $reversed
           root.length = if $is_array { $parsed.length() } else { 0 }
           root.valid = $is_array
-          root.metadata = {"skill": "array-reverse", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "array-reverse", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

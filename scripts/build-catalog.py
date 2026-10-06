@@ -8,6 +8,7 @@ Build the skills catalog.json and organize skills into categories.
 
 Usage:
     uv run -s scripts/build-catalog.py
+    uv run -s scripts/build-catalog.py --check
     uv run -s scripts/build-catalog.py --source skills --target .
 """
 
@@ -453,7 +454,24 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Copy flat skills into target skills/<category>/ (disabled by default).",
     )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help=(
+            "Fail when committed catalogs differ from generated content; "
+            "ignore the intentionally dated generated field."
+        ),
+    )
     return parser.parse_args()
+
+
+def load_json(path: Path) -> dict | None:
+    """Read a JSON object, returning None for a missing or invalid file."""
+    try:
+        value = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+    return value if isinstance(value, dict) else None
 
 
 def main():
@@ -488,17 +506,7 @@ def main():
             print("\nCopying skills to categories...")
             copy_skills_to_categories(source_dir, target_dir, category_skills)
 
-    # Write catalog.json
-    from datetime import datetime, timezone
-
-    catalog["generated"] = datetime.now(timezone.utc).isoformat()
-
     catalog_path = target_dir / "catalog.json"
-    with open(catalog_path, "w") as f:
-        json.dump(catalog, f, indent=2)
-    print(f"\nWrote catalog to {catalog_path}")
-
-    # Also write a minimal catalog for quick lookups
     minimal_catalog = {
         "version": catalog["version"],
         "total_skills": catalog["total_skills"],
@@ -509,6 +517,32 @@ def main():
         },
     }
     minimal_path = target_dir / "catalog-minimal.json"
+
+    if args.check:
+        current_catalog = load_json(catalog_path)
+        current_minimal = load_json(minimal_path)
+        if current_catalog is not None:
+            current_catalog = {**current_catalog, "generated": None}
+        if current_catalog != catalog or current_minimal != minimal_catalog:
+            print(
+                "Catalogs are out of date; run "
+                "`uv run -s scripts/build-catalog.py`.",
+                file=sys.stderr,
+            )
+            raise SystemExit(1)
+        print("\nCatalogs are up to date.")
+        return
+
+    # Write catalog.json with a dated build record. --check compares all other
+    # fields so CI remains deterministic without erasing this evidence.
+    from datetime import datetime, timezone
+
+    catalog["generated"] = datetime.now(timezone.utc).isoformat()
+    with open(catalog_path, "w") as f:
+        json.dump(catalog, f, indent=2)
+    print(f"\nWrote catalog to {catalog_path}")
+
+    # Also write a minimal catalog for quick lookups.
     with open(minimal_path, "w") as f:
         json.dump(minimal_catalog, f, indent=2)
     print(f"Wrote minimal catalog to {minimal_path}")

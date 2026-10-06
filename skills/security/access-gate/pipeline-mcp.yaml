@@ -5,8 +5,7 @@
 # DENY-BY-DEFAULT: throws on no policy, no match, or explicit denial.
 #
 # Usage:
-#   ACCESS_POLICY="marketing-bot:slack-read:read" \
-#     expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:4195/access-gate \
 #     -d '{"agent":"marketing-bot","resource":"slack-read","action":"read"}'
 
@@ -29,8 +28,8 @@ config:
           let resource = $input.resource.or("")
           let action = $input.action.or("read")
 
-          if $agent == "" { throw("agent is required") }
-          if $resource == "" { throw("resource is required") }
+          if $agent == "" { root = throw("agent is required") }
+          if $resource == "" { root = throw("resource is required") }
 
           meta agent = $agent
           meta resource = $resource
@@ -39,12 +38,10 @@ config:
           # Load policy — DENY if not configured
           let policy_env = env("ACCESS_POLICY").or("")
           if $policy_env == "" {
-            throw("no ACCESS_POLICY configured — deny by default")
+            root = throw("no ACCESS_POLICY configured — deny by default")
           }
 
-          let policy_rules = $policy_env.split(",").map_each(rule ->
-            rule.split(":").map_each(p -> p.trim())
-          )
+          let policy_rules = $policy_env.split(",").map_each(rule -> rule.trim())
 
           root.agent = $agent
           root.resource = $resource
@@ -58,14 +55,11 @@ config:
           let action = this.action
           let rules = this.policy_rules
 
-          let matching_rules = $rules.filter(rule ->
-            (rule.index(0) == $agent || rule.index(0) == "*") &&
-            (rule.index(1) == $resource || rule.index(1) == "*") &&
-            (rule.index(2).or("read") == $action || rule.index(2).or("read") == "*")
-          )
+          let exact = $agent + ":" + $resource + ":" + $action
+          let matching_rules = $rules.filter(rule -> rule == $exact || rule == "*:*:*" || rule == "*:" + $resource + ":" + $action || rule == $agent + ":*:" + $action || rule == $agent + ":" + $resource + ":*" || rule == "*:*:" + $action || rule == "*:" + $resource + ":*" || rule == $agent + ":*:*")
 
           if $matching_rules.length() == 0 {
-            throw("access denied for agent " + $agent + " on resource " + $resource + " action " + $action)
+            root = throw("access denied for agent " + $agent + " on resource " + $resource + " action " + $action)
           }
 
           root.allowed = true
@@ -78,7 +72,7 @@ config:
             "agent": $agent,
             "resource": $resource,
             "allowed": true,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

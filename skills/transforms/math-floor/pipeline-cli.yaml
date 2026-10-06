@@ -15,8 +15,7 @@ config:
 
           root.floor = if $num != null { $num.floor() } else { null }
           root.original = $num
-          root.metadata = {"skill": "math-floor", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "math-floor", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

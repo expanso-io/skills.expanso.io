@@ -23,7 +23,7 @@ config:
           root.action = $action
           root.content = []
           root.schedule = []
-          root.metadata = {"skill": "marketing-auto", "mode": "mcp", "trace_id": meta("trace_id")}
+          root.metadata = {"skill": "marketing-auto", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4())}
 
   output:
     sync_response: {}

@@ -27,7 +27,7 @@ config:
           root.size_bytes = $size_bytes
           root.size_kb = ($size_bytes / 1024).floor()
           root.base64_length = $b64.length()
-          root.metadata = {"skill": "image-metadata", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "image-metadata", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

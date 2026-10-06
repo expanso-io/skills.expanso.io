@@ -11,7 +11,7 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          let content = content()
+          let content = content().string()
           let lines = $content.split("\n")
 
           # Find all heading lines (starting with #)
@@ -27,8 +27,7 @@ config:
           root.h1_count = $h1_count
           root.h2_count = $h2_count
           root.h3_count = $h3_count
-          root.metadata = {"skill": "markdown-toc", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "markdown-toc", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

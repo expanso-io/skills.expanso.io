@@ -1,20 +1,7 @@
 # Expanso Pipeline: gmail-read (CLI mode)
-# ==========================================
 #
-# Read emails from Gmail via the Gmail API.
-#
-# Usage:
-#   echo '{"query":"is:unread","limit":10}' | \
-#     GMAIL_ACCESS_TOKEN=ya29... expanso-edge run pipeline-cli.yaml
-#
-#   # Search for specific emails
-#   echo '{"query":"from:boss@company.com subject:review","limit":5}' | \
-#     GMAIL_ACCESS_TOKEN=ya29... expanso-edge run pipeline-cli.yaml
-#
-# Why Expanso Edge?
-#   Your Gmail OAuth token stays on YOUR machine.
-#   AI agents get clean email data — never your credentials.
-#   Compose with pii-redact to strip sensitive info before the agent sees it.
+# Validate with:
+#   expanso-edge validate pipeline-cli.yaml
 
 name: gmail-read-cli
 type: pipeline
@@ -26,131 +13,118 @@ config:
 
   pipeline:
     processors:
-      # ═══════════════════════════════════════════════════════════════════════
-      # STEP 1: Parse input and validate
-      # ═══════════════════════════════════════════════════════════════════════
       - mapping: |
-          meta trace_id = uuid_v4()
-          meta start_time = now()
-
           let input = content().parse_json()
-          let query = $input.query.or("is:unread")
-          let label = $input.label.or("INBOX")
+          let label = $input.label.or("INBOX").string()
           let limit = $input.limit.or(20)
-
-          # Validate limit range
-          if $limit < 1 || $limit > 500 {
-            throw("limit must be between 1 and 500")
-          }
-
-          # Validate label format (alphanumeric, underscores, common labels)
-          if !$label.re_match("^[A-Za-z0-9_-]{1,50}$") {
+          root = if $limit < 1 || $limit > 100 {
+            throw("limit must be between 1 and 100")
+          } else if !$label.re_match("^[A-Za-z0-9_-]{1,50}$") {
             throw("invalid label format")
-          }
-
-          meta query = $query
-          meta label = $label
-          meta limit = $limit
-          meta include_body = $input.include_body.or(true)
-
-          root.status = "initializing"
-          root.query = $query
-
-      - log:
-          level: INFO
-          message: |
-            [gmail-read] Searching query="${! meta("query") }", label=${! meta("label") }, limit=${! meta("limit") } (trace: ${! meta("trace_id").slice(0, 8) })
-
-      # ═══════════════════════════════════════════════════════════════════════
-      # STEP 2: Build URL from validated params and list messages
-      # ═══════════════════════════════════════════════════════════════════════
-      - mapping: |
-          let api_url = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1")
-          let q = meta("query")
-          let label = meta("label")
-          let limit = meta("limit")
-
-          root.url = $api_url + "/users/me/messages?q=" + $q + "&labelIds=" + $label + "&maxResults=" + $limit.string()
-
-      - try:
-          - http:
-              url: "${! this.url}"
-              verb: GET
-              headers:
-                Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
-                Content-Type: "application/json"
-              rate_limit: gmail_api
-        catch:
-          - mapping: |
-              root.source = "gmail"
-              root.resource = "messages.list"
-              root.schema_version = "1.0"
-              root.trace_id = meta("trace_id")
-              root.error = error()
-              root.data = []
-              root.count = 0
-              root.sensitivity = "raw"
-              root.metadata = {
-                "skill": "gmail-read",
-                "mode": "cli",
-                "trace_id": meta("trace_id"),
-                "success": false,
-                "error": error(),
-                "timestamp": now()
-              }
-          - log:
-              level: ERROR
-              message: |
-                [gmail-read] HTTP error: ${! error() } (trace: ${! meta("trace_id").slice(0, 8) })
-
-      # ═══════════════════════════════════════════════════════════════════════
-      # STEP 3: Structure output with canonical envelope
-      # ═══════════════════════════════════════════════════════════════════════
-      - mapping: |
-          # If we already have an error envelope from catch, pass through
-          if this.exists("error") && this.exists("source") {
-            root = this
           } else {
-            let response = this
-            let message_ids = $response.messages.or([]).map_each(m -> m.id)
-            let api_url = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1")
-
-            let emails = $message_ids.map_each(id -> {
-              "id": id,
-              "fetch_url": $api_url + "/users/me/messages/" + id
+            $input.assign({
+              "query": $input.query.or("is:unread"),
+              "label": $label,
+              "limit": $limit,
+              "_trace_id": uuid_v4()
             })
-
-            # Canonical output envelope
-            root.source = "gmail"
-            root.resource = "messages.list"
-            root.schema_version = "1.0"
-            root.trace_id = meta("trace_id")
-            root.data = $emails
-            root.count = $emails.length()
-            root.sensitivity = "raw"
-            root.metadata = {
-              "skill": "gmail-read",
-              "mode": "cli",
-              "query": meta("query"),
-              "label": meta("label"),
-              "trace_id": meta("trace_id"),
-              "email_count": $message_ids.length(),
-              "total_estimated": $response.resultSizeEstimate.or(0),
-              "timestamp": now()
-            }
           }
 
-      - log:
-          level: INFO
-          message: |
-            [gmail-read] Returned ${! this.count.or(0) } emails (trace: ${! meta("trace_id").slice(0, 8) })
+      - switch:
+          - check: 'this.fixture_mode.or(false)'
+            processors:
+              - mapping: |
+                  root.emails = this.fixture_emails.or([])
+                  root._context = this
+                  root._fixture = true
+                  root._total_estimated = this.fixture_total_estimated.or(this.fixture_emails.or([]).length())
+
+          - processors:
+              - mapping: |
+                  let base = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1").trim_suffix("/")
+                  meta context_json = this.format_json()
+                  meta gmail_api = $base
+                  meta list_url = $base + "/users/me/messages?q=" + this.query.escape_url_query() + "&labelIds=" + this.label.escape_url_query() + "&maxResults=" + this.limit.string()
+                  root = if !$base.re_match("^https://") { throw("GMAIL_API_URL must be an https URL") } else { {} }
+              - http:
+                  url: '${! meta("list_url") }'
+                  verb: GET
+                  headers:
+                    Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
+                    Accept: application/json
+                  timeout: 30s
+                  retries: 3
+                  rate_limit: gmail_api
+              - mapping: |
+                  let ids = this.messages.or([]).map_each(message -> message.id)
+                  meta total_estimated = this.resultSizeEstimate.or(0)
+                  root = if $ids.length() == 0 {
+                    [{"_empty": true}]
+                  } else {
+                    $ids.map_each(id -> {"url": meta("gmail_api") + "/users/me/messages/" + id + "?format=metadata"})
+                  }
+              - unarchive:
+                  format: json_array
+              - switch:
+                  - check: 'this._empty.or(false)'
+                    processors:
+                      - mapping: 'root = this'
+                  - processors:
+                      - http:
+                          url: '${! this.url }'
+                          verb: GET
+                          headers:
+                            Authorization: "Bearer ${GMAIL_ACCESS_TOKEN}"
+                            Accept: application/json
+                          timeout: 30s
+                          retries: 3
+                          rate_limit: gmail_api
+                      - mapping: |
+                          let headers = this.payload.headers.or([]).fold({}, pair -> pair.tally.assign({(pair.value.name.lowercase()): pair.value.value}))
+                          root = {
+                            "id": this.id,
+                            "subject": $headers.get("subject").or(""),
+                            "from": $headers.get("from").or(""),
+                            "to": $headers.get("to").or(""),
+                            "date": $headers.get("date").or(""),
+                            "snippet": this.snippet.or(""),
+                            "labels": this.labelIds.or([]),
+                            "has_attachment": this.payload.parts.or([]).any(part -> part.filename.or("").length() > 0)
+                          }
+              - archive:
+                  format: json_array
+              - mapping: |
+                  root.emails = this.filter(email -> !email._empty.or(false))
+                  root._context = meta("context_json").parse_json()
+                  root._fixture = false
+                  root._total_estimated = meta("total_estimated").or("0").number()
+
+      - mapping: |
+          let context = this._context
+          root.source = "gmail"
+          root.resource = "messages"
+          root.schema_version = "1.0"
+          root.trace_id = $context._trace_id
+          root.data = this.emails
+          root.count = this.emails.length()
+          root.sensitivity = "raw"
+          root.metadata = {
+            "skill": "gmail-read",
+            "mode": "cli",
+            "query": $context.query,
+            "label": $context.label,
+            "fixture": this._fixture,
+            "email_count": this.emails.length(),
+            "total_estimated": this._total_estimated,
+            "trace_id": $context._trace_id,
+            "timestamp": now()
+          }
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}
 
-rate_limit_resources:
-  - label: gmail_api
-    local:
-      count: 10
-      interval: 1s
+  rate_limit_resources:
+    - label: gmail_api
+      local:
+        count: 10
+        interval: 1s

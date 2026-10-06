@@ -2,7 +2,7 @@
 # =========================================
 #
 # Usage:
-#   echo '[{"name":"Alice","age":30}]' | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -41,15 +41,14 @@ config:
             "skill": "json-to-csv",
             "mode": "cli",
             "delimiter": $delimiter,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [json-to-csv] Converted ${! root.row_count } rows (trace: ${! meta("trace_id").slice(0, 8) })
+            [json-to-csv] Converted ${! this.row_count } rows (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

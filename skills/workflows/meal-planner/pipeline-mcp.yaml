@@ -29,12 +29,13 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let result = this.choices.0.message.content.parse_json().catch({})
           root.meal_plan = $result.meal_plan.or([])
           root.grocery_list = $result.grocery_list.or([])
-          root.metadata = {"skill": "meal-planner", "mode": "mcp", "trace_id": meta("trace_id")}
+          root.metadata = {"skill": "meal-planner", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4())}
 
   output:
     sync_response: {}

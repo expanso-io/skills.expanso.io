@@ -4,7 +4,7 @@ description: Load JSON files from S3 into PostgreSQL with upsert support
 metadata:
   openclaw:
     requires:
-      bins: [expanso]
+      bins: [expanso-edge, expanso-cli]
     tags: [expanso, data-routing, s3, postgres, etl, recipe]
 ---
 

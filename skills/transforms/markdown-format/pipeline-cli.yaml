@@ -2,9 +2,9 @@
 # =============================================
 #
 # Usage:
-#   FORMAT=heading LEVEL=2 echo "My Title" | expanso-edge run pipeline-cli.yaml
-#   FORMAT=code LANG=python echo "print('hello')" | expanso-edge run pipeline-cli.yaml
-#   FORMAT=list echo "Item 1\nItem 2\nItem 3" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -54,15 +54,14 @@ config:
             "skill": "markdown-format",
             "mode": "cli",
             "format_type": $format,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [markdown-format] Applied ${! root.format } (trace: ${! meta("trace_id").slice(0, 8) })
+            [markdown-format] Applied ${! this.format } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

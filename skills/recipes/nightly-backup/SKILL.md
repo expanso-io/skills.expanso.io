@@ -4,7 +4,7 @@ description: Scheduled backup pipeline for database tables
 metadata:
   openclaw:
     requires:
-      bins: [expanso]
+      bins: [expanso-edge, expanso-cli]
     tags: [expanso, enterprise-migration, data-pipeline, recipe]
 ---
 
@@ -23,7 +23,7 @@ Scheduled backup pipeline for database tables
 ./run.sh
 
 # Or run directly with Expanso CLI
-expanso run -c pipeline.yaml
+./run.sh
 ```
 
 ## Pipeline
@@ -32,7 +32,7 @@ The `pipeline.yaml` contains the complete Expanso configuration.
 
 ## Requirements
 
-- Expanso Edge installed (`clawhub install expanso`)
+- Expanso Edge and CLI v2.1.21 or newer installed
 - Required credentials configured (see pipeline.yaml for env vars)
 
 ## Testing

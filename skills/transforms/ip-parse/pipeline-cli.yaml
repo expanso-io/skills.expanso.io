@@ -27,8 +27,7 @@ config:
           root.version = if $is_ipv4 { 4 } else if $is_ipv6 { 6 } else { 0 }
           root.is_private = $ip.has_prefix("10.") || $ip.has_prefix("192.168.") || $ip.has_prefix("172.16.")
           root.is_loopback = $ip == "127.0.0.1" || $ip == "::1"
-          root.metadata = {"skill": "ip-parse", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "ip-parse", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -4,7 +4,7 @@ description: Stream Kafka topics to S3 with partitioning and batching
 metadata:
   openclaw:
     requires:
-      bins: [expanso]
+      bins: [expanso-edge, expanso-cli]
     tags: [expanso, data-routing, kafka, s3, recipe]
 ---
 
@@ -39,7 +39,7 @@ The `pipeline.yaml` streams from Kafka to S3 with:
 
 ## Requirements
 
-- Expanso Edge installed (`clawhub install expanso`)
+- Expanso Edge and CLI v2.1.21 or newer installed
 - Kafka broker access
 - AWS credentials with S3 write permissions
 

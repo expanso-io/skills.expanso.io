@@ -6,16 +6,13 @@
 #
 # Usage:
 #   # Keep only specific fields
-#   echo '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"allowed_fields":["id","name"]}' | \
-#     expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 #   # Block specific fields
-#   echo '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"blocked_fields":["ssn"]}' | \
-#     expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 #   # Via environment variable
-#   echo '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}]}' | \
-#     FENCE_ALLOWED_FIELDS="id,name" expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Compose: access-gate → slack-read → pii-redact → data-fence → audit-log
 
@@ -89,26 +86,11 @@ config:
           let rows_removed = $original_count - $truncated.length()
 
           # Apply field filtering to each item
-          let filtered = $truncated.map_each(item ->
-            if $allowed.length() > 0 {
-              # Allowlist mode: only keep specified fields
-              $allowed.fold({}, pair ->
-                pair.value.merge(
-                  if item.exists($allowed.index(pair.key)) {
-                    { ($allowed.index(pair.key)): item.index($allowed.index(pair.key)) }
-                  } else {
-                    {}
-                  }
-                )
-              )
-            } else if $blocked.length() > 0 {
-              # Blocklist mode: remove specified fields
-              item.without($blocked.index(0).or("")).without($blocked.index(1).or("")).without($blocked.index(2).or("")).without($blocked.index(3).or("")).without($blocked.index(4).or(""))
-            } else {
-              # No filtering rules — pass through
-              item
-            }
-          )
+          let filtered = $truncated.map_each(item -> if $allowed.length() > 0 {
+            item.filter(pair -> $allowed.contains(pair.key))
+          } else if $blocked.length() > 0 {
+            item.filter(pair -> !$blocked.contains(pair.key))
+          } else { item })
 
           # Return as array or single object based on input type
           root.data = if $is_array { $filtered } else { $filtered.index(0) }
@@ -116,7 +98,7 @@ config:
           root.metadata = {
             "skill": "data-fence",
             "mode": "cli",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "original_row_count": $original_count,
             "filtered_row_count": $filtered.length(),
             "rows_removed": $rows_removed,
@@ -131,5 +113,4 @@ config:
             [data-fence] Filtered: ${! this.metadata.filtered_row_count } rows, ${! this.metadata.rows_removed } removed (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

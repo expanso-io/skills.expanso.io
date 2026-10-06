@@ -1,7 +1,7 @@
 # Skill: gmail-read
 # Version: 1.0.0
 #
-# Read emails from Gmail via the Gmail API or IMAP.
+# Read message metadata and snippets from the Gmail API.
 # Gmail OAuth tokens are read from the executing node's environment and sent to
 # the Gmail API (Google) as the bearer credential. They are not sent to Expanso
 # Cloud and are not exposed to the calling agent. Mail data is fetched from
@@ -24,15 +24,6 @@ credentials:
   - name: GMAIL_ACCESS_TOKEN
     required: true
     description: Gmail OAuth2 access token
-  - name: GMAIL_REFRESH_TOKEN
-    required: false
-    description: Gmail OAuth2 refresh token for long-lived access
-  - name: GMAIL_CLIENT_ID
-    required: false
-    description: OAuth2 client ID (for token refresh)
-  - name: GMAIL_CLIENT_SECRET
-    required: false
-    description: OAuth2 client secret (for token refresh)
 
 # Skill inputs
 inputs:
@@ -50,19 +41,15 @@ inputs:
     type: integer
     default: 20
     description: Maximum emails to retrieve (1-100)
-  - name: include_body
-    type: boolean
-    default: true
-    description: Include email body content (set false for headers only)
 
 # Skill outputs
 outputs:
   - name: emails
     type: array
-    description: "Array of emails: {id, subject, from, to, date, snippet, body, labels}"
+    description: "Array of messages: {id, subject, from, to, date, snippet, labels, has_attachment}"
   - name: metadata
     type: object
-    description: "Processing metadata: {skill, trace_id, email_count, query, timestamp}"
+    description: "Processing metadata: {skill, trace_id, email_count, total_estimated, query, timestamp}"
 
 # Backend options
 backends:
@@ -70,6 +57,10 @@ backends:
     type: remote
     requires: [GMAIL_ACCESS_TOKEN]
     description: Gmail API via OAuth2 (requires gmail.readonly scope)
+  - name: fixture
+    type: local
+    requires: []
+    description: Explicit deterministic Gmail messages for CI
 
 # Expanso components used
 components:

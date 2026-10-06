@@ -13,10 +13,12 @@
 # structure matches the proven run's config; long mappings are only
 # rewrapped. Set
 # these values for your environment:
-#   .input.sql_select.dsn = postgres://USER:PASS@SRC_HOST:5432/SRC_DB
+#   .input.sql_select.dsn =
+#     postgres://USER:PASS@SRC_HOST:5432/SRC_DB?sslmode=verify-full
 #   .output.switch.cases[0].output.file.path =
 #     /var/tmp/expanso-migration/out/rejects.jsonl
-#   ...sql_insert.dsn = postgres://USER:PASS@DST_HOST:5432/DST_DB
+#   ...sql_insert.dsn =
+#     postgres://USER:PASS@DST_HOST:5432/DST_DB?sslmode=verify-full
 # The selector pipeline_role: migration is an example; label your node
 # to match or change it. Use underscores in label keys.
 #
@@ -30,7 +32,7 @@ config:
   input:
     sql_select:
       driver: postgres
-      dsn: "postgres://USER:PASS@SRC_HOST:5432/SRC_DB"
+      dsn: "postgres://USER:PASS@SRC_HOST:5432/SRC_DB?sslmode=verify-full"
       table: customers
       columns:
         - cust_no
@@ -84,7 +86,7 @@ config:
         - output:
             sql_insert:
               driver: postgres
-              dsn: "postgres://USER:PASS@DST_HOST:5432/DST_DB"
+              dsn: "postgres://USER:PASS@DST_HOST:5432/DST_DB?sslmode=verify-full"
               table: customers
               columns:
                 - id

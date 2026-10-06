@@ -1,32 +1,27 @@
 # Skill: seo-pipeline
 # Version: 1.0.0
 #
-# Complete SEO automation: analysis, reporting, and content optimization.
-# Inspired by @kr2idiots' $20/mo SEO workflow.
+# Fetch and inspect a page's rendered source for on-page SEO signals.
 
 name: seo-pipeline
 version: 1.0.0
-description: Complete SEO workflow with analysis, reporting, and AI content optimization
-
-credentials:
-  - name: GOOGLE_SEARCH_CONSOLE_TOKEN
-    required: false
-  - name: AHREFS_API_KEY
-    required: false
-  - name: OPENAI_API_KEY
-    required: true
+description: Inspect a public HTTPS page for title, description, headings, links, and image alt text
 
 inputs:
   - name: action
     type: string
     default: analyze
-    enum: [analyze, report, optimize, keywords, backlinks]
+    enum: [analyze]
   - name: url
     type: string
     required: false
   - name: keywords
     type: array
     default: []
+  - name: html
+    type: string
+    required: false
+    description: Optional captured HTML fixture; when omitted the pipeline fetches url
 
 outputs:
   - name: analysis
@@ -37,10 +32,10 @@ outputs:
     type: object
 
 backends:
-  - name: openai
-    type: remote
+  - name: local
+    type: local
 
 components:
   inputs: [stdin, http_server]
-  processors: [mapping, http, openai_chat_completion, log]
+  processors: [mapping, http, switch, log]
   outputs: [stdout, sync_response]

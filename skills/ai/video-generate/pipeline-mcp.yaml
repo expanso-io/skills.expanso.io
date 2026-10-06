@@ -5,7 +5,7 @@
 # HTTP server mode for MCP/OpenClaw integration.
 #
 # Usage:
-#   REPLICATE_API_TOKEN=r8_xxx PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/generate \
 #     -H "Content-Type: application/json" \
@@ -26,81 +26,97 @@ config:
     processors:
       # 1. Validate and parse input
       - mapping: |
-          meta trace_id = uuid_v4()
-          meta start_time = now()
-
           let body = content().parse_json()
           let prompt = $body.prompt.or("")
 
           if $prompt == "" {
-            throw("prompt field is required")
+            root = throw("prompt field is required")
           }
 
-          root = {
-            "version": "5522017e7bc92c4b2d90cc09a65051d7ade8e26c2932444ba16ca0f7a9b5cbb2",
-            "input": {
-              "prompt": $prompt,
-              "prompt_optimizer": true
-            }
-          }
+          root.prompt = $prompt
+          root.fixture_mode = $body.fixture_mode.or(false)
+          root.fixture_video_url = $body.fixture_video_url.or("https://fixtures.example/video.mp4")
+          root._trace_id = uuid_v4()
+          root._start_time = now()
 
-      # 2. Submit to Replicate API
-      - http:
-          url: "https://api.replicate.com/v1/predictions"
-          verb: POST
-          headers:
-            Authorization: "Bearer ${REPLICATE_API_TOKEN}"
-            Content-Type: "application/json"
+      # 2. Use an explicit deterministic fixture or call Replicate.
+      - switch:
+          - check: 'this.fixture_mode.or(false)'
+            processors:
+              - mapping: |
+                  root.video_url = this.fixture_video_url
+                  root.status = "succeeded"
+                  root.error = null
+                  root.metadata = {
+                    "skill": "video-generate",
+                    "mode": "mcp",
+                    "model": "minimax/video-01",
+                    "prediction_id": "fixture-video-001",
+                    "fixture": true,
+                    "trace_id": this._trace_id,
+                    "started_at": this._start_time,
+                    "completed_at": now()
+                  }
 
-      # 3. Extract prediction ID and poll URL
-      - mapping: |
-          meta prediction_id = this.id
-          meta poll_url = this.urls.get
-          meta status = this.status
-          root = this
+          - processors:
+              - mapping: |
+                  meta trace_id = this._trace_id
+                  meta start_time = this._start_time
+                  root = {
+                    "version": "5522017e7bc92c4b2d90cc09a65051d7ade8e26c2932444ba16ca0f7a9b5cbb2",
+                    "input": {
+                      "prompt": this.prompt,
+                      "prompt_optimizer": true
+                    }
+                  }
+              - http:
+                  url: "https://api.replicate.com/v1/predictions"
+                  verb: POST
+                  headers:
+                    Authorization: "Bearer ${REPLICATE_API_TOKEN}"
+                    Content-Type: "application/json"
+              - mapping: |
+                  meta prediction_id = this.id
+                  meta poll_url = this.urls.get
+                  meta status = this.status
+                  root = this
+              - while:
+                  at_least_once: true
+                  max_loops: 60
+                  check: 'meta("status") == "starting" || meta("status") == "processing"'
+                  processors:
+                    - sleep:
+                        duration: "3s"
+                    - http:
+                        url: '${! meta("poll_url") }'
+                        verb: GET
+                        headers:
+                          Authorization: "Bearer ${REPLICATE_API_TOKEN}"
+                    - mapping: |
+                        meta status = this.status
+                        root = this
+              - mapping: |
+                  let status = this.status
+                  let output = this.output
 
-      # 4. Poll for completion (up to 60 attempts, 3s each = 3 min max)
-      - while:
-          at_least_once: true
-          max_loops: 60
-          check: 'meta("status") == "starting" || meta("status") == "processing"'
-          processors:
-            - sleep:
-                duration: "3s"
-            - http:
-                url: '${! meta("poll_url") }'
-                verb: GET
-                headers:
-                  Authorization: "Bearer ${REPLICATE_API_TOKEN}"
-            - mapping: |
-                meta status = this.status
-                root = this
-
-      # 5. Format final output
-      - mapping: |
-          let status = this.status
-          let output = this.output
-
-          root.video_url = if $status == "succeeded" { $output.index(0).or("") } else { "" }
-          root.status = $status
-          root.error = if $status == "failed" { this.error } else { null }
-          root.metadata = {
-            "skill": "video-generate",
-            "mode": "mcp",
-            "model": "minimax/video-01",
-            "prediction_id": meta("prediction_id"),
-            "trace_id": meta("trace_id"),
-            "started_at": meta("start_time"),
-            "completed_at": now()
-          }
+                  root.video_url = if $status == "succeeded" { $output.index(0).or("") } else { "" }
+                  root.status = $status
+                  root.error = if $status == "failed" { this.error } else { null }
+                  root.metadata = {
+                    "skill": "video-generate",
+                    "mode": "mcp",
+                    "model": "minimax/video-01",
+                    "prediction_id": meta("prediction_id"),
+                    "fixture": false,
+                    "trace_id": meta("trace_id").or(uuid_v4()),
+                    "started_at": meta("start_time"),
+                    "completed_at": now()
+                  }
 
       - log:
           level: INFO
           message: |
-            [video-generate] Status: ${! this.status } (trace: ${! meta("trace_id").slice(0, 8) })
+            [video-generate] Status: ${! this.status } (trace: ${! this.metadata.trace_id.slice(0, 8) })
 
   output:
-    sync_response:
-      status: '${! if this.status == "succeeded" { 200 } else { 500 }}'
-      headers:
-        Content-Type: application/json
+    sync_response: {}

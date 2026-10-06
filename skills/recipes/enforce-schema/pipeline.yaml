@@ -24,17 +24,16 @@ config:
 
       # Step 2: Parse JSON with error handling
       - try:
-          - json_documents:
-              parts: []
+          - mapping: 'root = content().parse_json()'
           - mapping: |
               meta parse_status = "success"
-        catch:
+      - catch:
           - mapping: |
               root = {
                 "message_id": meta("message_id"),
                 "error_type": "json_parse_error",
                 "error_message": error(),
-                "original_content": meta("original_content").bytes(0, 500),
+                "original_content": meta("original_content").slice(0, 500),
                 "received_at": meta("received_at"),
                 "dlq_entry_time": now()
               }
@@ -47,10 +46,22 @@ config:
             processors:
               - try:
                   - json_schema:
-                      schema_path: "file:///etc/expanso/schemas/sensor-schema.json"
+                      schema: |
+                        {
+                          "$schema": "https://json-schema.org/draft/2020-12/schema",
+                          "type": "object",
+                          "required": ["event_id", "event_type", "timestamp", "data"],
+                          "properties": {
+                            "event_id": {"type": "string", "minLength": 1},
+                            "event_type": {"type": "string", "minLength": 1},
+                            "timestamp": {"type": "string", "format": "date-time"},
+                            "data": {"type": "object"}
+                          },
+                          "additionalProperties": true
+                        }
                   - mapping: |
                       meta validation_status = "passed"
-                catch:
+              - catch:
                   - mapping: |
                       root = {
                         "message_id": meta("message_id"),
@@ -76,24 +87,25 @@ config:
 
   output:
     switch:
+      cases:
       # Valid data → analytics
-      - check: 'meta("validation_status") == "passed"'
-        output:
-          http_client:
-            url: "${ANALYTICS_ENDPOINT:http://analytics:8080}/ingest"
-            verb: POST
-            headers:
-              Content-Type: application/json
-            batching:
-              count: 100
-              period: 5s
-            max_retries: 3
+        - check: 'meta("validation_status") == "passed"'
+          output:
+            http_client:
+              url: "https://${ANALYTICS_HOST}/ingest"
+              verb: POST
+              headers:
+                Authorization: "Bearer ${ANALYTICS_TOKEN}"
+                Content-Type: application/json
+              batching:
+                count: 100
+                period: 5s
 
       # Invalid data → DLQ
-      - output:
-          file:
-            path: "/var/log/expanso/dlq/${!timestamp_unix_date('2006-01-02')}/failures.jsonl"
-            codec: lines
+        - output:
+            file:
+              path: "/var/log/expanso/dlq/${!timestamp_unix_date('2006-01-02')}/failures.jsonl"
+              codec: lines
 
 logger:
   level: INFO

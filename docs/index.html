@@ -67,12 +67,10 @@
             <p class="hero-subtitle">Asked to build an RSS feed engine, a data migration, a notification engine or document embedding for retrieval? Start with the <strong>Jobs</strong> tab: complete jobs, each run end to end. Every skill is a pipeline definition you deploy to your own Expanso Cloud control plane and run on nodes you control. Offline and credential handling vary by skill &mdash; each one declares what it needs and what leaves your host.</p>
             <div class="install-box">
                 <code>curl -fsSL https://skills.expanso.io/install.sh | bash</code>
-                <button class="copy-btn" data-copy="curl -fsSL https://skills.expanso.io/install.sh | bash" title="Copy">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                </button>
+                <button type="button" class="copy-btn"
+                    data-copy="curl -fsSL https://skills.expanso.io/install.sh | bash"
+                    data-default-label="Copy" aria-label="Copy to clipboard"
+                    aria-live="polite" title="Copy to clipboard">Copy</button>
             </div>
         </section>
 
@@ -116,7 +114,8 @@
     </main>
 
     <div class="modal-overlay" id="modal-overlay">
-        <div class="modal" id="skill-modal" role="dialog" aria-modal="true">
+        <div class="modal" id="skill-modal" role="dialog" aria-modal="true"
+            aria-labelledby="skill-modal-title">
             <button class="modal-close" aria-label="Close">&times;</button>
             <div class="modal-content" id="modal-content">
                 <!-- Populated by JavaScript -->

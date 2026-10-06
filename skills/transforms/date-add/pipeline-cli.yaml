@@ -21,8 +21,7 @@ config:
           root.original = $base_date
           root.days_added = days
           root.result = $base_date.ts_add_iso8601("PT" + ($hours.abs().string()) + "H")
-          root.metadata = {"skill": "date-add", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "date-add", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

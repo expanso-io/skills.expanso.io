@@ -1,8 +1,13 @@
-# Test: voice-admin
 tests:
-  - name: "Processes voice command"
-    skip: true
-    input: '{"action": "transcribe"}'
+  - name: "Extracts explicit voice-command fixture without claiming execution"
+    input: '{"fixture_mode":true,"fixture_transcript":"Schedule a water-heater visit Tuesday at 2pm.","fixture_actions":[{"type":"schedule","subject":"water-heater visit","details":{"time":"Tuesday at 2pm"},"needs_confirmation":true}]}'
     expected_output:
-      metadata:
-        skill: "voice-admin"
+      transcript: "Schedule a water-heater visit Tuesday at 2pm."
+      actions:
+        - type: schedule
+          subject: water-heater visit
+          details:
+            time: "Tuesday at 2pm"
+          needs_confirmation: true
+      confirmations: []
+      execution_status: proposed_only
