@@ -12,10 +12,9 @@ config:
       - mapping: |
           meta trace_id = uuid_v4()
           let parsed = content().parse_json()
-          root.formatted = $parsed.format_json()
+          root.formatted = $parsed.format_json().string()
           root.valid = true
-          root.metadata = {"skill": "json-pretty", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "json-pretty", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

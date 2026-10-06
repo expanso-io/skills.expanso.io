@@ -1,0 +1,100 @@
+name: pii-complete-removal
+description: Data minimization and keyed pseudonyms for common identifiers; legal review still required
+type: pipeline
+namespace: default
+priority: 100
+
+labels:
+  assurance: technical-minimization
+  category: data-security
+  example: remove-pii
+
+config:
+  # Accept events via HTTP POST
+  input:
+    http_server:
+      address: "0.0.0.0:8080"
+      path: /events/ingest
+      allowed_verbs: [POST]
+      timeout: 30s
+
+  # 5-step PII removal transformations
+  pipeline:
+    processors:
+      - mapping: |
+          let key = env("PSEUDONYM_KEY").or("")
+          root = if $key.length() < 32 {
+            throw("PSEUDONYM_KEY must contain at least 32 characters")
+          } else { this }
+
+      # Step 1: Delete payment card data that analytics does not need
+      - mapping: |
+          root = this
+
+          # Remove credit card number and expiry date
+          # Keep payment type and last 4 digits for analytics
+          root.payment_method = this.payment_method.without(
+            "full_number",
+            "expiry"
+          )
+
+      # Step 2: Create a keyed IP pseudonym for abuse detection
+      - mapping: |
+          let ip_pseudonym = ("ip:" + this.ip_address.string()).hash(
+            "hmac_sha256",
+            env("PSEUDONYM_KEY").or("")
+          ).encode("hex")
+          root = this.without("ip_address")
+          root.ip_pseudonym = $ip_pseudonym
+          root.ip_hash = $ip_pseudonym
+
+      # Step 3: Hash email + extract domain (user counting + org analytics)
+      - mapping: |
+          # Extract domain for organizational analytics
+          let email_pseudonym = ("email:" + this.email.lowercase()).hash(
+            "hmac_sha256",
+            env("PSEUDONYM_KEY").or("")
+          ).encode("hex")
+          root = this.without("email")
+          root.email_domain = this.email.split("@").index(1)
+          root.email_pseudonym = $email_pseudonym
+          root.email_hash = $email_pseudonym
+
+      # Step 4: Pseudonymize user names (tracking without identity)
+      - mapping: |
+          let user_pseudonym = ("name:" + this.user_name.string()).hash(
+            "hmac_sha256",
+            env("PSEUDONYM_KEY").or("")
+          ).encode("hex")
+          root = this.without("user_name")
+          root.user_pseudonym = $user_pseudonym
+          root.user_id = "user_" + $user_pseudonym.slice(0, 12)
+
+      # Step 5: Generalize location (regional analytics without tracking)
+      - mapping: |
+          # Remove precise GPS coordinates (latitude, longitude)
+          # Keep city, state, country for regional analytics
+          root = this
+          root.location = this.location.without("latitude", "longitude")
+
+      - catch:
+          - mapping: root = deleted()
+
+  # Persistent local output. Access controls, retention, and downstream review
+  # remain deployment responsibilities; this transform is not a legal finding.
+  output:
+    file:
+      path: /var/lib/expanso/minimized/events.jsonl
+      codec: lines
+
+logger:
+  level: INFO
+  format: json
+
+metrics:
+  type: prometheus
+  path: /metrics
+  address: 0.0.0.0:9090
+
+# Generate PSEUDONYM_KEY in a secret manager, grant it only to this node, and
+# plan rotation before deployment. Pseudonymous fields remain sensitive.

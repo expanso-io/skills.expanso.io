@@ -25,13 +25,14 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let response = this.choices.0.message.content.parse_json().catch({})
           root.language = $response.language.or("Unknown")
           root.code = $response.code.or("xx")
           root.confidence = $response.confidence.or(0)
-          root.metadata = {"skill": "language-detect", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "language-detect", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

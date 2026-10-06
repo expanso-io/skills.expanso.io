@@ -6,17 +6,13 @@
 
 name: catalog-reconcile
 version: 1.0.0
-description: AI-powered product catalog reconciliation across multiple sources
-
-credentials:
-  - name: OPENAI_API_KEY
-    required: true
+description: Deterministic product catalog reconciliation across named source manifests
 
 inputs:
   - name: catalogs
     type: array
     required: true
-    description: List of catalog sources to reconcile
+    description: "Named catalogs: [{name, items: [{sku, upc, name, ...}]}]"
   - name: match_fields
     type: array
     default: [sku, upc, name]
@@ -32,10 +28,10 @@ outputs:
     type: object
 
 backends:
-  - name: openai
-    type: remote
+  - name: local
+    type: local
 
 components:
   inputs: [stdin, http_server]
-  processors: [mapping, openai_chat_completion, dedupe, log]
+  processors: [mapping, log]
   outputs: [stdout, sync_response]

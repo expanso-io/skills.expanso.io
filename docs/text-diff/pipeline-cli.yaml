@@ -2,7 +2,7 @@
 # =======================================
 #
 # Usage:
-#   echo '{"original": "Hello World", "modified": "Hello Universe"}' | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -55,15 +55,14 @@ config:
           root.metadata = {
             "skill": "text-diff",
             "mode": "cli",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [text-diff] Identical: ${! root.identical } (trace: ${! meta("trace_id").slice(0, 8) })
+            [text-diff] Identical: ${! this.identical } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

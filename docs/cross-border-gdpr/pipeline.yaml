@@ -1,0 +1,234 @@
+# Cross-Border Data Minimization Pipeline
+# Pseudonymize data before an approved transfer for global analytics.
+#
+# Pseudonymized data remains personal data. This pipeline enforces technical
+# minimization rules only; it does not establish a lawful transfer, a legal
+# basis, anonymity, or regulatory approval. Configure destinations only after
+# privacy, security, retention, and transfer reviews are complete.
+#
+# Different from remove-pii example:
+# - Focuses on data RESIDENCY and cross-border transfers (not general PII removal)
+# - SQL database input (not HTTP streams)
+# - Financial transactions (not user activity)
+# - Dual output: pseudonymized analytics and a regional copy
+# - Transformation audit trail
+#
+# Key features:
+# - Tiered minimization (delete/keyed-hash/generalize)
+# - Dual destination: pseudonymized → global and regional archive
+# - Policy metadata supplied by the operator
+# - Fail-closed checks for named direct identifiers
+
+name: eu-cross-border-minimization
+description: Pseudonymize and minimize EU data before an approved cross-border transfer
+type: pipeline
+
+config:
+  input:
+    # Read from EU regional database
+    sql_select:
+      driver: postgres
+      dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${EU_DB_HOST}:5432/transactions_eu?sslmode=verify-full"
+      table: customer_transactions
+      columns:
+        - transaction_id
+        - customer_id
+        - customer_name
+        - customer_email
+        - customer_dob
+        - customer_address
+        - iban
+        - transaction_amount
+        - transaction_currency
+        - merchant_name
+        - merchant_country
+        - transaction_timestamp
+        - ip_address
+      where: "transaction_timestamp >= NOW() - INTERVAL '1 hour'"
+
+  pipeline:
+    processors:
+      # Step 1: Tag with source region for residency routing
+      - mapping: |
+          root = this
+          root._data_origin = {
+            "region": "EU",
+            "country": env("SOURCE_COUNTRY").or("DE"),
+            "database": "transactions_eu",
+            "extracted_at": now(),
+            "pipeline": "eu-cross-border-minimization"
+          }
+
+      # Step 2: Record the operator-approved policy before transformation
+      - mapping: |
+          root = this
+          root._transfer_controls = {
+            "policy_id": env("TRANSFER_POLICY_ID"),
+            "original_pii_fields": [
+              "customer_id",
+              "customer_name",
+              "customer_email",
+              "customer_dob",
+              "customer_address",
+              "iban",
+              "ip_address"
+            ],
+            "pseudonymization_applied": true,
+            "transfer_type": "cross_border_eu_to_global"
+          }
+
+      # Step 3: DELETE - Remove fields with no analytics value
+      # These are deleted entirely, not recoverable
+      - mapping: |
+          root = this
+
+          # Full name - no analytics value, high risk
+          root = root.without("customer_name")
+
+          # Full address - no analytics value
+          root = root.without("customer_address")
+
+          # Date of birth - delete, keep only age bucket
+          root.customer_age_bucket = match {
+            this.customer_dob == null => "unknown",
+            now().ts_unix() - this.customer_dob.ts_parse("2006-01-02").ts_unix() < 25 * 365 * 24 * 3600 => "18-24",
+            now().ts_unix() - this.customer_dob.ts_parse("2006-01-02").ts_unix() < 35 * 365 * 24 * 3600 => "25-34",
+            now().ts_unix() - this.customer_dob.ts_parse("2006-01-02").ts_unix() < 45 * 365 * 24 * 3600 => "35-44",
+            now().ts_unix() - this.customer_dob.ts_parse("2006-01-02").ts_unix() < 55 * 365 * 24 * 3600 => "45-54",
+            now().ts_unix() - this.customer_dob.ts_parse("2006-01-02").ts_unix() < 65 * 365 * 24 * 3600 => "55-64",
+            _ => "65+"
+          }
+          root = root.without("customer_dob")
+
+      # Step 4: HASH - Pseudonymize identifiers for aggregate analytics
+      # The stable keyed hashes are pseudonyms, not anonymous identifiers.
+      - mapping: |
+          root = this
+
+          # Customer ID → stable keyed pseudonym
+          let pseudonym_key = env("PSEUDONYM_KEY").or("")
+          root = if $pseudonym_key.length() < 32 {
+            throw("PSEUDONYM_KEY must contain at least 32 characters")
+          } else { this }
+          root.pseudonymous_customer_id = this.customer_id.string().hash("hmac_sha256", $pseudonym_key).encode("hex")
+          root = root.without("customer_id")
+
+          # Email → domain only (for B2B vs B2C analysis)
+          root.email_domain = if this.customer_email.contains("@") {
+            this.customer_email.split("@").index(1).lowercase()
+          } else {
+            "unknown"
+          }
+          root = root.without("customer_email")
+
+          # IBAN → country code only (for geographic analysis)
+          root.bank_country = this.iban.slice(0, 2)
+          root = root.without("iban")
+
+          # IP address → /16 subnet (country-level geolocation possible)
+          root.ip_subnet = if this.ip_address.contains(".") {
+            this.ip_address.split(".").slice(0, 2).join(".") + ".0.0/16"
+          } else {
+            "unknown"
+          }
+          root = root.without("ip_address")
+
+      # Step 5: GENERALIZE - Reduce precision on remaining fields
+      - mapping: |
+          root = this
+
+          # Transaction amount → bucket (preserves distribution analysis)
+          root.amount_bucket = match {
+            this.transaction_amount < 10 => "0-10",
+            this.transaction_amount < 50 => "10-50",
+            this.transaction_amount < 100 => "50-100",
+            this.transaction_amount < 500 => "100-500",
+            this.transaction_amount < 1000 => "500-1000",
+            this.transaction_amount < 5000 => "1000-5000",
+            _ => "5000+"
+          }
+
+          # Keep exact amount for aggregate SUM calculations
+          # (amount alone without identifier is not personal data)
+          root.transaction_amount = this.transaction_amount
+
+          # Timestamp → hour bucket (sufficient for pattern analysis)
+          root.transaction_hour = this.transaction_timestamp.ts_parse("2006-01-02T15:04:05Z").format("2006-01-02T15:00:00Z")
+
+      # Step 6: Check that named direct identifiers were removed
+      - mapping: |
+          # Check no PII fields remain
+          let pii_fields = ["customer_id", "customer_name", "customer_email",
+                           "customer_dob", "customer_address", "iban", "ip_address"]
+
+          let remaining_pii = $pii_fields.filter(f -> this.exists(f))
+
+          root = if $remaining_pii.length() > 0 {
+            throw("TRANSFER BLOCKED: named direct identifiers remain: " + $remaining_pii.join(", "))
+          } else {
+            this
+          }
+
+          # Record what this pipeline checked. This is not a legal attestation.
+          root._transfer_controls.named_fields_check_passed = true
+          root._transfer_controls.verification_timestamp = now()
+          root._transfer_controls.fields_removed = ["customer_name", "customer_address", "customer_dob"]
+          root._transfer_controls.fields_pseudonymized = ["customer_id"]
+
+      - catch:
+          - mapping: root = deleted()
+
+  output:
+    broker:
+      pattern: fan_out
+      outputs:
+        # Output 1: Pseudonymized data → approved global analytics project.
+        # Google ADC supplies credentials; give the node service account only
+        # BigQuery append permission on this table.
+        - label: global_analytics
+          gcp_bigquery:
+            project: "${GCP_GLOBAL_PROJECT}"
+            dataset: global_analytics
+            table: anonymized_transactions
+            format: NEWLINE_DELIMITED_JSON
+            write_disposition: WRITE_APPEND
+            batching:
+              count: 500
+              period: 30s
+
+        # Output 2: Pseudonymized regional archive. The bucket must have an
+        # EU location, uniform access, retention policy, and a writer-only
+        # service account before this job is deployed.
+        - label: eu_archive
+          processors:
+            - mapping: |
+                root = this
+                root._archive_metadata = {
+                  "archived_at": now(),
+                  "retention_policy_id": env("RETENTION_POLICY_ID"),
+                  "data_classification": "pseudonymized_personal_data_eu"
+                }
+          gcp_cloud_storage:
+            bucket: "${EU_ARCHIVE_BUCKET}"  # Must be EU-region bucket
+            path: "transactions/${!now().format(\"2006/01/02\")}/eu-${!timestamp_unix()}.json"
+            content_type: application/json
+            batching:
+              count: 1000
+              period: 60s
+
+        # Output 3: Transformation audit log on persistent node storage.
+        - label: transfer_audit
+          processors:
+            - mapping: |
+                root = {
+                  "event_type": "cross_border_transfer",
+                  "timestamp": now(),
+                  "transaction_id": this.transaction_id,
+                  "source_region": this._data_origin.region,
+                  "destination": "global_analytics",
+                  "named_fields_check_passed": this._transfer_controls.named_fields_check_passed,
+                  "policy_id": this._transfer_controls.policy_id
+                }
+          file:
+            path: "/var/lib/expanso/transfer-audit/${!timestamp_format(\"2006-01-02\")}.jsonl"
+            codec: lines

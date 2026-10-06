@@ -1,0 +1,110 @@
+# Expanso Pipeline: slack-read (CLI mode)
+#
+# Validate with:
+#   expanso-edge validate pipeline-cli.yaml
+
+name: slack-read-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      - mapping: |
+          let input = content().parse_json()
+          let channel = $input.channel.or(env("SLACK_CHANNEL_ID").or("")).string()
+          let limit = $input.limit.or(20)
+          root = if $channel.length() == 0 {
+            throw("channel is required")
+          } else if !$channel.re_match("^[A-Z0-9]{1,15}$") {
+            throw("invalid channel ID format")
+          } else if $limit < 1 || $limit > 200 {
+            throw("limit must be between 1 and 200")
+          } else {
+            $input.assign({
+              "channel": $channel,
+              "limit": $limit,
+              "query": $input.query.or(""),
+              "since_hours": $input.since_hours.or(24),
+              "_trace_id": uuid_v4()
+            })
+          }
+
+      - mapping: |
+          let base = env("SLACK_API_URL").or("https://slack.com/api").trim_suffix("/")
+          let oldest = now().ts_unix() - (this.since_hours * 3600)
+          meta context_json = this.format_json()
+          meta slack_url = $base + "/conversations.history?channel=" + this.channel.escape_url_query() + "&limit=" + this.limit.string() + "&oldest=" + $oldest.string()
+          root = if !$base.re_match("^https://") { throw("SLACK_API_URL must be an https URL") } else { {} }
+      - try:
+          - http:
+              url: '${! meta("slack_url") }'
+              verb: GET
+              headers:
+                Authorization: "Bearer ${SLACK_BOT_TOKEN}"
+                Accept: application/json
+              timeout: 30s
+              retries: 3
+              rate_limit: slack_api
+      - catch:
+          - mapping: |
+              root.ok = false
+              root.error = error()
+      - mapping: |
+          root = this
+          root._context = meta("context_json").parse_json()
+
+      - mapping: |
+          let context = this._context
+          let messages = this.messages.or([])
+          let query = $context.query.or("")
+          let filtered = if $query.length() > 0 {
+            $messages.filter(message -> message.text.or("").lowercase().contains($query.lowercase()))
+          } else {
+            $messages
+          }
+          let structured = $filtered.map_each(message -> {
+            "id": message.ts,
+            "user": message.user.or("unknown"),
+            "text": message.text.or(""),
+            "timestamp": message.ts,
+            "thread_ts": message.thread_ts.or(null),
+            "reactions": message.reactions.or([]).map_each(reaction -> {
+              "name": reaction.name,
+              "count": reaction.count
+            })
+          })
+
+          root.source = "slack"
+          root.resource = "conversations.history"
+          root.schema_version = "1.0"
+          root.trace_id = $context._trace_id
+          root.data = if this.ok.or(false) { $structured } else { [] }
+          root.messages = root.data
+          root.count = root.data.length()
+          root.sensitivity = "raw"
+          root.error = if this.ok.or(false) { deleted() } else { this.error.or("unknown_error") }
+          root.metadata = {
+            "skill": "slack-read",
+            "mode": "cli",
+            "channel": $context.channel,
+            "query": $query,
+            "success": this.ok.or(false),
+            "source": "slack_api",
+            "message_count": root.count,
+            "total_available": $messages.length(),
+            "trace_id": $context._trace_id,
+            "timestamp": now()
+          }
+
+  output:
+    stdout: {}
+
+  rate_limit_resources:
+    - label: slack_api
+      local:
+        count: 10
+        interval: 1s

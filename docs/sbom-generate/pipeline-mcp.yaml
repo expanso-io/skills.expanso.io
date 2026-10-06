@@ -4,7 +4,7 @@
 # HTTP endpoint for SBOM generation.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/generate \
 #     -H "Content-Type: application/json" \
@@ -30,12 +30,13 @@ config:
     processors:
       - mapping: |
           let pkg = this.packages
-          let format = this.format.or("cyclonedx")
-          meta trace_id = uuid_v4()
+          let format = this.format.or("cyclonedx").lowercase()
+          let trace_id = uuid_v4()
+          meta trace_id = $trace_id
 
           root = if $pkg == null {
             throw("packages field is required")
-          } else { "" }
+          } else { {} }
 
           let deps = $pkg.dependencies.or({})
           let dev_deps = $pkg.devDependencies.or({})
@@ -43,19 +44,19 @@ config:
           let components = $deps.keys().map_each(name -> {
             "type": "library",
             "name": name,
-            "version": $deps.index(name),
+            "version": $deps.get(name),
             "scope": "required"
-          }) + $dev_deps.keys().map_each(name -> {
+          }).concat($dev_deps.keys().map_each(name -> {
             "type": "library",
             "name": name,
-            "version": $dev_deps.index(name),
+            "version": $dev_deps.get(name),
             "scope": "optional"
-          })
+          }))
 
-          root.sbom = {
+          let cyclonedx = {
             "bomFormat": "CycloneDX",
             "specVersion": "1.5",
-            "serialNumber": "urn:uuid:" + meta("trace_id"),
+            "serialNumber": "urn:uuid:" + $trace_id,
             "version": 1,
             "metadata": {
               "timestamp": now(),
@@ -67,12 +68,39 @@ config:
             },
             "components": $components
           }
+          let spdx_packages = $components.map_each(component -> {
+            "SPDXID": "SPDXRef-Package-" + component.format_json().hash("sha256").encode("hex"),
+            "name": component.name,
+            "versionInfo": component.version,
+            "downloadLocation": "NOASSERTION",
+            "filesAnalyzed": false
+          })
+          let spdx = {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": $pkg.name.or("unknown"),
+            "documentNamespace": "https://expanso.io/spdx/" + $trace_id,
+            "creationInfo": {
+              "created": now(),
+              "creators": ["Tool: expanso-edge"]
+            },
+            "packages": $spdx_packages
+          }
+
+          root.sbom = if $format == "cyclonedx" {
+            $cyclonedx
+          } else if $format == "spdx" {
+            $spdx
+          } else {
+            throw("unsupported SBOM format: " + $format)
+          }
           root.metadata = {
             "skill": "sbom-generate",
             "mode": "mcp",
             "format": $format,
             "component_count": $components.length(),
-            "trace_id": meta("trace_id"),
+            "trace_id": $trace_id,
             "timestamp": now()
           }
 

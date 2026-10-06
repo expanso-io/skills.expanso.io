@@ -28,7 +28,7 @@ config:
           root.sum = $sum
           root.count = if $parsed.type() == "array" { $parsed.length() } else { 0 }
           root.average = if root.count > 0 { $sum / root.count } else { 0 }
-          root.metadata = {"skill": "array-reduce", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "array-reduce", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

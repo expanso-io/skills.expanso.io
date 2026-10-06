@@ -26,13 +26,13 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let response = this.choices.0.message.content.parse_json().catch({})
           root.alt_text = $response.alt_text.or("Image")
           root.caption = $response.caption.or("An image")
-          root.metadata = {"skill": "image-caption", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "image-caption", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

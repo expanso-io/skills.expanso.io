@@ -1,0 +1,142 @@
+# DB2 to BigQuery Migration Pipeline
+# Replaces DataStage ETL with edge-native processing
+#
+# Use case: Nightly batch migration of financial transactions from
+# on-premise DB2 to Google BigQuery with DataStage-style transformations
+#
+# Key features:
+# - SQL query against DB2 via ODBC
+# - Currency normalization from a governed source rate
+# - Keyed account-number pseudonyms
+# - Transaction categorization
+# - Lineage metadata for audit trail
+# - Lands in BigQuery partitioned by date
+
+name: db2-to-bigquery-transactions
+description: Migrate financial transactions from DB2 to BigQuery with transformations
+type: pipeline
+
+config:
+  input:
+    # Query DB2 for yesterday's transactions
+    # Runs on a schedule (see deployment config)
+    sql_select:
+      driver: odbc
+      dsn: "Driver={IBM DB2 ODBC Driver};Database=${DB2_DATABASE};Hostname=${DB2_HOST};Port=${DB2_PORT};Protocol=TCPIP;Security=SSL;SSLServerCertificate=${DB2_CA_CERT_PATH};Uid=${DB2_USER};Pwd=${DB2_PASSWORD};"
+      table: TRANSACTIONS
+      columns:
+        - TRANSACTION_ID
+        - ACCOUNT_NUMBER
+        - CUSTOMER_ID
+        - TRANSACTION_DATE
+        - TRANSACTION_TYPE
+        - AMOUNT
+        - CURRENCY
+        - USD_RATE
+        - MERCHANT_NAME
+        - MERCHANT_CATEGORY_CODE
+        - SOURCE_SYSTEM
+        - CREATED_AT
+      where: "TRANSACTION_DATE >= CURRENT DATE - 1 DAY AND TRANSACTION_DATE < CURRENT DATE"
+      args_mapping: ""
+
+  pipeline:
+    processors:
+      # Step 1: Add lineage metadata (critical for audit)
+      - mapping: |
+          root = this
+          root._lineage = {
+            "source_system": "DB2_PROD",
+            "source_table": "TRANSACTIONS",
+            "pipeline": "db2-to-bigquery-transactions",
+            "extracted_at": now(),
+            "node_id": env("NODE_ID").or("unknown")
+          }
+
+      # Step 2: Normalize currency using the governed rate joined by the source
+      - mapping: |
+          root = if this.USD_RATE == null || this.USD_RATE.number() <= 0 {
+            throw("USD_RATE must be supplied by the governed source view")
+          } else { this }
+          root.original_amount = this.AMOUNT
+          root.original_currency = this.CURRENCY
+          root.amount_usd = this.AMOUNT.number() * this.USD_RATE.number()
+
+      # Step 3: Mask account numbers and create a keyed pseudonym for joins
+      - mapping: |
+          let key = env("ACCOUNT_PSEUDONYM_KEY").or("")
+          root = if $key.length() < 32 {
+            throw("ACCOUNT_PSEUDONYM_KEY must contain at least 32 characters")
+          } else { this }
+          root = this
+          root.account_number_masked = "****-****-" + this.ACCOUNT_NUMBER.slice(-4)
+          root.account_number_pseudonym = this.ACCOUNT_NUMBER.hash("hmac_sha256", $key).encode("hex")
+          root = root.without("ACCOUNT_NUMBER")
+
+      # Step 4: Categorize transactions
+      # DataStage replacement: Lookup table / case statement
+      - mapping: |
+          root = this
+
+          # Map MCC codes to categories
+          let mcc = this.MERCHANT_CATEGORY_CODE.string()
+
+          root.transaction_category = match $mcc {
+            $mcc.has_prefix("54") => "GROCERY",
+            $mcc.has_prefix("55") => "AUTOMOTIVE",
+            $mcc.has_prefix("58") => "RESTAURANT",
+            $mcc.has_prefix("59") => "RETAIL",
+            $mcc.has_prefix("47") => "TRANSPORTATION",
+            $mcc.has_prefix("40") || $mcc.has_prefix("41") => "TRAVEL",
+            $mcc.has_prefix("60") || $mcc.has_prefix("61") => "FINANCIAL",
+            $mcc.has_prefix("80") => "PROFESSIONAL_SERVICES",
+            _ => "OTHER"
+          }
+
+      # Step 5: Standardize field names for BigQuery schema
+      - mapping: |
+          root.transaction_id = this.TRANSACTION_ID
+          root.customer_id = this.CUSTOMER_ID
+          root.transaction_date = this.TRANSACTION_DATE
+          root.transaction_type = this.TRANSACTION_TYPE
+          root.merchant_name = this.MERCHANT_NAME
+          root.merchant_category_code = this.MERCHANT_CATEGORY_CODE
+          root.source_system = this.SOURCE_SYSTEM
+          root.created_at = this.CREATED_AT
+
+          # Carry forward transformed fields
+          root.amount_usd = this.amount_usd
+          root.original_amount = this.original_amount
+          root.original_currency = this.original_currency
+          root.account_number_masked = this.account_number_masked
+          root.account_number_pseudonym = this.account_number_pseudonym
+          root.transaction_category = this.transaction_category
+          root._lineage = this._lineage
+
+          # Add BigQuery partition field
+          root._partition_date = this.TRANSACTION_DATE.string().ts_parse("2006-01-02T15:04:05Z07:00").ts_format("2006-01-02")
+
+      # Step 6: Validate required fields before loading
+      - mapping: |
+          root = if this.transaction_id == null ||
+                    this.customer_id == null ||
+                    this.amount_usd == null {
+            throw("Missing required field for BigQuery load")
+          } else {
+            this
+          }
+
+      - mapping: 'root = if errored() { deleted() } else { this }'
+
+  output:
+    # Google ADC supplies credentials. Grant the node service account append
+    # permission only on this table.
+    gcp_bigquery:
+      project: "${GCP_PROJECT}"
+      dataset: financial_data
+      table: transactions
+      format: NEWLINE_DELIMITED_JSON
+      write_disposition: WRITE_APPEND
+      batching:
+        count: 1000
+        period: 30s

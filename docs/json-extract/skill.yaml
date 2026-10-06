@@ -8,7 +8,8 @@ name: json-extract
 version: 1.0.0
 description: Extract structured JSON from natural language text
 
-# Credentials (stored locally on Expanso Edge, never transmitted)
+# Credentials (read from the executing node's environment; sent to OpenAI,
+# not Expanso Cloud)
 credentials:
   - name: OPENAI_API_KEY
     required: false  # Not required if using Ollama

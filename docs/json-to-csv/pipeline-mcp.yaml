@@ -2,7 +2,7 @@
 # =========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/convert \
 #     -d '{"data": [{"name":"Alice","age":30}]}'
 
@@ -42,14 +42,14 @@ config:
             "skill": "json-to-csv",
             "mode": "mcp",
             "delimiter": $delimiter,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [json-to-csv] Converted ${! root.row_count } rows (trace: ${! meta("trace_id").slice(0, 8) })
+            [json-to-csv] Converted ${! this.row_count } rows (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     sync_response: {}

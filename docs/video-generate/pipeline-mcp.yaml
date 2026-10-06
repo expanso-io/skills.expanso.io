@@ -5,7 +5,7 @@
 # HTTP server mode for MCP/OpenClaw integration.
 #
 # Usage:
-#   REPLICATE_API_TOKEN=r8_xxx PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/generate \
 #     -H "Content-Type: application/json" \
@@ -24,42 +24,59 @@ config:
 
   pipeline:
     processors:
+      # Bearer verification uses AES-GCM tag validation so token comparison is
+      # constant-time inside the authenticated-cipher implementation.
+      - mapping: |
+          let expected = env("MCP_BEARER_TOKEN").or("")
+          let authorization = meta("Authorization").or("")
+          let supplied = if $authorization.has_prefix("Bearer ") { $authorization.trim_prefix("Bearer ") } else { "" }
+          let nonce = "000000000000000000000000".decode("hex")
+          let proof = "expanso-mcp-auth".encrypt_aes("gcm", $expected.hash("sha256"), $nonce)
+          let authenticated = $proof.decrypt_aes("gcm", $supplied.hash("sha256"), $nonce).catch(null) != null
+          meta http_status_code = if $expected.length() < 32 { 503 } else if $supplied == "" || !$authenticated { 401 } else { 200 }
+          root = if $expected.length() < 32 {
+            deleted()
+          } else if $supplied == "" || !$authenticated {
+            deleted()
+          } else {
+            this
+          }
+
       # 1. Validate and parse input
       - mapping: |
-          meta trace_id = uuid_v4()
-          meta start_time = now()
-
           let body = content().parse_json()
           let prompt = $body.prompt.or("")
 
           if $prompt == "" {
-            throw("prompt field is required")
+            root = throw("prompt field is required")
           }
 
+          root.prompt = $prompt
+          root._trace_id = uuid_v4()
+          root._start_time = now()
+
+      # 2. Submit the request to Replicate and poll until it finishes.
+      - mapping: |
+          meta trace_id = this._trace_id
+          meta start_time = this._start_time
           root = {
             "version": "5522017e7bc92c4b2d90cc09a65051d7ade8e26c2932444ba16ca0f7a9b5cbb2",
             "input": {
-              "prompt": $prompt,
+              "prompt": this.prompt,
               "prompt_optimizer": true
             }
           }
-
-      # 2. Submit to Replicate API
       - http:
           url: "https://api.replicate.com/v1/predictions"
           verb: POST
           headers:
             Authorization: "Bearer ${REPLICATE_API_TOKEN}"
             Content-Type: "application/json"
-
-      # 3. Extract prediction ID and poll URL
       - mapping: |
           meta prediction_id = this.id
           meta poll_url = this.urls.get
           meta status = this.status
           root = this
-
-      # 4. Poll for completion (up to 60 attempts, 3s each = 3 min max)
       - while:
           at_least_once: true
           max_loops: 60
@@ -75,8 +92,6 @@ config:
             - mapping: |
                 meta status = this.status
                 root = this
-
-      # 5. Format final output
       - mapping: |
           let status = this.status
           let output = this.output
@@ -89,7 +104,8 @@ config:
             "mode": "mcp",
             "model": "minimax/video-01",
             "prediction_id": meta("prediction_id"),
-            "trace_id": meta("trace_id"),
+            "source": "replicate_api",
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "started_at": meta("start_time"),
             "completed_at": now()
           }
@@ -97,10 +113,7 @@ config:
       - log:
           level: INFO
           message: |
-            [video-generate] Status: ${! this.status } (trace: ${! meta("trace_id").slice(0, 8) })
+            [video-generate] Status: ${! this.status } (trace: ${! this.metadata.trace_id.slice(0, 8) })
 
   output:
-    sync_response:
-      status: '${! if this.status == "succeeded" { 200 } else { 500 }}'
-      headers:
-        Content-Type: application/json
+    sync_response: {}

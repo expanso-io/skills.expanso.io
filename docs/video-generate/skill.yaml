@@ -7,6 +7,9 @@ credentials:
   - name: REPLICATE_API_TOKEN
     required: true
     description: Replicate API token from replicate.com
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
 
 inputs:
   - name: prompt
@@ -32,8 +35,9 @@ outputs:
 backends:
   - name: replicate
     type: remote
+    requires: [REPLICATE_API_TOKEN]
 
 components:
   inputs: [stdin, http_server]
-  processors: [mapping, http, log, sleep]
+  processors: [mapping, switch, http, log, sleep]
   outputs: [http_client, stdout, sync_response]

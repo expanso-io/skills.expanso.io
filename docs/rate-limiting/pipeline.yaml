@@ -1,0 +1,51 @@
+# Rate Limiting Pipeline
+name: rate-limiting
+description: Apply rate limiting with backpressure
+type: pipeline
+
+config:
+  input:
+    kafka:
+      addresses:
+        - ${KAFKA_BROKERS}
+      topics:
+        - ${INPUT_TOPIC:input-events}
+      consumer_group: expanso-rate-limiter
+      tls:
+        enabled: true
+      sasl:
+        mechanism: SCRAM-SHA-512
+        user: "${KAFKA_USERNAME}"
+        password: "${KAFKA_PASSWORD}"
+
+  pipeline:
+    processors:
+      # Rate limit to N messages per second
+      # The rate itself is declared on the `output-rate` resource below; the
+      # processor only references it (`resource` is its sole field).
+      - rate_limit:
+          resource: output-rate
+
+      # Add rate limit metadata
+      - mapping: |
+          root = this
+          root._rate_limited_at = now()
+
+  output:
+    kafka:
+      addresses:
+        - ${KAFKA_BROKERS}
+      topic: ${OUTPUT_TOPIC:rate-limited-events}
+      ack_replicas: true
+      tls:
+        enabled: true
+      sasl:
+        mechanism: SCRAM-SHA-512
+        user: "${KAFKA_USERNAME}"
+        password: "${KAFKA_PASSWORD}"
+
+  rate_limit_resources:
+    - label: output-rate
+      local:
+        count: 1000
+        interval: 1s

@@ -2,7 +2,7 @@
 # ========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/strip -d '{"html": "<p>Hello</p>"}'
 
 name: "html-strip-mcp"
@@ -47,14 +47,14 @@ config:
           root.metadata = {
             "skill": "html-strip",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [html-strip] ${! root.original_length } -> ${! root.text_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [html-strip] ${! this.original_length } -> ${! this.text_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     sync_response: {}

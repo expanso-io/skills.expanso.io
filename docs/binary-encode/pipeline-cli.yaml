@@ -20,8 +20,7 @@ config:
           root.hex = $hex
           root.length = $input.length()
           root.byte_count = $hex.length() / 2
-          root.metadata = {"skill": "binary-encode", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "binary-encode", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

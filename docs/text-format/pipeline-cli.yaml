@@ -2,9 +2,9 @@
 # =========================================
 #
 # Usage:
-#   echo "hello world" | expanso-edge run pipeline-cli.yaml                    # lowercase
-#   FORMAT=upper echo "hello world" | expanso-edge run pipeline-cli.yaml       # UPPERCASE
-#   FORMAT=title echo "hello world" | expanso-edge run pipeline-cli.yaml       # Title Case
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -39,7 +39,7 @@ config:
             "skill": "text-format",
             "mode": "cli",
             "format_applied": meta("format"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -49,5 +49,4 @@ config:
             [text-format] Applied ${! meta("format") } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

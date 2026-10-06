@@ -2,8 +2,8 @@
 # ========================================
 #
 # Usage:
-#   echo "Hello world. This is a test." | expanso-edge run pipeline-cli.yaml
-#   cat document.txt | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -20,7 +20,7 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          let text = content()
+          let text = content().string()
 
           # Word count - split by whitespace
           let words = $text.re_find_all("[\\w']+").length()
@@ -46,15 +46,14 @@ config:
           root.metadata = {
             "skill": "word-count",
             "mode": "cli",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [word-count] ${! root.words } words (trace: ${! meta("trace_id").slice(0, 8) })
+            [word-count] ${! this.words } words (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

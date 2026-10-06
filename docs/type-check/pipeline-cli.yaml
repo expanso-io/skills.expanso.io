@@ -31,8 +31,7 @@ config:
           root.is_number = $is_number
           root.is_string = $is_string
           root.is_bool = $is_bool
-          root.metadata = {"skill": "type-check", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "type-check", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

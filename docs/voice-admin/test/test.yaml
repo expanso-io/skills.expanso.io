@@ -1,8 +1,23 @@
-# Test: voice-admin
 tests:
-  - name: "Processes voice command"
-    skip: true
-    input: '{"action": "transcribe"}'
+  - name: "Extracts a proposed voice action without claiming execution"
+    input: '{"audio_url":"https://media.example.test/voice-command.wav"}'
+    provider_responses:
+      - mock-audio-bytes
+    ai_responses:
+      - Schedule a water-heater visit Tuesday at 2pm.
+      - actions:
+          - type: schedule
+            subject: water-heater visit
+            details:
+              time: Tuesday at 2pm
+            needs_confirmation: true
     expected_output:
-      metadata:
-        skill: "voice-admin"
+      transcript: "Schedule a water-heater visit Tuesday at 2pm."
+      actions:
+        - type: schedule
+          subject: water-heater visit
+          details:
+            time: "Tuesday at 2pm"
+          needs_confirmation: true
+      confirmations: []
+      execution_status: proposed_only

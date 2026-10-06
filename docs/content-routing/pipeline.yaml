@@ -1,0 +1,148 @@
+# Complete Content Router
+# Routes events by severity, type, and priority
+
+name: content-routing
+description: Route messages to different outputs based on their content
+type: pipeline
+
+config:
+  input:
+    http_server:
+      address: "0.0.0.0:8080"
+      path: /events
+      allowed_verbs: ["POST"]
+
+  pipeline:
+    processors:
+      # Step 1: Normalize severity
+      - mapping: |
+          root = this
+          root.severity = this.severity.or(this.level).or("INFO").uppercase()
+          root.severity = match root.severity {
+            "FATAL" | "EMERGENCY" => "CRITICAL"
+            "HIGH" | "URGENT" => "CRITICAL"
+            "WARN" | "WARNING" => "WARN"
+            _ => root.severity
+          }
+
+      # Step 2: Classify event type
+      - mapping: |
+          root = this
+          root.event_family = if this.event_type.contains("auth") || this.event_type.contains("login") {
+            "authentication"
+          } else if this.event_type.contains("payment") || this.exists("amount") {
+            "payment"
+          } else if this.event_type.contains("metric") || this.exists("cpu") || this.exists("memory") {
+            "telemetry"
+          } else {
+            "general"
+          }
+
+      # Step 3: Calculate priority score
+      - mapping: |
+          root = this
+
+          # Severity score (0-30)
+          let severity_score = match this.severity {
+            "CRITICAL" => 30, "ERROR" => 25, "WARN" => 15, _ => 10
+          }
+
+          # User tier score (0-20)
+          let tier_score = match this.user_tier.or("standard") {
+            "enterprise" => 20, "premium" => 15, "standard" => 10, _ => 5
+          }
+
+          # Event family score (0-20)
+          let family_score = match this.event_family {
+            "payment" => 20, "authentication" => 15, _ => 10
+          }
+
+          let priority_score = $severity_score + $tier_score + $family_score
+          root.priority_score = $priority_score
+          root.priority = if $priority_score >= 60 { "critical" }
+                         else if $priority_score >= 45 { "high" }
+                         else if $priority_score >= 30 { "normal" }
+                         else { "low" }
+
+      # Step 4: Add routing metadata
+      - mapping: |
+          root = this
+          root.routed_at = now()
+          meta priority = this.priority
+          meta event_family = this.event_family
+
+  output:
+    switch:
+      cases:
+        # Critical events → immediate processing + alerting
+        - check: 'meta("priority") == "critical"'
+          output:
+            broker:
+              pattern: fan_out
+              outputs:
+                - kafka:
+                    addresses: ["${KAFKA_BROKERS}"]
+                    topic: critical-events
+                    ack_replicas: true
+                    tls:
+                      enabled: true
+                    sasl:
+                      mechanism: SCRAM-SHA-512
+                      user: "${KAFKA_USERNAME}"
+                      password: "${KAFKA_PASSWORD}"
+                - http_client:
+                    url: "https://${ALERT_HOST}/critical"
+                    verb: POST
+                    headers:
+                      Authorization: "Bearer ${ALERT_TOKEN}"
+
+        # Payment events → fraud detection
+        - check: 'meta("event_family") == "payment"'
+          output:
+            kafka:
+              addresses: ["${KAFKA_BROKERS}"]
+              topic: payment-events
+              ack_replicas: true
+              tls:
+                enabled: true
+              sasl:
+                mechanism: SCRAM-SHA-512
+                user: "${KAFKA_USERNAME}"
+                password: "${KAFKA_PASSWORD}"
+
+        # Authentication events → security monitoring
+        - check: 'meta("event_family") == "authentication"'
+          output:
+            kafka:
+              addresses: ["${KAFKA_BROKERS}"]
+              topic: auth-events
+              ack_replicas: true
+              tls:
+                enabled: true
+              sasl:
+                mechanism: SCRAM-SHA-512
+                user: "${KAFKA_USERNAME}"
+                password: "${KAFKA_PASSWORD}"
+
+        # Telemetry → batch processing
+        - check: 'meta("event_family") == "telemetry"'
+          output:
+            file:
+              path: "/var/expanso/telemetry/${!timestamp_unix_date('2006-01-02')}.jsonl"
+              codec: lines
+
+        # Default → standard queue
+        - output:
+            kafka:
+              addresses: ["${KAFKA_BROKERS}"]
+              topic: general-events
+              ack_replicas: true
+              tls:
+                enabled: true
+              sasl:
+                mechanism: SCRAM-SHA-512
+                user: "${KAFKA_USERNAME}"
+                password: "${KAFKA_PASSWORD}"
+              batching:
+                count: 100
+                period: 10s

@@ -2,7 +2,7 @@
 # ===========================================
 #
 # Usage:
-#   echo "Their going to the store tommorow" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Requires OPENAI_API_KEY.
 
@@ -36,6 +36,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let response = this.choices.0.message.content.parse_json().catch({
@@ -53,15 +54,14 @@ config:
             "model": "gpt-4o-mini",
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [grammar-check] Found ${! root.issue_count } issues (trace: ${! meta("trace_id").slice(0, 8) })
+            [grammar-check] Found ${! this.issue_count } issues (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

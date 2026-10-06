@@ -2,9 +2,9 @@
 # ===========================================
 #
 # Usage:
-#   echo "This is a long text that will be truncated" | expanso-edge run pipeline-cli.yaml
-#   LENGTH=20 echo "This is a long text" | expanso-edge run pipeline-cli.yaml
-#   LENGTH=20 SUFFIX="[more]" echo "This is a long text" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -21,7 +21,7 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          let text = content().trim()
+          let text = content().string().trim()
           let length = env("LENGTH").or("100").number().or(100)
           let suffix = env("SUFFIX").or("...")
 
@@ -43,15 +43,14 @@ config:
             "mode": "cli",
             "max_length": $length,
             "suffix": $suffix,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [text-truncate] ${! root.original_length } -> ${! root.final_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [text-truncate] ${! this.original_length } -> ${! this.final_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -50,8 +50,7 @@ config:
           root.size_kb = $size_kb
           root.size_mb = $size_mb
           root.is_media = $type != "unknown"
-          root.metadata = {"skill": "media-info", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "media-info", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

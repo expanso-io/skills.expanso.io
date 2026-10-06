@@ -2,11 +2,23 @@ name: audio-transcribe
 version: 1.0.0
 description: Transcribe audio content using AI
 
+credentials:
+  - name: OPENAI_API_KEY
+    required: true
+    description: OpenAI API key for Whisper transcription
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
+
 inputs:
   - name: audio_url
     type: string
-    required: true
-    description: URL of audio file to transcribe
+    required: false
+    description: HTTPS URL of an audio file to transcribe
+  - name: language
+    type: string
+    required: false
+    description: Optional ISO-639-1 audio language
 
 outputs:
   - name: transcript
@@ -18,6 +30,11 @@ backends:
     type: remote
     requires: [OPENAI_API_KEY]
     description: OpenAI Whisper API
+
+components:
+  inputs: [stdin, http_server]
+  processors: [mapping, http, openai_transcription, switch]
+  outputs: [stdout, sync_response]
 
 author: expanso
 license: MIT

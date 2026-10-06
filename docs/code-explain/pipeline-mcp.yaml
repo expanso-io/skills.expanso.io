@@ -4,7 +4,7 @@
 # HTTP server for MCP/OpenClaw integration.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/explain \
 #     -H "Content-Type: application/json" \
 #     -d '{"code": "def hello(): print(\"Hello\")", "language": "python"}'
@@ -28,9 +28,9 @@ config:
       - mapping: |
           let code = this.code.or("")
 
-          root = if $code.length() == 0 {
-            throw("code field is required")
-          }
+          root.error = if $code.length() == 0 {
+            "code field is required"
+          } else { deleted() }
 
           meta input_hash = $code.hash("sha256").encode("hex")
           meta input_length = $code.length()
@@ -60,26 +60,44 @@ config:
             }
           ]
 
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  tools: []
 
       - mapping: |
-          root.explanation = this.choices.0.message.content
-          root.metadata = {
-            "skill": "code-explain",
-            "mode": "mcp",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "code-explain",
+                "mode": "mcp",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "explanation": this.choices.0.message.content,
+              "metadata": {
+                "skill": "code-explain",
+                "mode": "mcp",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "input_length": meta("input_length"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
           }
 
       - log:
           level: INFO
           message: |
-            [code-explain] Explained ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [code-explain] Processed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     sync_response: {}

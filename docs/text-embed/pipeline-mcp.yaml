@@ -4,7 +4,7 @@
 # HTTP endpoint for embedding generation.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/embed \
 #     -H "Content-Type: application/json" \
@@ -58,7 +58,7 @@ config:
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
             "usage": this.usage,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

@@ -20,9 +20,9 @@ config:
       - mapping: |
           let text = this.text.or("")
 
-          root = if $text.length() == 0 {
-            throw("text field is required")
-          }
+          root.error = if $text.length() == 0 {
+            "text field is required"
+          } else { deleted() }
 
           meta input_hash = $text.hash("sha256").encode("hex")
           meta input_length = $text.length()
@@ -41,25 +41,42 @@ config:
             }
           ]
 
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  tools: []
 
       - mapping: |
-          let raw = this.choices.0.message.content
+          let raw = this.choices.0.message.content.or("")
           let parsed = $raw.parse_json().catch({"findings": []})
-
-          root.findings = $parsed.findings.or([])
-          root.has_secrets = $parsed.findings.or([]).length() > 0
-          root.summary = $parsed.summary.or("")
-          root.metadata = {
-            "skill": "secrets-scan",
-            "mode": "mcp",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
-            "findings_count": $parsed.findings.or([]).length(),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "secrets-scan",
+                "mode": "mcp",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "findings": $parsed.findings.or([]),
+              "has_secrets": $parsed.findings.or([]).length() > 0,
+              "summary": $parsed.summary.or(""),
+              "metadata": {
+                "skill": "secrets-scan",
+                "mode": "mcp",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "findings_count": $parsed.findings.or([]).length(),
+                "timestamp": now()
+              }
+            }
           }
 
   output:

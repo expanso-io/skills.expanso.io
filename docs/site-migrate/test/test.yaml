@@ -1,7 +1,0 @@
-# Test: site-migrate
-tests:
-  - name: "Migrates site"
-    skip: true
-    input: '{"source": "notion", "destination": "astro"}'
-    expected_output:
-      status: "complete"

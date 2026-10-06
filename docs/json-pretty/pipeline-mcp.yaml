@@ -18,9 +18,9 @@ config:
           meta trace_id = uuid_v4()
           let json_str = this.json.or(content()).string()
           let parsed = $json_str.parse_json()
-          root.formatted = $parsed.format_json()
+          root.formatted = $parsed.format_json().string()
           root.valid = true
-          root.metadata = {"skill": "json-pretty", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "json-pretty", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

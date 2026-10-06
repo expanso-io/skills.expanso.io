@@ -31,7 +31,7 @@ config:
           root.payload = $payload
           root.signature = if $parts.length() >= 3 { $parts.index(2) } else { "" }
           root.valid_format = $parts.length() == 3
-          root.metadata = {"skill": "jwt-decode", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "jwt-decode", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

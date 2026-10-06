@@ -36,7 +36,7 @@ config:
           root.by_newline = $by_newline
           root.by_pipe = $by_pipe
           root.count = if $is_array { $parsed.length() } else { 0 }
-          root.metadata = {"skill": "array-join", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "array-join", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

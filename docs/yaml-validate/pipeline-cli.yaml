@@ -2,8 +2,8 @@
 # ===========================================
 #
 # Usage:
-#   echo "key: value" | expanso-edge run pipeline-cli.yaml
-#   cat config.yaml | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -35,15 +35,14 @@ config:
             "mode": "cli",
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [yaml-validate] Valid: ${! root.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+            [yaml-validate] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

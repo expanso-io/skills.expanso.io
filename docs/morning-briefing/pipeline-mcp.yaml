@@ -18,30 +18,46 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          meta location = this.location.or("San Francisco")
-
-          # Simulated data
           let data = {
-            "calendar": [{"time": "09:00", "title": "Standup"}],
-            "weather": {"temp": 68, "condition": "Sunny"},
-            "news": [{"title": "Tech News", "source": "TechCrunch"}],
-            "tasks": [{"title": "Review docs", "due": "today"}]
+            "calendar": this.calendar.or([]),
+            "weather": this.weather.or({}),
+            "news": this.news.or([]),
+            "tasks": this.tasks.or([])
           }
+          let priorities = $data.tasks.filter(task -> task.priority.or(99) <= 2).map_each(task -> task.title.or("Untitled task"))
+
+          meta location = this.location.or($data.weather.location).or("")
+          meta briefing_json = $data.format_json()
+          meta priorities_json = $priorities.format_json()
 
           root.messages = [
-            {"role": "system", "content": "Create a concise morning briefing."},
-            {"role": "user", "content": "Data: " + $data.format_json()}
+            {
+              "role": "system",
+              "content": "Create a concise morning briefing using only the supplied records. Do not invent meetings, weather, headlines, tasks, or delivery receipts."
+            },
+            {
+              "role": "user",
+              "content": "Briefing records:\n" + $data.format_json()
+            }
           ]
-          meta data = $data
 
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
-          root.briefing = meta("data")
+          root.briefing = meta("briefing_json").parse_json()
           root.summary = this.choices.0.message.content
-          root.metadata = {"skill": "morning-briefing", "mode": "mcp", "trace_id": meta("trace_id")}
+          root.priorities = meta("priorities_json").parse_json()
+          root.metadata = {
+            "skill": "morning-briefing",
+            "mode": "mcp",
+            "source": "request",
+            "location": meta("location"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
+            "timestamp": now()
+          }
 
   output:
     sync_response: {}

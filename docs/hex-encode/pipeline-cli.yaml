@@ -18,8 +18,7 @@ config:
           root.input = $input
           root.length = $input.length()
           root.hex_length = $input.encode("hex").length()
-          root.metadata = {"skill": "hex-encode", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "hex-encode", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -3,19 +3,29 @@
 #
 # HTTP endpoint for MCP/OpenClaw integration.
 #
-# Usage:
-#   # Start the server
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+# Validate locally (no control plane needed):
+#   expanso-edge validate pipeline-mcp.yaml
+#   expanso-cli job validate pipeline-mcp.yaml --offline
 #
-#   # Call from curl
-#   curl -X POST http://localhost:8080/summarize \
+# Deploy to your Expanso Cloud control plane:
+#   expanso-cli job deploy pipeline-mcp.yaml
+#
+# NOTE: `expanso-edge run` starts the node AGENT; it does not run this file as a
+# pipeline. There is no supported `expanso-edge run <pipeline>` form.
+#
+# Once the job is running, call the endpoint on the node that executes it:
+#   curl -X POST http://<edge-node>:8080/summarize \
 #     -H "Content-Type: application/json" \
 #     -d '{"text": "Your long text here..."}'
 #
-# Why this matters for OpenClaw:
-#   When Claude (via MCP) calls this endpoint, it runs on YOUR machine.
-#   Your OPENAI_API_KEY stays local - the MCP server only receives results.
-#   This is the "12-factor app" pattern for AI agent security.
+# CREDENTIAL AND DATA EGRESS:
+#   OPENAI_API_KEY is read from the environment of the node that executes this
+#   pipeline -- for a Cloud-scheduled job that is the edge node, not your
+#   laptop.
+#   It is not sent to Expanso Cloud and is not stored in this file.
+#   It IS sent to OpenAI, as the bearer credential on every request.
+#   The ENTIRE request text is also sent to OpenAI. This pipeline is not offline
+#   and not local-only unless you repoint it at a model you host yourself.
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -44,9 +54,13 @@ config:
           # Validate input
           let text_length = $input_text.length()
           root = if $text_length == 0 {
-            throw("text field is required and cannot be empty")
+            {
+              "error": "text field is required and cannot be empty"
+            }
           } else if $text_length > 1048576 {
-            throw("text exceeds maximum length of 1MB")
+            {
+              "error": "text exceeds maximum length of 1MB"
+            }
           } else {
             {
               "messages": [
@@ -67,29 +81,50 @@ config:
           meta input_length = $text_length
           meta trace_id = uuid_v4()
 
-      # 2. Call OpenAI (credentials resolved locally by Expanso Edge)
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+      # 2. Call OpenAI (key read from the executing node's environment,
+      #    then sent to OpenAI)
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  # Required by the component schema on expanso-edge v2.1.21.
+                  # Empty list = no tool/function calling for this request.
+                  tools: []
 
       # 3. Format response with metadata
       - mapping: |
-          root.summary = this.choices.0.message.content
-          root.metadata = {
-            "skill": "text-summarize",
-            "mode": "mcp",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "text-summarize",
+                "mode": "mcp",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "summary": this.choices.0.message.content,
+              "metadata": {
+                "skill": "text-summarize",
+                "mode": "mcp",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "input_length": meta("input_length"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
           }
 
       # 4. Audit log
       - log:
           level: INFO
           message: |
-            [text-summarize] MCP request: ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [text-summarize] MCP processed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     # Return response synchronously to HTTP caller

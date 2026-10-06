@@ -4,7 +4,7 @@
 # HTTP server for MCP/OpenClaw integration.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/extract \
 #     -H "Content-Type: application/json" \
 #     -d '{"text": "John Smith, 35 years old, lives in NYC"}'
@@ -15,8 +15,9 @@
 #     -d '{"text": "Contact: jane@example.com, Phone: 555-1234", "fields": ["email", "phone"]}'
 #
 # Why Expanso Edge?
-#   Your OPENAI_API_KEY stays on your machine.
-#   The AI service only sees the text - not your identity or key source.
+#   OPENAI_API_KEY is read from the executing node's environment and sent to
+#   OpenAI as the API credential, with the full input text. It is not sent to
+#   Expanso Cloud.
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -42,9 +43,9 @@ config:
           let input_text = this.text.or("")
 
           # Validate required field
-          root = if $input_text.length() == 0 {
-            throw("text field is required")
-          }
+          root.error = if $input_text.length() == 0 {
+            "text field is required"
+          } else { deleted() }
 
           # Generate audit trail data
           meta input_hash = $input_text.hash("sha256").encode("hex")
@@ -66,34 +67,50 @@ config:
             }
           ]
 
-      # 2. Call OpenAI with JSON mode (credentials resolved locally)
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+      # 2. Call OpenAI with JSON mode (key read on this node, sent to OpenAI)
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  tools: []
 
       # 3. Parse and format output
       - mapping: |
-          # Try to parse the response as JSON
-          let raw_response = this.choices.0.message.content
+          let raw_response = this.choices.0.message.content.or("")
           let extracted = $raw_response.parse_json().catch({})
-
-          root.extracted = $extracted
-          root.raw_response = $raw_response
-          root.metadata = {
-            "skill": "json-extract",
-            "mode": "mcp",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "json-extract",
+                "mode": "mcp",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "extracted": $extracted,
+              "raw_response": $raw_response,
+              "metadata": {
+                "skill": "json-extract",
+                "mode": "mcp",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "input_length": meta("input_length"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
           }
 
       # 4. Audit log
       - log:
           level: INFO
           message: |
-            [json-extract] Extracted from ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [json-extract] Processed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     sync_response: {}

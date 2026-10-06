@@ -10,31 +10,16 @@ This skill creates a cryptographically signed audit envelope around any data. Th
 
 ### CLI Mode
 
-```bash
-# Wrap JSON data
-echo '{"action": "user.login", "ip": "192.168.1.1"}' | \
-  expanso-edge run pipeline-cli.yaml
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
 
-# With custom source and actor
-SOURCE=auth-service ACTOR=user-123 \
-  echo '{"action": "payment", "amount": 100}' | \
-  expanso-edge run pipeline-cli.yaml
+```bash
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-# Start server
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-# Make request
-curl -X POST http://localhost:8080/wrap \
-  -H "Content-Type: application/json" \
-  -d '{
-    "data": {"action": "user.login"},
-    "source": "auth-service",
-    "actor": "user-123"
-  }'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Output

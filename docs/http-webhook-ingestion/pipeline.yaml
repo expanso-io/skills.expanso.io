@@ -1,0 +1,62 @@
+# HTTP Webhook Ingestion Pipeline
+# Accept webhooks and forward to Kafka
+
+name: http-webhook-ingestion
+description: Ingest HTTP webhooks with validation and forward to Kafka
+type: pipeline
+
+config:
+  input:
+    http_server:
+      address: 0.0.0.0:8080
+      path: /webhook
+      allowed_verbs:
+        - POST
+      timeout: 5s
+
+  pipeline:
+    processors:
+      # Verify x-webhook-signature as a lowercase HMAC-SHA256 hex digest.
+      - mapping: |
+          let secret = env("WEBHOOK_SECRET").or("")
+          let provided = meta("X-Webhook-Signature").or("")
+          let expected = content().hash("hmac_sha256", $secret).encode("hex")
+          root = if $secret == "" {
+            deleted()
+          } else if $provided != $expected {
+            deleted()
+          } else { this }
+
+      # Add request metadata
+      - mapping: |
+          root = this
+          root._received_at = now()
+          root._source_ip = @http_client_ip.or("unknown")
+          root._request_id = uuid_v4()
+
+      # Validate required fields
+      - mapping: |
+          root = if this.event == null {
+            throw("Missing required field: event")
+          } else {
+            this
+          }
+
+      # Add event type for routing
+      - mapping: |
+          root = this
+          root._event_type = this.event.type.or(this.event).string()
+
+  output:
+    kafka:
+      addresses:
+        - ${KAFKA_BROKERS}
+      topic: 'webhooks-${! json("_event_type") }'
+      key: '${! json("_request_id") }'
+      ack_replicas: true
+      tls:
+        enabled: true
+      sasl:
+        mechanism: SCRAM-SHA-512
+        user: "${KAFKA_USERNAME}"
+        password: "${KAFKA_PASSWORD}"

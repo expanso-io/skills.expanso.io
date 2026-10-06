@@ -11,7 +11,7 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          let input = content()
+          let input = content().string()
 
           let trimmed = $input.trim()
           let trim_start = $input.trim_prefix(" ").trim_prefix("\t").trim_prefix("\n")
@@ -22,8 +22,7 @@ config:
           root.original_length = $input.length()
           root.trimmed_length = $trimmed.length()
           root.chars_removed = $input.length() - $trimmed.length()
-          root.metadata = {"skill": "string-trim", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "string-trim", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

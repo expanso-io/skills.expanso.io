@@ -33,7 +33,7 @@ config:
           root.extension = $extension
           root.is_absolute = $path.has_prefix("/")
           root.depth = $parts.filter(p -> p != "").length()
-          root.metadata = {"skill": "path-parse", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "path-parse", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

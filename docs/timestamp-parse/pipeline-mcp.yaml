@@ -2,7 +2,7 @@
 # =============================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/parse -d '{}'                           # Current time
 #   curl -X POST http://localhost:8080/parse -d '{"timestamp": "2024-01-15"}'  # Parse date
 
@@ -46,7 +46,7 @@ config:
             "skill": "timestamp-parse",
             "mode": "mcp",
             "input": $input,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

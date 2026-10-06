@@ -4,7 +4,7 @@
 # HTTP endpoint for speaker diarization.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/diarize \
 #     -H "Content-Type: application/json" \
@@ -52,11 +52,14 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
-          let result = this.choices.0.message.content.parse_json().catch({
-            "speakers": ["Unknown"],
-            "segments": [{"speaker": "Unknown", "text": this.choices.0.message.content}]
+          let content = this.choices.0.message.content
+          let parsed = $content.parse_json().catch({})
+          let result = $parsed.merge({
+            "speakers": $parsed.speakers.or(["Unknown"]),
+            "segments": $parsed.segments.or([{"speaker": "Unknown", "text": $content}])
           })
 
           root.speakers = $result.speakers
@@ -68,7 +71,7 @@ config:
             "speaker_count": $result.speakers.length(),
             "segment_count": $result.segments.length(),
             "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

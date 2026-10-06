@@ -1,0 +1,109 @@
+# Expanso Pipeline: webhook-receive (CLI mode)
+# ==========================================
+#
+# Receive and process webhook events from any service.
+# In CLI mode, accepts webhook payloads from stdin for testing/replay.
+#
+# Usage:
+#   # Process a GitHub webhook payload
+#   expanso-edge validate pipeline-cli.yaml
+#
+#   # Process with signature verification (wrapped format)
+#   expanso-edge validate pipeline-cli.yaml
+#
+# Why Expanso Edge?
+#   Webhooks arrive at YOUR edge node — data never passes through a third party.
+#   Compose with security skills inside a single pipeline:
+#   webhook-receive → signature-verify → pii-redact → data-fence → audit-log
+
+name: webhook-receive-cli
+type: pipeline
+
+config:
+  input:
+    stdin:
+      codec: lines
+
+  pipeline:
+    processors:
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 1: Parse webhook payload
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          let trace_id = uuid_v4()
+          let start_time = now()
+          meta trace_id = $trace_id
+          meta start_time = $start_time
+
+          let input = content().parse_json()
+
+          # Support both raw body and wrapped format {headers, body}
+          let has_wrapper = $input.exists("body") && $input.exists("headers")
+
+          let headers = if $has_wrapper { $input.headers } else { {} }
+          let body = if $has_wrapper { $input.body } else { $input }
+
+          let raw_body = if $has_wrapper {
+            $input.raw_body.or($input.body.format_json().string())
+          } else { content().string() }
+          let event_type = $headers.get("X-GitHub-Event").or($headers.get("X-Stripe-Event")).or($headers.get("X-Event-Type")).or("unknown")
+          meta headers = $headers
+          meta raw_body = $raw_body
+          meta event_type = $event_type
+
+          root.event = {
+            "type": $event_type,
+            "headers": $headers,
+            "body": $body,
+            "received_at": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [webhook-receive] Event type=${! meta("event_type") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 2: Signature verification (fail-closed)
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          let secret = env("WEBHOOK_SECRET").or("")
+          let sig_header = env("WEBHOOK_SIGNATURE_HEADER").or("X-Hub-Signature-256")
+          let provided_sig = this.event.headers.get($sig_header).or("")
+          let expected = "sha256=" + meta("raw_body").hash("hmac_sha256", $secret).encode("hex")
+          let verified = $secret != "" && $provided_sig != "" && $expected == $provided_sig
+          meta signature_status = if $verified { "verified" } else { "rejected" }
+          root = if !$verified {
+            deleted()
+          } else {
+            this
+          }
+
+      # ═══════════════════════════════════════════════════════════════════════
+      # STEP 3: Structure output with canonical envelope
+      # ═══════════════════════════════════════════════════════════════════════
+      - mapping: |
+          root.source = "webhook"
+          root.event = this.event
+          root.resource = "event." + meta("event_type")
+          root.schema_version = "1.0"
+          root.trace_id = meta("trace_id")
+          root.data = [this.event]
+          root.count = 1
+          root.sensitivity = "raw"
+          root.metadata = {
+            "skill": "webhook-receive",
+            "mode": "cli",
+            "event_type": meta("event_type"),
+            "signature_status": meta("signature_status"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
+            "timestamp": now()
+          }
+
+      - log:
+          level: INFO
+          message: |
+            [webhook-receive] Processed event type=${! meta("event_type") } sig=${! meta("signature_status") } (trace: ${! meta("trace_id").slice(0, 8) })
+
+  output:
+    stdout: {}

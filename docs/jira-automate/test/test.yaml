@@ -1,8 +1,26 @@
-# Test: jira-automate
 tests:
-  - name: "Searches issues"
-    skip: true
-    input: '{"action": "search", "project": "TEST"}'
+  - name: "Normalizes Jira search results"
+    input: '{"action":"search","project":"TEST"}'
+    env:
+      JIRA_URL: https://jira.example.test
+      JIRA_EMAIL: agent@example.test
+      JIRA_API_TOKEN: test-token
+    provider_responses:
+      - issues:
+          - key: TEST-101
+            fields:
+              summary: Fix login
+              status:
+                name: To Do
+              assignee:
+                emailAddress: dev@example.test
     expected_output:
+      action: search
+      issues:
+        - key: TEST-101
+          summary: Fix login
+          status: To Do
+          assignee: dev@example.test
       metadata:
-        action: "search"
+        skill: jira-automate
+        source: jira_api

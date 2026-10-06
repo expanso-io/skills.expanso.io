@@ -4,7 +4,7 @@
 # HTTP endpoint for image generation.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/generate \
 #     -H "Content-Type: application/json" \
@@ -66,7 +66,7 @@ config:
             "quality": meta("quality"),
             "style": meta("style"),
             "original_prompt": meta("prompt"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

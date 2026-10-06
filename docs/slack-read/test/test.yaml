@@ -1,0 +1,27 @@
+tests:
+  - name: "Reads and filters a Slack API response"
+    input: '{"channel":"C01234567","query":"deploy"}'
+    provider_responses:
+      - ok: true
+        messages:
+          - ts: "1.0"
+            user: U1
+            text: deploy finished
+          - ts: "2.0"
+            user: U2
+            text: standup notes
+    expected_output:
+      source: slack
+      resource: conversations.history
+      count: 1
+      data:
+        - id: "1.0"
+          user: U1
+          text: deploy finished
+          timestamp: "1.0"
+          thread_ts: null
+          reactions: []
+      metadata:
+        success: true
+        source: slack_api
+        total_available: 2

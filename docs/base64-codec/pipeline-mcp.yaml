@@ -2,7 +2,7 @@
 # ==========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/encode -d '{"text": "Hello World"}'
 #   curl -X POST http://localhost:8080/decode -d '{"text": "SGVsbG8gV29ybGQ="}'
 
@@ -44,7 +44,7 @@ config:
             "operation": $mode,
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

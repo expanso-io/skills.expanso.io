@@ -4,8 +4,7 @@
 # Route requests to the optimal LLM.
 #
 # Usage:
-#   echo '{"prompt":"Write hello world in Python","task_type":"code"}' | \
-#     OPENAI_API_KEY=... expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -87,6 +86,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: "${! meta(\"selected_model\").re_replace(\"ollama/\", \"\") }"
+          tools: []
 
       - mapping: |
           let response = this.choices.0.message.content
@@ -113,7 +113,7 @@ config:
             "task_type": meta("detected_type"),
             "priority": meta("priority"),
             "latency_ms": now().ts_sub(meta("start_time")).abs(),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -123,5 +123,4 @@ config:
             [llm-router] Complete: ${! this.cost.tokens } tokens, $${! this.cost.cost_cents / 100 } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

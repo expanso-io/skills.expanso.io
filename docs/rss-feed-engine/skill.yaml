@@ -1,0 +1,92 @@
+# Skill: rss-feed-engine
+name: rss-feed-engine
+version: 1.0.0
+description: Poll an RSS feed and emit one normalized JSON record per
+  item. Emits each item once per GUID, even across restarts, for feeds
+  whose items carry a GUID. Every item must carry a stable, non-empty
+  <guid>; feeds whose items lack a GUID are not supported.
+author:
+  name: Expanso Team
+  url: https://expanso.io
+  avatar: EX
+job: 'An RSS or news feed engine: poll feeds, parse items, deduplicate,
+  store.'
+credentials: []
+inputs: []
+outputs: []
+backends:
+- name: local
+  type: local
+  requires: []
+components:
+  inputs:
+  - generate
+  processors:
+  - http
+  - xml
+  - mapping
+  - unarchive
+  - dedupe
+  outputs:
+  - file
+  caches:
+  - file
+job_specs:
+- pipeline.yaml
+proof:
+  status: executed-cloud-and-local
+  date: '2026-09-18'
+  expanso_edge: v2.1.21
+  record: skills/jobs/PROOF-2026-09-18.md
+  runs:
+  - where: expanso-cloud
+    detail: Submitted to an Expanso Cloud workspace with a label selector
+      and executed by the one operator-registered node carrying that
+      label. Not a hosted runner; the job's dependencies ran on the
+      same host as the node.
+    checks_passed: 14/14
+  - where: local-mode-node
+    detail: Submitted to a local-mode node (expanso-edge run --local).
+      Not run through Cloud.
+    checks_passed: 14/14
+  - where: local-mode-node
+    detail: The fetch-error guard after the http processor, added after
+      the runs above, run against a local fixture. HTTP 200 completed
+      with 4 records; HTTP 401 and 503 each failed with 0 records and
+      the error "feed fetch failed". Without the guard a 401 also
+      failed, but in the xml step, so the guard makes fetch failures
+      explicit and correctly attributed.
+    checks_passed: 3/3
+  proved:
+  - Live NASA (10 items) and BBC Technology (21 items, GMT dates) feeds
+    each matched an independent fetch of the same feed.
+  - A duplicate GUID was emitted once; a restarted job emitted 0 items
+    it had already seen (file-backed dedupe cache).
+  not_proved:
+  - Feeds other than RSS 2.0 (Atom was not tested).
+  - Feeds whose items lack a GUID. Every item must carry a stable,
+    non-empty <guid>; GUID-less feeds are not supported and were not
+    tested.
+  - The fetch-error guard on Expanso Cloud; it ran on a local-mode
+    node only.
+  - The top-level restart_policy never on Expanso Cloud with this spec;
+    it was added after the Cloud run.
+  note: The job spec has the same structure as the job that ran. Only
+    the values listed in its header comment differ, and long mappings
+    are rewrapped. The fetch-error guard and the top-level
+    restart_policy never are newer than the Cloud run. Inputs in the
+    runs were synthetic fixtures unless
+    a proved line says otherwise.
+dependencies:
+  network_egress:
+    required: true
+    endpoints:
+    - host: the feed host
+      protocol: https
+      purpose: GET the feed
+  third_party_apis: []
+  credentials_transmitted: []
+  data_leaving_host:
+  - what: an HTTP GET for the feed URL
+    to: the feed host
+  offline_capable: false
