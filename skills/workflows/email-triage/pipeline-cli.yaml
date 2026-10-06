@@ -122,7 +122,7 @@ config:
                   let api = env("OUTLOOK_API_URL").or("https://graph.microsoft.com/v1.0")
                   let folder = meta("folder").escape_url_path()
                   let fields = "id,subject,from,toRecipients,receivedDateTime,bodyPreview,hasAttachments"
-                  root.url = $api + "/me/mailFolders/" + $folder + "/messages?$top=" + meta("limit").string() + "&$select=" + fields
+                  root.url = $api + "/me/mailFolders/" + $folder + "/messages?$top=" + meta("limit").string() + "&$select=" + $fields + "&$filter=" + ("receivedDateTime ge " + meta("since_date")).escape_url_query()
               - http:
                   url: '${! this.url }'
                   verb: GET

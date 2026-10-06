@@ -33,9 +33,9 @@ config:
           let nonce = "000000000000000000000000".decode("hex")
           let proof = "expanso-mcp-auth".encrypt_aes("gcm", $expected.hash("sha256"), $nonce)
           let authenticated = $proof.decrypt_aes("gcm", $supplied.hash("sha256"), $nonce).catch(null) != null
-          meta http_status_code = if $supplied == "" || !$authenticated { 401 } else { 200 }
+          meta http_status_code = if $expected.length() < 32 { 503 } else if $supplied == "" || !$authenticated { 401 } else { 200 }
           root = if $expected.length() < 32 {
-            throw("MCP_BEARER_TOKEN must contain at least 32 characters")
+            deleted()
           } else if $supplied == "" || !$authenticated {
             deleted()
           } else {

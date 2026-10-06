@@ -175,6 +175,9 @@ config:
           root._transfer_controls.fields_removed = ["customer_name", "customer_address", "customer_dob"]
           root._transfer_controls.fields_pseudonymized = ["customer_id"]
 
+      - catch:
+          - mapping: root = deleted()
+
   output:
     broker:
       pattern: fan_out

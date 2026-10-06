@@ -62,7 +62,7 @@ config:
           let warn_keywords = ["warn", "warning", "alert", "caution", "timeout"]
 
           root = this
-          root.level = if $log_level == "UNKNOWN" && $error_keywords.any(keyword -> $content_lower.contains(keyword)) {
+          let inferred_level = if $log_level == "UNKNOWN" && $error_keywords.any(keyword -> $content_lower.contains(keyword)) {
             "ERROR"
           } else if $log_level == "UNKNOWN" && $warn_keywords.any(keyword -> $content_lower.contains(keyword)) {
             "WARN"
@@ -75,7 +75,7 @@ config:
             "WARNING": "WARN"
           }
 
-          let normalized_level = $level_mappings.get($log_level).or($log_level)
+          let normalized_level = $level_mappings.get($inferred_level).or($inferred_level)
           root.level = $normalized_level
           root.original_level = $log_level
 

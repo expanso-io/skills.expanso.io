@@ -4,6 +4,12 @@ type: pipeline
 namespace: production
 
 config:
+  rate_limit_resources:
+    - label: inbound_http
+      local:
+        count: 10000
+        interval: 1s
+
   input:
     http_server:
       address: 0.0.0.0:8080
@@ -180,9 +186,3 @@ logger:
 metrics:
   prometheus:
     prefix: smart_buffer
-
-  rate_limit_resources:
-    - label: inbound_http
-      local:
-        count: 10000
-        interval: 1s
