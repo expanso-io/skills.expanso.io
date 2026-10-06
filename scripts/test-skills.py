@@ -1114,9 +1114,9 @@ def execute_test(
     config = pipeline_spec.setdefault("config", {})
     if variant == "cli":
         # Scheduled Edge jobs cannot receive terminal stdin. For execution
-        # proof, wrap the published CLI processor graph with a disposable
-        # localhost HTTP input and synchronous output. The pipeline itself is
-        # never edited, and its processors run unchanged in expanso-edge.
+        # samples, wrap the CLI graph with disposable localhost HTTP input and
+        # synchronous output. Provider fixtures below also modify this copy;
+        # README.md#run-the-skill-test-harness defines the proof boundary.
         config["input"] = {
             "http_server": {
                 "address": f"127.0.0.1:{port}",

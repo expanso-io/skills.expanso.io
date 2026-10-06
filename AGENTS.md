@@ -7,10 +7,9 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 ## Layout
 
 `skills/<category>/<name>/` is authoritative. `docs/<name>/` is a **flat published
-mirror that CI regenerates** — `.github/workflows/pages.yml` copies root
-`catalog.json`, `catalog-minimal.json`, `validation-report.json`,
-`example-conformance.json` and every
-`skills/*/*/` directory into `docs/` at deploy time. Edit `skills/`; committed
+mirror that CI regenerates** with [scripts/stage-pages.py](scripts/stage-pages.py).
+That script owns publication filtering, directory replacement, report copying,
+and SEO generation; both CI and Pages use it. Edit `skills/`; committed
 `docs/` copies are build artifacts and can be stale without that being a live
 defect. GitHub Pages publishes `docs/`.
 
