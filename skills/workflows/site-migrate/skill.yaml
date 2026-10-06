@@ -1,15 +1,7 @@
 # Skill: site-migrate
 name: site-migrate
 version: 1.0.0
-description: Migrate websites across platforms (Notion→Astro, WordPress→Hugo, etc.)
-
-credentials:
-  - name: NOTION_TOKEN
-    required: false
-  - name: CLOUDFLARE_API_TOKEN
-    required: false
-  - name: OPENAI_API_KEY
-    required: true
+description: Check whether a requested website migration is implemented by this Edge recipe
 
 inputs:
   - name: source
@@ -33,14 +25,22 @@ outputs:
     type: array
   - name: deploy_url
     type: string
+  - name: status
+    type: string
+  - name: capability_gap
+    type: object
   - name: metadata
     type: object
 
 backends:
-  - name: openai
-    type: remote
+  - name: local
+    type: local
 
 components:
   inputs: [stdin, http_server]
-  processors: [mapping, http, openai_chat_completion, log]
-  outputs: [http_client, stdout, sync_response]
+  processors: [mapping, log]
+  outputs: [stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: Named source connectors, asset migration, site build, and deployment are not implemented.

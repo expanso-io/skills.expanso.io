@@ -5,13 +5,13 @@
 # No external API calls - pure local processing.
 #
 # Usage:
-#   echo "Hello, World!" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 #   # Different algorithm
-#   echo "Hello, World!" | ALGORITHM=sha512 expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 #   # Hash a file
-#   cat myfile.bin | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 
 name: hash-digest-cli
 type: pipeline
@@ -26,6 +26,9 @@ config:
     processors:
       - mapping: |
           let algo = env("ALGORITHM").or("sha256")
+          root.error = if content().length() == 0 {
+            "input cannot be empty"
+          } else { deleted() }
 
           let hash = match $algo {
             "sha256" => content().hash("sha256").encode("hex"),
@@ -50,8 +53,7 @@ config:
       - log:
           level: INFO
           message: |
-            [hash-digest] ${! root.algorithm } hash of ${! root.input_length } bytes
+            [hash-digest] ${! this.algorithm } hash of ${! this.input_length } bytes
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

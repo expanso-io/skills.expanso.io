@@ -1,8 +1,8 @@
-# Test: task-dashboard
 tests:
-  - name: "Shows status"
-    skip: true
-    input: '{"action": "status"}'
+  - name: "Summarizes supplied tasks"
+    input: '{"action":"status","tasks":[{"id":"1","task":"Review PR","status":"pending"},{"id":"2","task":"Update docs","status":"in_progress"}]}'
     expected_output:
-      metadata:
-        skill: "task-dashboard"
+      status:
+        total_pending: 1
+        in_progress: 1
+        completed_today: 0

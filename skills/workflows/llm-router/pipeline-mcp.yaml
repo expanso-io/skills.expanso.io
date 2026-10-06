@@ -20,7 +20,7 @@ config:
           meta trace_id = uuid_v4()
           let prompt = this.prompt.or("")
 
-          root = if $prompt.length() == 0 { throw("prompt is required") } else { "" }
+          root = if $prompt.length() == 0 { throw("prompt is required") } else { {} }
 
           # Simple routing logic
           let is_code = $prompt.contains("code") || $prompt.contains("function")
@@ -32,12 +32,13 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           root.response = this.choices.0.message.content
           root.model_used = meta("model")
           root.cost = {"tokens": this.usage.total_tokens.or(0)}
-          root.metadata = {"skill": "llm-router", "mode": "mcp", "trace_id": meta("trace_id")}
+          root.metadata = {"skill": "llm-router", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4())}
 
   output:
     sync_response: {}

@@ -68,7 +68,7 @@ What that means in practice:
   third-party API component is **not** offline. Check the skill, not this page.
 - **Are composable** - chain skills together for complex workflows.
 
-Each skill includes:
+CLI/MCP skills include:
 - `skill.yaml` - Metadata, inputs/outputs, credentials
 - `pipeline-cli.yaml` - Standalone CLI pipeline
 - `pipeline-mcp.yaml` - MCP server integration
@@ -181,10 +181,13 @@ This MCP server provides tools to validate, create, and deploy Expanso pipelines
 
 ## Skill Categories
 
-### Jobs (8 skills)
+Category counts come from [`catalog.json`](catalog.json); source directories
+also retain withdrawn skills that are excluded from publication.
+
+### Jobs
 Complete jobs, each run end to end. See [If you are asked to build...](#if-you-are-asked-to-build).
 
-### Workflows (19 skills)
+### Workflows
 End-to-end automation combining multiple services.
 
 | Skill | Description |
@@ -198,7 +201,7 @@ End-to-end automation combining multiple services.
 | `seo-pipeline` | SEO analysis and optimization |
 | [View all...](skills/workflows/) | |
 
-### AI (23 skills)
+### AI
 AI-powered processing for text, images, audio, and video.
 
 | Skill | Description |
@@ -211,7 +214,7 @@ AI-powered processing for text, images, audio, and video.
 | `meeting-notes` | Transcribe and summarize meetings |
 | [View all...](skills/ai/) | |
 
-### Connectors (3 skills)
+### Connectors
 Integration connectors for SaaS services and messaging platforms.
 
 | Skill | Description |
@@ -220,7 +223,7 @@ Integration connectors for SaaS services and messaging platforms.
 | `gmail-read` | Read Gmail messages via the Gmail API |
 | `webhook-receive` | Receive and verify webhook events from any service |
 
-### Security (16 skills)
+### Security
 Security, compliance, and cryptographic operations.
 
 | Skill | Description |
@@ -235,7 +238,7 @@ Security, compliance, and cryptographic operations.
 | `data-fence` | Field-level filtering to limit agent data exposure |
 | [View all...](skills/security/) | |
 
-### Transforms (100 skills)
+### Transforms
 Data transformation, parsing, and format conversion.
 
 | Skill | Description |
@@ -248,7 +251,7 @@ Data transformation, parsing, and format conversion.
 | `math-*` | 8 mathematical operations |
 | [View all...](skills/transforms/) | |
 
-### Utilities (16 skills)
+### Utilities
 General utilities and helper functions.
 
 | Skill | Description |
@@ -257,7 +260,6 @@ General utilities and helper functions.
 | `email-validate` | Validate email addresses |
 | `mime-type` | Detect file MIME types |
 | `image-dimensions` | Get image dimensions |
-| `retry-wrapper` | Add retry logic to operations |
 | [View all...](skills/utilities/) | |
 
 ## Skill Structure
@@ -394,21 +396,40 @@ Skills with `pipeline-mcp.yaml` are shaped as HTTP endpoints, using an
 `http_server` input and a `sync_response` output. They are intended to be served
 by a node running that pipeline.
 
-The MCP endpoint's advertised address and its operational status have **not**
-been verified for this release. Treat `pipeline-mcp.yaml` as a definition, not a
-running service.
+See [MCP endpoint status](#mcp-endpoint-status) for the local execution and
+public routing proof boundaries.
 
 ## Testing
 
 ### Run the Skill Test Harness
 
 ```bash
-uv run -s scripts/test-skills.py --report /tmp/test-report.json
+uv run -s scripts/test-skills.py \
+  --report .conformance/test-report.json
 ```
 
 The harness defaults to:
+
 - Reusing cached passing results when inputs and pipelines are unchanged
 - Rerunning failed tests up to 3 total attempts
+- Restarting its isolated Edge every 30 skills so a long catalog sweep does not
+  turn process degradation into false failures
+
+CI runs uncached CLI and MCP harness sweeps, the recipe runner, both validators,
+and the browser conformance suite. CLI harness jobs replace terminal input and
+output with loopback HTTP adapters. OpenAI processors and configured HTTP
+provider calls are replaced with fixture mappings in disposable jobs; their
+downstream processors run on local Edge. These runs do not exercise those
+provider adapters or prove complete published pipelines against live services.
+The recipe runner preserves published adapters and records explicit skips when
+dependencies or execution fixtures are unavailable, including the cloud-first
+variant. The dated, per-pipeline result is published as
+[`example-conformance.json`](https://skills.expanso.io/example-conformance.json).
+
+The site explorer reads SHA-bound `pipeline*.explorer.json` records generated
+by `scripts/record-explorer.py`. These illustrative local processor samples
+disclose replaced adapters and provider fixtures; they are not Cloud or platform
+execution proof. Arrow keys move between stages while retaining scroll position.
 
 ### Test a New Expanso CLI/Edge Cut
 
@@ -417,7 +438,8 @@ If you have a locally built or pre-release binary, point the harness at it:
 ```bash
 EXPANSO_CLI_BIN=/path/to/expanso-cli \
 EXPANSO_EDGE_BIN=/path/to/expanso-edge \
-uv run -s scripts/test-skills.py --report /tmp/test-report.json
+uv run -s scripts/test-skills.py \
+  --report .conformance/test-report.json
 ```
 
 Useful flags:
@@ -468,7 +490,7 @@ against live `docs.expanso.io` component pages.
 | # | Pipeline shape | Readiness | Components | Notes |
 |---|---|---|---|---|
 | 1 | `stdin` -> mapping -> `stdout` | `drafted-unverified` | present, Stable | `stdin` has no input path on a Cloud-scheduled node |
-| 2 | `http_server` -> mapping -> `sync_response` (MCP) | `drafted-unverified` | present, Stable | endpoint operation unverified |
+| 2 | `http_server` -> mapping -> `sync_response` (MCP) | `drafted-unverified` | present, Stable | see [MCP endpoint status](#mcp-endpoint-status) |
 | 3 | Kafka source -> mapping -> sink | `drafted-unverified` | `kafka`, `kafka_franz` present, Stable | never run end to end |
 | 4 | input -> mapping -> Kafka sink | `drafted-unverified` | `kafka` output present, Stable | never run end to end |
 | 5 | input -> mapping -> Postgres sink | `drafted-unverified` | `sql_insert`, `sql_raw` present, Stable | never run end to end |
@@ -490,7 +512,7 @@ unproven for every row.
 
 ## Known issues
 
-Open items affecting published skills, recorded rather than silently patched.
+Remaining limits and proof boundaries are recorded here rather than hidden.
 
 ### Two validators, two different questions
 
@@ -498,78 +520,25 @@ This distinction matters more than any count, so it is stated first:
 
 | Command | Question it answers | Used by |
 |---|---|---|
-| `expanso-cli job validate --offline` | Is this a well-formed **job spec**? | the repository CI gate |
-| `expanso-edge validate` | Is the inner **pipeline config** valid? | `validation-report.json` |
+| `expanso-cli job validate --offline` | Is this a well-formed **job spec**? | CI and `validation-report.json` |
+| `expanso-edge validate` | Is the inner **pipeline config** valid? | CI and `validation-report.json` |
 
-The first does **not** check component configuration. A pipeline can be accepted
-as a job spec and still be rejected by the strict validator for unknown
-component fields, bloblang arity errors or wrong value types. In
-`validation-report.json` those two answers are recorded separately, as
-`job_spec_accepted` and `validates`; a substantial number of skills are
-`job_spec_accepted: true` **and** `validates: false`.
-
-**A green CI run therefore does not mean the catalog is semantically valid.** It
-means every file was accepted as a job spec.
-
-### Some skills have a pipeline the local validator rejects
-
-Settled, offline evidence: `expanso-edge validate` at **v2.1.21** rejects at
-least one published pipeline variant (`pipeline-cli.yaml`, `pipeline-mcp.yaml`,
-`pipeline-cloud.yaml`, or a recipe's `pipeline.yaml`) of a number of skills.
-Every variant is validated separately. A skill is labelled `invalid-does-not-validate` in
-[`validation-report.json`](https://skills.expanso.io/validation-report.json)
-if **any** of its variants is rejected, and is **excluded from any "ready"
-promotion**.
-
-**The report is the only source for which skills and how many.** Counts and the
-affected list are deliberately not repeated here, because prose copies go stale
-silently while the report is drift-checked:
+The first does **not** check component configuration. The CI gate runs both and
+fails if either rejects any published pipeline. `validation-report.json` records
+the answers separately as `job_spec_accepted` and `validates`:
 
 ```bash
 uv run -s scripts/validate-skills.py           # regenerate
 uv run -s scripts/validate-skills.py --check   # fails if the report is stale
 ```
 
-For the cli/mcp skills, two causes account for nearly all of them:
-
-- **`Missing required field 'tools'` in `openai_chat_completion`.** The
-  component schema at v2.1.21 requires a `tools` field. Adding `tools: []` (no
-  tool calling) was verified to satisfy the validator. This repair has been
-  applied **only** to both pipelines of the promoted `text-summarize` skill; the
-  rest are left untouched and labelled, so the fix can be applied deliberately
-  rather than swept across the catalog.
-- **Bloblang mapping syntax errors**, plus one file
-  (`email-triage/pipeline-cli.yaml`) that is not valid YAML at all.
-
-Some skills have both causes, one per variant.
-
-Recipes (`skills/recipes/*/pipeline.yaml`) fail for different reasons, mostly
-component-configuration errors:
-
-- **Unknown component fields**, such as `max_retries`, `batching`, `backoff`,
-  `compression`, `storage_class` or `time_partitioning`.
-- **Unknown processors**: `try`, `catch` and `json_documents` are not
-  components at v2.1.21.
-- **Wrong value types**, where a string (often an env interpolation) is given
-  for a numeric field such as a rate limit `count` or `batching.count`.
-- **Bloblang errors**, including `let` inside an expression-position
-  `if`/`else`/`match` body and wrong method arity.
-
-### `codec: json_object` on `stdout` outputs
-
-All 177 published skills carry it. In **exploratory** testing against Expanso
-Cloud v2.1.21 it was rejected at runtime with
-`codec was not recognised: json_object`, while both validators passed and the
-deploy succeeded; removing the key (`stdout: {}`) ran correctly in the same
-test. **This has not been confirmed on an intended test workspace, so the catalog
-has not been changed.** Newly authored files here use `stdout: {}`. If a job
-reaches `degraded` state, suspect its output codec.
-
 ### Validation is not execution
 
 A pipeline can pass both validators, be accepted by the control plane, and still
-fail when a node runs it. The `codec` issue above is exactly that. Always check
-`job describe` and `execution list --job-id`.
+fail when a node runs it. See [the harness guide](#run-the-skill-test-harness)
+for the scope of local fixture execution and skipped integrations.
+Always check `job describe` and
+`execution list --job-id` after a real deployment.
 
 ### `stdin` inputs on Cloud-scheduled jobs
 
@@ -578,42 +547,21 @@ no delivery path on a remote node.
 
 ### MCP endpoint status
 
-`pipeline-mcp.yaml` files are definitions. Their advertised endpoint and its
-operational status are unverified for this release.
+The uncached MCP harness starts endpoints on loopback and calls them with test
+inputs. See [the harness guide](#run-the-skill-test-harness) for fixture scope;
+these runs do not verify public routing or live third-party providers.
 
 ### Catalog freshness
 
-`catalog.json` carries a `generated` timestamp of 2026-02-24. Its **contents were
-checked and are accurate**: 177 skills, exactly matching the skills on disk, with
-no additions or omissions. The timestamp is stale metadata, not stale data.
+Catalog, validation, plugin, and conformance outputs are drift-checked in CI.
 
 
 ## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-### Adding a New Skill
-
-1. Use the template:
-   ```bash
-   cp -r _template skills/category/my-new-skill
-   ```
-
-2. Update `skill.yaml` with your skill metadata
-
-3. Implement the pipeline in `pipeline-cli.yaml` and `pipeline-mcp.yaml`
-
-4. Add tests in `test/test.yaml`
-
-5. Submit a PR!
-
-### Skill Guidelines
-
-- Keep skills focused and single-purpose
-- Support both remote (OpenAI) and local (Ollama) backends when possible
-- Include comprehensive tests
-- Document all inputs, outputs, and credentials
-- Follow naming conventions: `category-action` (e.g., `text-summarize`, `json-validate`)
+Follow [Creating a New Skill](CONTRIBUTING.md#creating-a-new-skill) and
+[Skill Guidelines](CONTRIBUTING.md#skill-guidelines).
 
 ## Catalog API
 
@@ -629,6 +577,9 @@ curl https://skills.expanso.io/catalog-minimal.json
 # Per-skill validation status and readiness labels
 curl https://skills.expanso.io/validation-report.json
 
+# Dated per-pipeline execution and conformance evidence
+curl https://skills.expanso.io/example-conformance.json
+
 # Agent-oriented summary of the invocation and dependency contracts
 curl https://skills.expanso.io/llms.txt
 ```
@@ -639,10 +590,8 @@ curl https://skills.expanso.io/llms.txt
 what the **local validator** says about every published pipeline, with the tool
 version it was produced against:
 
-```bash
-uv run -s scripts/validate-skills.py           # regenerate
-uv run -s scripts/validate-skills.py --check   # fail if results drifted
-```
+See [Two validators, two different questions](#two-validators-two-different-questions)
+for regeneration and drift-check commands.
 
 Its `readiness` vocabulary caps at `validated-not-executed`. Nothing reaches
 `verified-executed` without a dated Expanso Cloud run record. The report itself
@@ -654,7 +603,6 @@ they are not duplicated in this prose -- see [Known issues](#known-issues).
 ```json
 {
   "version": "1.0.0",
-  "total_skills": 177,
   "categories": {
     "ai": {
       "description": "AI-powered skills...",

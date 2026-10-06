@@ -1,8 +1,10 @@
 # Test: backup-verify
 tests:
   - name: "Verifies backups"
-    skip: true
-    input: '{"bucket": "my-backup"}'
+    input: '{"cloud_provider":"s3","bucket":"my-backup","local_manifest":[{"path":"a.txt","size":3,"sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},{"path":"b.txt","size":4,"sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}],"backup_manifest":[{"path":"a.txt","size":3,"sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},{"path":"b.txt","size":5,"sha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}]}'
     expected_output:
       status:
-        verified: true
+        verified: false
+        local_files: 2
+        backup_files: 2
+        differences: 1

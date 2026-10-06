@@ -2,7 +2,7 @@
 # ==========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/explain -d '{"cron": "0 9 * * 1-5"}'
 
 name: "cron-explain-mcp"
@@ -21,6 +21,13 @@ config:
 
   pipeline:
     processors:
+      - mapping: |
+          let missing = this.cron == null
+          root = if $missing {
+            throw("required input is missing: cron")
+          } else {
+            this
+          }
       - mapping: |
           meta trace_id = uuid_v4()
           let cron = this.cron.or(content()).string().trim()
@@ -41,6 +48,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let cron = meta("cron")
@@ -60,7 +68,7 @@ config:
             "mode": "mcp",
             "model": "gpt-4o-mini",
             "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -68,6 +76,11 @@ config:
           level: INFO
           message: |
             [cron-explain] Explained cron (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

@@ -1,6 +1,7 @@
-# Test: retry-wrapper
 tests:
-  - name: "Wraps command with retry"
-    input: '{"command":"echo hello"}'
-    expected_output:
-      success: true
+- name: Withdrawn capability returns no success receipt
+  input: '{}'
+  expected_output:
+    status: unsupported
+    publication: pulled
+    skill: retry-wrapper

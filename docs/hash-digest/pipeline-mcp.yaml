@@ -49,7 +49,7 @@ config:
       - log:
           level: INFO
           message: |
-            [hash-digest] ${! root.algorithm } hash computed
+            [hash-digest] ${! this.algorithm } hash computed
 
   output:
     sync_response: {}

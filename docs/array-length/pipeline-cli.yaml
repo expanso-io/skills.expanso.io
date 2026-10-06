@@ -25,8 +25,7 @@ config:
           root.type = $type
           root.length = $length
           root.is_empty = $length == 0
-          root.metadata = {"skill": "array-length", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "array-length", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

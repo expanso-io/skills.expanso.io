@@ -2,7 +2,7 @@
 # ========================================
 #
 # Usage:
-#   echo "<p>Hello <b>World</b></p>" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -19,7 +19,7 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          let html = content()
+          let html = content().string()
           let original_length = $html.length()
 
           # Remove script and style blocks first
@@ -52,15 +52,14 @@ config:
           root.metadata = {
             "skill": "html-strip",
             "mode": "cli",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [html-strip] ${! root.original_length } -> ${! root.text_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [html-strip] ${! this.original_length } -> ${! this.text_length } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

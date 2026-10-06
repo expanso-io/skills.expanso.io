@@ -2,7 +2,7 @@
 # ============================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/validate -d '{"email": "user@example.com"}'
 
 name: "email-validate-mcp"
@@ -39,14 +39,14 @@ config:
           root.metadata = {
             "skill": "email-validate",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [email-validate] ${! root.email } valid: ${! root.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+            [email-validate] ${! this.email } valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     sync_response: {}

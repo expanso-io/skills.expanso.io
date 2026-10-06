@@ -4,10 +4,10 @@
 # Analyze text for sentiment, entities, topics, and key phrases.
 #
 # Usage:
-#   echo "I love this product! It's amazing." | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 #   # Specific analyses
-#   echo "Apple Inc. announced..." | ANALYSES="entities,sentiment" expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 
 name: text-analyze-cli
 type: pipeline
@@ -24,6 +24,9 @@ config:
           meta input_hash = content().hash("sha256").encode("hex")
           meta input_length = content().length()
           meta trace_id = uuid_v4()
+          root.error = if content().length() == 0 {
+            "input cannot be empty"
+          } else { deleted() }
 
           let analyses = env("ANALYSES").or("sentiment,entities,topics,keywords")
 
@@ -38,32 +41,48 @@ config:
             }
           ]
 
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  tools: []
 
       - mapping: |
-          let raw = this.choices.0.message.content
+          let raw = this.choices.0.message.content.or("")
           let parsed = $raw.parse_json().catch({})
-
-          root.analysis = $parsed
-          root.raw_response = $raw
-          root.metadata = {
-            "skill": "text-analyze",
-            "mode": "cli",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
-            "analyses_requested": env("ANALYSES").or("all"),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "text-analyze",
+                "mode": "cli",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "analysis": $parsed,
+              "raw_response": $raw,
+              "metadata": {
+                "skill": "text-analyze",
+                "mode": "cli",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "input_length": meta("input_length"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "analyses_requested": env("ANALYSES").or("all"),
+                "timestamp": now()
+              }
+            }
           }
 
       - log:
           level: INFO
           message: |
-            [text-analyze] Analyzed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [text-analyze] Processed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

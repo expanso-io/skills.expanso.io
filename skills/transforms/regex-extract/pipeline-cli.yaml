@@ -2,7 +2,7 @@
 # ===========================================
 #
 # Usage:
-#   PATTERN="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" echo "Contact us at test@example.com" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -19,7 +19,7 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          let text = content()
+          let text = content().string()
           let pattern = env("PATTERN").or("\\S+")
 
           # Find all matches
@@ -32,15 +32,14 @@ config:
           root.metadata = {
             "skill": "regex-extract",
             "mode": "cli",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [regex-extract] Found ${! root.count } matches (trace: ${! meta("trace_id").slice(0, 8) })
+            [regex-extract] Found ${! this.count } matches (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

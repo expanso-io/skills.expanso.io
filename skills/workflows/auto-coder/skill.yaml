@@ -1,17 +1,11 @@
 # Skill: auto-coder
 # Version: 1.0.0
 #
-# Autonomous coding agent that runs while you're AFK.
+# Capability check for autonomous repository coding.
 
 name: auto-coder
 version: 1.0.0
-description: Autonomous coding with GitHub integration and CI/CD automation
-
-credentials:
-  - name: GITHUB_TOKEN
-    required: true
-  - name: OPENAI_API_KEY
-    required: true
+description: Report the execution capabilities required before an autonomous coding request can run
 
 inputs:
   - name: task
@@ -29,20 +23,35 @@ inputs:
     default: true
 
 outputs:
+  - name: status
+    type: string
+    description: Always unsupported until repository execution is configured
   - name: changes
     type: array
+    description: Empty because this pipeline does not edit repositories
   - name: pr_url
     type: string
+    description: Null because this pipeline does not create pull requests
   - name: tests_passed
-    type: boolean
+    type: object
+    description: Null because tests are not run
+  - name: capability_gap
+    type: object
+    description: Exact missing capabilities and supporting evidence
   - name: metadata
     type: object
 
 backends:
-  - name: openai
-    type: remote
+  - name: local
+    type: local
+    requires: []
+    description: Deterministic local capability check
 
 components:
   inputs: [stdin, http_server]
-  processors: [mapping, openai_chat_completion, http, command, log]
-  outputs: [http_client, stdout, sync_response]
+  processors: [mapping, log]
+  outputs: [stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: Repository checkout, code execution, tests, and pull-request creation are not implemented.

@@ -17,34 +17,7 @@ config:
   pipeline:
     processors:
       - mapping: |
-          let config = this.config
-          let policy = this.policy
-          meta trace_id = uuid_v4()
-
-          root = if $config == null {
-            throw("config field is required")
-          } else if $policy == null {
-            throw("policy field is required")
-          } else { "" }
-
-          let deny_rules = $policy.deny.or([])
-          let violations = []
-          let allowed = $violations.length() == 0
-
-          root.allowed = $allowed
-          root.violations = $violations
-          root.metadata = {
-            "skill": "policy-check",
-            "mode": "mcp",
-            "rules_checked": $deny_rules.length(),
-            "trace_id": meta("trace_id"),
-            "timestamp": now()
-          }
-
-      - log:
-          level: INFO
-          message: |
-            [policy-check] MCP allowed: ${! this.allowed } (trace: ${! meta("trace_id").slice(0, 8) })
+          root = {"status": "unsupported", "publication": "pulled", "skill": "policy-check", "reason": "Reports policy approval and checked rules without evaluating the configured rules."}
 
   output:
     sync_response: {}

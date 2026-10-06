@@ -2,8 +2,8 @@
 # ============================================
 #
 # Usage:
-#   echo '{"action": "user.login"}' | expanso-edge run pipeline-cli.yaml
-#   SOURCE=payment-service ACTOR=user-123 echo '{"amount": 100}' | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -18,6 +18,12 @@ config:
 
   pipeline:
     processors:
+      - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
       - mapping: |
           let trace_id = uuid_v4()
           let timestamp = now()
@@ -58,6 +64,10 @@ config:
           message: |
             [audit-envelope] Created envelope (trace: ${! meta("trace_id").slice(0, 8) })
 
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
+
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

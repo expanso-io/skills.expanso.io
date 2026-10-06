@@ -4,7 +4,7 @@
 # Split transcript into per-speaker segments.
 #
 # Usage:
-#   cat transcript.txt | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -19,6 +19,12 @@ config:
 
   pipeline:
     processors:
+      - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
       - mapping: |
           meta input_hash = content().hash("sha256").encode("hex")
           meta trace_id = uuid_v4()
@@ -37,11 +43,14 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
-          let result = this.choices.0.message.content.parse_json().catch({
-            "speakers": ["Unknown"],
-            "segments": [{"speaker": "Unknown", "text": this.choices.0.message.content}]
+          let content = this.choices.0.message.content
+          let parsed = $content.parse_json().catch({})
+          let result = $parsed.merge({
+            "speakers": $parsed.speakers.or(["Unknown"]),
+            "segments": $parsed.segments.or([{"speaker": "Unknown", "text": $content}])
           })
 
           root.speakers = $result.speakers
@@ -53,7 +62,7 @@ config:
             "speaker_count": $result.speakers.length(),
             "segment_count": $result.segments.length(),
             "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -62,6 +71,10 @@ config:
           message: |
             [speaker-diarize] Found ${! this.metadata.speaker_count } speakers, ${! this.metadata.segment_count } segments
 
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
+
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

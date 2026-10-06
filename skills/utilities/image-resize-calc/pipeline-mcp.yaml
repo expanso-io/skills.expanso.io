@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.width == null || this.height == null
+          root = if $missing {
+            throw("required input is missing: width, height")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let width = this.width.or(100).number()
           let height = this.height.or(100).number()
@@ -33,7 +40,12 @@ config:
           root.new_height = ($height * $final_scale).floor()
           root.aspect_ratio = $aspect
           root.scale_factor = $final_scale
-          root.metadata = {"skill": "image-resize-calc", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "image-resize-calc", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

@@ -29,7 +29,7 @@ config:
           root.original_count = if $parsed.type() == "array" { $parsed.length() } else { 0 }
           root.filtered_count = $filtered.length()
           root.removed_count = root.original_count - root.filtered_count
-          root.metadata = {"skill": "array-filter", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "array-filter", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

@@ -4,7 +4,7 @@
 # Verify signed envelope.
 #
 # Usage:
-#   cat envelope.json | VERIFY_KEY=... expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -34,9 +34,13 @@ config:
           # Verify hash matches
           let hash_valid = $computed_hash == $claimed_hash
 
-          # Verify signature (using same HMAC approach as sign-envelope)
-          let key = env("VERIFY_KEY").or("default-dev-key")
-          let expected_sig = ($computed_hash + "." + $key).hash("sha256").encode("hex")
+          # Verify signature using the same HMAC construction as sign-envelope.
+          let key = env("VERIFY_KEY").or("")
+          let expected_sig = if $key.length() < 32 {
+            throw("VERIFY_KEY must contain at least 32 characters")
+          } else {
+            $computed_hash.hash("hmac_sha256", $key).encode("hex")
+          }
           let sig_valid = $expected_sig == $claimed_sig
 
           let valid = $hash_valid && $sig_valid
@@ -52,9 +56,13 @@ config:
           root.metadata = {
             "skill": "verify-signature",
             "mode": "cli",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
+
+      - catch:
+          - mapping: |
+              root = {"valid": false, "error": error()}
 
       - log:
           level: INFO
@@ -62,5 +70,4 @@ config:
             [verify-signature] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

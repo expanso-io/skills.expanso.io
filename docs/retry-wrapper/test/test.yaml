@@ -1,6 +1,0 @@
-# Test: retry-wrapper
-tests:
-  - name: "Wraps command with retry"
-    input: '{"command":"echo hello"}'
-    expected_output:
-      success: true

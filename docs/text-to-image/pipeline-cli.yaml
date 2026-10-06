@@ -4,7 +4,7 @@
 # Generate images from text descriptions.
 #
 # Usage:
-#   echo "a sunset over mountains" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -49,7 +49,7 @@ config:
             "quality": env("QUALITY").or("standard"),
             "style": env("STYLE").or("vivid"),
             "original_prompt": meta("prompt"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -59,5 +59,4 @@ config:
             [text-to-image] Generated image (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

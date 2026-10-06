@@ -1,0 +1,66 @@
+# pipeline.yaml: the sensor-telemetry job, as run on 2026-09-18
+# on a local-mode node with expanso-edge v2.1.21.
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/sensor-telemetry-mqtt.mdx (draft), byte for byte. Its
+# structure matches the proven run's config; long mappings are only
+# rewrapped. Set these values for your environment:
+#   .input.mqtt.client_id = sensor-telemetry
+#   .input.mqtt.urls[0] = tcp://127.0.0.1:1883
+#   .output.switch.cases[0].output.file.path =
+#     /var/tmp/expanso-telemetry/rejects.jsonl
+#   .output.switch.cases[1].output.file.path =
+#     /var/tmp/expanso-telemetry/alerts.jsonl
+#   .output.switch.cases[2].output.file.path =
+#     /var/tmp/expanso-telemetry/telemetry.jsonl
+# The selector pipeline_role: telemetry is an example; label your node
+# to match or change it. Use underscores in label keys.
+#
+name: sensor-telemetry
+type: pipeline
+selector:
+  match_labels:
+    pipeline_role: telemetry
+config:
+  input:
+    mqtt:
+      urls: ["tcp://127.0.0.1:1883"]
+      topics: ["plant/+/+/telemetry"]
+      client_id: "sensor-telemetry"
+      qos: 1
+  pipeline:
+    processors:
+      - mapping: |
+          let parts = @mqtt_topic.split("/")
+          root.site = "plant"
+          root.line = $parts.index(1)
+          root.sensor = $parts.index(2)
+          root.seq = this.seq
+          root.ts = this.ts
+          root.temp_c = if this.temp_f == null {
+            throw("missing temp_f")
+          } else {
+            ((this.temp_f - 32) * 5 / 9).round()
+          }
+          root.pressure_kpa = this.pressure_kpa
+          root.alert = root.temp_c > 80
+  output:
+    switch:
+      cases:
+        - check: errored()
+          output:
+            file:
+              path: "/var/tmp/expanso-telemetry/rejects.jsonl"
+              codec: lines
+            processors:
+              - mapping: 'root = {"error": error(),
+                  "topic": @mqtt_topic, "raw": content().string()}'
+        - check: this.alert
+          continue: true
+          output:
+            file:
+              path: "/var/tmp/expanso-telemetry/alerts.jsonl"
+              codec: lines
+        - output:
+            file:
+              path: "/var/tmp/expanso-telemetry/telemetry.jsonl"
+              codec: lines

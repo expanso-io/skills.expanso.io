@@ -4,7 +4,7 @@
 # HTTP endpoint for speaker diarization.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/diarize \
 #     -H "Content-Type: application/json" \
@@ -29,6 +29,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.transcript == null
+          root = if $missing {
+            throw("required input is missing: transcript")
+          } else {
+            this
+          }
+      - mapping: |
           let transcript = this.transcript.or(content())
           root = if $transcript.length() == 0 {
             throw("transcript field is required")
@@ -52,11 +59,14 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
-          let result = this.choices.0.message.content.parse_json().catch({
-            "speakers": ["Unknown"],
-            "segments": [{"speaker": "Unknown", "text": this.choices.0.message.content}]
+          let content = this.choices.0.message.content
+          let parsed = $content.parse_json().catch({})
+          let result = $parsed.merge({
+            "speakers": $parsed.speakers.or(["Unknown"]),
+            "segments": $parsed.segments.or([{"speaker": "Unknown", "text": $content}])
           })
 
           root.speakers = $result.speakers
@@ -68,7 +78,7 @@ config:
             "speaker_count": $result.speakers.length(),
             "segment_count": $result.segments.length(),
             "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -76,6 +86,11 @@ config:
           level: INFO
           message: |
             [speaker-diarize] MCP request (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

@@ -2,20 +2,23 @@
 
 :root {
     color-scheme: light;
-    --bg-primary: #ffffff;
+    --bg-primary: #fafaf9;
     --bg-secondary: #f4f4f5;
     --bg-tertiary: #e4e4e7;
     --bg-hover: #d4d4d8;
-    --border: #d4d4d8;
+    --border: #a1a1aa;
     --text-primary: #18181b;
-    --text-secondary: #52525b;
-    --text-muted: #71717a;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --success: #22c55e;
-    --warning: #f59e0b;
-    --category-ai: #8b5cf6;
-    --category-security: #ef4444;
+    --text-secondary: #3f3f46;
+    --text-muted: #52525b;
+    --accent: #1d4ed8;
+    --accent-hover: #1e40af;
+    --action-bg: #1d4ed8;
+    --action-hover: #1e40af;
+    --success: #166534;
+    --danger: #991b1b;
+    --warning: #92400e;
+    --category-ai: #6d28d9;
+    --category-security: #b91c1c;
     --category-transforms: #06b6d4;
     --category-utilities: #f59e0b;
     --category-workflows: #22c55e;
@@ -23,7 +26,6 @@
     --category-jobs: #14b8a6;
     --radius: 8px;
     --radius-lg: 12px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --transition: 150ms ease;
 }
 
@@ -33,16 +35,19 @@
     --bg-secondary: #141416;
     --bg-tertiary: #1c1c1f;
     --bg-hover: #252528;
-    --border: #2a2a2d;
+    --border: #52525b;
     --text-primary: #f4f4f5;
-    --text-secondary: #a1a1aa;
-    --text-muted: #71717a;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --success: #22c55e;
-    --warning: #f59e0b;
-    --category-ai: #8b5cf6;
-    --category-security: #ef4444;
+    --text-secondary: #d4d4d8;
+    --text-muted: #a1a1aa;
+    --accent: #93c5fd;
+    --accent-hover: #bfdbfe;
+    --action-bg: #1d4ed8;
+    --action-hover: #1e40af;
+    --success: #86efac;
+    --danger: #fca5a5;
+    --warning: #fde68a;
+    --category-ai: #6d28d9;
+    --category-security: #b91c1c;
     --category-transforms: #06b6d4;
     --category-utilities: #f59e0b;
     --category-workflows: #22c55e;
@@ -50,7 +55,6 @@
     --category-jobs: #14b8a6;
     --radius: 8px;
     --radius-lg: 12px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -67,6 +71,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
 }
 
 /* Header */
@@ -162,10 +167,7 @@ body {
     font-size: 2.25rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-primary);
 }
 
 .hero-subtitle {
@@ -188,18 +190,24 @@ body {
 
 .install-box code {
     color: var(--text-primary);
+    overflow-wrap: anywhere;
 }
 
 .copy-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
     cursor: pointer;
-    padding: 0.25rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 4px;
     transition: all var(--transition);
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    min-width: 3.5rem;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
 .copy-btn:hover {
@@ -207,8 +215,18 @@ body {
     background: var(--bg-hover);
 }
 
-.copy-btn.copied {
+.copy-btn.copy-success,
+.copy-pipeline-btn.copy-success {
     color: var(--success);
+    border-color: var(--success);
+    background: var(--bg-secondary);
+}
+
+.copy-btn.copy-error,
+.copy-pipeline-btn.copy-error {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: var(--bg-secondary);
 }
 
 /* Filters */
@@ -281,8 +299,8 @@ body {
 }
 
 .tab.active {
-    background: var(--accent);
-    border-color: var(--accent);
+    background: var(--action-bg);
+    border-color: var(--action-bg);
     color: white;
 }
 
@@ -346,7 +364,6 @@ body {
 .skill-card:hover {
     border-color: var(--accent);
     transform: translateY(-2px);
-    box-shadow: var(--shadow);
 }
 
 .skill-header {
@@ -545,6 +562,7 @@ body {
 
 .modal-table {
     width: 100%;
+    table-layout: fixed;
     font-size: 0.875rem;
 }
 
@@ -553,6 +571,8 @@ body {
     text-align: left;
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--border);
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .modal-table th {
@@ -579,7 +599,7 @@ body {
     padding: 1rem;
     font-family: 'SF Mono', Monaco, monospace;
     font-size: 0.8rem;
-    overflow-x: auto;
+    overflow-x: hidden;
     position: relative;
 }
 
@@ -615,13 +635,13 @@ body {
 }
 
 .btn-primary {
-    background: var(--accent);
+    background: var(--action-bg);
     border: none;
     color: white;
 }
 
 .btn-primary:hover {
-    background: var(--accent-hover);
+    background: var(--action-hover);
 }
 
 .btn-secondary {
@@ -669,6 +689,11 @@ body {
 .footer-links a:hover,
 .footer-text a:hover {
     color: var(--text-primary);
+}
+
+.footer-text a {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
 }
 
 .footer-text {
@@ -728,16 +753,16 @@ body {
     margin: 0;
     padding: 1rem;
     padding-right: 3rem;
-    overflow-x: auto;
+    overflow-x: hidden;
     font-size: 0.8rem;
     line-height: 1.5;
     background: #1d1f21 !important;
     color: #c5c8c6;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    /* Wrap rather than scroll sideways. Matches .modal-code pre above and keeps
-       long YAML values and URLs inside the viewport at phone widths. */
-    white-space: pre-wrap;
+    /* Wrap YAML values, URLs, and preserved spaces at phone widths.
+       pre-wrap lets spaces hang past the edge of highlighted tokens. */
+    white-space: break-spaces;
     overflow-wrap: anywhere;
     word-break: break-word;
 }
@@ -755,7 +780,7 @@ body {
    so it applies to highlighted blocks too. */
 .code-block pre[class*="language-"],
 .code-block code[class*="language-"] {
-    white-space: pre-wrap;
+    white-space: break-spaces;
     overflow-wrap: anywhere;
     word-break: break-word;
 }
@@ -845,8 +870,10 @@ body {
 
 .url-box code {
     flex: 1;
-    color: #67e8f9; /* Bright cyan - readable on dark */
-    word-break: break-all;
+    min-width: 0;
+    color: var(--accent);
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .url-box .copy-btn {
@@ -898,7 +925,7 @@ code[class*="language-"] {
 }
 
 .token.boolean {
-    color: #cc6666 !important;
+color: #d27575 !important;
 }
 
 .token.comment {
@@ -920,17 +947,13 @@ code[class*="language-"] {
     margin-bottom: 1.25rem;
     border-radius: var(--radius);
     border: 2px solid var(--accent);
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.02) 100%);
+    background: var(--bg-tertiary);
 }
 
 .copy-banner-text {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-}
-
-.copy-banner-icon {
-    font-size: 1.4rem;
 }
 
 .copy-banner-title {
@@ -948,18 +971,17 @@ code[class*="language-"] {
     padding: 0.6rem 1.5rem;
     border-radius: 6px;
     border: none;
-    background: var(--accent);
+    background: var(--action-bg);
     color: #fff;
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
     white-space: nowrap;
     transition: background-color 0.2s, transform 0.1s;
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .copy-pipeline-btn:hover {
-    background: var(--accent-hover, #5558e6);
+    background: var(--action-hover);
     transform: translateY(-1px);
 }
 
@@ -967,14 +989,10 @@ code[class*="language-"] {
     transform: translateY(0);
 }
 
-.copy-pipeline-btn.copied-state {
-    background: #2e7d32;
-    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
-}
-
 /* Pipeline sub-tabs (CLI / MCP) */
 .pipeline-sub-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 1rem;
 }
@@ -1023,8 +1041,22 @@ code[class*="language-"] {
     }
 
     .category-tabs {
-        overflow-x: auto;
         padding-bottom: 0.5rem;
+    }
+
+    .modal-overlay {
+        padding: 0.5rem;
+    }
+
+    .modal-content {
+        padding: 1rem;
+    }
+
+    .modal-tabs,
+    .pipeline-sub-tabs,
+    .modal-actions,
+    .footer-links {
+        flex-wrap: wrap;
     }
 
     .skills-grid {

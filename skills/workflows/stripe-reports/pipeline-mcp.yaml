@@ -16,40 +16,164 @@ config:
 
   pipeline:
     processors:
+      # Bearer verification uses AES-GCM tag validation so token comparison is
+      # constant-time inside the authenticated-cipher implementation.
       - mapping: |
-          meta trace_id = uuid_v4()
-          let period = this.period.or("today")
-          meta period = $period
-
-          # Simulated metrics
-          root.metrics = {
-            "revenue": {"gross": 15420.00, "net": 14650.00},
-            "subscriptions": {"active": 342, "mrr": 8500.00},
-            "period": $period
+          let expected = env("MCP_BEARER_TOKEN").or("")
+          let authorization = meta("Authorization").or("")
+          let supplied = if $authorization.has_prefix("Bearer ") { $authorization.trim_prefix("Bearer ") } else { "" }
+          let nonce = "000000000000000000000000".decode("hex")
+          let proof = "expanso-mcp-auth".encrypt_aes("gcm", $expected.hash("sha256"), $nonce)
+          let authenticated = $proof.decrypt_aes("gcm", $supplied.hash("sha256"), $nonce).catch(null) != null
+          meta http_status_code = if $expected.length() < 32 { 503 } else if $supplied == "" || !$authenticated { 401 } else { 200 }
+          root = if $expected.length() < 32 {
+            deleted()
+          } else if $supplied == "" || !$authenticated {
+            deleted()
+          } else {
+            this
           }
-          meta metrics = root.metrics
 
-          root.messages = [
-            {"role": "system", "content": "Analyze Stripe metrics. Return JSON with insights array."},
-            {"role": "user", "content": "Metrics: " + root.metrics.format_json()}
-          ]
+      - try:
+          - mapping: |
+              let period = this.period.or("today").string()
+              meta start_time = now()
+              let end_unix = now().ts_unix()
+              let start_unix = match $period {
+                "today" => $end_unix - 86400,
+                "yesterday" => $end_unix - 172800,
+                "week" => $end_unix - 604800,
+                "month" => $end_unix - 2592000,
+                "quarter" => $end_unix - 7776000,
+                _ => $end_unix - 86400
+              }
+              let range_end = if $period == "yesterday" { $end_unix - 86400 } else { $end_unix }
 
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+              root = this
+              root.period = $period
+              root._trace_id = uuid_v4()
+              root._start_unix = $start_unix
+              root._end_unix = $range_end
+              root._include_insights = this.include_insights.or(false)
+              root._include_quick_wins = this.include_quick_wins.or(true)
 
-      - mapping: |
-          let ai = this.choices.0.message.content.parse_json().catch({})
+          - mapping: |
+              let base = env("STRIPE_API_URL").or("https://api.stripe.com/v1").trim_suffix("/")
+              meta period = this.period
+              meta trace_id = this._trace_id
+              meta include_insights = this._include_insights
+              meta include_quick_wins = this._include_quick_wins
+              meta start_unix = this._start_unix
+              meta end_unix = this._end_unix
+              meta stripe_url = $base + "/balance_transactions?created%5Bgte%5D=" + this._start_unix.string() + "&created%5Blte%5D=" + this._end_unix.string() + "&limit=100"
+              root = if !$base.re_match("^https://") { throw("STRIPE_API_URL must be an https URL") } else { {} }
+          - http:
+              url: '${! meta("stripe_url") }'
+              verb: GET
+              headers:
+                Authorization: "Bearer ${STRIPE_API_KEY}"
+                Accept: application/json
+              timeout: 30s
+              retries: 3
+              rate_limit: stripe_api
+          - mapping: |
+              root.period = meta("period")
+              root._trace_id = meta("trace_id")
+              root._include_insights = meta("include_insights") == "true"
+              root._include_quick_wins = meta("include_quick_wins") == "true"
+              root._start_unix = meta("start_unix").number()
+              root._end_unix = meta("end_unix").number()
+              root.transactions = this.data.or([])
+              root.has_more = this.has_more.or(false)
 
-          root.report = {"title": meta("period") + " Report", "period": meta("period")}
-          root.metrics = meta("metrics")
-          root.insights = $ai.insights.or([])
-          root.quick_wins = $ai.quick_wins.or([])
-          root.metadata = {"skill": "stripe-reports", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          - mapping: |
+              let transactions = this.transactions
+              let keyed = $transactions.map_each(txn -> txn.assign({
+                "_currency": txn.currency.or("").lowercase()
+              }))
+              let totals = $keyed.fold({}, pair -> pair.tally.assign({
+                (pair.value._currency): {
+                  "gross_minor": pair.tally.get(pair.value._currency).or({"gross_minor": 0}).gross_minor + if pair.value.type.or("") == "charge" { pair.value.amount.or(0) } else { 0 },
+                  "net_minor": pair.tally.get(pair.value._currency).or({"net_minor": 0}).net_minor + pair.value.net.or(0),
+                  "fees_minor": pair.tally.get(pair.value._currency).or({"fees_minor": 0}).fees_minor + pair.value.fee.or(0),
+                  "refunds_minor": pair.tally.get(pair.value._currency).or({"refunds_minor": 0}).refunds_minor + if pair.value.type.or("") == "refund" { pair.value.amount.or(0).abs() } else { 0 }
+                }
+              })).key_values().sort_by(entry -> entry.key).map_each(entry -> entry.value.assign({
+                "currency": entry.key.uppercase(),
+                "minor_unit_exponent": if ["bhd", "iqd", "jod", "kwd", "lyd", "omr", "tnd"].contains(entry.key) {
+                  3
+                } else if ["bif", "clp", "djf", "gnf", "isk", "jpy", "kmf", "krw", "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf"].contains(entry.key) {
+                  0
+                } else {
+                  2
+                }
+              }))
 
-      - log:
-          level: INFO
-          message: "[stripe-reports] MCP report generated"
+              root.report = {
+                "title": this.period.capitalize() + " Stripe balance report",
+                "period": this.period,
+                "range": {"start_unix": this._start_unix, "end_unix": this._end_unix},
+                "date_range": {"start_unix": this._start_unix, "end_unix": this._end_unix},
+                "generated_at": now()
+              }
+              root.metrics = {
+                "revenue_by_currency": $totals,
+                "transactions": {
+                  "total": $transactions.length(),
+                  "available": $transactions.filter(txn -> txn.status.or("") == "available").length(),
+                  "pending": $transactions.filter(txn -> txn.status.or("") == "pending").length(),
+                  "has_more": this.has_more
+                }
+              }
+              root.insights = []
+              root.quick_wins = []
+              root.metadata = {
+                "skill": "stripe-reports",
+                "mode": "mcp",
+                "source": "stripe_api",
+                "trace_id": this._trace_id,
+                "processing_time_ms": now().ts_sub(meta("start_time")).abs() / 1000000,
+                "timestamp": now()
+              }
+              root._include_insights = this._include_insights
+              root._include_quick_wins = this._include_quick_wins
+
+          - switch:
+              - check: 'this._include_insights'
+                processors:
+                  - mapping: |
+                      meta report_json = this.format_json()
+                      root.messages = [
+                        {"role": "system", "content": "Analyze only the supplied Stripe balance metrics. Return JSON with insights and quick_wins arrays and do not invent subscription or customer data."},
+                        {"role": "user", "content": this.metrics.format_json()}
+                      ]
+                  - openai_chat_completion:
+                      api_key: "${OPENAI_API_KEY}"
+                      model: gpt-4o-mini
+                      tools: []
+                  - mapping: |
+                      let report = meta("report_json").parse_json()
+                      let ai = this.choices.0.message.content.parse_json().catch({"insights": [], "quick_wins": []})
+                      root = $report
+                      root.insights = $ai.insights.or([])
+                      root.quick_wins = if $report._include_quick_wins { $ai.quick_wins.or([]) } else { [] }
+                      root._include_insights = deleted()
+                      root._include_quick_wins = deleted()
+              - processors:
+                  - mapping: |
+                      root = this
+                      root.quick_wins = []
+                      root._include_insights = deleted()
+                      root._include_quick_wins = deleted()
+      - catch:
+          - mapping: |
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}
+
+  rate_limit_resources:
+    - label: stripe_api
+      local:
+        count: 25
+        interval: 1s

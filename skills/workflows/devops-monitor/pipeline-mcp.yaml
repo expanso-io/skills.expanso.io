@@ -12,37 +12,61 @@ config:
     http_server:
       path: /monitor
       allowed_verbs: [POST]
-      timeout: 120s
+      timeout: 30s
 
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
+          let trace_id = uuid_v4()
+          let workflows = this.workflows.or([])
+          let errors = this.errors.or([])
+          let metrics = this.metrics.or({})
+          let threshold = this.alert_threshold.or("high").string()
+          let threshold_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+          let min_severity = $threshold_order.get($threshold).or(1)
 
-          # Simulated monitoring data
-          let data = {
-            "workflows": [{"repo": "org/api", "status": "success"}],
-            "errors": [{"message": "Connection timeout", "count": 5}],
-            "metrics": {"cpu": 45, "memory": 72}
+          let workflow_states = $workflows.map_each(run -> run.assign({"status": if run.status.or("") == "completed" { run.conclusion.or("unknown") } else { run.status.or("unknown") }}))
+          let workflow_issues = $workflow_states.filter(run -> run.status != "success").map_each(run -> {
+            "severity": if run.status.or("") == "failure" { "high" } else { "medium" },
+            "source": "workflow",
+            "description": run.repo.or("unknown") + " / " + run.name.or("workflow") + " is " + run.status.or("unknown"),
+            "suggestion": "Inspect the recorded workflow run and its logs",
+            "source_id": run.id.or(null)
+          })
+          let log_issues = $errors.map_each(event -> {
+            "severity": if event.count.or(1) >= 10 { "high" } else { "medium" },
+            "source": "logs",
+            "description": event.message.or("Unspecified error"),
+            "suggestion": "Inspect the source log events and affected service",
+            "source_id": event.id.or(null)
+          })
+          let all_issues = $workflow_issues.concat($log_issues)
+          let issues = $all_issues.filter(issue -> $threshold_order.get(issue.severity).or(3) <= $min_severity)
+          let overall = if $all_issues.any(issue -> issue.severity == "critical") {
+            "critical"
+          } else if $all_issues.length() > 0 {
+            "degraded"
+          } else {
+            "healthy"
           }
 
-          root.messages = [
-            {"role": "system", "content": "Analyze DevOps data. Return JSON with issues array and overall_health."},
-            {"role": "user", "content": "Data: " + $data.format_json()}
-          ]
-          meta data = $data
-
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
-
-      - mapping: |
-          let analysis = this.choices.0.message.content.parse_json().catch({"issues": [], "overall_health": "unknown"})
-
-          root.status = {"overall_health": $analysis.overall_health}
-          root.issues = $analysis.issues.or([])
-          root.metrics = meta("data").metrics
-          root.metadata = {"skill": "devops-monitor", "mode": "mcp", "trace_id": meta("trace_id")}
+          root.status = {
+            "overall_health": $overall,
+            "issue_count": $issues.length(),
+            "observed_issue_count": $all_issues.length()
+          }
+          root.issues = $issues
+          root.workflows = $workflows
+          root.metrics = $metrics
+          root.alert_candidates = $issues
+          root.metadata = {
+            "skill": "devops-monitor",
+            "mode": "mcp",
+            "source": "request",
+            "alert_threshold": $threshold,
+            "trace_id": $trace_id,
+            "timestamp": now()
+          }
 
   output:
     sync_response: {}

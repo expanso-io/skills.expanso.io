@@ -4,8 +4,8 @@
 # Convert YAML/TOML/INI to canonical JSON.
 #
 # Usage:
-#   cat config.yaml | expanso-edge run pipeline-cli.yaml
-#   cat config.toml | FORMAT=toml expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -24,7 +24,7 @@ config:
           meta trace_id = uuid_v4()
           meta input_hash = content().hash("sha256").encode("hex")
 
-          let raw = content()
+          let raw = content().string()
           let format = env("FORMAT").or("auto")
 
           # Detect format if auto
@@ -59,7 +59,7 @@ config:
             "mode": "cli",
             "detected_format": $detected_format,
             "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -69,5 +69,4 @@ config:
             [config-normalize] Converted ${! meta("detected_format") } to JSON (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

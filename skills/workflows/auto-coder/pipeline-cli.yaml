@@ -1,4 +1,8 @@
-# Expanso Pipeline: auto-coder (CLI mode)
+# Expanso Pipeline: auto-coder capability check (CLI mode)
+#
+# This pipeline deliberately does not claim to edit a repository. A JSON-only
+# pipeline has no authenticated checkout, durable filesystem, command runner,
+# or forge receipt with which to prove changes, tests, or a pull request.
 
 name: auto-coder-cli
 type: pipeline
@@ -11,30 +15,45 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
+          let trace_id = uuid_v4()
           let input = content().parse_json()
-          let task = $input.task.or("")
-          let repo = $input.repo.or("")
+          let task = $input.task.or("").string()
+          let repo = $input.repo.or("").string()
 
-          # Simulated autonomous coding results
-          root.task = $task
-          root.repo = $repo
-          root.changes = [
-            {"file": "src/utils/helper.ts", "action": "modified", "lines_changed": 45},
-            {"file": "src/utils/helper.test.ts", "action": "created", "lines_changed": 120},
-            {"file": "README.md", "action": "modified", "lines_changed": 10}
-          ]
-          let github_base = env("GITHUB_BASE_URL").or("https://github.com")
-          let pr_number = env("PR_NUMBER").or("1")
-          root.pr_url = $github_base + "/" + $repo + "/pull/" + $pr_number
-          root.tests_passed = true
-          root.ci_status = "success"
-          root.metadata = {"skill": "auto-coder", "mode": "cli", "trace_id": meta("trace_id")}
+          root = if $task.length() == 0 || $repo.length() == 0 {
+            throw("task and repo are required")
+          } else {
+            {
+              "status": "unsupported",
+              "task": $task,
+              "repo": $repo,
+              "changes": [],
+              "pr_url": null,
+              "tests_passed": null,
+              "ci_status": "not_run",
+              "capability_gap": {
+                "requested": "modify a repository, run its tests, and create a pull request",
+                "missing": [
+                  "authenticated repository checkout",
+                  "durable filesystem writer",
+                  "sandboxed command execution",
+                  "forge API receipt",
+                  "CI result receipt"
+                ],
+                "evidence": "This example accepts JSON and emits JSON; it has no git, filesystem, command, or forge component."
+              },
+              "metadata": {
+                "skill": "auto-coder",
+                "mode": "cli",
+                "trace_id": $trace_id,
+                "timestamp": now()
+              }
+            }
+          }
 
       - log:
-          level: INFO
-          message: "[auto-coder] ${! this.changes.length() } files changed, PR created"
+          level: WARN
+          message: "[auto-coder] unsupported: repository execution capabilities are not configured"
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

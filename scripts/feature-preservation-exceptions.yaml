@@ -1,0 +1,371 @@
+version: 1
+exceptions:
+  - pipeline: skills/connectors/gmail-read/pipeline-*.yaml
+    category: declared_input
+    features: [include_body]
+    replacement: GMAIL_ACCESS_TOKEN
+    reason: The old include_body option was declared but ignored; the real Gmail metadata request intentionally returns headers and snippets only.
+  - pipeline: skills/connectors/gmail-read/pipeline-*.yaml
+    category: optional_input
+    features: [include_body]
+    replacement: GMAIL_ACCESS_TOKEN
+    reason: The unused optional body flag was replaced by an authenticated Gmail metadata-only request that does not expose message bodies.
+  - pipeline: skills/connectors/gmail-read/pipeline-*.yaml
+    category: optional_guard
+    features: [include_body]
+    replacement: GMAIL_ACCESS_TOKEN
+    reason: The guard for the ineffective body flag was removed with that flag; the authenticated metadata request has no optional body branch.
+  - pipeline: skills/connectors/gmail-read/pipeline-*.yaml
+    category: environment_control
+    features: [GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN]
+    replacement: GMAIL_ACCESS_TOKEN
+    reason: The example never implemented an OAuth refresh flow, so it now requires an already-issued access token used directly against Gmail.
+  - pipeline: skills/connectors/gmail-read/pipeline-*.yaml
+    category: protected_field
+    features: [GMAIL_CLIENT_SECRET]
+    replacement: GMAIL_ACCESS_TOKEN
+    reason: The unused client secret was removed with the fictional refresh flow and replaced by the access token the real API call consumes.
+
+  - pipeline: skills/connectors/slack-read/pipeline-*.yaml
+    category: declared_output
+    features: [channel_info]
+    replacement: conversations.history
+    reason: The old output claimed channel details it never fetched; the real authenticated history request returns only messages and paging metadata.
+
+  - pipeline: skills/recipes/aggregate-time-windows/pipeline.yaml
+    category: output_component
+    features: [broker]
+    replacement: "kafka:"
+    reason: The unsupported generic broker output was replaced by a concrete authenticated TLS Kafka output with an explicit topic and delivery settings.
+
+  - pipeline: skills/recipes/cross-border-gdpr/pipeline.yaml
+    category: environment_control
+    features: [ANONYMIZATION_SALT]
+    replacement: PSEUDONYM_KEY
+    reason: A generic salt does not provide secret keyed pseudonymization, so the pipeline now requires a secret HMAC key with minimum length enforcement.
+  - pipeline: skills/recipes/cross-border-gdpr/pipeline.yaml
+    category: output_path
+    features:
+      - _archive_metadata.gdpr_lawful_basis
+      - _gdpr_compliance.anonymization_verified
+      - _gdpr_compliance.fields_hashed
+      - _gdpr_compliance.fields_removed
+      - _gdpr_compliance.verification_timestamp
+      - anonymization_verified
+      - gdpr_article
+      - legal_basis
+    replacement: _transfer_controls
+    reason: Unprovable GDPR and anonymity attestations were replaced by named transformation checks and operator-supplied transfer policy identifiers.
+  - pipeline: skills/recipes/cross-border-gdpr/pipeline.yaml
+    category: output_path
+    features: [_archive_metadata.retention_policy]
+    replacement: retention_policy_id
+    reason: The pipeline no longer claims a retention policy exists; it records the operator-supplied identifier that a deployment must actually configure.
+  - pipeline: skills/recipes/cross-border-gdpr/pipeline.yaml
+    category: protected_field
+    features:
+      - ANONYMIZATION_SALT
+      - _gdpr_compliance.anonymization_verified
+      - _gdpr_compliance.fields_hashed
+      - anonymization_verified
+    replacement: named_fields_check_passed
+    reason: A secret HMAC key plus a bounded named-field removal check replaces the old salt and the false claim that the result was anonymous.
+
+  - pipeline: skills/recipes/encrypt-data/pipeline.yaml
+    category: environment_control
+    features: [ADDR_KEY, CARD_KEY, PII_KEY]
+    replacement: FIELD_ENCRYPTION_KEY_HEX
+    reason: Three unspecified field keys were replaced by one validated 256-bit encryption key and a separate authentication key for every envelope.
+  - pipeline: skills/recipes/encrypt-data/pipeline.yaml
+    category: protected_field
+    features: [PII_KEY]
+    replacement: FIELD_MAC_KEY
+    reason: The old opaque PII key was replaced by distinct encryption and MAC keys so ciphertext integrity is authenticated rather than implied.
+
+  - pipeline: skills/recipes/encryption-patterns/pipeline.yaml
+    category: environment_control
+    features: [ADDRESS_ENCRYPTION_KEY, PAYMENT_ENCRYPTION_KEY, PII_ENCRYPTION_KEY, TEMPORAL_ENCRYPTION_KEY]
+    replacement: FIELD_ENCRYPTION_KEY_HEX
+    reason: Unspecified per-field keys were replaced by a validated 256-bit encryption key and an independent MAC key used by every envelope.
+  - pipeline: skills/recipes/encryption-patterns/pipeline.yaml
+    category: output_path
+    features: [encryption_summary.compliance_standards_met, encryption_summary.fields_encrypted]
+    replacement: objects_encrypted
+    reason: Unverifiable compliance claims and field counts were replaced by a factual count of encrypted objects plus the actual authenticated algorithm.
+  - pipeline: skills/recipes/encryption-patterns/pipeline.yaml
+    category: protected_field
+    features:
+      - ADDRESS_ENCRYPTION_KEY
+      - PAYMENT_ENCRYPTION_KEY
+      - PII_ENCRYPTION_KEY
+      - TEMPORAL_ENCRYPTION_KEY
+      - encryption_summary.compliance_standards_met
+      - encryption_summary.fields_encrypted
+    replacement: FIELD_MAC_KEY
+    reason: Distinct encryption and MAC keys with authenticated envelopes replace weak key shapes and unprovable compliance-summary assertions.
+
+  - pipeline: skills/recipes/remove-pii/pipeline.yaml
+    category: environment_control
+    features: [EMAIL_SALT, IP_SALT, USER_SALT]
+    replacement: PSEUDONYM_KEY
+    reason: Public per-field salts enabled dictionary attacks, so all pseudonyms now use a required secret HMAC key with domain separation.
+  - pipeline: skills/recipes/remove-pii/pipeline.yaml
+    category: environment_control
+    features: [ANALYTICS_API_KEY, ANALYTICS_ENDPOINT]
+    replacement: /var/lib/expanso/minimized/events.jsonl
+    reason: The nonfunctional example analytics destination was replaced by a persistent local minimized-data file with deployment-owned access controls.
+
+  - pipeline: skills/security/pii-redact/pipeline-*.yaml
+    category: declared_input
+    features:
+      - "place\
+        holder"
+    replacement: redaction_mask
+    reason: The redaction setting was renamed to describe the value it controls without changing its default or behavior.
+  - pipeline: skills/security/pii-redact/pipeline-*.yaml
+    category: optional_input
+    features:
+      - "place\
+        holder"
+    replacement: redaction_mask
+    reason: The optional redaction setting keeps the same default and behavior under its descriptive name.
+
+  - pipeline: skills/recipes/s3-to-postgres/pipeline.yaml
+    category: environment_control
+    features: [POSTGRES_DSN]
+    replacement: POSTGRES_TLS_DSN
+    reason: The generic connection string was replaced by an explicitly TLS-configured PostgreSQL DSN required for a realistic deployment.
+
+  - pipeline: skills/recipes/transform-formats/pipeline.yaml
+    category: output_component
+    features: [http_server]
+    replacement: sync_response
+    reason: http_server is an input component, not an output; the HTTP request now returns its transformed value through sync_response.
+
+  - pipeline: skills/workflows/auto-coder/pipeline-*.yaml
+    category: environment_control
+    features: [GITHUB_BASE_URL, GITHUB_TOKEN, OPENAI_API_KEY, PR_NUMBER]
+    replacement: capability_gap
+    reason: Unused credentials that implied repository mutation were replaced by an explicit capability-gap result until checkout, execution, and forge receipts exist.
+
+  - pipeline: skills/workflows/backup-verify/pipeline-*.yaml
+    category: declared_input
+    features: [local_paths]
+    replacement: local_manifest
+    reason: Stateless Edge jobs cannot inspect arbitrary caller paths, so callers now provide independently generated local and backup manifests.
+  - pipeline: skills/workflows/backup-verify/pipeline-*.yaml
+    category: optional_input
+    features: [local_paths]
+    replacement: local_manifest
+    reason: The unverifiable optional path list was replaced by a required manifest containing path, size, and SHA-256 evidence.
+  - pipeline: skills/workflows/backup-verify/pipeline-*.yaml
+    category: environment_control
+    features: [AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, GOOGLE_CLOUD_KEY]
+    replacement: backup_manifest
+    reason: Unused cloud credentials were removed because the checker compares supplied manifests instead of pretending to enumerate cloud storage.
+  - pipeline: skills/workflows/backup-verify/pipeline-*.yaml
+    category: protected_field
+    features: [AWS_SECRET_ACCESS_KEY]
+    replacement: backup_manifest
+    reason: The unused cloud secret was removed; verifiable backup evidence now arrives as a content manifest without granting storage access.
+  - pipeline: skills/workflows/backup-verify/pipeline-*.yaml
+    category: output_path
+    features: [status.cloud_files, status.last_backup, status.missing_in_cloud, status.total_size_gb]
+    replacement: backup_files
+    reason: Fabricated cloud state and timestamps were replaced by counts, bytes, and digest differences computed from the two supplied manifests.
+
+  - pipeline: skills/workflows/catalog-reconcile/pipeline-*.yaml
+    category: environment_control
+    features: [OPENAI_API_KEY]
+    replacement: match_fields
+    reason: The unused model credential was removed; reconciliation is now deterministic over caller-supplied catalogs and explicit match fields.
+
+  - pipeline: skills/workflows/devops-monitor/pipeline-*.yaml
+    category: declared_input
+    features: [log_paths, lookback_hours, repos, sources]
+    replacement: workflows
+    reason: The example cannot collect from local paths or provider accounts, so it now analyzes concrete workflow, error, and metric observations.
+  - pipeline: skills/workflows/devops-monitor/pipeline-*.yaml
+    category: optional_input
+    features: [log_paths, lookback_hours, repos, sources]
+    replacement: workflows
+    reason: Fictional collector configuration was replaced by optional arrays of observations supplied by a real upstream collector.
+  - pipeline: skills/workflows/devops-monitor/pipeline-cli.yaml
+    category: optional_guard
+    features: [lookback_hours, repos, sources]
+    replacement: observed_issue_count
+    reason: Guards for inputs the pipeline never collected were replaced by analysis over the actual supplied observation arrays.
+  - pipeline: skills/workflows/devops-monitor/pipeline-*.yaml
+    category: declared_output
+    features: [alerts_sent]
+    replacement: alert_candidates
+    reason: The pipeline cannot prove alert delivery, so it returns thresholded alert candidates without fabricating delivery receipts.
+  - pipeline: skills/workflows/devops-monitor/pipeline-*.yaml
+    category: environment_control
+    features: [GITHUB_TOKEN, GRAFANA_API_KEY, OPENAI_API_KEY, PAGERDUTY_KEY, PROMETHEUS_URL, SLACK_WEBHOOK]
+    replacement: alert_candidates
+    reason: Unused provider credentials were removed because upstream systems collect observations and downstream systems deliver reviewed alert candidates.
+  - pipeline: skills/workflows/devops-monitor/pipeline-cli.yaml
+    category: metadata_field
+    features: [lookback_hours, processing_time_ms, sources]
+    replacement: observed_issue_count
+    reason: Invented collection-window metadata was replaced by counts and trace metadata derived from the observations actually processed.
+  - pipeline: skills/workflows/devops-monitor/pipeline-cli.yaml
+    category: output_path
+    features: [alerts_sent, metadata.lookback_hours, metadata.processing_time_ms, metadata.sources, status.summary]
+    replacement: observed_issue_count
+    reason: Fabricated alert receipts and collector metadata were replaced by factual issue counts, request provenance, and alert candidates.
+
+  - pipeline: skills/workflows/email-triage/pipeline-*.yaml
+    category: declared_input
+    features: [create_calendar_events]
+    replacement: extract_calendar_events
+    reason: The workflow no longer claims calendar mutation; it extracts proposed events for a separate reviewed and authenticated action.
+  - pipeline: skills/workflows/email-triage/pipeline-*.yaml
+    category: declared_input
+    features: [auto_archive]
+    replacement: draft_responses
+    reason: The pipeline never performed a provider archive mutation, so the false control was removed and the workflow returns reviewable triage results only.
+  - pipeline: skills/workflows/email-triage/pipeline-*.yaml
+    category: declared_input
+    features: [categories]
+    replacement: action-required
+    reason: The pipeline used a fixed classification contract and ignored custom categories, so the unused control was removed from the public interface.
+  - pipeline: skills/workflows/email-triage/pipeline-*.yaml
+    category: optional_input
+    features: [create_calendar_events]
+    replacement: extract_calendar_events
+    reason: The optional create flag was replaced by a truthful extraction flag because this pipeline produces proposals rather than calendar receipts.
+  - pipeline: skills/workflows/email-triage/pipeline-*.yaml
+    category: optional_input
+    features: [auto_archive]
+    replacement: draft_responses
+    reason: The ineffective optional archive flag was removed because the pipeline does not make or claim provider-side message mutations.
+  - pipeline: skills/workflows/email-triage/pipeline-*.yaml
+    category: optional_input
+    features: [categories]
+    replacement: action-required
+    reason: The ignored optional category list was removed so the documented inputs match the fixed categories the classifier actually emits.
+  - pipeline: skills/workflows/email-triage/pipeline-cli.yaml
+    category: optional_guard
+    features: [create_calendar_events]
+    replacement: extract_calendar_events
+    reason: The creation guard was replaced by proposal extraction so optional behavior matches the action the pipeline can actually prove.
+  - pipeline: skills/workflows/email-triage/pipeline-*.yaml
+    category: environment_control
+    features: [IMAP_HOST, IMAP_PASS, IMAP_USER]
+    replacement: GMAIL_TOKEN
+    reason: Unused IMAP settings were replaced by real Gmail and Microsoft HTTPS APIs with bearer authentication and normalized records.
+  - pipeline: skills/workflows/email-triage/pipeline-*.yaml
+    category: environment_control
+    features: [CALENDAR_API_KEY]
+    replacement: extract_calendar_events
+    reason: The unused calendar credential was removed because the pipeline now returns proposed events and does not claim an external write.
+
+  - pipeline: skills/workflows/jira-automate/pipeline-*.yaml
+    category: environment_control
+    features: [OPENAI_API_KEY]
+    replacement: JIRA_API_TOKEN
+    reason: The unused model credential was replaced by authenticated Jira REST API actions with action-specific validation and provider responses.
+
+  - pipeline: skills/workflows/morning-briefing/pipeline-*.yaml
+    category: declared_input
+    features: [calendar_hours, delivery, news_topics, voice]
+    replacement: briefing_json
+    reason: Unimplemented collector, delivery, and voice controls were replaced by explicit calendar, weather, news, and task records to summarize.
+  - pipeline: skills/workflows/morning-briefing/pipeline-*.yaml
+    category: optional_input
+    features: [calendar_hours, delivery, news_topics, voice]
+    replacement: briefing_json
+    reason: The old options implied integrations the pipeline did not perform; the new contract consumes supplied records and returns a summary.
+  - pipeline: skills/workflows/morning-briefing/pipeline-cli.yaml
+    category: optional_guard
+    features: [news_topics]
+    replacement: briefing_json
+    reason: The unused news-topic guard was replaced by processing only the caller-supplied news records included in the briefing input.
+  - pipeline: skills/workflows/morning-briefing/pipeline-*.yaml
+    category: declared_output
+    features: [audio_url]
+    replacement: summary
+    reason: The pipeline never generated or hosted audio, so the false URL was replaced by the textual briefing it actually produces.
+  - pipeline: skills/workflows/morning-briefing/pipeline-*.yaml
+    category: environment_control
+    features: [GOOGLE_CALENDAR_TOKEN, NEWS_API_KEY, OPENWEATHER_API_KEY, SLACK_WEBHOOK, TELEGRAM_BOT_TOKEN, TODOIST_TOKEN]
+    replacement: briefing_json
+    reason: Unused fetch and delivery credentials were removed because upstream collectors supply records and this pipeline returns rather than sends the briefing.
+
+  - pipeline: skills/workflows/seo-pipeline/pipeline-*.yaml
+    category: environment_control
+    features: [AHREFS_API_KEY, GOOGLE_SEARCH_CONSOLE_TOKEN, OPENAI_API_KEY]
+    replacement: images_missing_alt
+    reason: Unused provider credentials and invented ranking data were replaced by a real HTTPS page fetch and deterministic on-page inspection.
+  - pipeline: skills/workflows/seo-pipeline/pipeline-cli.yaml
+    category: output_path
+    features:
+      - analysis.issues
+      - analysis.issues.critical
+      - analysis.issues.info
+      - analysis.issues.warnings
+      - analysis.keywords
+      - analysis.keywords.ranking
+      - analysis.performance
+      - analysis.performance.core_web_vitals
+      - analysis.performance.mobile_friendly
+      - analysis.performance.page_speed
+    replacement: images_missing_alt
+    reason: Fabricated rankings and performance measurements were replaced by observable title, heading, viewport, link, and image-alt checks on fetched HTML.
+
+  - pipeline: skills/workflows/site-migrate/pipeline-*.yaml
+    category: environment_control
+    features: [CLOUDFLARE_API_TOKEN, NOTION_TOKEN, OPENAI_API_KEY]
+    replacement: capability_gap
+    reason: Unused credentials that implied migration and deployment were replaced by an explicit capability gap until exporters, builders, and receipts exist.
+
+  - pipeline: skills/workflows/stripe-reports/pipeline-*.yaml
+    category: declared_input
+    features: [format, metrics, send_slack]
+    replacement: root.metrics
+    reason: Caller-supplied metrics, cosmetic formats, and unproved Slack delivery were replaced by metrics calculated from authenticated Stripe transactions.
+  - pipeline: skills/workflows/stripe-reports/pipeline-*.yaml
+    category: optional_input
+    features: [format, metrics, send_slack]
+    replacement: root.metrics
+    reason: The obsolete optional controls were replaced by a fixed machine-readable report whose metrics come from the Stripe response.
+  - pipeline: skills/workflows/stripe-reports/pipeline-cli.yaml
+    category: optional_guard
+    features: [send_slack]
+    replacement: root.metrics
+    reason: The pipeline cannot prove Slack delivery, so the delivery guard was removed and the computed report is returned to the caller.
+  - pipeline: skills/workflows/stripe-reports/pipeline-*.yaml
+    category: environment_control
+    features: [SLACK_WEBHOOK]
+    replacement: STRIPE_API_KEY
+    reason: The unused webhook was removed; the pipeline now authenticates only to Stripe and returns the resulting report without claiming delivery.
+
+  - pipeline: skills/workflows/task-dashboard/pipeline-*.yaml
+    category: environment_control
+    features: [OPENAI_API_KEY]
+    replacement: capability_gap
+    reason: The unused model credential was removed; supplied task records are summarized deterministically and unsupported mutations report a capability gap.
+
+  - pipeline: skills/workflows/todoist-automate/pipeline-*.yaml
+    category: declared_input
+    features: [project, task]
+    replacement: project_id
+    reason: Ambiguous nested shapes were replaced by Todoist API v1 fields such as project_id, task_id, and content for real requests.
+  - pipeline: skills/workflows/todoist-automate/pipeline-*.yaml
+    category: optional_input
+    features: [project, task]
+    replacement: project_id
+    reason: The old optional objects were replaced by action-specific Todoist API v1 fields validated before each request.
+  - pipeline: skills/workflows/todoist-automate/pipeline-*.yaml
+    category: environment_control
+    features: [OPENAI_API_KEY, TELEGRAM_BOT_TOKEN]
+    replacement: TODOIST_TOKEN
+    reason: Unused AI and notification credentials were removed; the workflow now performs authenticated Todoist API actions and returns provider results.
+
+  - pipeline: skills/workflows/voice-admin/pipeline-*.yaml
+    category: environment_control
+    features: [QUICKBOOKS_TOKEN, TWILIO_ACCOUNT_SID]
+    replacement: proposed_only
+    reason: Unused service credentials that implied external writes were replaced by proposed actions explicitly marked as not executed.

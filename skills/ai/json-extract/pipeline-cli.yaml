@@ -4,11 +4,10 @@
 # Extract structured JSON from natural language text.
 #
 # Usage:
-#   echo "John Smith, 35 years old, lives in NYC" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 #   # With custom fields
-#   echo "Contact: jane@example.com, Phone: 555-1234" | \
-#     EXTRACT_FIELDS="email,phone" expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Why Expanso Edge?
 #   OPENAI_API_KEY is read from the executing node's environment and sent to
@@ -34,6 +33,9 @@ config:
           meta input_hash = content().hash("sha256").encode("hex")
           meta input_length = content().length()
           meta trace_id = uuid_v4()
+          root.error = if content().length() == 0 {
+            "input cannot be empty"
+          } else { deleted() }
 
           # Get extraction fields from environment (default to common fields)
           let extract_fields = env("EXTRACT_FIELDS").or("name,email,phone,address,date,amount,company")
@@ -51,35 +53,50 @@ config:
           ]
 
       # 2. Call OpenAI with JSON mode (key read on this node, sent to OpenAI)
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  tools: []
 
       # 3. Parse and format output
       - mapping: |
-          # Try to parse the response as JSON
-          let raw_response = this.choices.0.message.content
+          let raw_response = this.choices.0.message.content.or("")
           let extracted = $raw_response.parse_json().catch({})
-
-          root.extracted = $extracted
-          root.raw_response = $raw_response
-          root.metadata = {
-            "skill": "json-extract",
-            "mode": "cli",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
-            "fields_requested": env("EXTRACT_FIELDS").or("default"),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "json-extract",
+                "mode": "cli",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "extracted": $extracted,
+              "raw_response": $raw_response,
+              "metadata": {
+                "skill": "json-extract",
+                "mode": "cli",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "input_length": meta("input_length"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "fields_requested": env("EXTRACT_FIELDS").or("default"),
+                "timestamp": now()
+              }
+            }
           }
 
       # 4. Audit log
       - log:
           level: INFO
           message: |
-            [json-extract] Extracted from ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [json-extract] Processed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -1,0 +1,110 @@
+# pipeline.yaml: the rag-ingest job, as run on 2026-09-18
+# on Expanso Cloud with expanso-edge v2.1.21. Two changes are newer
+# than that run and have not been re-run on Cloud with this spec:
+# chunk_id is built from the source URL, not the filename (the
+# Cloud run used the filename, which lets same-named documents
+# overwrite each other; the URL-based id was validated on a
+# local-mode node only), and the top-level restart_policy: never. See
+# skills/jobs/PROOF-2026-09-18.md.
+# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/rag-embed-retrieve.mdx (draft), byte for byte except
+# those two changes. Otherwise its structure matches the proven run's
+# config; long mappings are only rewrapped. Set these values for
+# your environment:
+#   .output.http_client.url =
+#     http://127.0.0.1:6333/collections/docs/points?wait=true
+#   .pipeline.processors[0].http.url =
+#     https://DOCS_HOST/docs/index.json
+# The selector pipeline_role: rag is an example; label your node to
+# match or change it. Use underscores in label keys.
+#
+name: rag-ingest
+type: pipeline
+restart_policy: never
+selector:
+  match_labels:
+    pipeline_role: rag
+config:
+  input:
+    generate:
+      # One fetch pass. For continuous ingestion set an interval and
+      # drop count. Also remove `restart_policy: never` above: one
+      # transient fetch error would stop a long-running job for
+      # good. The default policy restarts it on failure.
+      count: 1
+      interval: ""
+      mapping: root = {}
+  pipeline:
+    processors:
+      # 1. Fetch the document index:
+      #    {"documents": ["https://.../a.md", ...]}
+      - http:
+          url: "https://DOCS_HOST/docs/index.json"
+          verb: GET
+          retries: 3
+      - mapping: |
+          root = if errored() {
+            throw("index fetch failed: " + error().or("unknown"))
+          } else { this.documents }
+      - unarchive:
+          format: json_array
+      # 2. Fetch each document, remembering where it came from.
+      - mapping: |
+          meta source_uri = this
+          root = ""
+      - http:
+          url: '${! meta("source_uri") }'
+          verb: GET
+          retries: 3
+      - mapping: |
+          root = if errored() {
+            throw("document fetch failed: " + error().or("unknown"))
+          } else { content() }
+      # 3. Chunk by paragraph; every chunk carries its source URI.
+      - mapping: |
+          let src = @source_uri
+          let doc = $src.filepath_split().index(1)
+          let body = content().string()
+          let title = $body.split("\n").index(0).trim_prefix("# ")
+          let paras = $body.split("\n\n").map_each(
+            p -> p.trim()
+          ).filter(p -> p != "" && !p.has_prefix("#"))
+          root = $paras.enumerated().map_each(e -> {
+            "source_uri": $src,
+            "doc": $doc,
+            "title": $title,
+            "chunk_index": e.index,
+            "chunk_id": $src + "#" + e.index.string(),
+            "text": e.value
+          })
+      - unarchive:
+          format: json_array
+      - branch:
+          # nomic-embed-text expects a task prefix on the input text.
+          request_map: 'root = "search_document: " + this.text'
+          processors:
+            - ollama_embeddings:
+                model: "nomic-embed-text"
+                server_address: "http://127.0.0.1:11434"
+          result_map: root.vector = this
+      # Deterministic UUID from chunk_id: re-ingesting overwrites,
+      # never duplicates.
+      - mapping: |
+          let h = this.chunk_id.hash("sha256").encode("hex")
+          root.points = [{
+            "id": "%s-%s-%s-%s-%s".format(
+              $h.slice(0, 8), $h.slice(8, 12), $h.slice(12, 16),
+              $h.slice(16, 20), $h.slice(20, 32)
+            ),
+            "vector": this.vector,
+            "payload": this.without("vector")
+          }]
+  output:
+    http_client:
+      url: "http://127.0.0.1:6333/collections/docs/points?wait=true"
+      verb: PUT
+      headers:
+        Content-Type: application/json
+      retries: 3
+      retry_period: 500ms
+      max_in_flight: 4

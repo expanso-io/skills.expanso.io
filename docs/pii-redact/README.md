@@ -1,41 +1,25 @@
 # pii-redact
 
-Redact personally identifiable information (PII) from text, replacing it with configurable placeholders.
+Redact personally identifiable information (PII) from text with a configurable redaction mask.
 
 ## Overview
 
-This skill uses AI to detect and redact PII from text. Unlike `pii-detect` which only identifies PII, this skill **transforms** the text by replacing sensitive information with placeholders.
+This skill uses AI to detect and redact PII from text. Unlike `pii-detect`, which only identifies PII, this skill transforms the text by replacing sensitive information with a selected redaction mask.
 
 ## Usage
 
 ### CLI Mode
 
+`expanso-edge run` starts the node agent; it does not run a pipeline file. Check a pipeline locally with `expanso-edge validate`, as below. To execute one, deploy it with `expanso-cli job deploy FILE` from a saved Cloud profile with a connected node, then confirm with `expanso-cli job describe` and `expanso-cli execution list --job-id` (see [Confirm it actually ran](https://github.com/expanso-io/skills.expanso.io#confirm-it-actually-ran)). No Cloud run of this skill has been confirmed. `pipeline-cli.yaml` reads `stdin`, so it cannot receive input once scheduled on a remote node and has no supported Cloud run path as written (see [Providing input](https://github.com/expanso-io/skills.expanso.io#providing-input)). `pipeline-mcp.yaml` serves HTTP on the node that executes it, not on your machine.
+
 ```bash
-# Set your API key (stays local!)
-export OPENAI_API_KEY=sk-...
-
-# Redact PII from text
-echo "Contact John Smith at john.smith@company.com or 555-123-4567" | \
-  expanso-edge run pipeline-cli.yaml
-
-# Custom placeholder
-PLACEHOLDER="***" echo "Contact John at john@example.com" | \
-  expanso-edge run pipeline-cli.yaml
+expanso-edge validate pipeline-cli.yaml
 ```
 
 ### MCP Mode
 
 ```bash
-# Start server
-PORT=8080 expanso-edge run pipeline-mcp.yaml &
-
-# Make request
-curl -X POST http://localhost:8080/redact \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Contact John Smith at john.smith@company.com",
-    "placeholder": "[HIDDEN]"
-  }'
+expanso-edge validate pipeline-mcp.yaml
 ```
 
 ## Output
@@ -49,7 +33,7 @@ curl -X POST http://localhost:8080/redact \
     "skill": "pii-redact",
     "mode": "cli",
     "model": "gpt-4o-mini",
-    "placeholder": "[REDACTED]",
+    "redaction_mask": "[REDACTED]",
     "trace_id": "abc123...",
     "timestamp": "2024-01-15T10:30:00Z"
   }
@@ -72,7 +56,7 @@ curl -X POST http://localhost:8080/redact \
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PLACEHOLDER` | `[REDACTED]` | Text to replace PII with |
+| `REDACTION_MASK` | `[REDACTED]` | Text to replace PII with |
 | `OPENAI_API_KEY` | - | Required for OpenAI backend |
 
 ## Use Cases

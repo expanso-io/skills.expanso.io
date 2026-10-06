@@ -1,8 +1,12 @@
 # Test: catalog-reconcile
 tests:
   - name: "Reconciles catalogs"
-    skip: true
-    input: '{"catalogs": ["a", "b"]}'
+    input: '{"catalogs":[{"name":"erp","items":[{"sku":"SKU-1","name":"Widget","price":10},{"sku":"SKU-2","name":"Solo"}]},{"name":"store","items":[{"sku":"SKU-1","name":"Widget","price":12}]}],"match_fields":["sku"]}'
     expected_output:
+      summary:
+        total_processed: 3
+        matched: 1
+        conflicts: 1
+        unmatched: 1
       metadata:
         skill: "catalog-reconcile"

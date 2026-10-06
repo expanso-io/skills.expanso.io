@@ -12,17 +12,9 @@ Thank you for your interest in contributing to the Expanso Skills Marketplace! T
 
 ### Development Setup
 
-```bash
-# Clone the repository
-git clone https://github.com/expanso-io/expanso-skills.git
-cd expanso-skills
-
-# Verify installation
-expanso version
-
-# Run an existing skill to test setup
-echo '{"text": "Hello"}' | expanso run skills/transforms/json-pretty/pipeline-cli.yaml
-```
+Follow [Quick Start](README.md#quick-start) for installation, Cloud setup, and
+validation. See [Providing input](README.md#providing-input) before choosing a
+pipeline input.
 
 ## Creating a New Skill
 
@@ -85,7 +77,7 @@ backends:
 
 ### 4. Implement the Pipelines
 
-**pipeline-cli.yaml** - For standalone CLI usage:
+**pipeline-cli.yaml** - For the local CLI test harness:
 
 ```yaml
 name: my-skill-cli
@@ -104,8 +96,7 @@ config:
           root.result = content()
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}
 ```
 
 **pipeline-mcp.yaml** - For MCP server integration:
@@ -156,11 +147,10 @@ tests:
       result: "processed correctly"
 ```
 
-Run tests:
-
-```bash
-expanso test skills/[category]/my-skill-name/test/test.yaml
-```
+Run the new skill through [the test harness](README.md#run-the-skill-test-harness).
+Record its illustrative per-stage input and output with
+`scripts/record-explorer.py`; the shared site explorer requires SHA-bound
+`pipeline*.explorer.json` files. See the harness guide for their proof scope.
 
 ### 6. Add Documentation
 
@@ -175,9 +165,7 @@ Brief description of what the skill does.
 
 ### CLI
 
-\`\`\`bash
-echo '{"text": "input"}' | expanso run pipeline-cli.yaml
-\`\`\`
+Link to the repository README for deployment and input delivery.
 
 ### MCP
 
@@ -251,10 +239,13 @@ All skills should return structured JSON with:
 
 ### Before Submitting
 
-1. Run all tests: `expanso test skills/[category]/my-skill-name/test/test.yaml`
+1. Follow [the test harness guide](README.md#run-the-skill-test-harness)
+   for CLI and MCP coverage
 2. Lint YAML files: `yamllint skills/[category]/my-skill-name/`
 3. Update the catalog: `uv run -s scripts/build-catalog.py`
 4. Ensure documentation is complete
+5. Follow the gates declared in [CI](.github/workflows/ci.yml), including
+   generated-report drift, stage records, publication, and retained features
 
 ### PR Checklist
 
@@ -264,6 +255,8 @@ All skills should return structured JSON with:
 - [ ] Tests pass
 - [ ] README.md included
 - [ ] Catalog updated
+- [ ] Stage records match the published pipeline bytes
+- [ ] Conformance evidence and staged Pages artifacts are current
 
 ### PR Description Template
 

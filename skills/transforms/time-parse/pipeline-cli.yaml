@@ -24,8 +24,7 @@ config:
           root.second = $second
           root.total_seconds = ($hour * 3600) + ($minute * 60) + $second
           root.original = $input
-          root.metadata = {"skill": "time-parse", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "time-parse", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

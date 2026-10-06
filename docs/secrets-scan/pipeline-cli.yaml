@@ -4,8 +4,8 @@
 # Detect hardcoded secrets in text or code.
 #
 # Usage:
-#   cat config.yaml | expanso-edge run pipeline-cli.yaml
-#   cat .env.example | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 
 name: secrets-scan-cli
 type: pipeline
@@ -22,6 +22,9 @@ config:
           meta input_hash = content().hash("sha256").encode("hex")
           meta input_length = content().length()
           meta trace_id = uuid_v4()
+          root.error = if content().length() == 0 {
+            "input cannot be empty"
+          } else { deleted() }
 
           let secret_types = env("SECRET_TYPES").or("api_key,token,password,private_key,secret,credential,aws_key,github_token,slack_token,openai_key")
 
@@ -36,33 +39,49 @@ config:
             }
           ]
 
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  tools: []
 
       - mapping: |
-          let raw = this.choices.0.message.content
+          let raw = this.choices.0.message.content.or("")
           let parsed = $raw.parse_json().catch({"findings": [], "summary": "Parse error"})
-
-          root.findings = $parsed.findings.or([])
-          root.has_secrets = $parsed.findings.or([]).length() > 0
-          root.summary = $parsed.summary.or("")
-          root.metadata = {
-            "skill": "secrets-scan",
-            "mode": "cli",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
-            "findings_count": $parsed.findings.or([]).length(),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "secrets-scan",
+                "mode": "cli",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "findings": $parsed.findings.or([]),
+              "has_secrets": $parsed.findings.or([]).length() > 0,
+              "summary": $parsed.summary.or(""),
+              "metadata": {
+                "skill": "secrets-scan",
+                "mode": "cli",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "input_length": meta("input_length"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "findings_count": $parsed.findings.or([]).length(),
+                "timestamp": now()
+              }
+            }
           }
 
       - log:
           level: INFO
           message: |
-            [secrets-scan] Found ${! root.findings.length() } secrets in ${! meta("input_length") } chars
+            [secrets-scan] Request complete (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

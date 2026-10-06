@@ -1,7 +1,21 @@
-# Test: todoist-automate
 tests:
-  - name: "Syncs tasks"
-    skip: true
-    input: '{"action": "sync"}'
+  - name: "Summarizes a Todoist API task list"
+    input: '{"action":"list"}'
+    provider_responses:
+      - results:
+          - id: "1"
+            content: Review roadmap
+            priority: 4
+            due: {date: "2099-01-01"}
+          - id: "2"
+            content: Send update
+            priority: 2
     expected_output:
-      action: "sync"
+      action: list
+      summary:
+        total: 2
+        high_priority: 1
+        due_today: 0
+      metadata:
+        skill: todoist-automate
+        source: todoist_api

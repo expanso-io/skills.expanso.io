@@ -17,12 +17,7 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          let service = this.service.or("")
-          let action = this.action.or("")
-
-          root.result = {"status": "ok"}
-          root.metadata = {"skill": "terminal-services", "mode": "mcp", "service": $service, "trace_id": meta("trace_id")}
+          root = {"status": "unsupported", "publication": "pulled", "skill": "terminal-services", "reason": "Reports completed service actions without contacting any service."}
 
   output:
     sync_response: {}

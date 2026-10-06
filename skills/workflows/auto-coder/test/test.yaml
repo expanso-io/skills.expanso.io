@@ -1,7 +1,11 @@
-# Test: auto-coder
+# The example must report its capability gap instead of inventing edits or a PR.
 tests:
-  - name: "Codes autonomously"
-    skip: true
-    input: '{"task": "Add error handling", "repo": "org/repo"}'
+  - name: "Reports missing repository execution capabilities"
+    input: '{"task":"Add error handling","repo":"org/repo"}'
     expected_output:
-      tests_passed: true
+      status: unsupported
+      repo: org/repo
+      changes: []
+      ci_status: not_run
+      capability_gap:
+        requested: "modify a repository, run its tests, and create a pull request"

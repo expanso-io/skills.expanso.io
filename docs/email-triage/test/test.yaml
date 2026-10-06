@@ -5,22 +5,43 @@
 
 tests:
   - name: "Processes emails and categorizes correctly"
-    skip: true  # Requires API credentials
-    input: '{"provider": "gmail", "limit": 5}'
+    input: '{"provider":"gmail"}'
+    provider_responses:
+      - messages: [{id: "1"}]
+      - id: "1"
+        snippet: Please investigate
+        payload:
+          headers:
+            - {name: Subject, value: Urgent incident}
+            - {name: From, value: ops@example.test}
+          parts: []
     expected_output:
       summary:
-        processed: 5
+        processed: 1
 
   - name: "Extracts meeting requests"
-    skip: true
-    input: '{"provider": "gmail", "create_calendar_events": true}'
+    input: '{"provider":"gmail","extract_calendar_events":true}'
+    provider_responses:
+      - messages: [{id: "1"}]
+      - id: "1"
+        snippet: Friday at 3pm
+        payload:
+          headers:
+            - {name: Subject, value: Meeting}
+            - {name: From, value: pm@example.test}
+          parts: []
     output_conditions:
       - path: "calendar_events"
         condition: "length >= 0"
+      - path: metadata.processing_time_ms
+        condition: ">= 0"
+      - path: metadata.processing_time_ms
+        condition: "< 10000"
 
   - name: "Handles empty inbox"
-    skip: true
-    input: '{"provider": "gmail", "folder": "EMPTY"}'
+    input: '{"provider":"gmail"}'
+    provider_responses:
+      - messages: []
     expected_output:
       summary:
         processed: 0

@@ -35,3 +35,7 @@ components:
   inputs: [stdin, http_server]
   processors: [mapping, command, log]
   outputs: [stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: "Fabricates certificate results without connecting."

@@ -1,7 +1,9 @@
 # Test: site-migrate
 tests:
   - name: "Migrates site"
-    skip: true
     input: '{"source": "notion", "destination": "astro"}'
     expected_output:
-      status: "complete"
+      status: "unsupported"
+      pages_migrated: 0
+      errors:
+        - "migration_not_implemented"

@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.number == null
+          root = if $missing {
+            throw("required input is missing: number")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let num = this.number.or(0).number().catch(0)
           let format = this.format.or("standard")
@@ -29,7 +36,12 @@ config:
           root.formatted = $formatted
           root.original = $num
           root.format = $format
-          root.metadata = {"skill": "number-format", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "number-format", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

@@ -2,7 +2,7 @@
 # =========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/convert -d '{"csv": "name,age\nAlice,30"}'
 
 name: "csv-to-json-mcp"
@@ -21,6 +21,13 @@ config:
 
   pipeline:
     processors:
+      - mapping: |
+          let missing = this.csv == null
+          root = if $missing {
+            throw("required input is missing: csv")
+          } else {
+            this
+          }
       - mapping: |
           meta trace_id = uuid_v4()
           let csv_text = this.csv.or(content()).string().trim()
@@ -43,14 +50,19 @@ config:
             "skill": "csv-to-json",
             "mode": "mcp",
             "delimiter": $delimiter,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [csv-to-json] Converted ${! root.row_count } rows (trace: ${! meta("trace_id").slice(0, 8) })
+            [csv-to-json] Converted ${! this.row_count } rows (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

@@ -1,8 +1,11 @@
 # Test: seo-pipeline
 tests:
   - name: "Analyzes URL"
-    skip: true
-    input: '{"url": "https://example.com"}'
+    input: '{"url":"https://example.com","html":"<!doctype html><html><head><title>Example</title><meta name=\"description\" content=\"An example page\"><meta name=\"viewport\" content=\"width=device-width\"></head><body><h1>Example</h1><a href=\"/more\">More</a><img src=\"hero.png\" alt=\"Hero\"></body></html>"}'
     expected_output:
       analysis:
         url: "https://example.com"
+        score: 100
+        title: "Example"
+        h1_count: 1
+        images_missing_alt: 0

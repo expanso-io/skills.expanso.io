@@ -1,6 +1,16 @@
 # Test: idempotent-cache
 tests:
-  - name: "Hashes input"
-    input: '{"data":"test"}'
+  - name: "Caches repeated input"
+    input: '{"input":{"data":"test"},"ttl_seconds":60}'
+    repeat: 2
     expected_output:
-      cached: false
+      cached: true
+      result:
+        data: test
+    expected_sequence:
+      - cached: false
+        result:
+          data: test
+      - cached: true
+        result:
+          data: test

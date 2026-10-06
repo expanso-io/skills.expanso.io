@@ -4,7 +4,7 @@
 # HTTP endpoint for alt text generation.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/alttext \
 #     -H "Content-Type: application/json" \
@@ -57,6 +57,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let alt = this.choices.0.message.content.trim().slice(0, 125)
@@ -68,7 +69,7 @@ config:
             "model": "gpt-4o-mini",
             "image_url": meta("image_url"),
             "alt_length": $alt.length(),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

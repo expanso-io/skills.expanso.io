@@ -2,7 +2,7 @@
 # Version: 1.0.0
 #
 # Wrap payload in a signed envelope with hash, signature, and metadata.
-# Uses ed25519 for signing (key stored locally).
+# Uses HMAC-SHA256 for signing (key stored locally).
 
 name: sign-envelope
 version: 1.0.0
@@ -12,7 +12,7 @@ description: Create signed envelope with payload, hash, signature, and timestamp
 credentials:
   - name: SIGNING_KEY
     required: true
-    description: Base64-encoded ed25519 private key
+    description: HMAC secret containing at least 32 characters
 
 # Skill inputs
 inputs:
@@ -38,7 +38,7 @@ outputs:
 backends:
   - name: local
     type: local
-    description: Local signing with ed25519
+    description: Local signing with HMAC-SHA256
 
 # Expanso components used
 components:
@@ -47,7 +47,6 @@ components:
     - http_server
   processors:
     - mapping
-    - command
     - log
   outputs:
     - stdout

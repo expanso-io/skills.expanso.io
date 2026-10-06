@@ -2,7 +2,7 @@
 # ===========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/validate \
 #     -d '{"yaml": "key: value\nlist:\n  - item1\n  - item2"}'
 
@@ -23,6 +23,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.yaml == null
+          root = if $missing {
+            throw("required input is missing: yaml")
+          } else {
+            this
+          }
+      - mapping: |
           let yaml_content = this.yaml.or(content())
           meta input_hash = $yaml_content.hash("sha256").encode("hex")
           meta input_length = $yaml_content.length()
@@ -39,14 +46,19 @@ config:
             "mode": "mcp",
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [yaml-validate] Valid: ${! root.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+            [yaml-validate] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

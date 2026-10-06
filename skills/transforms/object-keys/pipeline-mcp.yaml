@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.object == null
+          root = if $missing {
+            throw("required input is missing: object")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let input = this.object.or(content())
 
@@ -28,7 +35,12 @@ config:
           root.values = $values
           root.count = $keys.length()
           root.valid = $is_object
-          root.metadata = {"skill": "object-keys", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "object-keys", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

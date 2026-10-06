@@ -4,7 +4,7 @@
 # Extract clean article content from a URL.
 #
 # Usage:
-#   echo "https://example.com/article" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -18,6 +18,12 @@ config:
 
   pipeline:
     processors:
+      - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
       # 1. Prepare URL and trace metadata
       - mapping: |
           meta url = content().trim()
@@ -35,7 +41,7 @@ config:
       # 3. Extract article content using heuristics
       - mapping: |
           # Get raw HTML
-          let html = content()
+          let html = content().string()
 
           # Extract title (look for <title> or <h1>)
           let title = $html.re_find_all("<title[^>]*>([^<]+)</title>").index(0).or(
@@ -66,7 +72,7 @@ config:
           root.metadata = {
             "skill": "url-to-article",
             "mode": "cli",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -76,6 +82,10 @@ config:
           message: |
             [url-to-article] Extracted ${! this.article.word_count } words from ${! meta("url") } (trace: ${! meta("trace_id").slice(0, 8) })
 
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
+
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

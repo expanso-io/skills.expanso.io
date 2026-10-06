@@ -19,8 +19,7 @@ config:
           root.reversed = $reversed
           root.original = $input
           root.length = $input.length()
-          root.metadata = {"skill": "string-reverse", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "string-reverse", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

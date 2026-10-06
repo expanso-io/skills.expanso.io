@@ -4,6 +4,12 @@ name: idempotent-cache-cli
 type: pipeline
 
 config:
+  cache_resources:
+    - label: idempotent_results
+      memory:
+        default_ttl: 1h
+        compaction_interval: 1m
+
   input:
     stdin:
       codec: lines
@@ -11,23 +17,61 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
+          let trace_id = uuid_v4()
+          meta trace_id = $trace_id
 
-          let input = content()
-          let hash = $input.hash("sha256").encode("hex")
-
-          # Cache check - set CACHE_ENABLED=true and configure cache processor for real caching
-          let cached = false
-          let result = $input
+          let request = content().parse_json()
+          let input = $request.input
+          root = if $input == null { throw("input field is required") } else { {} }
+          let canonical = $input.format_json().catch($input.string())
+          let hash = $canonical.hash("sha256").encode("hex")
 
           root.hash = $hash
-          root.cached = $cached
-          root.result = $result
+          root.input = $input
+          root.ttl_seconds = $request.ttl_seconds.or(3600)
+          root.trace_id = $trace_id
+
+      - branch:
+          request_map: root = this
+          processors:
+            - cache:
+                resource: idempotent_results
+                operator: exists
+                key: '${! this.hash }'
+          result_map: root.cached = this
+
+      - switch:
+          - check: this.cached
+            processors:
+              - branch:
+                  request_map: root = this
+                  processors:
+                    - cache:
+                        resource: idempotent_results
+                        operator: get
+                        key: '${! this.hash }'
+                  result_map: root.result = this
+          - check: '!this.cached'
+            processors:
+              - mapping: |
+                  root = this
+                  root.result = this.input
+              - cache:
+                  resource: idempotent_results
+                  operator: set
+                  key: '${! this.hash }'
+                  value: '${! this.result.format_json() }'
+                  ttl: '${! this.ttl_seconds.string() + "s" }'
+
+      - mapping: |
+          let input_size = this.input.format_json().catch(this.input.string()).length()
+          root = this.without("input", "ttl_seconds", "trace_id")
           root.metadata = {
             "skill": "idempotent-cache",
             "mode": "cli",
-            "input_size": $input.length(),
-            "trace_id": meta("trace_id"),
+            "input_size": $input_size,
+            "ttl_seconds": this.ttl_seconds,
+            "trace_id": this.trace_id,
             "timestamp": now()
           }
 
@@ -37,5 +81,4 @@ config:
             [idempotent-cache] Hash: ${! this.hash.slice(0, 16) }..., cached: ${! this.cached } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

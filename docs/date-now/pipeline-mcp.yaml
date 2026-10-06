@@ -21,7 +21,7 @@ config:
           root.iso = now().ts_format("2006-01-02T15:04:05Z07:00")
           root.date = now().ts_format("2006-01-02")
           root.time = now().ts_format("15:04:05")
-          root.metadata = {"skill": "date-now", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "date-now", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

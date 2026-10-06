@@ -7,9 +7,9 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 ## Layout
 
 `skills/<category>/<name>/` is authoritative. `docs/<name>/` is a **flat published
-mirror that CI regenerates** — `.github/workflows/pages.yml` copies root
-`catalog.json`, `catalog-minimal.json`, `validation-report.json` and every
-`skills/*/*/` directory into `docs/` at deploy time. Edit `skills/`; committed
+mirror that CI regenerates** with [scripts/stage-pages.py](scripts/stage-pages.py).
+That script owns publication filtering, directory replacement, report copying,
+and SEO generation; both CI and Pages use it. Edit `skills/`; committed
 `docs/` copies are build artifacts and can be stale without that being a live
 defect. GitHub Pages publishes `docs/`.
 
@@ -29,13 +29,8 @@ wrong here before.
 - Both binaries use a `version` **subcommand**; there is no `--version` flag.
 - `expanso-cli execution list --job-id`; `--job` is rejected despite appearing in
   the CLI's own help text.
-- The two validators answer different questions, and the difference is load
-  bearing. `expanso-cli job validate --offline` checks JOB SPEC structure and is
-  what CI gates on; `expanso-edge validate` checks the inner PIPELINE CONFIG and
-  catches unknown component fields, bloblang arity and type errors. Many files
-  are accepted by the first and rejected by the second, so a green CI run is not
-  evidence of semantic validity. `validation-report.json` records both, as
-  `job_spec_accepted` and `validates`. Run both.
+- Run both validators. Their contracts, report fields, and CI coverage are
+  documented in [README.md](README.md#two-validators-two-different-questions).
 - A successful deploy only **stores** the job. Assignment and execution follow
   asynchronously and can still fail; confirm with `job describe` /
   `execution list --job-id`. Passing validation is not execution evidence.
@@ -71,7 +66,8 @@ requirements in the skill's `dependencies` block (see
 
 ## Validation gates
 
-`scripts/validate-pipelines.sh` is the CI gate. It is fail-closed: a missing
+`scripts/validate-pipelines.sh` is the job-spec CI gate; the remaining gates
+are declared in `.github/workflows/ci.yml`. It is fail-closed: a missing
 validator or an empty file list fails rather than skipping. Every recipe
 `pipeline.yaml` must be a full job spec (`type: pipeline` plus a `config:` block).
 

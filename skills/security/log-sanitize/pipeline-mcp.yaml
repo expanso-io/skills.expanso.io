@@ -2,7 +2,7 @@
 # ==========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/sanitize \
 #     -d '{"log": "password=secret123 token=abc123"}'
 #
@@ -24,6 +24,13 @@ config:
 
   pipeline:
     processors:
+      - mapping: |
+          let missing = this.log == null
+          root = if $missing {
+            throw("required input is missing: log")
+          } else {
+            this
+          }
       - mapping: |
           let input_log = this.log.or(content())
           meta input_hash = $input_log.hash("sha256").encode("hex")
@@ -57,7 +64,7 @@ config:
             "mode": "mcp",
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -65,6 +72,11 @@ config:
           level: INFO
           message: |
             [log-sanitize] Processed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

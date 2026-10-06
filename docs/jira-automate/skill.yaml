@@ -1,12 +1,11 @@
 # Skill: jira-automate
 # Version: 1.0.0
 #
-# Automate Jira and Confluence workflows with AI.
-# Create issues, update status, generate docs, and sync with codebase.
+# Search, create, and update Jira Cloud issues through REST API v3.
 
 name: jira-automate
 version: 1.0.0
-description: Automate Jira/Confluence workflows with AI-powered issue management
+description: Search, create, and update Jira Cloud issues with authenticated REST API v3 requests
 
 credentials:
   - name: JIRA_URL
@@ -18,15 +17,15 @@ credentials:
   - name: JIRA_API_TOKEN
     required: true
     description: Jira API token
-  - name: OPENAI_API_KEY
-    required: true
-    description: OpenAI for AI features
+  - name: MCP_BEARER_TOKEN
+    required: false
+    description: Required caller bearer token for the MCP endpoint (32+ characters)
 
 inputs:
   - name: action
     type: string
     required: true
-    enum: [create, update, search, summarize, link_pr, generate_docs]
+    enum: [create, update, search]
     description: Action to perform
   - name: project
     type: string
@@ -61,11 +60,12 @@ outputs:
     description: Execution metadata
 
 backends:
-  - name: openai
+  - name: jira-cloud
     type: remote
-    requires: [OPENAI_API_KEY]
+    requires: [JIRA_URL, JIRA_EMAIL, JIRA_API_TOKEN]
+    description: Jira Cloud REST API v3 over HTTPS
 
 components:
   inputs: [stdin, http_server]
-  processors: [mapping, http, openai_chat_completion, switch, log]
-  outputs: [http_client, stdout, sync_response]
+  processors: [mapping, http, switch]
+  outputs: [stdout, sync_response]

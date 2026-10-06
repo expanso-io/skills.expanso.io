@@ -1,7 +1,20 @@
 # Test: video-generate
 tests:
-  - name: "Generates video"
-    skip: true
-    input: '{"script": "Hello world", "duration_seconds": 30}'
+  - name: "Normalizes a successful Replicate prediction"
+    input: '{"prompt":"A cat playing piano"}'
+    provider_responses:
+      - id: prediction-001
+        status: succeeded
+        urls:
+          get: https://api.replicate.com/v1/predictions/prediction-001
+        output:
+          - https://cdn.example.test/cat-piano.mp4
     expected_output:
-      status: "generated"
+      video_url: "https://cdn.example.test/cat-piano.mp4"
+      status: "succeeded"
+      error: null
+      metadata:
+        skill: video-generate
+        model: minimax/video-01
+        prediction_id: prediction-001
+        source: replicate_api

@@ -25,7 +25,7 @@ config:
 
           root.last = $last
           root.length = $length
-          root.metadata = {"skill": "array-last", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "array-last", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

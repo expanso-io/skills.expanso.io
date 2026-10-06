@@ -1,4 +1,6 @@
 # Expanso Pipeline: todoist-automate (CLI mode)
+#
+# Uses the current Todoist API v1 over HTTPS with Bearer authentication.
 
 name: todoist-automate-cli
 type: pipeline
@@ -11,30 +13,211 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
           let input = content().parse_json()
-          let action = $input.action.or("sync")
+          root = $input
+          root.action = $input.action.or("list").string()
+          root._trace_id = uuid_v4()
 
-          # Sample data - configure TODOIST_API_KEY for real data
-          let tasks = [
-            {"id": "1", "content": "Review Q1 roadmap", "priority": 4, "due": {"date": "2024-01-31"}},
-            {"id": "2", "content": "Send client update", "priority": 3, "due": {"date": "2024-01-30"}},
-            {"id": "3", "content": "Team meeting prep", "priority": 2, "due": {"date": "2024-02-01"}}
-          ]
+      - switch:
+          - check: 'this.action == "list"'
+            processors:
+              - try:
+                  - mapping: |
+                      let base = env("TODOIST_API_URL").or("https://api.todoist.com/api/v1").trim_suffix("/")
+                      meta action = this.action
+                      meta trace_id = this._trace_id
+                      meta url = $base + "/tasks?limit=" + this.limit.or(50).string()
+                      root = if !$base.re_match("^https://") { throw("TODOIST_API_URL must be an https URL") } else { {} }
+                  - http:
+                      url: '${! meta("url") }'
+                      verb: GET
+                      headers:
+                        Authorization: "Bearer ${TODOIST_TOKEN}"
+                        Accept: application/json
+                      timeout: 30s
+                      retries: 3
+                      rate_limit: todoist_api
+                  - mapping: |
+                      let tasks = if this.type() == "array" { this } else { this.results.or([]) }
+                      let today = now().ts_format("2006-01-02")
+                      root.action = meta("action")
+                      root.tasks = $tasks
+                      root.result = {"tasks": $tasks, "next_cursor": this.next_cursor.or(null)}
+                      root.summary = {
+                        "total": $tasks.length(),
+                        "high_priority": $tasks.filter(task -> task.priority.or(1) >= 3).length(),
+                        "due_today": $tasks.filter(task -> task.due.date.or("") == $today).length()
+                      }
+                      root.metadata = {
+                        "skill": "todoist-automate",
+                        "mode": "cli",
+                        "action": meta("action"),
+                        "source": "todoist_api",
+                        "trace_id": meta("trace_id").or(uuid_v4()),
+                        "timestamp": now()
+                      }
+              - catch:
+                  - mapping: |
+                      root = {"status": "error", "error": error()}
 
-          root.action = $action
-          root.tasks = $tasks
-          root.summary = {
-            "total": $tasks.length(),
-            "high_priority": $tasks.filter(t -> t.priority >= 3).length(),
-            "due_today": 1
-          }
-          root.metadata = {"skill": "todoist-automate", "mode": "cli", "trace_id": meta("trace_id")}
+          - check: 'this.action == "create"'
+            processors:
+              - try:
+                  - mapping: |
+                      let base = env("TODOIST_API_URL").or("https://api.todoist.com/api/v1").trim_suffix("/")
+                      meta action = this.action
+                      meta trace_id = this._trace_id
+                      meta url = $base + "/tasks"
+                      root = if !$base.re_match("^https://") {
+                        throw("TODOIST_API_URL must be an https URL")
+                      } else if this.content.or("").length() == 0 {
+                        throw("content is required for create")
+                      } else {
+                        {
+                          "content": this.content,
+                          "description": this.description.or(""),
+                          "project_id": this.project_id.or(null),
+                          "due_date": this.due_date.or(null),
+                          "priority": this.priority.or(1)
+                        }
+                      }
+                  - http:
+                      url: '${! meta("url") }'
+                      verb: POST
+                      headers:
+                        Authorization: "Bearer ${TODOIST_TOKEN}"
+                        Accept: application/json
+                        Content-Type: application/json
+                      timeout: 30s
+                      # Todoist task creation is not idempotent without a
+                      # caller-supplied request id, so never replay it here.
+                      retries: 0
+                      rate_limit: todoist_api
+                  - mapping: |
+                      root.action = meta("action")
+                      root.tasks = [this]
+                      root.result = {"task": this}
+                      root.metadata = {
+                        "skill": "todoist-automate",
+                        "mode": "cli",
+                        "action": meta("action"),
+                        "source": "todoist_api",
+                        "trace_id": meta("trace_id").or(uuid_v4()),
+                        "timestamp": now()
+                      }
+              - catch:
+                  - mapping: |
+                      root = {"status": "error", "error": error()}
 
-      - log:
-          level: INFO
-          message: "[todoist-automate] ${! this.summary.total } tasks synced"
+          - check: 'this.action == "update"'
+            processors:
+              - try:
+                  - mapping: |
+                      let base = env("TODOIST_API_URL").or("https://api.todoist.com/api/v1").trim_suffix("/")
+                      meta action = this.action
+                      meta trace_id = this._trace_id
+                      meta url = $base + "/tasks/" + this.task_id.or("").escape_url_path()
+                      root = if !$base.re_match("^https://") {
+                        throw("TODOIST_API_URL must be an https URL")
+                      } else if this.task_id.or("").length() == 0 {
+                        throw("task_id is required for update")
+                      } else {
+                        {
+                          "content": this.content.or(null),
+                          "description": this.description.or(null),
+                          "due_date": this.due_date.or(null),
+                          "priority": this.priority.or(null)
+                        }
+                      }
+                  - http:
+                      url: '${! meta("url") }'
+                      verb: POST
+                      headers:
+                        Authorization: "Bearer ${TODOIST_TOKEN}"
+                        Accept: application/json
+                        Content-Type: application/json
+                      timeout: 30s
+                      retries: 3
+                      rate_limit: todoist_api
+                  - mapping: |
+                      root.action = meta("action")
+                      root.tasks = [this]
+                      root.result = {"task": this}
+                      root.metadata = {
+                        "skill": "todoist-automate",
+                        "mode": "cli",
+                        "action": meta("action"),
+                        "source": "todoist_api",
+                        "trace_id": meta("trace_id").or(uuid_v4()),
+                        "timestamp": now()
+                      }
+              - catch:
+                  - mapping: |
+                      root = {"status": "error", "error": error()}
+
+          - check: 'this.action == "complete"'
+            processors:
+              - try:
+                  - mapping: |
+                      let base = env("TODOIST_API_URL").or("https://api.todoist.com/api/v1").trim_suffix("/")
+                      meta action = this.action
+                      meta task_id = this.task_id.or("")
+                      meta trace_id = this._trace_id
+                      meta url = $base + "/tasks/" + this.task_id.or("").escape_url_path() + "/close"
+                      root = if !$base.re_match("^https://") {
+                        throw("TODOIST_API_URL must be an https URL")
+                      } else if this.task_id.or("").length() == 0 {
+                        throw("task_id is required for complete")
+                      } else {
+                        {}
+                      }
+                  - http:
+                      url: '${! meta("url") }'
+                      verb: POST
+                      headers:
+                        Authorization: "Bearer ${TODOIST_TOKEN}"
+                        Accept: application/json
+                      timeout: 30s
+                      retries: 3
+                      rate_limit: todoist_api
+                  - mapping: |
+                      root.action = meta("action")
+                      root.tasks = []
+                      root.result = {"task_id": meta("task_id"), "completed": true}
+                      root.metadata = {
+                        "skill": "todoist-automate",
+                        "mode": "cli",
+                        "action": meta("action"),
+                        "source": "todoist_api",
+                        "trace_id": meta("trace_id").or(uuid_v4()),
+                        "timestamp": now()
+                      }
+              - catch:
+                  - mapping: |
+                      root = {"status": "error", "action": meta("action"), "error": error()}
+
+          - processors:
+              - mapping: |
+                  root.status = "unsupported"
+                  root.action = this.action
+                  root.tasks = []
+                  root.capability_gap = {
+                    "supported_actions": ["list", "create", "update", "complete"],
+                    "requested_action": this.action
+                  }
+                  root.metadata = {
+                    "skill": "todoist-automate",
+                    "mode": "cli",
+                    "action": this.action,
+                    "trace_id": this._trace_id,
+                    "timestamp": now()
+                  }
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}
+
+  rate_limit_resources:
+    - label: todoist_api
+      local:
+        count: 5
+        interval: 1s

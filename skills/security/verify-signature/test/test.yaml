@@ -1,7 +1,14 @@
 # Test: verify-signature
 tests:
   - name: "Verifies signature"
-    skip: true  # Requires matching key
-    input: '{"envelope": {...}}'
+    input: '{"payload":{"data":"test"},"hash":"57b25c3508e24095e391190fdbce47d9c953520a674824f21806b529ff994d39","signature":"4cb4c399e77b81228aa59e83a3aee6bafc6c0fde7a8ec0c6077c4c22e13c9610","key_id":"fixture-key","algorithm":"hmac-sha256"}'
+    env:
+      VERIFY_KEY: "fixture-signing-key-at-least-32-bytes"
     expected_output:
       valid: true
+      payload:
+        data: "test"
+      verification:
+        hash_valid: true
+        signature_valid: true
+        algorithm: "hmac-sha256"

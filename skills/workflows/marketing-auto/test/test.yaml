@@ -1,8 +1,7 @@
-# Test: marketing-auto
 tests:
-  - name: "Creates campaign"
-    skip: true
-    input: '{"action": "campaign", "topic": "product launch"}'
-    expected_output:
-      metadata:
-        skill: "marketing-auto"
+- name: Withdrawn capability returns no success receipt
+  input: '{}'
+  expected_output:
+    status: unsupported
+    publication: pulled
+    skill: marketing-auto

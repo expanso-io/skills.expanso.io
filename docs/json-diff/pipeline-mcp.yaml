@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.a == null || this.b == null
+          root = if $missing {
+            throw("required input is missing: a, b")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
 
           let a = this.a.or({})
@@ -31,7 +38,12 @@ config:
           root.only_in_a = $only_in_a
           root.only_in_b = $only_in_b
           root.equal = $only_in_a.length() == 0 && $only_in_b.length() == 0 && $a_keys.length() == $b_keys.length()
-          root.metadata = {"skill": "json-diff", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "json-diff", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

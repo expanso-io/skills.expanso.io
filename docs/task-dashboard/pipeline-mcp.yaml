@@ -11,16 +11,53 @@ config:
   input:
     http_server:
       path: /dashboard
-      allowed_verbs: [POST, GET]
+      allowed_verbs: [POST]
       timeout: 30s
 
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          root.queue = [{"id": "1", "task": "Sample task", "status": "pending"}]
-          root.status = {"total_pending": 1}
-          root.metadata = {"skill": "task-dashboard", "mode": "mcp", "trace_id": meta("trace_id")}
+          let trace_id = uuid_v4()
+          let action = this.action.or("status").string()
+          let tasks = this.tasks.or([])
+          let today = now().ts_format("2006-01-02")
+          let active = $tasks.filter(task -> task.status.or("pending") != "completed")
+          let completed_today = $tasks.filter(task -> task.status.or("") == "completed" && task.completed_at.or("").slice(0, 10) == $today)
+
+          root = if $action != "status" {
+            {
+              "status": "unsupported",
+              "capability_gap": {
+                "requested_action": $action,
+                "missing": "a persistent task-system connector",
+                "evidence": "This stateless example only summarizes task records supplied in the request."
+              },
+              "queue": $tasks,
+              "completed_today": [],
+              "metadata": {
+                "skill": "task-dashboard",
+                "mode": "mcp",
+                "action": $action,
+                "trace_id": $trace_id
+              }
+            }
+          } else {
+            {
+              "queue": $active,
+              "completed_today": $completed_today,
+              "status": {
+                "total_pending": $active.filter(task -> task.status.or("pending") == "pending").length(),
+                "in_progress": $active.filter(task -> task.status.or("") == "in_progress").length(),
+                "completed_today": $completed_today.length()
+              },
+              "metadata": {
+                "skill": "task-dashboard",
+                "mode": "mcp",
+                "action": $action,
+                "trace_id": $trace_id
+              }
+            }
+          }
 
   output:
     sync_response: {}

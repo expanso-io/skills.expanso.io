@@ -13,7 +13,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import atexit
 import hashlib
+import hmac
 import json
 import os
 import re
@@ -21,8 +23,8 @@ import shutil
 import socket
 import subprocess
 import sys
-import tempfile
 import time
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -33,6 +35,8 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SKILLS_DIR = REPO_ROOT / "skills"
+CONFORMANCE_DIR = REPO_ROOT / ".conformance"
+HARNESS_MCP_BEARER_TOKEN = "expanso-harness-mcp-token-32-chars"
 
 
 class DupKeyLoader(yaml.SafeLoader):
@@ -44,7 +48,13 @@ class DupKeyLoader(yaml.SafeLoader):
             key = self.construct_object(key_node, deep=deep)
             value = self.construct_object(value_node, deep=deep)
             if key in mapping:
-                if key in {"has_field", "metadata_has", "extracted_contains", "analysis_has", "command_contains"}:
+                if key in {
+                    "has_field",
+                    "metadata_has",
+                    "extracted_contains",
+                    "analysis_has",
+                    "command_contains",
+                }:
                     if not isinstance(mapping[key], list):
                         mapping[key] = [mapping[key]]
                     mapping[key].append(value)
@@ -68,11 +78,16 @@ class EdgeProcess:
     process: subprocess.Popen | None = None
 
     def start(self) -> None:
-        expanso_edge = self.edge_bin or os.environ.get("EXPANSO_EDGE_BIN") or shutil.which("expanso-edge")
+        expanso_edge = (
+            self.edge_bin
+            or os.environ.get("EXPANSO_EDGE_BIN")
+            or shutil.which("expanso-edge")
+        )
         if not expanso_edge:
             raise RuntimeError("expanso-edge not found in PATH")
 
         env = os.environ.copy()
+        env.setdefault("MCP_BEARER_TOKEN", HARNESS_MCP_BEARER_TOKEN)
         if self.env:
             env.update(self.env)
 
@@ -90,7 +105,9 @@ class EdgeProcess:
         ]
         self.log_file.parent.mkdir(parents=True, exist_ok=True)
         log_handle = open(self.log_file, "w")
-        self.process = subprocess.Popen(cmd, stdout=log_handle, stderr=log_handle, env=env)
+        self.process = subprocess.Popen(
+            cmd, stdout=log_handle, stderr=log_handle, env=env
+        )
 
     def stop(self) -> None:
         if not self.process:
@@ -108,6 +125,17 @@ def load_yaml(path: Path) -> dict[str, Any] | None:
         return None
     with open(path, "r") as f:
         return yaml.load(f, Loader=DupKeyLoader)  # type: ignore[arg-type]
+
+
+def contains_component(value: Any, prefix: str) -> bool:
+    if isinstance(value, dict):
+        return any(
+            str(key).startswith(prefix) or contains_component(child, prefix)
+            for key, child in value.items()
+        )
+    if isinstance(value, list):
+        return any(contains_component(child, prefix) for child in value)
+    return False
 
 
 def find_skills(names: list[str] | None) -> list[Path]:
@@ -160,17 +188,37 @@ def hash_bytes(*parts: bytes) -> str:
     return h.hexdigest()
 
 
+def tool_evidence(binary: str) -> dict[str, str]:
+    resolved = Path(binary).resolve()
+    version = subprocess.run(
+        [str(resolved), "version"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    return {
+        "path": str(resolved),
+        "version": (version.stdout or version.stderr).strip(),
+        "sha256": hashlib.sha256(resolved.read_bytes()).hexdigest(),
+    }
+
+
 def compute_test_fingerprint(
     skill_dir: Path,
+    pipeline_path: Path,
+    variant: str,
     test: dict[str, Any],
     input_value: str,
     env_overrides: dict[str, Any],
+    provider_responses: list[Any],
+    ai_responses: list[Any],
     mock_openai: bool,
     harness_hash: str,
 ) -> str:
     h = hashlib.sha256()
     for path in (
-        skill_dir / "pipeline-mcp.yaml",
+        pipeline_path,
         skill_dir / "skill.yaml",
         skill_dir / "test" / "test.yaml",
     ):
@@ -179,7 +227,10 @@ def compute_test_fingerprint(
     h.update(json.dumps(test, sort_keys=True, default=str).encode())
     h.update(str(input_value).encode())
     h.update(json.dumps(env_overrides, sort_keys=True, default=str).encode())
+    h.update(json.dumps(provider_responses, sort_keys=True, default=str).encode())
+    h.update(json.dumps(ai_responses, sort_keys=True, default=str).encode())
     h.update(b"mock_openai=1" if mock_openai else b"mock_openai=0")
+    h.update(f"variant={variant}".encode())
     h.update(harness_hash.encode())
     return h.hexdigest()
 
@@ -304,25 +355,29 @@ def build_findings(count: int, kind: str) -> list[dict[str, Any]]:
     findings = []
     for idx in range(count):
         if kind == "secrets":
-            findings.append({
-                "type": "api_key",
-                "value": f"mock-secret-{idx}",
-                "line": idx + 1,
-                "severity": "high",
-            })
+            findings.append(
+                {
+                    "type": "api_key",
+                    "value": f"mock-secret-{idx}",
+                    "line": idx + 1,
+                    "severity": "high",
+                }
+            )
         else:
-            findings.append({
-                "type": "email",
-                "value": f"mock{idx}@example.com",
-                "start": 0,
-                "end": 10,
-                "confidence": 0.9,
-            })
+            findings.append(
+                {
+                    "type": "email",
+                    "value": f"mock{idx}@example.com",
+                    "start": 0,
+                    "end": 10,
+                    "confidence": 0.9,
+                }
+            )
     return findings
 
 
 def mapping_uses_parse_json(processors: list[dict[str, Any]], start_idx: int) -> bool:
-    for proc in processors[start_idx + 1:]:
+    for proc in processors[start_idx + 1 :]:
         if "mapping" in proc:
             return "parse_json" in proc.get("mapping", "")
         if any(key.startswith("openai_") for key in proc.keys()):
@@ -341,7 +396,9 @@ def command_from_tokens(tokens: list[str], instruction: str) -> str:
     return generate_command(instruction, "bash")
 
 
-def build_json_payload_from_expected(expected: dict[str, Any], instruction: str) -> dict[str, Any]:
+def build_json_payload_from_expected(
+    expected: dict[str, Any], instruction: str
+) -> dict[str, Any]:
     payload: dict[str, Any] = {}
 
     extracted = expected.get("extracted_contains")
@@ -353,7 +410,11 @@ def build_json_payload_from_expected(expected: dict[str, Any], instruction: str)
     if analysis_keys:
         for key in analysis_keys:
             if key == "sentiment":
-                payload[key] = {"label": "neutral", "score": 0.5, "explanation": "Mock sentiment"}
+                payload[key] = {
+                    "label": "neutral",
+                    "score": 0.5,
+                    "explanation": "Mock sentiment",
+                }
             elif key == "entities":
                 payload[key] = placeholder_for_key("entities")
             elif key == "topics":
@@ -396,7 +457,11 @@ def build_json_payload_from_expected(expected: dict[str, Any], instruction: str)
             if field in allowed_keys:
                 payload.setdefault(field, placeholder_for_key(field, instruction))
 
-    if "has_pii" in expected or "has_secrets" in expected or "findings_length" in expected:
+    if (
+        "has_pii" in expected
+        or "has_secrets" in expected
+        or "findings_length" in expected
+    ):
         has_pii = expected.get("has_pii")
         has_secrets = expected.get("has_secrets")
         findings_length = expected.get("findings_length")
@@ -412,7 +477,9 @@ def build_json_payload_from_expected(expected: dict[str, Any], instruction: str)
     return {"result": "mock"}
 
 
-def mock_content_for_test(skill_name: str, expected: dict[str, Any], instruction: str, expects_json: bool) -> str:
+def mock_content_for_test(
+    skill_name: str, expected: dict[str, Any], instruction: str, expects_json: bool
+) -> str:
     if expects_json:
         payload = build_json_payload_from_expected(expected, instruction)
         return json.dumps(payload)
@@ -441,34 +508,167 @@ def apply_openai_mocks(
     skill_name: str,
     expected: dict[str, Any],
     instruction: str,
+    responses: list[Any] | None = None,
+    response_index: list[int] | None = None,
 ) -> None:
+    structured_response_skills = {
+        "json-extract",
+        "pii-detect",
+        "secrets-scan",
+        "text-analyze",
+        "text-to-command",
+    }
+    response_values = responses or []
+    index = response_index or [0]
+
+    def next_response(default: Any) -> Any:
+        if not response_values:
+            return default
+        response = response_values[min(index[0], len(response_values) - 1)]
+        index[0] += 1
+        return response
+
     for idx, proc in enumerate(processors):
         if "openai_chat_completion" in proc:
-            expects_json = mapping_uses_parse_json(processors, idx)
-            content = mock_content_for_test(skill_name, expected, instruction, expects_json)
-            literal = json.dumps(content)
-            mapping = (
-                "root = {\"choices\": [{\"message\": {\"content\": "
-                + literal +
-                "}}]}"
+            expects_json = (
+                mapping_uses_parse_json(processors, idx)
+                or skill_name in structured_response_skills
             )
+            default_content = mock_content_for_test(
+                skill_name, expected, instruction, expects_json
+            )
+            response = next_response(default_content)
+            content = response if isinstance(response, str) else json.dumps(response)
+            literal = json.dumps(content)
+            mapping = 'root = {"choices": [{"message": {"content": ' + literal + "}}]}"
             processors[idx] = {"mapping": mapping}
         elif "openai_image_generation" in proc:
-            processors[idx] = {"mapping": "root = {\"data\": [{\"url\": \"https://example.com/mock.png\", \"revised_prompt\": \"mock prompt\"}]}"}
+            response = next_response(
+                {
+                    "data": [
+                        {
+                            "url": "https://example.com/mock.png",
+                            "revised_prompt": "mock prompt",
+                        }
+                    ]
+                }
+            )
+            processors[idx] = {"mapping": f"root = {json.dumps(response)}"}
         elif "openai_embeddings" in proc:
-            processors[idx] = {"mapping": "root = {\"data\": [{\"embedding\": [0.0, 0.0, 0.0, 0.0]}]}"}
+            response = next_response({"data": [{"embedding": [0.0, 0.0, 0.0, 0.0]}]})
+            processors[idx] = {"mapping": f"root = {json.dumps(response)}"}
         elif "openai_speech" in proc:
-            processors[idx] = {"mapping": "root = \"MOCK_AUDIO\""}
+            response = next_response("MOCK_AUDIO")
+            processors[idx] = {"mapping": f"root = {json.dumps(str(response))}"}
+        elif "openai_transcription" in proc:
+            response = next_response("Mock transcript.")
+            processors[idx] = {"mapping": f"root = {json.dumps(str(response))}"}
+        else:
+            # AI processors can be nested under switch, branch, try/catch,
+            # and other processor containers. Walk every nested processor
+            # list so tests never initialize a live provider accidentally.
+            for value in proc.values():
+                apply_openai_mocks_nested(
+                    value,
+                    skill_name,
+                    expected,
+                    instruction,
+                    response_values,
+                    index,
+                )
 
-def missing_credentials(skill_yaml: dict[str, Any], ignore: set[str] | None = None) -> list[str]:
+
+def apply_openai_mocks_nested(
+    value: Any,
+    skill_name: str,
+    expected: dict[str, Any],
+    instruction: str,
+    responses: list[Any],
+    response_index: list[int],
+) -> None:
+    if isinstance(value, list):
+        if all(isinstance(item, dict) for item in value):
+            apply_openai_mocks(
+                value,
+                skill_name,
+                expected,
+                instruction,
+                responses,
+                response_index,
+            )
+        else:
+            for item in value:
+                apply_openai_mocks_nested(
+                    item,
+                    skill_name,
+                    expected,
+                    instruction,
+                    responses,
+                    response_index,
+                )
+    elif isinstance(value, dict):
+        for nested in value.values():
+            apply_openai_mocks_nested(
+                nested,
+                skill_name,
+                expected,
+                instruction,
+                responses,
+                response_index,
+            )
+
+
+def apply_provider_mocks(
+    processors: list[dict[str, Any]],
+    responses: list[Any],
+    response_index: list[int] | None = None,
+) -> None:
+    """Replace outbound HTTP processors only in the disposable test job.
+
+    The published pipeline keeps its real provider adapter. Tests replace that
+    adapter with deterministic provider responses and still execute every
+    downstream mapping, branch, and output assertion.
+    """
+    if not responses:
+        return
+    index = response_index or [0]
+    for processor in processors:
+        if "http" in processor:
+            response = responses[min(index[0], len(responses) - 1)]
+            processor.clear()
+            processor["mapping"] = (
+                f"root = {json.dumps(response, separators=(',', ':'))}"
+            )
+            index[0] += 1
+            continue
+        for value in processor.values():
+            if isinstance(value, list) and all(
+                isinstance(item, dict) for item in value
+            ):
+                apply_provider_mocks(value, responses, index)
+            elif isinstance(value, dict):
+                for nested in value.values():
+                    if isinstance(nested, list) and all(
+                        isinstance(item, dict) for item in nested
+                    ):
+                        apply_provider_mocks(nested, responses, index)
+
+
+def missing_credentials(
+    skill_yaml: dict[str, Any], ignore: set[str] | None = None
+) -> list[str]:
     credentials = []
-    for cred in skill_yaml.get("credentials", []) if isinstance(skill_yaml, dict) else []:
+    for cred in (
+        skill_yaml.get("credentials", []) if isinstance(skill_yaml, dict) else []
+    ):
         if isinstance(cred, dict):
             if cred.get("required", True):
                 name = cred.get("name")
                 if name:
                     credentials.append(name)
-    for backend in skill_yaml.get("backends", []) if isinstance(skill_yaml, dict) else []:
+    for backend in (
+        skill_yaml.get("backends", []) if isinstance(skill_yaml, dict) else []
+    ):
         if isinstance(backend, dict):
             for req in backend.get("requires", []) or []:
                 credentials.append(req)
@@ -482,7 +682,9 @@ def missing_credentials(skill_yaml: dict[str, Any], ignore: set[str] | None = No
 
     # If there is a local backend, allow tests to proceed (it may still fail).
     has_local = any(
-        isinstance(b, dict) and b.get("type") == "local" for b in skill_yaml.get("backends", []) if isinstance(skill_yaml, dict)
+        isinstance(b, dict) and b.get("type") == "local"
+        for b in skill_yaml.get("backends", [])
+        if isinstance(skill_yaml, dict)
     )
     if missing and not has_local:
         return missing
@@ -494,6 +696,8 @@ def normalize_input_value(value: str, input_type: str | None) -> Any:
         try:
             return json.loads(value)
         except Exception:
+            if input_type == "array":
+                return [item.strip() for item in value.split(",") if item.strip()]
             return value
     if input_type in {"integer", "number"}:
         try:
@@ -524,12 +728,35 @@ def build_payload(
         except Exception:
             parsed_value = None
 
-    input_names = [i.get("name") for i in skill_inputs if isinstance(i, dict) and i.get("name")]
-    input_types = {i.get("name"): i.get("type") for i in skill_inputs if isinstance(i, dict)}
+    input_names = [
+        i.get("name") for i in skill_inputs if isinstance(i, dict) and i.get("name")
+    ]
+    input_types = {
+        i.get("name"): i.get("type") for i in skill_inputs if isinstance(i, dict)
+    }
 
     payload: dict[str, Any] = {}
 
-    if parsed_is_object:
+    required_inputs = [
+        item.get("name")
+        for item in skill_inputs
+        if isinstance(item, dict) and item.get("required") and item.get("name")
+    ]
+
+    if (
+        parsed_is_object
+        and len(input_names) == 1
+        and input_types.get(input_names[0]) == "object"
+        and input_names[0] not in parsed_value
+    ):
+        payload[input_names[0]] = parsed_value
+    elif (
+        parsed_is_object
+        and len(required_inputs) == 1
+        and not any(name in parsed_value for name in input_names)
+    ):
+        payload[required_inputs[0]] = parsed_value
+    elif parsed_is_object:
         payload = parsed_value  # type: ignore[assignment]
     elif input_names:
         primary = input_names[0]
@@ -546,18 +773,27 @@ def build_payload(
                 match = name
                 break
         if match:
-            payload[match] = value
+            payload[match] = normalize_input_value(str(value), input_types.get(match))
 
     return payload
 
 
-def parse_env_overrides(env: dict[str, Any] | None, skill_inputs: list[dict[str, Any]]) -> dict[str, Any]:
+def parse_env_overrides(
+    env: dict[str, Any] | None, skill_inputs: list[dict[str, Any]]
+) -> dict[str, Any]:
     if not env:
         return {}
     overrides = {}
-    input_names = [i.get("name") for i in skill_inputs if isinstance(i, dict) and i.get("name")]
+    input_names = [
+        i.get("name") for i in skill_inputs if isinstance(i, dict) and i.get("name")
+    ]
     for key, value in env.items():
-        if key.lower() in {"openai_api_key", "stripe_api_key", "slack_webhook", "github_token"}:
+        if key.lower() in {
+            "openai_api_key",
+            "stripe_api_key",
+            "slack_webhook",
+            "github_token",
+        }:
             continue
         if any(name and name.lower() == key.lower() for name in input_names):
             overrides[key] = value
@@ -584,11 +820,17 @@ def parse_env_overrides(env: dict[str, Any] | None, skill_inputs: list[dict[str,
     return overrides
 
 
-def check_expectations(expected: dict[str, Any], output: dict[str, Any], status_code: int) -> tuple[bool, list[str]]:
+def check_expectations(
+    expected: dict[str, Any], output: dict[str, Any], status_code: int
+) -> tuple[bool, list[str]]:
     errors: list[str] = []
 
     if expected.get("error_or_empty"):
-        if status_code >= 400 or not output or ("error" in output or "message" in output):
+        if (
+            status_code >= 400
+            or not output
+            or ("error" in output or "message" in output)
+        ):
             return True, []
         if isinstance(output, dict):
             metadata = output.get("metadata")
@@ -597,6 +839,10 @@ def check_expectations(expected: dict[str, Any], output: dict[str, Any], status_
             if isinstance(metadata, dict) and not metadata.get("trace_id"):
                 return True, []
         return False, ["Expected error_or_empty but got output"]
+
+    json_contains = expected.get("json_contains")
+    if json_contains is not None:
+        errors.extend(check_expected_output(json_contains, output))
 
     has_field = expected.get("has_field")
     if has_field:
@@ -665,7 +911,10 @@ def check_expectations(expected: dict[str, Any], output: dict[str, Any], status_
 
     if "findings_length" in expected:
         findings = output.get("findings", [])
-        if not isinstance(findings, list) or len(findings) != expected["findings_length"]:
+        if (
+            not isinstance(findings, list)
+            or len(findings) != expected["findings_length"]
+        ):
             errors.append("findings_length mismatch")
 
     if "summary_contains_bullets" in expected:
@@ -690,6 +939,107 @@ def check_expectations(expected: dict[str, Any], output: dict[str, Any], status_
                 errors.append(f"explanation missing token: {token}")
 
     return len(errors) == 0, errors
+
+
+def replace_fixture_env(value: Any, env: dict[str, Any]) -> Any:
+    """Replace env() calls in the disposable job copy with test fixture values."""
+    if isinstance(value, dict):
+        return {key: replace_fixture_env(child, env) for key, child in value.items()}
+    if isinstance(value, list):
+        return [replace_fixture_env(child, env) for child in value]
+    if not isinstance(value, str):
+        return value
+    rendered = value
+    for key, fixture in env.items():
+        rendered = rendered.replace(f'env("{key}")', json.dumps(str(fixture)))
+    return rendered
+
+
+def check_expected_output(expected: Any, output: Any, path: str = "root") -> list[str]:
+    """Check that an expected fixture is a recursive subset of the response."""
+    if isinstance(expected, dict):
+        if not isinstance(output, dict):
+            return [f"{path}: expected object, got {type(output).__name__}"]
+        errors: list[str] = []
+        for key, value in expected.items():
+            if key not in output:
+                errors.append(f"{path}: missing key {key}")
+                continue
+            errors.extend(check_expected_output(value, output[key], f"{path}.{key}"))
+        return errors
+    if isinstance(expected, list):
+        if not isinstance(output, list):
+            return [f"{path}: expected array, got {type(output).__name__}"]
+        if len(expected) != len(output):
+            return [f"{path}: expected {len(expected)} items, got {len(output)}"]
+        errors: list[str] = []
+        for index, value in enumerate(expected):
+            errors.extend(
+                check_expected_output(value, output[index], f"{path}[{index}]")
+            )
+        return errors
+    if expected != output:
+        return [f"{path}: expected {expected!r}, got {output!r}"]
+    return []
+
+
+def check_output_conditions(
+    conditions: Any,
+    output: Any,
+) -> list[str]:
+    """Evaluate simple comparisons against paths in the serialized response."""
+    if not conditions:
+        return []
+    if not isinstance(conditions, list):
+        return ["output_conditions must be a list"]
+
+    errors: list[str] = []
+    for entry in conditions:
+        if not isinstance(entry, dict):
+            errors.append("output condition must be an object")
+            continue
+        path = str(entry.get("path", "")).strip()
+        expression = str(entry.get("condition", "")).strip()
+        current = output
+        missing = False
+        for part in path.split(".") if path else []:
+            if not isinstance(current, dict) or part not in current:
+                errors.append(f"output condition path missing: {path}")
+                missing = True
+                break
+            current = current[part]
+        if missing:
+            continue
+
+        match = re.fullmatch(r"(?:(length)\s+)?(==|!=|>=|<=|>|<)\s+(.+)", expression)
+        if not match:
+            errors.append(f"unsupported output condition for {path}: {expression}")
+            continue
+        if match.group(1):
+            try:
+                current = len(current)
+            except TypeError:
+                errors.append(f"output condition path has no length: {path}")
+                continue
+        expected = yaml.safe_load(match.group(3))
+        operator = match.group(2)
+        comparisons = {
+            "==": lambda: current == expected,
+            "!=": lambda: current != expected,
+            ">=": lambda: current >= expected,
+            "<=": lambda: current <= expected,
+            ">": lambda: current > expected,
+            "<": lambda: current < expected,
+        }
+        try:
+            passed = comparisons[operator]()
+        except TypeError:
+            passed = False
+        if not passed:
+            errors.append(
+                f"output condition failed: {path} value {current!r} {expression}"
+            )
+    return errors
 
 
 def is_transient_failure(entry: dict[str, Any]) -> bool:
@@ -725,12 +1075,14 @@ def is_permanent_failure(entry: dict[str, Any]) -> bool:
 
 def record_attempt(entry: dict[str, Any], result: dict[str, Any]) -> None:
     history = entry.setdefault("history", [])
-    history.append({
-        "status": result.get("status"),
-        "reason": result.get("reason"),
-        "errors": result.get("errors"),
-        "status_code": result.get("status_code"),
-    })
+    history.append(
+        {
+            "status": result.get("status"),
+            "reason": result.get("reason"),
+            "errors": result.get("errors"),
+            "status_code": result.get("status_code"),
+        }
+    )
     entry.update(result)
     entry["attempts"] = len(history)
     if entry.get("status") == "failed" and is_permanent_failure(entry):
@@ -739,36 +1091,73 @@ def record_attempt(entry: dict[str, Any], result: dict[str, Any]) -> None:
 
 def execute_test(
     skill_name: str,
-    pipeline_mcp_path: Path,
+    pipeline_path: Path,
+    variant: str,
     input_value: str,
     payload: dict[str, Any],
     expected: dict[str, Any],
     api_url: str,
     expanso_cli: str,
     mock_openai: bool,
+    run_dir: Path,
+    expected_output: Any = None,
+    output_conditions: Any = None,
+    fixture_env: dict[str, Any] | None = None,
+    provider_responses: list[Any] | None = None,
+    ai_responses: list[Any] | None = None,
+    require_mcp_auth: bool = False,
+    edge_log: Path | None = None,
+    repeat: int = 1,
+    expected_sequence: list[Any] | None = None,
+    invalid_webhook_signature: bool = False,
 ) -> tuple[dict[str, Any], bool]:
-    pipeline_spec = load_yaml(pipeline_mcp_path)
+    pipeline_spec = load_yaml(pipeline_path)
     if not pipeline_spec:
         return {
             "status": "failed",
-            "reason": "failed to parse pipeline-mcp.yaml",
+            "reason": f"failed to parse {pipeline_path.name}",
             "errors": [],
             "status_code": 0,
             "output": {},
         }, True
 
+    original_processors = pipeline_spec.get("config", {}).get("pipeline", {})
+    processor_fixtures_used = bool(provider_responses) or (
+        mock_openai and contains_component(original_processors, "openai_")
+    )
+    published_adapters_intact = variant == "mcp"
+    published_processors_intact = not processor_fixtures_used
+
     port = find_free_port()
     config = pipeline_spec.setdefault("config", {})
-    input_cfg = config.get("input", {})
-    http_server = input_cfg.get("http_server") if isinstance(input_cfg, dict) else None
-    if not isinstance(http_server, dict):
-        return {
-            "status": "failed",
-            "reason": "pipeline-mcp has no http_server input",
-            "errors": [],
-            "status_code": 0,
-            "output": {},
-        }, True
+    if variant == "cli":
+        # Scheduled Edge jobs cannot receive terminal stdin. For execution
+        # samples, wrap the CLI graph with disposable localhost HTTP input and
+        # synchronous output. Provider fixtures below also modify this copy;
+        # README.md#run-the-skill-test-harness defines the proof boundary.
+        config["input"] = {
+            "http_server": {
+                "address": f"127.0.0.1:{port}",
+                "path": "/test",
+                "allowed_verbs": ["POST"],
+                "timeout": "60s",
+            }
+        }
+        config["output"] = {"sync_response": {}}
+        http_server = config["input"]["http_server"]
+    else:
+        input_cfg = config.get("input", {})
+        http_server = (
+            input_cfg.get("http_server") if isinstance(input_cfg, dict) else None
+        )
+        if not isinstance(http_server, dict):
+            return {
+                "status": "failed",
+                "reason": f"{pipeline_path.name} has no http_server input",
+                "errors": [],
+                "status_code": 0,
+                "output": {},
+            }, True
 
     http_server["address"] = f"127.0.0.1:{port}"
     config.pop("http", None)
@@ -779,11 +1168,25 @@ def execute_test(
     if mock_openai:
         processors = config.get("pipeline", {}).get("processors", [])
         if isinstance(processors, list):
-            apply_openai_mocks(processors, skill_name, expected, str(input_value))
+            apply_openai_mocks(
+                processors,
+                skill_name,
+                expected,
+                str(input_value),
+                ai_responses,
+            )
+    if provider_responses:
+        processors = config.get("pipeline", {}).get("processors", [])
+        if isinstance(processors, list):
+            apply_provider_mocks(processors, provider_responses)
+    if fixture_env:
+        pipeline_spec = replace_fixture_env(pipeline_spec, fixture_env)
 
-    pipeline_spec["name"] = f"{skill_name}-mcp-test-{port}"
+    pipeline_spec["name"] = f"{skill_name}-{variant}-test-{port}"
 
-    temp_job = Path(tempfile.mkdtemp(prefix="expanso-job-")) / "job.yaml"
+    jobs_dir = run_dir / "jobs"
+    jobs_dir.mkdir(parents=True, exist_ok=True)
+    temp_job = jobs_dir / f"{skill_name}-{variant}-{port}-{uuid.uuid4().hex}.yaml"
     with open(temp_job, "w") as f:
         yaml.safe_dump(pipeline_spec, f, sort_keys=False)
 
@@ -802,32 +1205,120 @@ def execute_test(
             "output": {},
         }, False
 
-    if not wait_for_port(port, timeout=45.0):
-        if not wait_for_port(port, timeout=20.0):
-            subprocess.run(
-                [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            return {
-                "status": "failed",
-                "reason": "http server did not start",
-                "errors": [],
-                "status_code": 0,
-                "output": {},
-            }, False
+    if not wait_for_port(port, timeout=15.0):
+        subprocess.run(
+            [
+                expanso_cli,
+                "job",
+                "delete",
+                pipeline_spec["name"],
+                "--endpoint",
+                api_url,
+                "--yes",
+                "--force",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        return {
+            "status": "failed",
+            "reason": "http server did not start within 15 seconds",
+            "errors": [],
+            "status_code": 0,
+            "output": {},
+        }, False
 
     url = f"http://127.0.0.1:{port}{path}"
     status_code = 0
     output: dict[str, Any] = {}
+    responses: list[dict[str, Any]] = []
+    status_codes: list[int] = []
+    log_offset = edge_log.stat().st_size if edge_log and edge_log.exists() else 0
     try:
-        response = requests.request(method, url, json=payload, timeout=30)
-        status_code = response.status_code
-        if response.text:
-            output = response.json()
+        request_payload = payload
+        request_headers: dict[str, str] = {}
+        webhook_cli_body: bytes | None = None
+        if skill_name == "webhook-receive":
+            if isinstance(payload.get("headers"), dict) and "body" in payload:
+                request_payload = payload["body"]
+                request_headers.update(
+                    {str(key): str(value) for key, value in payload["headers"].items()}
+                )
+            raw_body_text = json.dumps(request_payload, separators=(",", ":"))
+            raw_body = raw_body_text.encode()
+            secret = str((fixture_env or {}).get("WEBHOOK_SECRET", ""))
+            request_headers["X-Hub-Signature-256"] = (
+                "sha256="
+                + hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
+            )
+            if invalid_webhook_signature:
+                request_headers["X-Hub-Signature-256"] = "sha256=" + ("0" * 64)
+            request_headers["Content-Type"] = "application/json"
+            if variant == "cli":
+                webhook_cli_body = json.dumps(
+                    {
+                        "headers": request_headers,
+                        "body": request_payload,
+                        "raw_body": raw_body_text,
+                    },
+                    separators=(",", ":"),
+                ).encode()
+        auth_probe_status: int | None = None
+        auth_probe_body = ""
+        if variant == "mcp" and require_mcp_auth:
+            auth_probe = requests.request(
+                method,
+                url,
+                json=request_payload,
+                timeout=30,
+            )
+            auth_probe_status = auth_probe.status_code
+            auth_probe_body = auth_probe.text
+        for _ in range(max(1, repeat)):
+            if skill_name == "webhook-receive":
+                response = requests.request(
+                    method,
+                    url,
+                    data=webhook_cli_body if variant == "cli" else raw_body,
+                    headers=(
+                        {"Content-Type": "application/json"}
+                        if variant == "cli"
+                        else request_headers
+                    ),
+                    timeout=30,
+                )
+            elif variant == "cli":
+                response = requests.request(
+                    method,
+                    url,
+                    data=str(input_value).encode(),
+                    headers={"Content-Type": "text/plain; charset=utf-8"},
+                    timeout=30,
+                )
+            else:
+                response = requests.request(
+                    method,
+                    url,
+                    json=request_payload,
+                    headers={"Authorization": f"Bearer {HARNESS_MCP_BEARER_TOKEN}"},
+                    timeout=30,
+                )
+            status_code = response.status_code
+            output = response.json() if response.text else {}
+            responses.append(output)
+            status_codes.append(status_code)
     except Exception as exc:
         subprocess.run(
-            [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
+            [
+                expanso_cli,
+                "job",
+                "delete",
+                pipeline_spec["name"],
+                "--endpoint",
+                api_url,
+                "--yes",
+                "--force",
+            ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -839,16 +1330,75 @@ def execute_test(
             "output": {},
         }, False
 
+    time.sleep(0.1)
+    edge_log_text = ""
+    if edge_log and edge_log.exists():
+        with edge_log.open("rb") as log_handle:
+            log_handle.seek(log_offset)
+            edge_log_text = log_handle.read().decode(errors="replace")
+
     ok, errors = check_expectations(expected, output, status_code)
+    if expected_output is not None:
+        errors.extend(check_expected_output(expected_output, output))
+        ok = not errors
+    errors.extend(check_output_conditions(output_conditions, output))
+    if require_mcp_auth and (
+        auth_probe_status is None
+        or (auth_probe_status < 400 and auth_probe_body.strip())
+    ):
+        errors.append("MCP endpoint accepted a request without its bearer token")
+    if expected_sequence is not None:
+        if len(expected_sequence) != len(responses):
+            errors.append(
+                f"expected {len(expected_sequence)} responses, got {len(responses)}"
+            )
+        else:
+            for index, expected_response in enumerate(expected_sequence):
+                errors.extend(
+                    check_expected_output(
+                        expected_response,
+                        responses[index],
+                        f"responses[{index}]",
+                    )
+                )
+    expected_error = expected.get("error_contains")
+    if expected_error and str(expected_error) not in edge_log_text:
+        errors.append(f"edge log did not contain expected error: {expected_error}")
+    unexpected_errors = [
+        line
+        for line in edge_log_text.splitlines()
+        if " ERR " in line and not (require_mcp_auth and "unauthorized" in line.lower())
+    ]
+    if unexpected_errors and not (expected_error or expected.get("error_or_empty")):
+        errors.append("unexpected Edge errors: " + " | ".join(unexpected_errors))
+    ok = not errors
     result = {
         "status": "passed" if ok else "failed",
         "errors": errors,
         "status_code": status_code,
         "output": output,
+        "edge_errors": unexpected_errors,
+        "published_adapters_intact": published_adapters_intact,
+        "published_processors_intact": published_processors_intact,
     }
+    if require_mcp_auth:
+        result["auth_probe_status"] = auth_probe_status
+        result["auth_probe_body"] = auth_probe_body
+    if repeat > 1:
+        result["responses"] = responses
+        result["status_codes"] = status_codes
 
     subprocess.run(
-        [expanso_cli, "job", "delete", pipeline_spec["name"], "--endpoint", api_url, "--yes", "--force"],
+        [
+            expanso_cli,
+            "job",
+            "delete",
+            pipeline_spec["name"],
+            "--endpoint",
+            api_url,
+            "--yes",
+            "--force",
+        ],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -857,39 +1407,146 @@ def execute_test(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run Expanso skill tests in local Edge mode")
+    parser = argparse.ArgumentParser(
+        description="Run Expanso skill tests in local Edge mode"
+    )
     parser.add_argument("skills", nargs="*", help="Skill names to test")
-    parser.add_argument("--limit-skills", type=int, default=None, help="Limit number of skills")
-    parser.add_argument("--limit-tests", type=int, default=None, help="Limit number of tests")
-    parser.add_argument("--report", type=str, default="test-harness-report.json", help="Path to JSON report")
-    parser.add_argument("--api-url", type=str, default=None, help="Existing Edge API URL (skip starting Edge)")
-    parser.add_argument("--keep-edge", action="store_true", help="Keep Edge running after tests")
-    parser.add_argument("--allow-external", action="store_true", help="Run tests even if credentials are missing")
-    parser.add_argument("--mock-openai", dest="mock_openai", action="store_true", default=True, help="Mock OpenAI processors (default)")
-    parser.add_argument("--no-mock-openai", dest="mock_openai", action="store_false", help="Disable OpenAI mocking")
-    parser.add_argument("--rerun-failed", dest="rerun_failed", action="store_true", default=True, help="Automatically rerun failed tests (default)")
-    parser.add_argument("--no-rerun-failed", dest="rerun_failed", action="store_false", help="Disable automatic reruns")
-    parser.add_argument("--max-reruns", type=int, default=3, help="Maximum total attempts per test (default: 3)")
-    parser.add_argument("--use-cache", dest="use_cache", action="store_true", default=True, help="Reuse cached passing results when inputs are unchanged (default)")
-    parser.add_argument("--no-cache", dest="use_cache", action="store_false", help="Disable cached results")
-    parser.add_argument("--respect-skip", action="store_true", help="Respect skip flags in test.yaml (default: run anyway)")
-    parser.add_argument("--test-name", type=str, default=None, help="Run only tests whose name contains this string")
-    parser.add_argument("--show-io", action="store_true", help="Print request/response for each executed test")
+    parser.add_argument(
+        "--variant",
+        choices=("cli", "mcp"),
+        default="mcp",
+        help="Published pipeline variant to execute (default: mcp)",
+    )
+    parser.add_argument(
+        "--limit-skills", type=int, default=None, help="Limit number of skills"
+    )
+    parser.add_argument(
+        "--limit-tests", type=int, default=None, help="Limit number of tests"
+    )
+    parser.add_argument(
+        "--report",
+        type=str,
+        default=None,
+        help="Path to JSON report",
+    )
+    parser.add_argument(
+        "--api-url",
+        type=str,
+        default=None,
+        help="Existing Edge API URL (skip starting Edge)",
+    )
+    parser.add_argument(
+        "--keep-edge", action="store_true", help="Keep Edge running after tests"
+    )
+    parser.add_argument(
+        "--restart-edge-every",
+        type=int,
+        default=30,
+        help="Restart a harness-managed Edge after this many skills (0 disables; default: 30)",
+    )
+    parser.add_argument(
+        "--allow-external",
+        action="store_true",
+        help="Run tests even if credentials are missing",
+    )
+    parser.add_argument(
+        "--mock-openai",
+        dest="mock_openai",
+        action="store_true",
+        default=True,
+        help="Mock OpenAI processors (default)",
+    )
+    parser.add_argument(
+        "--no-mock-openai",
+        dest="mock_openai",
+        action="store_false",
+        help="Disable OpenAI mocking",
+    )
+    parser.add_argument(
+        "--rerun-failed",
+        dest="rerun_failed",
+        action="store_true",
+        default=True,
+        help="Automatically rerun failed tests (default)",
+    )
+    parser.add_argument(
+        "--no-rerun-failed",
+        dest="rerun_failed",
+        action="store_false",
+        help="Disable automatic reruns",
+    )
+    parser.add_argument(
+        "--max-reruns",
+        type=int,
+        default=3,
+        help="Maximum total attempts per test (default: 3)",
+    )
+    parser.add_argument(
+        "--use-cache",
+        dest="use_cache",
+        action="store_true",
+        default=True,
+        help="Reuse cached passing results when inputs are unchanged (default)",
+    )
+    parser.add_argument(
+        "--no-cache",
+        dest="use_cache",
+        action="store_false",
+        help="Disable cached results",
+    )
+    parser.add_argument(
+        "--respect-skip",
+        action="store_true",
+        help="Respect skip flags in test.yaml (default: run anyway)",
+    )
+    parser.add_argument(
+        "--test-name",
+        type=str,
+        default=None,
+        help="Run only tests whose name contains this string",
+    )
+    parser.add_argument(
+        "--show-io",
+        action="store_true",
+        help="Print request/response for each executed test",
+    )
     args = parser.parse_args()
 
     skills = find_skills(args.skills or None)
     if args.limit_skills:
         skills = skills[: args.limit_skills]
 
-    report_path = Path(args.report)
+    report_path = Path(
+        args.report or CONFORMANCE_DIR / f"test-harness-{args.variant}-report.json"
+    )
+    if not report_path.is_absolute():
+        report_path = REPO_ROOT / report_path
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    run_dir = CONFORMANCE_DIR / (
+        time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()) + f"-{os.getpid()}"
+    )
+    run_dir.mkdir(parents=True, exist_ok=False)
     previous_report = load_previous_report(report_path) if args.use_cache else None
     cache_index = build_cache_index(previous_report)
     harness_hash = hash_bytes(Path(__file__).read_bytes())
 
     report = {
-        "started_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "schema": "expanso-local-execution/1",
+        "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "run_directory": str(run_dir.relative_to(REPO_ROOT)),
+        "mode": (
+            f"expanso-edge local API; {args.variant} variant; "
+            "explicit fixtures; OpenAI processors mocked"
+        ),
+        "variant": args.variant,
         "skills": [],
-        "summary": {"total_skills": 0, "passed": 0, "failed": 0, "skipped": 0, "manual": 0},
+        "summary": {
+            "total_skills": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "manual": 0,
+        },
     }
 
     edge = None
@@ -898,9 +1555,12 @@ def main() -> int:
     if not api_url:
         api_port = find_free_port()
         api_url = f"http://127.0.0.1:{api_port}"
-        temp_dir = Path(tempfile.mkdtemp(prefix="expanso-edge-data-"))
-        edge = EdgeProcess(api_url=api_url, data_dir=temp_dir, log_file=temp_dir / "edge.log")
+        temp_dir = run_dir / "edge-data"
+        edge = EdgeProcess(
+            api_url=api_url, data_dir=temp_dir, log_file=run_dir / "edge.log"
+        )
         edge.start()
+        atexit.register(edge.stop)
         if not wait_for_api(api_url):
             print("Failed to start expanso-edge local API", file=sys.stderr)
             edge.stop()
@@ -909,24 +1569,57 @@ def main() -> int:
     expanso_cli = shutil.which("expanso-cli")
     if not expanso_cli:
         raise RuntimeError("expanso-cli not found in PATH")
+    expanso_edge = os.environ.get("EXPANSO_EDGE_BIN") or shutil.which("expanso-edge")
+    if not expanso_edge:
+        raise RuntimeError("expanso-edge not found in PATH")
+    report["tools"] = {
+        "expanso_edge": tool_evidence(expanso_edge),
+        "expanso_cli": tool_evidence(expanso_cli),
+    }
 
     total_tests_run = 0
     rerun_candidates: list[dict[str, Any]] = []
 
-    for skill_dir in skills:
+    for skill_index, skill_dir in enumerate(skills):
+        if (
+            edge
+            and args.restart_edge_every > 0
+            and skill_index > 0
+            and skill_index % args.restart_edge_every == 0
+        ):
+            atexit.unregister(edge.stop)
+            edge.stop()
+            api_port = find_free_port()
+            api_url = f"http://127.0.0.1:{api_port}"
+            temp_dir = (
+                run_dir / f"edge-data-{skill_index // args.restart_edge_every + 1}"
+            )
+            edge = EdgeProcess(
+                api_url=api_url,
+                data_dir=temp_dir,
+                log_file=run_dir
+                / f"edge-{skill_index // args.restart_edge_every + 1}.log",
+            )
+            edge.start()
+            atexit.register(edge.stop)
+            if not wait_for_api(api_url):
+                print("Failed to restart expanso-edge local API", file=sys.stderr)
+                edge.stop()
+                return 1
+
         skill_name = skill_dir.name
         category = skill_dir.parent.name
         skill_result = {
             "name": skill_name,
             "category": category,
-            "path": str(skill_dir),
+            "path": str(skill_dir.relative_to(REPO_ROOT)),
             "status": "unknown",
             "reason": None,
             "tests": [],
         }
 
         test_yaml_path = skill_dir / "test" / "test.yaml"
-        pipeline_mcp_path = skill_dir / "pipeline-mcp.yaml"
+        pipeline_path = skill_dir / f"pipeline-{args.variant}.yaml"
         skill_yaml = load_yaml(skill_dir / "skill.yaml") or {}
 
         print(f"==> {category}/{skill_name}")
@@ -938,12 +1631,16 @@ def main() -> int:
             print("  - skipped (no tests)")
             continue
 
-        if not pipeline_mcp_path.exists():
+        if not pipeline_path.exists():
             skill_result["status"] = "manual"
-            skill_result["reason"] = "missing pipeline-mcp.yaml"
+            skill_result["reason"] = f"missing {pipeline_path.name}"
             report["skills"].append(skill_result)
-            print("  - manual (missing pipeline-mcp.yaml)")
+            print(f"  - manual (missing {pipeline_path.name})")
             continue
+
+        skill_result["pipeline_sha256"] = hashlib.sha256(
+            pipeline_path.read_bytes()
+        ).hexdigest()
 
         test_yaml = load_yaml(test_yaml_path) or {}
         tests = test_yaml.get("tests", [])
@@ -963,7 +1660,13 @@ def main() -> int:
             print("  - skipped (tests marked skip)")
             continue
 
-        ignore_creds = {"OPENAI_API_KEY"} if args.mock_openai else set()
+        ignore_creds = {"MCP_BEARER_TOKEN"}
+        if args.mock_openai:
+            ignore_creds.add("OPENAI_API_KEY")
+        if any(test.get("provider_responses") for test in tests):
+            for credential in skill_yaml.get("credentials", []):
+                if isinstance(credential, dict) and credential.get("name"):
+                    ignore_creds.add(str(credential["name"]))
         missing = missing_credentials(skill_yaml, ignore=ignore_creds)
         if missing and not args.allow_external:
             skill_result["status"] = "skipped"
@@ -972,16 +1675,27 @@ def main() -> int:
             print(f"  - skipped (missing credentials: {', '.join(missing)})")
             continue
 
-        skill_inputs = skill_yaml.get("inputs", []) if isinstance(skill_yaml, dict) else []
+        skill_inputs = (
+            skill_yaml.get("inputs", []) if isinstance(skill_yaml, dict) else []
+        )
         fatal_manual = False
 
         for test in tests:
             if args.limit_tests and total_tests_run >= args.limit_tests:
                 break
-            if args.test_name and args.test_name.lower() not in str(test.get("name", "")).lower():
+            if (
+                args.test_name
+                and args.test_name.lower() not in str(test.get("name", "")).lower()
+            ):
                 continue
             if test.get("skip") and args.respect_skip:
-                skill_result["tests"].append({"name": test.get("name"), "status": "skipped", "reason": "test marked skip"})
+                skill_result["tests"].append(
+                    {
+                        "name": test.get("name"),
+                        "status": "skipped",
+                        "reason": "test marked skip",
+                    }
+                )
                 print(f"    - {test.get('name')}: skipped")
                 continue
 
@@ -993,20 +1707,28 @@ def main() -> int:
                 else:
                     fixtures_prefix = fixtures_dir.lstrip("./") if fixtures_dir else ""
                     raw_parts = Path(raw_path).parts
-                    if fixtures_prefix and raw_parts and raw_parts[0] == fixtures_prefix:
+                    if (
+                        fixtures_prefix
+                        and raw_parts
+                        and raw_parts[0] == fixtures_prefix
+                    ):
                         file_path = str((test_yaml_path.parent / raw_path).resolve())
                     elif fixtures_dir:
-                        file_path = str((test_yaml_path.parent / fixtures_dir / raw_path).resolve())
+                        file_path = str(
+                            (test_yaml_path.parent / fixtures_dir / raw_path).resolve()
+                        )
                     else:
                         file_path = str((test_yaml_path.parent / raw_path).resolve())
                 try:
                     input_value = Path(file_path).read_text()
                 except Exception as exc:
-                    skill_result["tests"].append({
-                        "name": test.get("name"),
-                        "status": "failed",
-                        "reason": f"failed to read input_file: {exc}",
-                    })
+                    skill_result["tests"].append(
+                        {
+                            "name": test.get("name"),
+                            "status": "failed",
+                            "reason": f"failed to read input_file: {exc}",
+                        }
+                    )
                     print(f"    - {test.get('name')}: failed (input_file read)")
                     total_tests_run += 1
                     continue
@@ -1014,12 +1736,31 @@ def main() -> int:
             env_overrides = parse_env_overrides(test.get("env"), skill_inputs)
             payload = build_payload(str(input_value), skill_inputs, env_overrides)
             expected = test.get("expected", {}) or {}
+            expected_output = test.get("expected_output")
+            output_conditions = test.get("output_conditions")
+            expected_sequence = test.get("expected_sequence")
+            repeat = int(test.get("repeat", 1))
+            invalid_webhook_signature = bool(
+                test.get("invalid_webhook_signature", False)
+            )
+            fixture_env = test.get("env", {}) or {}
+            provider_responses = test.get("provider_responses", []) or []
+            ai_responses = test.get("ai_responses", []) or []
+            require_mcp_auth = args.variant == "mcp" and any(
+                isinstance(credential, dict)
+                and credential.get("name") == "MCP_BEARER_TOKEN"
+                for credential in skill_yaml.get("credentials", [])
+            )
 
             fingerprint = compute_test_fingerprint(
                 skill_dir,
+                pipeline_path,
+                args.variant,
                 test,
                 str(input_value),
                 env_overrides,
+                provider_responses,
+                ai_responses,
                 args.mock_openai,
                 harness_hash,
             )
@@ -1031,16 +1772,31 @@ def main() -> int:
             if test.get("skip") and not args.respect_skip:
                 test_entry["forced_run"] = True
 
-            cache_entry = cache_index.get(cache_key(category, skill_name, test.get("name")))
-            if args.use_cache and cache_entry and cache_entry.get("fingerprint") == fingerprint and cache_entry.get("status") == "passed":
-                test_entry.update({
-                    "status": "passed",
-                    "errors": cache_entry.get("errors", []),
-                    "status_code": cache_entry.get("status_code", 0),
-                    "output": cache_entry.get("output", {}),
-                    "cached": True,
-                    "attempts": cache_entry.get("attempts", 0),
-                })
+            cache_entry = cache_index.get(
+                cache_key(category, skill_name, test.get("name"))
+            )
+            if (
+                args.use_cache
+                and cache_entry
+                and cache_entry.get("fingerprint") == fingerprint
+                and cache_entry.get("status") == "passed"
+            ):
+                test_entry.update(
+                    {
+                        "status": "passed",
+                        "errors": cache_entry.get("errors", []),
+                        "status_code": cache_entry.get("status_code", 0),
+                        "output": cache_entry.get("output", {}),
+                        "cached": True,
+                        "attempts": cache_entry.get("attempts", 0),
+                        "published_adapters_intact": cache_entry.get(
+                            "published_adapters_intact", False
+                        ),
+                        "published_processors_intact": cache_entry.get(
+                            "published_processors_intact", False
+                        ),
+                    }
+                )
                 skill_result["tests"].append(test_entry)
                 print(f"    - {test.get('name')}: passed (cached)")
                 total_tests_run += 1
@@ -1048,13 +1804,25 @@ def main() -> int:
 
             result, fatal_manual = execute_test(
                 skill_name=skill_name,
-                pipeline_mcp_path=pipeline_mcp_path,
+                pipeline_path=pipeline_path,
+                variant=args.variant,
                 input_value=str(input_value),
                 payload=payload,
                 expected=expected,
                 api_url=api_url,
                 expanso_cli=expanso_cli,
                 mock_openai=args.mock_openai,
+                run_dir=run_dir,
+                expected_output=expected_output,
+                output_conditions=output_conditions,
+                fixture_env=fixture_env,
+                provider_responses=provider_responses,
+                ai_responses=ai_responses,
+                require_mcp_auth=require_mcp_auth,
+                edge_log=edge.log_file if edge else None,
+                repeat=repeat,
+                expected_sequence=expected_sequence,
+                invalid_webhook_signature=invalid_webhook_signature,
             )
 
             if fatal_manual:
@@ -1073,16 +1841,28 @@ def main() -> int:
             total_tests_run += 1
 
             if result["status"] == "failed" and args.rerun_failed:
-                rerun_candidates.append({
-                    "category": category,
-                    "skill_name": skill_name,
-                    "test_name": test.get("name"),
-                    "pipeline_mcp_path": pipeline_mcp_path,
-                    "input_value": str(input_value),
-                    "payload": payload,
-                    "expected": expected,
-                    "test_entry": test_entry,
-                })
+                rerun_candidates.append(
+                    {
+                        "category": category,
+                        "skill_name": skill_name,
+                        "test_name": test.get("name"),
+                        "pipeline_path": pipeline_path,
+                        "variant": args.variant,
+                        "input_value": str(input_value),
+                        "payload": payload,
+                        "expected": expected,
+                        "expected_output": expected_output,
+                        "output_conditions": output_conditions,
+                        "expected_sequence": expected_sequence,
+                        "repeat": repeat,
+                        "fixture_env": fixture_env,
+                        "provider_responses": provider_responses,
+                        "ai_responses": ai_responses,
+                        "require_mcp_auth": require_mcp_auth,
+                        "invalid_webhook_signature": invalid_webhook_signature,
+                        "test_entry": test_entry,
+                    }
+                )
 
         if fatal_manual:
             report["skills"].append(skill_result)
@@ -1113,48 +1893,80 @@ def main() -> int:
                     continue
                 result, _ = execute_test(
                     skill_name=ctx["skill_name"],
-                    pipeline_mcp_path=ctx["pipeline_mcp_path"],
+                    pipeline_path=ctx["pipeline_path"],
+                    variant=ctx["variant"],
                     input_value=ctx["input_value"],
                     payload=ctx["payload"],
                     expected=ctx["expected"],
                     api_url=api_url,
                     expanso_cli=expanso_cli,
                     mock_openai=args.mock_openai,
+                    run_dir=run_dir,
+                    expected_output=ctx["expected_output"],
+                    output_conditions=ctx["output_conditions"],
+                    fixture_env=ctx["fixture_env"],
+                    provider_responses=ctx["provider_responses"],
+                    ai_responses=ctx["ai_responses"],
+                    require_mcp_auth=ctx["require_mcp_auth"],
+                    edge_log=edge.log_file if edge else None,
+                    repeat=ctx["repeat"],
+                    expected_sequence=ctx["expected_sequence"],
+                    invalid_webhook_signature=ctx["invalid_webhook_signature"],
                 )
                 record_attempt(ctx["test_entry"], result)
-                print(f"    - {ctx['category']}/{ctx['skill_name']} :: {ctx['test_name']}: {result['status']}")
-                if result["status"] == "failed" and not ctx["test_entry"].get("permanent_failure"):
+                print(
+                    f"    - {ctx['category']}/{ctx['skill_name']} :: {ctx['test_name']}: {result['status']}"
+                )
+                if result["status"] == "failed" and not ctx["test_entry"].get(
+                    "permanent_failure"
+                ):
                     next_remaining.append(ctx)
             remaining = next_remaining
 
     if edge and not args.keep_edge:
         edge.stop()
+        atexit.unregister(edge.stop)
 
     def finalize_report(report_data: dict[str, Any]) -> None:
-        summary = {"total_skills": 0, "passed": 0, "failed": 0, "skipped": 0, "manual": 0}
+        summary = {
+            "total_skills": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "manual": 0,
+        }
         for skill in report_data.get("skills", []):
             summary["total_skills"] += 1
             status = skill.get("status")
             if status in {"skipped", "manual"}:
                 summary[status] += 1
                 continue
-            failed_tests = [t for t in skill.get("tests", []) if t.get("status") == "failed"]
+            failed_tests = [
+                t for t in skill.get("tests", []) if t.get("status") == "failed"
+            ]
             if failed_tests:
                 skill["status"] = "failed"
                 summary["failed"] += 1
             else:
                 skill["status"] = "passed"
                 summary["passed"] += 1
+            skill["intact_execution_passed"] = any(
+                test.get("status") == "passed"
+                and test.get("published_adapters_intact") is True
+                and test.get("published_processors_intact") is True
+                for test in skill.get("tests", [])
+            )
         report_data["summary"] = summary
 
     finalize_report(report)
+    report["finished_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
     with open(report_path, "w") as f:
         json.dump(report, f, indent=2)
 
     print("\nSummary:")
     print(json.dumps(report["summary"], indent=2))
-    return 0
+    return 1 if report["summary"]["failed"] else 0
 
 
 if __name__ == "__main__":

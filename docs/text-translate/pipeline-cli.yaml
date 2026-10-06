@@ -11,6 +11,12 @@ config:
   pipeline:
     processors:
       - mapping: |
+          root = if content().length() == 0 {
+            throw("input is required")
+          } else {
+            content()
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           meta input_hash = content().hash("sha256").encode("hex")
           let target = env("TARGET").or("english")
@@ -27,14 +33,19 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let r = this.choices.0.message.content.parse_json().catch({"translation": this.choices.0.message.content})
           root.translation = $r.translation
           root.source_language = $r.source_language.or("unknown")
           root.target_language = $r.target_language.or(env("TARGET").or("english"))
-          root.metadata = {"skill": "text-translate", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "text-translate", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

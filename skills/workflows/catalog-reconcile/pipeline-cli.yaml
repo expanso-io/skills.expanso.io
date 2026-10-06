@@ -14,24 +14,51 @@ config:
           meta trace_id = uuid_v4()
           let input = content().parse_json()
 
-          # Simulated catalog reconciliation
-          root.matches = [
-            {"sku": "SKU-001", "sources": ["catalog_a", "catalog_b"], "confidence": 0.98},
-            {"sku": "SKU-002", "sources": ["catalog_a", "catalog_b", "catalog_c"], "confidence": 0.95}
-          ]
-          root.conflicts = [
-            {"sku": "SKU-003", "field": "price", "values": {"catalog_a": 29.99, "catalog_b": 24.99}}
-          ]
-          root.unmatched = [
-            {"sku": "SKU-100", "source": "catalog_a", "reason": "no_match_found"}
-          ]
-          root.summary = {"total_processed": 1000, "matched": 950, "conflicts": 25, "unmatched": 25}
-          root.metadata = {"skill": "catalog-reconcile", "mode": "cli", "trace_id": meta("trace_id")}
+          let catalogs = $input.catalogs.or([])
+          let match_fields = $input.match_fields.or(["sku", "upc", "name"])
+          let items = $catalogs.map_each(c -> c.items.or([]).map_each(item -> item.merge({"_source": c.name}))).flatten()
+          let keyed_items = $items.map_each(item -> item.merge({
+            "_match_key": $match_fields.map_each(field -> item.get(field).or("").string().trim().lowercase()).format_json().encode("hex")
+          }))
+          let groups = $keyed_items.fold({}, pair -> pair.tally.assign({
+            (pair.value._match_key): pair.tally.get(pair.value._match_key).or([]).append(pair.value)
+          })).key_values()
+          let matched_groups = $groups.filter(group -> group.value.map_each(item -> item._source).unique().length() > 1)
+          let unmatched_groups = $groups.filter(group -> group.value.map_each(item -> item._source).unique().length() == 1)
+
+          root = if $catalogs.length() < 2 {
+            throw("catalogs must contain at least two named source manifests")
+          } else if $keyed_items.any(item -> !item._match_key.decode("hex").parse_json().any(value -> value.length() > 0)) {
+            throw("every item must contain at least one configured match field")
+          } else {
+            {}
+          }
+          root.matches = $matched_groups.map_each(group -> {
+            "key": group.key,
+            "sources": group.value.map_each(item -> item._source).unique(),
+            "records": group.value.map_each(item -> item.without("_source", "_match_key"))
+          })
+          root.conflicts = $matched_groups.filter(group -> group.value.map_each(item -> item.without("_source", "_match_key").format_json()).unique().length() > 1).map_each(group -> {
+            "key": group.key,
+            "records_by_source": group.value.map_each(item -> {"source": item._source, "record": item.without("_source", "_match_key")})
+          })
+          root.unmatched = $unmatched_groups.map_each(group -> group.value.map_each(item -> {
+            "key": group.key,
+            "source": item._source,
+            "record": item.without("_source", "_match_key"),
+            "reason": "no_match_found"
+          })).flatten()
+          root.summary = {
+            "total_processed": $keyed_items.length(),
+            "matched": root.matches.length(),
+            "conflicts": root.conflicts.length(),
+            "unmatched": root.unmatched.length()
+          }
+          root.metadata = {"skill": "catalog-reconcile", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4())}
 
       - log:
           level: INFO
           message: "[catalog-reconcile] ${! this.summary.matched } matches, ${! this.summary.conflicts } conflicts"
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

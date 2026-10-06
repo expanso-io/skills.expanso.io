@@ -2,7 +2,7 @@
 # =========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/format -d '{"text": "hello world", "format": "upper"}'
 
 name: "text-format-mcp"
@@ -21,6 +21,13 @@ config:
 
   pipeline:
     processors:
+      - mapping: |
+          let missing = this.text == null
+          root = if $missing {
+            throw("required input is missing: text")
+          } else {
+            this
+          }
       - mapping: |
           meta trace_id = uuid_v4()
           let text = this.text.or(content())
@@ -41,14 +48,19 @@ config:
             "skill": "text-format",
             "mode": "mcp",
             "format_applied": $format,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [text-format] Applied ${! root.format } (trace: ${! meta("trace_id").slice(0, 8) })
+            [text-format] Applied ${! this.format } (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

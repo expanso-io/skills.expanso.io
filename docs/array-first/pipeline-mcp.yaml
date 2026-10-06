@@ -29,7 +29,7 @@ config:
           root.first_n = $first_n
           root.count = $count
           root.length = $length
-          root.metadata = {"skill": "array-first", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "array-first", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

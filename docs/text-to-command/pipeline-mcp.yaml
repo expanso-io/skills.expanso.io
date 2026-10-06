@@ -20,9 +20,9 @@ config:
       - mapping: |
           let instruction = this.instruction.or("")
 
-          root = if $instruction.length() == 0 {
-            throw("instruction field is required")
-          }
+          root.error = if $instruction.length() == 0 {
+            "instruction field is required"
+          } else { deleted() }
 
           meta input_hash = $instruction.hash("sha256").encode("hex")
           meta trace_id = uuid_v4()
@@ -45,24 +45,41 @@ config:
             }
           ]
 
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  tools: []
 
       - mapping: |
-          let raw = this.choices.0.message.content
+          let raw = this.choices.0.message.content.or("")
           let parsed = $raw.parse_json().catch({"command": "", "explanation": ""})
-
-          root.command = $parsed.command.or("")
-          root.explanation = $parsed.explanation.or("")
-          root.shell = this.shell.or("bash")
-          root.metadata = {
-            "skill": "text-to-command",
-            "mode": "mcp",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "trace_id": meta("trace_id"),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "text-to-command",
+                "mode": "mcp",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "command": $parsed.command.or(""),
+              "explanation": $parsed.explanation.or(""),
+              "shell": this.shell.or("bash"),
+              "metadata": {
+                "skill": "text-to-command",
+                "mode": "mcp",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
           }
 
   output:

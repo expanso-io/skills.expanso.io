@@ -40,3 +40,7 @@ components:
   inputs: [stdin, http_server]
   processors: [mapping, http, openai_chat_completion, log]
   outputs: [http_client, stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: "Fabricates wearable health observations and calendar recommendations without reading supplied data or integrating providers."

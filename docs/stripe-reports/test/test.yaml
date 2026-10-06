@@ -1,8 +1,39 @@
-# Test: stripe-reports
 tests:
-  - name: "Generates daily report"
-    skip: true
-    input: '{"period": "today"}'
+  - name: "Groups Stripe minor-unit totals by currency"
+    input: '{"period":"today","include_insights":false}'
+    provider_responses:
+      - has_more: false
+        data:
+          - {id: txn_charge, type: charge, amount: 12000, fee: 400, net: 11600, currency: usd, status: available}
+          - {id: txn_refund, type: refund, amount: -2000, fee: 0, net: -2000, currency: usd, status: available}
+          - {id: txn_jpy, type: charge, amount: 5000, fee: 100, net: 4900, currency: jpy, status: pending}
     expected_output:
       report:
-        period: "today"
+        period: today
+      metrics:
+        revenue_by_currency:
+          - gross_minor: 5000
+            net_minor: 4900
+            fees_minor: 100
+            refunds_minor: 0
+            currency: JPY
+            minor_unit_exponent: 0
+          - gross_minor: 12000
+            net_minor: 9600
+            fees_minor: 400
+            refunds_minor: 2000
+            currency: USD
+            minor_unit_exponent: 2
+        transactions:
+          total: 3
+          available: 2
+          pending: 1
+          has_more: false
+      metadata:
+        source: stripe_api
+      quick_wins: []
+    output_conditions:
+      - path: metadata.processing_time_ms
+        condition: ">= 0"
+      - path: metadata.processing_time_ms
+        condition: "< 10000"

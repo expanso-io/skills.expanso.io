@@ -4,7 +4,7 @@
 # Generate SBOM from package manifest.
 #
 # Usage:
-#   cat package.json | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -20,50 +20,77 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          let format = env("FORMAT").or("cyclonedx")
+          let trace_id = uuid_v4()
+          meta trace_id = $trace_id
+          let format = env("FORMAT").or("cyclonedx").lowercase()
 
           let pkg = content().parse_json()
 
           # Extract dependencies
-          let deps = pkg.dependencies.or({})
-          let dev_deps = pkg.devDependencies.or({})
+          let deps = $pkg.dependencies.or({})
+          let dev_deps = $pkg.devDependencies.or({})
 
           # Build component list
-          let components = $deps.keys().map_each(name -> {
+          let components = $deps.key_values().map_each(dependency -> {
             "type": "library",
-            "name": name,
-            "version": $deps.index(name),
+            "name": dependency.key,
+            "version": dependency.value,
             "scope": "required"
-          }) + $dev_deps.keys().map_each(name -> {
+          }).concat($dev_deps.key_values().map_each(dependency -> {
             "type": "library",
-            "name": name,
-            "version": $dev_deps.index(name),
+            "name": dependency.key,
+            "version": dependency.value,
             "scope": "optional"
-          })
+          }))
 
-          # CycloneDX format
-          root.sbom = {
+          let cyclonedx = {
             "bomFormat": "CycloneDX",
             "specVersion": "1.5",
-            "serialNumber": "urn:uuid:" + meta("trace_id"),
+            "serialNumber": "urn:uuid:" + $trace_id,
             "version": 1,
             "metadata": {
               "timestamp": now(),
               "component": {
                 "type": "application",
-                "name": pkg.name.or("unknown"),
-                "version": pkg.version.or("0.0.0")
+                "name": $pkg.name.or("unknown"),
+                "version": $pkg.version.or("0.0.0")
               }
             },
             "components": $components
+          }
+          let spdx_packages = $components.map_each(component -> {
+            "SPDXID": "SPDXRef-Package-" + component.format_json().hash("sha256").encode("hex"),
+            "name": component.name,
+            "versionInfo": component.version,
+            "downloadLocation": "NOASSERTION",
+            "filesAnalyzed": false
+          })
+          let spdx = {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": $pkg.name.or("unknown"),
+            "documentNamespace": "https://expanso.io/spdx/" + $trace_id,
+            "creationInfo": {
+              "created": now(),
+              "creators": ["Tool: expanso-edge"]
+            },
+            "packages": $spdx_packages
+          }
+
+          root.sbom = if $format == "cyclonedx" {
+            $cyclonedx
+          } else if $format == "spdx" {
+            $spdx
+          } else {
+            throw("unsupported SBOM format: " + $format)
           }
           root.metadata = {
             "skill": "sbom-generate",
             "mode": "cli",
             "format": $format,
             "component_count": $components.length(),
-            "trace_id": meta("trace_id"),
+            "trace_id": $trace_id,
             "timestamp": now()
           }
 
@@ -73,5 +100,4 @@ config:
             [sbom-generate] Generated SBOM with ${! this.metadata.component_count } components (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -2,7 +2,7 @@
 # ============================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/wrap \
 #     -d '{"data": {"action": "user.login"}, "source": "auth-service", "actor": "user-123"}'
 
@@ -22,6 +22,13 @@ config:
 
   pipeline:
     processors:
+      - mapping: |
+          let missing = this.data == null
+          root = if $missing {
+            throw("required input is missing: data")
+          } else {
+            this
+          }
       - mapping: |
           let trace_id = uuid_v4()
           let timestamp = now()
@@ -61,6 +68,11 @@ config:
           level: INFO
           message: |
             [audit-envelope] Created envelope (trace: ${! meta("trace_id").slice(0, 8) })
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

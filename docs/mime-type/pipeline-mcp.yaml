@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.extension == null
+          root = if $missing {
+            throw("required input is missing: extension")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let ext = this.extension.or(content()).string().trim().lowercase().trim_prefix(".")
 
@@ -40,7 +47,12 @@ config:
             else if $types.get($ext).or("").has_prefix("audio") { "audio" }
             else if $types.get($ext).or("").has_prefix("text") { "text" }
             else { "application" }
-          root.metadata = {"skill": "mime-type", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "mime-type", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}

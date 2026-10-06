@@ -15,6 +15,13 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let missing = this.image_url == null
+          root = if $missing {
+            throw("required input is missing: image_url")
+          } else {
+            this
+          }
+      - mapping: |
           meta trace_id = uuid_v4()
           let url = this.image_url.or("").string()
 
@@ -29,12 +36,18 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let response = this.choices.0.message.content.parse_json().catch({})
           root.alt_text = $response.alt_text.or("Image")
           root.caption = $response.caption.or("An image")
-          root.metadata = {"skill": "image-caption", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "image-caption", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
+
+      - catch:
+          - mapping: |
+              meta http_status_code = 400
+              root = {"status": "error", "error": error()}
 
   output:
     sync_response: {}
