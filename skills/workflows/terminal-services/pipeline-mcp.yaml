@@ -22,7 +22,7 @@ config:
           let action = this.action.or("")
 
           root.result = {"status": "ok"}
-          root.metadata = {"skill": "terminal-services", "mode": "mcp", "service": $service, "trace_id": meta("trace_id")}
+          root.metadata = {"skill": "terminal-services", "mode": "mcp", "service": $service, "trace_id": meta("trace_id").or(uuid_v4())}
 
   output:
     sync_response: {}

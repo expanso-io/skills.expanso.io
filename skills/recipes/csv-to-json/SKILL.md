@@ -4,7 +4,7 @@ description: Convert CSV files to JSON with schema inference and validation
 metadata:
   openclaw:
     requires:
-      bins: [expanso]
+      bins: [expanso-edge, expanso-cli]
     tags: [expanso, data-transformation, csv, json, recipe]
 ---
 

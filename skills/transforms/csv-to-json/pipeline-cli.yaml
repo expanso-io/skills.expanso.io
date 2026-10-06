@@ -2,8 +2,8 @@
 # =========================================
 #
 # Usage:
-#   echo "name,age\nAlice,30\nBob,25" | expanso-edge run pipeline-cli.yaml
-#   cat data.csv | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -44,15 +44,14 @@ config:
             "skill": "csv-to-json",
             "mode": "cli",
             "delimiter": $delimiter,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
       - log:
           level: INFO
           message: |
-            [csv-to-json] Converted ${! root.row_count } rows (trace: ${! meta("trace_id").slice(0, 8) })
+            [csv-to-json] Converted ${! this.row_count } rows (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -4,7 +4,7 @@
 # HTTP server endpoint for MCP integration.
 #
 # Usage:
-#   expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:4195/data-fence \
 #     -d '{"data":[{"id":1,"name":"John","ssn":"123-45-6789"}],"allowed_fields":["id","name"]}'
 
@@ -54,29 +54,17 @@ config:
 
           let truncated = $items.slice(0, $max_rows)
 
-          let filtered = $truncated.map_each(item ->
-            if $allowed.length() > 0 {
-              $allowed.fold({}, pair ->
-                pair.value.merge(
-                  if item.exists($allowed.index(pair.key)) {
-                    { ($allowed.index(pair.key)): item.index($allowed.index(pair.key)) }
-                  } else {
-                    {}
-                  }
-                )
-              )
-            } else if $blocked.length() > 0 {
-              item.without($blocked.index(0).or("")).without($blocked.index(1).or("")).without($blocked.index(2).or("")).without($blocked.index(3).or("")).without($blocked.index(4).or(""))
-            } else {
-              item
-            }
-          )
+          let filtered = $truncated.map_each(item -> if $allowed.length() > 0 {
+            item.filter(pair -> $allowed.contains(pair.key))
+          } else if $blocked.length() > 0 {
+            item.filter(pair -> !$blocked.contains(pair.key))
+          } else { item })
 
           root.data = if $is_array { $filtered } else { $filtered.index(0) }
           root.metadata = {
             "skill": "data-fence",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "filtered_row_count": $filtered.length(),
             "timestamp": now()
           }

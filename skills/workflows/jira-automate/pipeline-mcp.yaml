@@ -17,16 +17,188 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          let action = this.action.or("search")
-          let project = this.project.or("PROJ")
+          root = this
+          root.action = this.action.or("search").string()
+          root.project = this.project.or("").string()
+          root._trace_id = uuid_v4()
 
-          root.result = match $action {
-            "search" => {"issues": [{"key": $project + "-101", "summary": "Sample issue"}]},
-            "create" => {"issue": {"key": $project + "-" + random_int(100, 999).string()}},
-            _ => {"status": "ok"}
-          }
-          root.metadata = {"skill": "jira-automate", "mode": "mcp", "action": $action}
+      - switch:
+          - check: 'this.fixture_mode.or(false)'
+            processors:
+              - mapping: |
+                  root.action = this.action
+                  root.result = this.fixture_response.or({})
+                  root.issues = this.fixture_response.issues.or([])
+                  root.metadata = {
+                    "skill": "jira-automate",
+                    "mode": "mcp",
+                    "action": this.action,
+                    "fixture": true,
+                    "trace_id": this._trace_id,
+                    "timestamp": now()
+                  }
+
+          - check: 'this.action == "search"'
+            processors:
+              - mapping: |
+                  let base = env("JIRA_URL").trim_suffix("/")
+                  meta trace_id = this._trace_id
+                  meta jira_auth = "Basic " + (env("JIRA_EMAIL").or("") + ":" + env("JIRA_API_TOKEN").or("")).encode("base64")
+                  meta jira_action = this.action
+                  meta jira_url = $base + "/rest/api/3/search/jql"
+                  root = if !$base.re_match("^https://") {
+                    throw("JIRA_URL must be an https URL")
+                  } else if this.project.length() == 0 {
+                    throw("project is required for search")
+                  } else {
+                    {
+                      "jql": "project = " + this.project,
+                      "fields": ["key", "summary", "status", "assignee"],
+                      "maxResults": this.limit.or(50)
+                    }
+                  }
+              - http:
+                  url: '${! meta("jira_url") }'
+                  verb: POST
+                  headers:
+                    Authorization: '${! meta("jira_auth") }'
+                    Accept: application/json
+                    Content-Type: application/json
+                  timeout: 30s
+                  retries: 3
+                  rate_limit: jira_api
+              - mapping: |
+                  let issues = this.issues.or([]).map_each(issue -> {
+                    "key": issue.key,
+                    "summary": issue.fields.summary.or(""),
+                    "status": issue.fields.status.name.or(""),
+                    "assignee": issue.fields.assignee.emailAddress.or(issue.fields.assignee.displayName).or(null)
+                  })
+                  root.action = meta("jira_action")
+                  root.result = {"issues": $issues, "next_page_token": this.nextPageToken.or(null)}
+                  root.issues = $issues
+                  root.metadata = {
+                    "skill": "jira-automate",
+                    "mode": "mcp",
+                    "action": meta("jira_action"),
+                    "fixture": false,
+                    "trace_id": meta("trace_id").or(uuid_v4()),
+                    "timestamp": now()
+                  }
+
+          - check: 'this.action == "create"'
+            processors:
+              - mapping: |
+                  let base = env("JIRA_URL").trim_suffix("/")
+                  meta trace_id = this._trace_id
+                  meta jira_auth = "Basic " + (env("JIRA_EMAIL").or("") + ":" + env("JIRA_API_TOKEN").or("")).encode("base64")
+                  meta jira_action = this.action
+                  meta jira_url = $base + "/rest/api/3/issue"
+                  root = if !$base.re_match("^https://") {
+                    throw("JIRA_URL must be an https URL")
+                  } else if this.project.length() == 0 || this.summary.or("").length() == 0 {
+                    throw("project and summary are required for create")
+                  } else {
+                    {
+                      "fields": {
+                        "project": {"key": this.project},
+                        "summary": this.summary,
+                        "description": {
+                          "type": "doc",
+                          "version": 1,
+                          "content": [{
+                            "type": "paragraph",
+                            "content": [{"type": "text", "text": this.description.or("")}]
+                          }]
+                        },
+                        "issuetype": {"name": this.issue_type.or("Task")}
+                      }
+                    }
+                  }
+              - http:
+                  url: '${! meta("jira_url") }'
+                  verb: POST
+                  headers:
+                    Authorization: '${! meta("jira_auth") }'
+                    Accept: application/json
+                    Content-Type: application/json
+                  timeout: 30s
+                  retries: 3
+                  rate_limit: jira_api
+              - mapping: |
+                  root.action = meta("jira_action")
+                  root.result = {"issue": {"id": this.id, "key": this.key, "self": this.self}}
+                  root.issues = [root.result.issue]
+                  root.metadata = {
+                    "skill": "jira-automate",
+                    "mode": "mcp",
+                    "action": meta("jira_action"),
+                    "fixture": false,
+                    "trace_id": meta("trace_id").or(uuid_v4()),
+                    "timestamp": now()
+                  }
+
+          - check: 'this.action == "update"'
+            processors:
+              - mapping: |
+                  let base = env("JIRA_URL").trim_suffix("/")
+                  meta trace_id = this._trace_id
+                  meta jira_auth = "Basic " + (env("JIRA_EMAIL").or("") + ":" + env("JIRA_API_TOKEN").or("")).encode("base64")
+                  meta jira_action = this.action
+                  meta issue_key = this.issue_key
+                  meta jira_url = $base + "/rest/api/3/issue/" + this.issue_key.or("").escape_url_path()
+                  root = if !$base.re_match("^https://") {
+                    throw("JIRA_URL must be an https URL")
+                  } else if this.issue_key.or("").length() == 0 || this.summary.or("").length() == 0 {
+                    throw("issue_key and summary are required for update")
+                  } else {
+                    {"fields": {"summary": this.summary}}
+                  }
+              - http:
+                  url: '${! meta("jira_url") }'
+                  verb: PUT
+                  headers:
+                    Authorization: '${! meta("jira_auth") }'
+                    Accept: application/json
+                    Content-Type: application/json
+                  timeout: 30s
+                  retries: 3
+                  rate_limit: jira_api
+              - mapping: |
+                  root.action = meta("jira_action")
+                  root.result = {"issue": {"key": meta("issue_key"), "updated": true}}
+                  root.issues = [root.result.issue]
+                  root.metadata = {
+                    "skill": "jira-automate",
+                    "mode": "mcp",
+                    "action": meta("jira_action"),
+                    "fixture": false,
+                    "trace_id": meta("trace_id").or(uuid_v4()),
+                    "timestamp": now()
+                  }
+
+          - processors:
+              - mapping: |
+                  root.status = "unsupported"
+                  root.action = this.action
+                  root.issues = []
+                  root.capability_gap = {
+                    "supported_actions": ["search", "create", "update"],
+                    "requested_action": this.action
+                  }
+                  root.metadata = {
+                    "skill": "jira-automate",
+                    "mode": "mcp",
+                    "action": this.action,
+                    "trace_id": this._trace_id,
+                    "timestamp": now()
+                  }
 
   output:
     sync_response: {}
+
+  rate_limit_resources:
+    - label: jira_api
+      local:
+        count: 5
+        interval: 1s

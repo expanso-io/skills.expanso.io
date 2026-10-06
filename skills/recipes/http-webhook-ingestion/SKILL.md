@@ -4,7 +4,7 @@ description: Ingest webhooks via HTTP and forward to Kafka with validation
 metadata:
   openclaw:
     requires:
-      bins: [expanso]
+      bins: [expanso-edge, expanso-cli]
     tags: [expanso, data-routing, http, kafka, webhook, recipe]
 ---
 
@@ -26,5 +26,5 @@ export KAFKA_BROKERS=localhost:9092
 
 ## Requirements
 
-- Expanso Edge installed (`clawhub install expanso`)
+- Expanso Edge and CLI v2.1.21 or newer installed
 - Kafka broker for output

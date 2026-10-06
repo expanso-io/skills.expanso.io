@@ -61,7 +61,7 @@ config:
           root.metadata = {
             "skill": "json-pretty",
             "mode": "cloud",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

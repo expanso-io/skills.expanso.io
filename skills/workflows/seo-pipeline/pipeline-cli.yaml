@@ -14,41 +14,67 @@ config:
           meta trace_id = uuid_v4()
           let input = content().parse_json()
           let url = $input.url.or(env("DEFAULT_URL").or(""))
+          let html = $input.html.or("")
 
-          # Simulated SEO analysis
-          root.analysis = {
-            "url": $url,
-            "score": 72,
-            "issues": {
-              "critical": 2,
-              "warnings": 5,
-              "info": 12
-            },
-            "keywords": {
-              "ranking": [
-                {"keyword": "ai automation", "position": 15, "volume": 2400},
-                {"keyword": "workflow tools", "position": 8, "volume": 1800}
-              ]
-            },
-            "performance": {
-              "page_speed": 85,
-              "mobile_friendly": true,
-              "core_web_vitals": {"lcp": 2.1, "fid": 45, "cls": 0.05}
-            }
+          root = if $html.length() == 0 && !$url.has_prefix("https://") {
+            throw("url must use HTTPS when html is not supplied")
+          } else {
+            {"url": $url, "html": $html}
           }
+          meta url = $url
+          meta fixture_html = $html
 
+      - switch:
+          - check: 'meta("fixture_html").length() > 0'
+            processors:
+              - mapping: 'root.html = meta("fixture_html")'
+          - processors:
+              - mapping: 'root = ""'
+              - http:
+                  url: '${! meta("url") }'
+                  verb: GET
+                  headers:
+                    User-Agent: Expanso-SEO-Audit/1.0
+                  timeout: 20s
+                  retries: 2
+              - mapping: 'root.html = content().string()'
+
+      - mapping: |
+          let html = this.html
+          let title_matches = $html.re_find_all_submatch("(?is)<title[^>]*>\\s*([^<]+?)\\s*</title>")
+          let description_matches = $html.re_find_all_submatch("(?is)<meta[^>]+name=[\\\"']description[\\\"'][^>]+content=[\\\"']([^\\\"']*)[\\\"'][^>]*>")
+          let h1_count = $html.re_find_all("(?is)<h1(?:\\s|>)").length()
+          let link_count = $html.re_find_all("(?is)<a(?:\\s|>)").length()
+          let images = $html.re_find_all("(?is)<img(?:\\s|>)[^>]*>")
+          let images_missing_alt = $images.filter(tag -> !tag.re_match("(?is)\\salt=[\\\"'][^\\\"']*[\\\"']")).length()
+          let has_viewport = $html.re_match("(?is)<meta[^>]+name=[\\\"']viewport[\\\"']")
+          let title = if $title_matches.length() > 0 { $title_matches.0.1.trim() } else { "" }
+          let description = if $description_matches.length() > 0 { $description_matches.0.1.trim() } else { "" }
+          let score = 100 - if $title.length() == 0 { 25 } else { 0 } - if $description.length() == 0 { 25 } else { 0 } - if $h1_count == 0 { 20 } else { 0 } - if !$has_viewport { 15 } else { 0 } - if $images_missing_alt > 0 { 15 } else { 0 }
+
+          root.analysis = {
+            "url": meta("url"),
+            "score": $score,
+            "title": $title,
+            "meta_description": $description,
+            "h1_count": $h1_count,
+            "link_count": $link_count,
+            "image_count": $images.length(),
+            "images_missing_alt": $images_missing_alt,
+            "has_viewport": $has_viewport
+          }
           root.recommendations = [
-            {"priority": "high", "issue": "Missing meta descriptions on 3 pages", "action": "Add unique meta descriptions"},
-            {"priority": "high", "issue": "Large image files", "action": "Compress images to improve page speed"},
-            {"priority": "medium", "issue": "Low internal linking", "action": "Add related post links"}
-          ]
-
-          root.metadata = {"skill": "seo-pipeline", "mode": "cli", "trace_id": meta("trace_id")}
+            if $title.length() == 0 { {"priority": "high", "issue": "Missing title", "action": "Add a unique title element"} },
+            if $description.length() == 0 { {"priority": "high", "issue": "Missing meta description", "action": "Add a descriptive meta description"} },
+            if $h1_count == 0 { {"priority": "high", "issue": "Missing H1", "action": "Add one page-level H1"} },
+            if !$has_viewport { {"priority": "medium", "issue": "Missing viewport meta", "action": "Add a responsive viewport meta tag"} },
+            if $images_missing_alt > 0 { {"priority": "medium", "issue": "Images missing alt text", "action": "Add meaningful alt text or an empty alt for decorative images"} }
+          ].filter(item -> item != null)
+          root.metadata = {"skill": "seo-pipeline", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4())}
 
       - log:
           level: INFO
           message: "[seo-pipeline] Analyzed ${! this.analysis.url }, score: ${! this.analysis.score }"
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

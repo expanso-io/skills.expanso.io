@@ -18,7 +18,7 @@ config:
       outputs:
         # Local file for debugging
         - file:
-            path: /tmp/events.jsonl
+            path: /var/lib/expanso/fan-out/events.jsonl
             codec: lines
 
         # Kafka for real-time streaming
@@ -26,6 +26,13 @@ config:
             addresses: ["${KAFKA_BROKERS}"]
             topic: sensor-events
             key: "${!this.sensor_id}"
+            ack_replicas: true
+            tls:
+              enabled: true
+            sasl:
+              mechanism: SCRAM-SHA-512
+              user: "${KAFKA_USERNAME}"
+              password: "${KAFKA_PASSWORD}"
 
         # S3 for long-term archival
         - aws_s3:
@@ -35,3 +42,4 @@ config:
             batching:
               count: 10
               period: 10s
+            server_side_encryption: AES256

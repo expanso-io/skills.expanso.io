@@ -18,8 +18,7 @@ config:
           root.words = 69
           root.characters = $lorem.length()
           root.paragraphs = 1
-          root.metadata = {"skill": "lorem-ipsum", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "lorem-ipsum", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

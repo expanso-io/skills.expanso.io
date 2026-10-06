@@ -30,7 +30,7 @@ config:
           root.h1_count = $h1_count
           root.h2_count = $h2_count
           root.h3_count = $h3_count
-          root.metadata = {"skill": "markdown-toc", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "markdown-toc", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

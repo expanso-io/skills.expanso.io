@@ -4,7 +4,7 @@
 # HTTP endpoint for image moderation.
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/moderate \
 #     -H "Content-Type: application/json" \
@@ -56,6 +56,7 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let content = this.choices.0.message.content
@@ -75,7 +76,7 @@ config:
             "mode": "mcp",
             "model": "gpt-4o-mini",
             "image_url": meta("image_url"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

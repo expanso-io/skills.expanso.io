@@ -2,6 +2,8 @@
 tests:
   - name: "Signs payload"
     input: '{"data":"test"}'
+    env:
+      SIGNING_KEY: "fixture-signing-key-at-least-32-bytes"
     expected_output:
       envelope:
         algorithm: "hmac-sha256"

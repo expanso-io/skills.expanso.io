@@ -9,11 +9,17 @@ config:
   input:
     kafka:
       addresses:
-        - ${KAFKA_BROKERS:localhost:9092}
+        - ${KAFKA_BROKERS}
       topics:
         - ${KAFKA_TOPIC:events}
       consumer_group: expanso-kafka-to-s3
       start_from_oldest: true
+      tls:
+        enabled: true
+      sasl:
+        mechanism: SCRAM-SHA-512
+        user: "${KAFKA_USERNAME}"
+        password: "${KAFKA_PASSWORD}"
 
   pipeline:
     processors:
@@ -26,6 +32,7 @@ config:
 
       # Add message key if present
       - mapping: |
+          root = this
           root._kafka_key = @kafka_key.or("none")
           root._kafka_topic = @kafka_topic
           root._kafka_partition = @kafka_partition
@@ -34,9 +41,11 @@ config:
   output:
     aws_s3:
       bucket: ${S3_BUCKET}
+      region: ${AWS_REGION}
       path: "data/${!_kafka_topic}/${!_partition_day}/${!_partition_hour}/${!uuid_v4()}.json.gz"
       content_type: application/json
       content_encoding: gzip
+      server_side_encryption: AES256
       batching:
         count: 1000
         period: 60s

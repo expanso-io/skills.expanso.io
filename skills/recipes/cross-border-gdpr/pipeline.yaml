@@ -1,25 +1,26 @@
-# Cross-Border GDPR Compliance Pipeline
-# Anonymize data before it leaves the EU for global analytics
+# Cross-Border Data Minimization Pipeline
+# Pseudonymize data before an approved transfer for global analytics.
 #
-# Use case: EU financial transaction data needs to be aggregated globally,
-# but GDPR Article 44+ restricts transfers of personal data outside EU/EEA.
-# Solution: Fully anonymize at the edge before cross-border transfer.
+# Pseudonymized data remains personal data. This pipeline enforces technical
+# minimization rules only; it does not establish a lawful transfer, a legal
+# basis, anonymity, or regulatory approval. Configure destinations only after
+# privacy, security, retention, and transfer reviews are complete.
 #
 # Different from remove-pii example:
 # - Focuses on data RESIDENCY and cross-border transfers (not general PII removal)
 # - SQL database input (not HTTP streams)
 # - Financial transactions (not user activity)
-# - Dual output: anonymized to global, full data stays in-region
-# - GDPR Article 44 compliance audit trail
+# - Dual output: pseudonymized analytics and a regional copy
+# - Transformation audit trail
 #
 # Key features:
-# - Tiered anonymization (delete/hash/generalize)
-# - Dual destination: anonymized → global, raw → regional archive
-# - Compliance attestation metadata
-# - k-anonymity validation before transfer
+# - Tiered minimization (delete/keyed-hash/generalize)
+# - Dual destination: pseudonymized → global and regional archive
+# - Policy metadata supplied by the operator
+# - Fail-closed checks for named direct identifiers
 
-name: eu-cross-border-compliance
-description: GDPR-compliant data anonymization for cross-border analytics
+name: eu-cross-border-minimization
+description: Pseudonymize and minimize EU data before an approved cross-border transfer
 type: pipeline
 
 config:
@@ -27,7 +28,7 @@ config:
     # Read from EU regional database
     sql_select:
       driver: postgres
-      dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${EU_DB_HOST}:5432/transactions_eu"
+      dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${EU_DB_HOST}:5432/transactions_eu?sslmode=verify-full"
       table: customer_transactions
       columns:
         - transaction_id
@@ -47,7 +48,7 @@ config:
 
   pipeline:
     processors:
-      # Step 1: Tag with source region (critical for compliance routing)
+      # Step 1: Tag with source region for residency routing
       - mapping: |
           root = this
           root._data_origin = {
@@ -55,14 +56,14 @@ config:
             "country": env("SOURCE_COUNTRY").or("DE"),
             "database": "transactions_eu",
             "extracted_at": now(),
-            "pipeline": "eu-cross-border-compliance"
+            "pipeline": "eu-cross-border-minimization"
           }
 
-      # Step 2: Create GDPR compliance record BEFORE any transformation
+      # Step 2: Record the operator-approved policy before transformation
       - mapping: |
           root = this
-          root._gdpr_compliance = {
-            "legal_basis": "legitimate_interest_analytics",
+          root._transfer_controls = {
+            "policy_id": env("TRANSFER_POLICY_ID"),
             "original_pii_fields": [
               "customer_id",
               "customer_name", 
@@ -72,9 +73,8 @@ config:
               "iban",
               "ip_address"
             ],
-            "anonymization_applied": true,
-            "transfer_type": "cross_border_eu_to_global",
-            "gdpr_article": "Article 44 - General principle for transfers"
+            "pseudonymization_applied": true,
+            "transfer_type": "cross_border_eu_to_global"
           }
 
       # Step 3: DELETE - Remove fields with no analytics value
@@ -101,14 +101,16 @@ config:
           root = root.without("customer_dob")
 
       # Step 4: HASH - Pseudonymize identifiers for aggregate analytics
-      # One-way hash means this is anonymization, not pseudonymization
+      # The stable keyed hashes are pseudonyms, not anonymous identifiers.
       - mapping: |
           root = this
         
-          # Customer ID → anonymized cohort ID
-          # Salt ensures can't be reversed even with rainbow tables
-          let salt = env("ANONYMIZATION_SALT").or("gdpr-compliance-2024")
-          root.anonymized_customer_id = (this.customer_id.string() + $salt).hash("sha256").slice(0, 12)
+          # Customer ID → stable keyed pseudonym
+          let pseudonym_key = env("PSEUDONYM_KEY").or("")
+          root = if $pseudonym_key.length() < 32 {
+            throw("PSEUDONYM_KEY must contain at least 32 characters")
+          } else { this }
+          root.pseudonymous_customer_id = this.customer_id.string().hash("hmac_sha256", $pseudonym_key).encode("hex")
           root = root.without("customer_id")
         
           # Email → domain only (for B2B vs B2C analysis)
@@ -153,7 +155,7 @@ config:
           # Timestamp → hour bucket (sufficient for pattern analysis)
           root.transaction_hour = this.transaction_timestamp.ts_parse("2006-01-02T15:04:05Z").format("2006-01-02T15:00:00Z")
 
-      # Step 6: Validate anonymization completeness
+      # Step 6: Check that named direct identifiers were removed
       - mapping: |
           # Check no PII fields remain
           let pii_fields = ["customer_id", "customer_name", "customer_email", 
@@ -162,23 +164,24 @@ config:
           let remaining_pii = $pii_fields.filter(f -> this.exists(f))
         
           root = if $remaining_pii.length() > 0 {
-            throw("GDPR VIOLATION: PII fields still present: " + $remaining_pii.join(", "))
+            throw("TRANSFER BLOCKED: named direct identifiers remain: " + $remaining_pii.join(", "))
           } else {
             this
           }
         
-          # Add compliance attestation
-          root._gdpr_compliance.anonymization_verified = true
-          root._gdpr_compliance.verification_timestamp = now()
-          root._gdpr_compliance.fields_removed = ["customer_name", "customer_address", "customer_dob"]
-          root._gdpr_compliance.fields_hashed = ["customer_id", "customer_email", "iban", "ip_address"]
+          # Record what this pipeline checked. This is not a legal attestation.
+          root._transfer_controls.named_fields_check_passed = true
+          root._transfer_controls.verification_timestamp = now()
+          root._transfer_controls.fields_removed = ["customer_name", "customer_address", "customer_dob"]
+          root._transfer_controls.fields_pseudonymized = ["customer_id"]
 
   output:
     broker:
       pattern: fan_out
       outputs:
-        # Output 1: Anonymized data → Global analytics (BigQuery US)
-        # This data is no longer "personal data" under GDPR
+        # Output 1: Pseudonymized data → approved global analytics project.
+        # Google ADC supplies credentials; give the node service account only
+        # BigQuery append permission on this table.
         - label: global_analytics
           gcp_bigquery:
             project: "${GCP_GLOBAL_PROJECT}"
@@ -190,30 +193,28 @@ config:
               count: 500
               period: 30s
 
-        # Output 2: Raw data → EU regional archive (stays in EU)
-        # Full data preserved for regulatory requirements
+        # Output 2: Pseudonymized regional archive. The bucket must have an
+        # EU location, uniform access, retention policy, and a writer-only
+        # service account before this job is deployed.
         - label: eu_archive
           processors:
-            # Re-add original data from input (captured in metadata)
             - mapping: |
                 root = this
                 root._archive_metadata = {
                   "archived_at": now(),
-                  "retention_policy": "7_years",
-                  "data_classification": "personal_data_eu",
-                  "gdpr_lawful_basis": "legal_obligation"
+                  "retention_policy_id": env("RETENTION_POLICY_ID"),
+                  "data_classification": "pseudonymized_personal_data_eu"
                 }
           gcp_cloud_storage:
             bucket: "${EU_ARCHIVE_BUCKET}"  # Must be EU-region bucket
             path: "transactions/${!now().format(\"2006/01/02\")}/eu-${!timestamp_unix()}.json"
             content_type: application/json
-            storage_class: STANDARD
             batching:
               count: 1000
               period: 60s
 
-        # Output 3: Compliance audit log
-        - label: compliance_audit
+        # Output 3: Transformation audit log on persistent node storage.
+        - label: transfer_audit
           processors:
             - mapping: |
                 root = {
@@ -222,10 +223,9 @@ config:
                   "transaction_id": this.transaction_id,
                   "source_region": this._data_origin.region,
                   "destination": "global_analytics",
-                  "anonymization_verified": this._gdpr_compliance.anonymization_verified,
-                  "legal_basis": this._gdpr_compliance.legal_basis,
-                  "gdpr_article": this._gdpr_compliance.gdpr_article
+                  "named_fields_check_passed": this._transfer_controls.named_fields_check_passed,
+                  "policy_id": this._transfer_controls.policy_id
                 }
           file:
-            path: "/var/log/expanso/gdpr-audit-${!timestamp_format(\"2006-01-02\")}.jsonl"
+            path: "/var/lib/expanso/transfer-audit/${!timestamp_format(\"2006-01-02\")}.jsonl"
             codec: lines

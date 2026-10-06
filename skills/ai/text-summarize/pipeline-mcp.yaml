@@ -54,9 +54,13 @@ config:
           # Validate input
           let text_length = $input_text.length()
           root = if $text_length == 0 {
-            throw("text field is required and cannot be empty")
+            {
+              "error": "text field is required and cannot be empty"
+            }
           } else if $text_length > 1048576 {
-            throw("text exceeds maximum length of 1MB")
+            {
+              "error": "text exceeds maximum length of 1MB"
+            }
           } else {
             {
               "messages": [
@@ -79,31 +83,48 @@ config:
 
       # 2. Call OpenAI (key read from the executing node's environment,
       #    then sent to OpenAI)
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
-          # Required by the component schema on expanso-edge v2.1.21.
-          # Empty list = no tool/function calling for this request.
-          tools: []
+      - switch:
+          - check: this.error == null
+            processors:
+              - openai_chat_completion:
+                  api_key: "${OPENAI_API_KEY}"
+                  model: gpt-4o-mini
+                  # Required by the component schema on expanso-edge v2.1.21.
+                  # Empty list = no tool/function calling for this request.
+                  tools: []
 
       # 3. Format response with metadata
       - mapping: |
-          root.summary = this.choices.0.message.content
-          root.metadata = {
-            "skill": "text-summarize",
-            "mode": "mcp",
-            "model": "gpt-4o-mini",
-            "input_hash": meta("input_hash"),
-            "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
-            "timestamp": now()
+          root = if this.error != null {
+            {
+              "error": this.error,
+              "metadata": {
+                "skill": "text-summarize",
+                "mode": "mcp",
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
+          } else {
+            {
+              "summary": this.choices.0.message.content,
+              "metadata": {
+                "skill": "text-summarize",
+                "mode": "mcp",
+                "model": "gpt-4o-mini",
+                "input_hash": meta("input_hash"),
+                "input_length": meta("input_length"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
+                "timestamp": now()
+              }
+            }
           }
 
       # 4. Audit log
       - log:
           level: INFO
           message: |
-            [text-summarize] MCP request: ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
+            [text-summarize] MCP processed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
     # Return response synchronously to HTTP caller

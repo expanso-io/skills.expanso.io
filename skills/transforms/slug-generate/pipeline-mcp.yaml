@@ -2,7 +2,7 @@
 # ===========================================
 #
 # Usage:
-#   PORT=8080 expanso-edge run pipeline-mcp.yaml &
+#   expanso-edge validate pipeline-mcp.yaml
 #   curl -X POST http://localhost:8080/slugify -d '{"text": "Hello World!"}'
 
 name: "slug-generate-mcp"
@@ -38,7 +38,7 @@ config:
           root.metadata = {
             "skill": "slug-generate",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

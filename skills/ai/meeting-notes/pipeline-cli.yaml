@@ -4,7 +4,7 @@
 # Convert meeting transcript to structured notes.
 #
 # Usage:
-#   cat transcript.txt | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -40,18 +40,22 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       # 3. Parse and format output
       - mapping: |
           let raw_content = this.choices.0.message.content
 
           # Try to parse as JSON, fallback to wrapping
-          let notes = $raw_content.parse_json().catch({
+          let parsed = $raw_content.parse_json().catch({
             "summary": $raw_content,
-            "key_points": [],
-            "action_items": [],
-            "decisions": [],
-            "attendees": []
+          })
+          let notes = $parsed.merge({
+            "summary": $parsed.summary.or($raw_content),
+            "key_points": $parsed.key_points.or([]),
+            "action_items": $parsed.action_items.or([]),
+            "decisions": $parsed.decisions.or([]),
+            "attendees": $parsed.attendees.or([])
           })
 
           root.notes = $notes
@@ -62,7 +66,7 @@ config:
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
             "action_item_count": $notes.action_items.length(),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -73,5 +77,4 @@ config:
             [meeting-notes] Extracted ${! this.metadata.action_item_count } action items (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

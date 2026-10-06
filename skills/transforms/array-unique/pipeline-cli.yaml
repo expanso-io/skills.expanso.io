@@ -22,8 +22,7 @@ config:
           root.original_count = if $is_array { $parsed.length() } else { 0 }
           root.unique_count = $unique.length()
           root.duplicates_removed = if $is_array { $parsed.length() - $unique.length() } else { 0 }
-          root.metadata = {"skill": "array-unique", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "array-unique", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

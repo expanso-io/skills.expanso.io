@@ -35,12 +35,11 @@ config:
           root.supported_services = $services.keys()
           root.result = {"status": "ok", "message": "Action " + $action + " on " + $service}
           root.formatted_output = "✓ " + $service + "." + $action + " completed"
-          root.metadata = {"skill": "terminal-services", "mode": "cli", "trace_id": meta("trace_id")}
+          root.metadata = {"skill": "terminal-services", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4())}
 
       - log:
           level: INFO
           message: "[terminal-services] ${! this.service }.${! this.action }"
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

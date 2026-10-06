@@ -24,7 +24,7 @@ config:
           root.password = $combined.slice(0, 16)
           root.length = 16
           root.entropy_bits = 64
-          root.metadata = {"skill": "password-generate", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "password-generate", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

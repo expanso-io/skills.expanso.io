@@ -24,7 +24,7 @@ config:
             "skill": "openapi-validate",
             "mode": "cli",
             "spec_version": spec.openapi.or(spec.swagger).or("unknown"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -34,5 +34,4 @@ config:
             [openapi-validate] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

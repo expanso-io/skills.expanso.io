@@ -2,8 +2,8 @@
 # ==========================================
 #
 # Usage:
-#   echo "Hello World" | expanso-edge run pipeline-cli.yaml              # Encode
-#   MODE=decode echo "SGVsbG8gV29ybGQ=" | expanso-edge run pipeline-cli.yaml  # Decode
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally.
 
@@ -39,7 +39,7 @@ config:
             "operation": meta("mode"),
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -49,5 +49,4 @@ config:
             [base64-codec] ${! meta("mode") } ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

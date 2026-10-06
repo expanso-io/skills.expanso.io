@@ -6,8 +6,8 @@
 #
 # Key features:
 # - SQL query against DB2 via ODBC
-# - Currency normalization and enrichment
-# - Account number masking for compliance
+# - Currency normalization from a governed source rate
+# - Keyed account-number pseudonyms
 # - Transaction categorization
 # - Lineage metadata for audit trail
 # - Lands in BigQuery partitioned by date
@@ -22,7 +22,7 @@ config:
     # Runs on a schedule (see deployment config)
     sql_select:
       driver: odbc
-      dsn: "Driver={IBM DB2 ODBC Driver};Database=${DB2_DATABASE};Hostname=${DB2_HOST};Port=${DB2_PORT};Protocol=TCPIP;Uid=${DB2_USER};Pwd=${DB2_PASSWORD};"
+      dsn: "Driver={IBM DB2 ODBC Driver};Database=${DB2_DATABASE};Hostname=${DB2_HOST};Port=${DB2_PORT};Protocol=TCPIP;Security=SSL;SSLServerCertificate=${DB2_CA_CERT_PATH};Uid=${DB2_USER};Pwd=${DB2_PASSWORD};"
       table: TRANSACTIONS
       columns:
         - TRANSACTION_ID
@@ -32,6 +32,7 @@ config:
         - TRANSACTION_TYPE
         - AMOUNT
         - CURRENCY
+        - USD_RATE
         - MERCHANT_NAME
         - MERCHANT_CATEGORY_CODE
         - SOURCE_SYSTEM
@@ -52,38 +53,24 @@ config:
             "node_id": env("NODE_ID").or("unknown")
           }
 
-      # Step 2: Normalize currency to USD
-      # DataStage replacement: Currency lookup and conversion
-      - branch:
-          processors:
-            - mapping: |
-                # Currency conversion rates (in production, fetch from API)
-                let rates = {
-                  "USD": 1.0,
-                  "EUR": 1.08,
-                  "GBP": 1.27,
-                  "JPY": 0.0067,
-                  "CHF": 1.13,
-                  "CAD": 0.74
-                }
-              
-                root = this
-                root.original_amount = this.AMOUNT
-                root.original_currency = this.CURRENCY
-              
-                # Convert to USD
-                root.amount_usd = if this.CURRENCY == "USD" {
-                  this.AMOUNT
-                } else {
-                  this.AMOUNT * $rates.get(this.CURRENCY).or(1.0)
-                }
-
-      # Step 3: Mask account numbers for compliance
-      # Keep last 4 digits for reconciliation, hash full number for joins
+      # Step 2: Normalize currency using the governed rate joined by the source
       - mapping: |
+          root = if this.USD_RATE == null || this.USD_RATE.number() <= 0 {
+            throw("USD_RATE must be supplied by the governed source view")
+          } else { this }
+          root.original_amount = this.AMOUNT
+          root.original_currency = this.CURRENCY
+          root.amount_usd = this.AMOUNT.number() * this.USD_RATE.number()
+
+      # Step 3: Mask account numbers and create a keyed pseudonym for joins
+      - mapping: |
+          let key = env("ACCOUNT_PSEUDONYM_KEY").or("")
+          root = if $key.length() < 32 {
+            throw("ACCOUNT_PSEUDONYM_KEY must contain at least 32 characters")
+          } else { this }
           root = this
           root.account_number_masked = "****-****-" + this.ACCOUNT_NUMBER.slice(-4)
-          root.account_number_hash = this.ACCOUNT_NUMBER.hash("sha256").slice(0, 16)
+          root.account_number_pseudonym = this.ACCOUNT_NUMBER.hash("hmac_sha256", $key).encode("hex")
           root = root.without("ACCOUNT_NUMBER")
 
       # Step 4: Categorize transactions
@@ -94,15 +81,15 @@ config:
           # Map MCC codes to categories
           let mcc = this.MERCHANT_CATEGORY_CODE.string()
         
-          root.transaction_category = match mcc {
-            this.has_prefix("54") => "GROCERY",
-            this.has_prefix("55") => "AUTOMOTIVE", 
-            this.has_prefix("58") => "RESTAURANT",
-            this.has_prefix("59") => "RETAIL",
-            this.has_prefix("47") => "TRANSPORTATION",
-            this.has_prefix("40") || this.has_prefix("41") => "TRAVEL",
-            this.has_prefix("60") || this.has_prefix("61") => "FINANCIAL",
-            this.has_prefix("80") => "PROFESSIONAL_SERVICES",
+          root.transaction_category = match $mcc {
+            $mcc.has_prefix("54") => "GROCERY",
+            $mcc.has_prefix("55") => "AUTOMOTIVE",
+            $mcc.has_prefix("58") => "RESTAURANT",
+            $mcc.has_prefix("59") => "RETAIL",
+            $mcc.has_prefix("47") => "TRANSPORTATION",
+            $mcc.has_prefix("40") || $mcc.has_prefix("41") => "TRAVEL",
+            $mcc.has_prefix("60") || $mcc.has_prefix("61") => "FINANCIAL",
+            $mcc.has_prefix("80") => "PROFESSIONAL_SERVICES",
             _ => "OTHER"
           }
 
@@ -122,12 +109,12 @@ config:
           root.original_amount = this.original_amount
           root.original_currency = this.original_currency
           root.account_number_masked = this.account_number_masked
-          root.account_number_hash = this.account_number_hash
+          root.account_number_pseudonym = this.account_number_pseudonym
           root.transaction_category = this.transaction_category
           root._lineage = this._lineage
         
           # Add BigQuery partition field
-          root._partition_date = this.TRANSACTION_DATE.format("2006-01-02")
+          root._partition_date = this.TRANSACTION_DATE.string().ts_parse("2006-01-02T15:04:05Z07:00").ts_format("2006-01-02")
 
       # Step 6: Validate required fields before loading
       - mapping: |
@@ -140,16 +127,14 @@ config:
           }
 
   output:
+    # Google ADC supplies credentials. Grant the node service account append
+    # permission only on this table.
     gcp_bigquery:
       project: "${GCP_PROJECT}"
       dataset: financial_data
       table: transactions
       format: NEWLINE_DELIMITED_JSON
       write_disposition: WRITE_APPEND
-      # Partition by transaction date for query efficiency
-      time_partitioning:
-        field: _partition_date
-        type: DAY
       batching:
         count: 1000
         period: 30s

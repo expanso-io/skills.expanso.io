@@ -27,8 +27,7 @@ config:
           root.timestamp_seconds = $ts
           root.thumbnail_time = $time_str
           root.suggested_filename = "thumbnail_" + $ts.string() + "s.jpg"
-          root.metadata = {"skill": "video-thumbnail", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "video-thumbnail", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

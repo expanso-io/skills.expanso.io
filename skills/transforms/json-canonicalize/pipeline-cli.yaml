@@ -4,7 +4,7 @@
 # Convert JSON to canonical form.
 #
 # Usage:
-#   echo '{"b":2,"a":1}' | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #   # Output: {"a":1,"b":2}
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
@@ -27,7 +27,7 @@ config:
 
           # Canonicalize: sorted keys, no extra whitespace
           # Note: Bloblang's format_json with no indent produces stable output
-          let canonical = $parsed.format_json()
+          let canonical = $parsed.format_json("").string()
 
           # Hash the canonical form
           let hash = $canonical.hash("sha256").encode("hex")
@@ -39,7 +39,7 @@ config:
             "mode": "cli",
             "input_size": content().length(),
             "canonical_size": $canonical.length(),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -49,5 +49,4 @@ config:
             [json-canonicalize] Hash: ${! this.hash.slice(0, 16) }... (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

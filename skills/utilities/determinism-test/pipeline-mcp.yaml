@@ -21,11 +21,11 @@ config:
           let runs = this.runs.or(3)
           meta trace_id = uuid_v4()
 
-          root = if $input == null { throw("input field is required") } else { "" }
+          root = if $input == null { throw("input field is required") } else { {} }
 
           let input_hash = $input.format_json().catch($input.string()).hash("sha256").encode("hex")
           let outputs = [input_hash, input_hash, input_hash].slice(0, $runs)
-          let all_same = outputs.all(o -> o == outputs.index(0))
+          let all_same = $outputs.all(o -> o == $outputs.index(0))
 
           root.stable = $all_same
           root.stability_score = if $all_same { 100 } else { 0 }
@@ -37,7 +37,7 @@ config:
             "skill": "determinism-test",
             "mode": "mcp",
             "runs": $runs,
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

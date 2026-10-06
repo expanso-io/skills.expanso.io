@@ -1,22 +1,19 @@
 # Skill: stripe-reports
 # Version: 1.0.0
 #
-# Generate business intelligence reports from Stripe data.
-# Combines revenue metrics with AI-powered insights and quick wins.
-# Inspired by @mauricekleine's hourly report automation.
+# Generate revenue reports from Stripe balance transactions.
 #
 # Features:
-# - Fetch revenue, subscriptions, and churn metrics
-# - AI-generated insights and recommendations
-# - Identify quick wins and opportunities
-# - Send reports to Slack/email
+# - Fetch balance transactions using Stripe API v1
+# - Calculate gross, net, fee, and refund totals
+# - Optionally generate AI insights from those calculated metrics
 #
 # Security: the Stripe API key is read from the executing node's environment and
 # sent to the Stripe API as its credential. It is not sent to Expanso Cloud.
 
 name: stripe-reports
 version: 1.0.0
-description: Generate AI-powered business reports from Stripe with insights and quick wins
+description: Generate revenue reports from authenticated Stripe balance transactions
 
 credentials:
   - name: STRIPE_API_KEY
@@ -25,9 +22,6 @@ credentials:
   - name: OPENAI_API_KEY
     required: true
     description: OpenAI API key for AI insights
-  - name: SLACK_WEBHOOK
-    required: false
-    description: Slack webhook URL for report delivery
 
 inputs:
   - name: period
@@ -35,55 +29,50 @@ inputs:
     default: today
     enum: [today, yesterday, week, month, quarter]
     description: Reporting period
-  - name: metrics
-    type: array
-    default: [revenue, subscriptions, churn, refunds]
-    description: Metrics to include
   - name: include_insights
     type: boolean
-    default: true
+    default: false
     description: Generate AI insights
   - name: include_quick_wins
     type: boolean
     default: true
-    description: Identify actionable quick wins
-  - name: send_slack
-    type: boolean
-    default: false
-    description: Send report to Slack
-  - name: format
-    type: string
-    default: json
-    enum: [json, markdown, html]
-    description: Output format
+    description: Include quick-win actions when AI insights are enabled
 
 outputs:
   - name: report
     type: object
-    description: "Complete report: {period, metrics, insights, quick_wins}"
+    description: Report period, Unix time range, and generation timestamp
   - name: metrics
     type: object
-    description: "Raw metrics: {revenue, mrr, churn_rate, new_customers, ...}"
+    description: Calculated revenue and balance-transaction counts
   - name: insights
     type: array
     description: AI-generated insights and observations
   - name: quick_wins
     type: array
-    description: Actionable recommendations with potential impact
+    description: AI-generated actions based only on the calculated Stripe metrics
   - name: metadata
     type: object
     description: Report metadata and audit trail
 
 backends:
+  - name: stripe
+    type: remote
+    requires: [STRIPE_API_KEY]
+    description: Stripe API v1 over HTTPS
   - name: openai
     type: remote
     requires: [OPENAI_API_KEY]
     description: OpenAI for insights generation
+  - name: fixture
+    type: local
+    requires: []
+    description: Explicit deterministic Stripe transaction fixtures for CI
 
 components:
-  inputs: [http_client, http_server]
-  processors: [mapping, http, openai_chat_completion, branch, log]
-  outputs: [http_client, stdout, sync_response]
+  inputs: [stdin, http_server]
+  processors: [mapping, http, openai_chat_completion, switch]
+  outputs: [stdout, sync_response]
 
 rate_limits:
   - label: stripe_api

@@ -7,17 +7,23 @@ config:
   input:
     kafka:
       addresses:
-        - ${KAFKA_BROKERS:localhost:9092}
+        - ${KAFKA_BROKERS}
       topics:
         - ${INPUT_TOPIC:events}
       consumer_group: expanso-dlq-handler
+      tls:
+        enabled: true
+      sasl:
+        mechanism: SCRAM-SHA-512
+        user: "${KAFKA_USERNAME}"
+        password: "${KAFKA_PASSWORD}"
 
   pipeline:
     processors:
       # Try processing with error handling
       - try:
           - mapping: |
-              # Simulate processing that might fail
+              # Enforce the processing contract before routing the record
               root = if this.data == null {
                 throw("Missing required field: data")
               } else {
@@ -44,20 +50,41 @@ config:
           output:
             kafka:
               addresses:
-                - ${KAFKA_BROKERS:localhost:9092}
+                - ${KAFKA_BROKERS}
               topic: ${OUTPUT_TOPIC:processed-events}
+              ack_replicas: true
+              tls:
+                enabled: true
+              sasl:
+                mechanism: SCRAM-SHA-512
+                user: "${KAFKA_USERNAME}"
+                password: "${KAFKA_PASSWORD}"
 
         # Retry-able errors (< 3 retries) → retry topic
         - check: this.status == "failed" && this._retry_count < 3
           output:
             kafka:
               addresses:
-                - ${KAFKA_BROKERS:localhost:9092}
+                - ${KAFKA_BROKERS}
               topic: ${RETRY_TOPIC:retry-events}
+              ack_replicas: true
+              tls:
+                enabled: true
+              sasl:
+                mechanism: SCRAM-SHA-512
+                user: "${KAFKA_USERNAME}"
+                password: "${KAFKA_PASSWORD}"
 
         # Failed after retries → DLQ
         - output:
             kafka:
               addresses:
-                - ${KAFKA_BROKERS:localhost:9092}
+                - ${KAFKA_BROKERS}
               topic: ${DLQ_TOPIC:dead-letter-queue}
+              ack_replicas: true
+              tls:
+                enabled: true
+              sasl:
+                mechanism: SCRAM-SHA-512
+                user: "${KAFKA_USERNAME}"
+                password: "${KAFKA_PASSWORD}"

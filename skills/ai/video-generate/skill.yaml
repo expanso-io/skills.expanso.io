@@ -32,8 +32,13 @@ outputs:
 backends:
   - name: replicate
     type: remote
+    requires: [REPLICATE_API_TOKEN]
+  - name: fixture
+    type: local
+    requires: []
+    description: Explicit deterministic video result for CI
 
 components:
   inputs: [stdin, http_server]
-  processors: [mapping, http, log, sleep]
+  processors: [mapping, switch, http, log, sleep]
   outputs: [http_client, stdout, sync_response]

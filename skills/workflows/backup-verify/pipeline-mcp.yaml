@@ -18,9 +18,53 @@ config:
     processors:
       - mapping: |
           meta trace_id = uuid_v4()
-          root.status = {"verified": true, "local_files": 1250, "cloud_files": 1248}
-          root.differences = []
-          root.metadata = {"skill": "backup-verify", "mode": "mcp", "trace_id": meta("trace_id")}
+          let local = this.local_manifest.or([])
+          let backup = this.backup_manifest.or([])
+          let local_keyed = $local.map_each(file -> file.merge({"_manifest_key": file.path.hash("sha256").encode("hex")}))
+          let backup_keyed = $backup.map_each(file -> file.merge({"_manifest_key": file.path.hash("sha256").encode("hex")}))
+          let backup_by_path = $backup_keyed.fold({}, pair -> pair.tally.assign({(pair.value._manifest_key): pair.value}))
+          let local_by_path = $local_keyed.fold({}, pair -> pair.tally.assign({(pair.value._manifest_key): pair.value}))
+          let local_differences = $local_keyed.map_each(file -> if $backup_by_path.get(file._manifest_key) == null {
+            {"path": file.path, "status": "missing_in_backup"}
+          } else if $backup_by_path.get(file._manifest_key).sha256 != file.sha256 || $backup_by_path.get(file._manifest_key).size != file.size {
+            {
+              "path": file.path,
+              "status": "content_mismatch",
+              "local": {"size": file.size, "sha256": file.sha256},
+              "backup": {"size": $backup_by_path.get(file._manifest_key).size, "sha256": $backup_by_path.get(file._manifest_key).sha256}
+            }
+          } else {
+            null
+          }).filter(item -> item != null)
+          let backup_only = $backup_keyed.filter(file -> $local_by_path.get(file._manifest_key) == null).map_each(file -> {
+            "path": file.path,
+            "status": "missing_locally"
+          })
+          let differences = $local_differences.concat($backup_only)
+
+          root = if !$local.all(item -> item.path != null && item.size != null && item.sha256.re_match("^[0-9a-fA-F]{64}$")) {
+            throw("local_manifest entries require path, size, and a SHA-256 hex digest")
+          } else if !$backup.all(item -> item.path != null && item.size != null && item.sha256.re_match("^[0-9a-fA-F]{64}$")) {
+            throw("backup_manifest entries require path, size, and a SHA-256 hex digest")
+          } else {
+            {}
+          }
+          root.status = {
+            "verified": $differences.length() == 0,
+            "local_files": $local.length(),
+            "backup_files": $backup.length(),
+            "differences": $differences.length(),
+            "local_bytes": $local.map_each(file -> file.size).sum(),
+            "backup_bytes": $backup.map_each(file -> file.size).sum()
+          }
+          root.differences = $differences
+          root.metadata = {
+            "skill": "backup-verify",
+            "mode": "mcp",
+            "cloud_provider": this.cloud_provider.or("unspecified"),
+            "bucket": this.bucket.or(null),
+            "trace_id": meta("trace_id").or(uuid_v4())
+          }
 
   output:
     sync_response: {}

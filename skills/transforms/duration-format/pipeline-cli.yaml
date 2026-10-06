@@ -28,8 +28,7 @@ config:
           root.hours = $hours
           root.minutes = $minutes
           root.formatted = $formatted
-          root.metadata = {"skill": "duration-format", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "duration-format", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

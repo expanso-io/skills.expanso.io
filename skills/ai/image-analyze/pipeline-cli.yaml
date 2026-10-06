@@ -4,7 +4,7 @@
 # Deep image analysis with scene graph.
 #
 # Usage:
-#   echo "https://example.com/image.jpg" | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -39,17 +39,20 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           let content = this.choices.0.message.content
-          let analysis = $content.parse_json().catch({
+          let parsed = $content.parse_json().catch({
             "raw_analysis": $content,
-            "objects": [],
-            "colors": [],
-            "text": "",
-            "scene_type": "unknown",
-            "composition": "unknown",
-            "mood": "neutral"
+          })
+          let analysis = $parsed.merge({
+            "objects": $parsed.objects.or([]),
+            "colors": $parsed.colors.or([]),
+            "text": $parsed.text.or(""),
+            "scene_type": $parsed.scene_type.or("unknown"),
+            "composition": $parsed.composition.or("unknown"),
+            "mood": $parsed.mood.or("neutral")
           })
 
           root.analysis = $analysis
@@ -59,7 +62,7 @@ config:
             "model": "gpt-4o-mini",
             "image_url": meta("image_url"),
             "object_count": $analysis.objects.length(),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -69,5 +72,4 @@ config:
             [image-analyze] Found ${! this.metadata.object_count } objects (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -28,6 +28,15 @@ config:
   pipeline:
     processors:
       - mapping: |
+          let secret = env("WEBHOOK_SECRET").or("")
+          let provided = meta("X-Webhook-Signature").or("")
+          let expected = content().hash("hmac_sha256", $secret).encode("hex")
+          root = if $secret == "" {
+            throw("WEBHOOK_SECRET is required")
+          } else if $provided != $expected {
+            throw("webhook rejected: invalid signature")
+          } else { this }
+      - mapping: |
           root = this
           root.received_at = now()
   output:
@@ -37,18 +46,24 @@ config:
         - http_client:
             url: "https://RECEIVER_A_HOST/notify"
             verb: POST
-            headers: {Content-Type: application/json}
+            headers:
+              Content-Type: application/json
+              Authorization: "Bearer ${RECEIVER_A_TOKEN}"
             retries: 5
             retry_period: 200ms
         - http_client:
             url: "https://RECEIVER_B_HOST/notify"
             verb: POST
-            headers: {Content-Type: application/json}
+            headers:
+              Content-Type: application/json
+              Authorization: "Bearer ${RECEIVER_B_TOKEN}"
             retries: 5
             retry_period: 200ms
         - http_client:
             url: "https://RECEIVER_C_HOST/notify"
             verb: POST
-            headers: {Content-Type: application/json}
+            headers:
+              Content-Type: application/json
+              Authorization: "Bearer ${RECEIVER_C_TOKEN}"
             retries: 5
             retry_period: 200ms

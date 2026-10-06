@@ -27,7 +27,7 @@ config:
 
           root.mapped = $mapped
           root.count = $mapped.length()
-          root.metadata = {"skill": "array-map", "mode": "mcp", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "array-map", "mode": "mcp", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
     sync_response: {}

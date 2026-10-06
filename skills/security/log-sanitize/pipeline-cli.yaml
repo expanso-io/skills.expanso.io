@@ -2,8 +2,8 @@
 # ==========================================
 #
 # Usage:
-#   echo 'password=secret123' | expanso-edge run pipeline-cli.yaml
-#   cat app.log | expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # No API key needed - runs entirely locally with pattern matching.
 
@@ -24,7 +24,7 @@ config:
           meta trace_id = uuid_v4()
 
           # Define patterns to redact
-          let text = content()
+          let text = content().string()
           let redactions = 0
           let patterns_matched = []
 
@@ -54,7 +54,7 @@ config:
             "mode": "cli",
             "input_hash": meta("input_hash"),
             "input_length": meta("input_length"),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -64,5 +64,4 @@ config:
             [log-sanitize] Processed ${! meta("input_length") } chars (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

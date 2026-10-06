@@ -10,7 +10,7 @@ config:
   input:
     generate:
       interval: ${GENERATE_INTERVAL:-1s}
-      count: ${GENERATE_COUNT:-0}
+      count: 0
       mapping: |
         root.id = uuid_v4()
         root.timestamp = now()
@@ -111,9 +111,9 @@ config:
             bucket: ${S3_BUCKET_NAME}
             path: logs/year=${!timestamp("2006")}/month=${!timestamp("01")}/day=${!timestamp("02")}/logs_${!timestamp_unix()}.jsonl.gz
             batching:
-              count: ${BATCH_COUNT:-200}
+              count: 200
               period: ${BATCH_PERIOD:-2m}
-              byte_size: ${BATCH_SIZE:-5242880}
+              byte_size: 5242880
               processors:
                 - compress:
                     algorithm: gzip
@@ -121,26 +121,28 @@ config:
             content_type: application/x-ndjson
             content_encoding: gzip
             storage_class: ${S3_STORAGE_CLASS:-STANDARD_IA}
+            server_side_encryption: AES256
             credentials:
               profile: ${AWS_PROFILE}
             region: ${AWS_REGION}
 
         # Error stream
-        - aws_s3:
+        - processors:
+            - mapping: |
+                root = if this.event.application.level == "ERROR" {
+                  this
+                } else {
+                  deleted()
+                }
+          aws_s3:
             bucket: ${S3_ERROR_BUCKET_NAME:-${S3_BUCKET_NAME}}
             path: errors/year=${!timestamp("2006")}/month=${!timestamp("01")}/day=${!timestamp("02")}/error_${!timestamp_unix()}.jsonl
-            processors:
-              - mapping: |
-                  root = if this.event.application.level == "ERROR" {
-                    this
-                  } else {
-                    deleted()
-                  }
             batching:
               count: 50
               period: 1m
             content_type: application/x-ndjson
             storage_class: STANDARD
+            server_side_encryption: AES256
             credentials:
               profile: ${AWS_PROFILE}
             region: ${AWS_REGION}

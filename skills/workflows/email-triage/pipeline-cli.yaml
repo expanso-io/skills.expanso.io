@@ -5,12 +5,10 @@
 #
 # Usage:
 #   # Process Gmail inbox
-#   echo '{"provider":"gmail","limit":50}' | \
-#     GMAIL_TOKEN=... OPENAI_API_KEY=... expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 #   # Process with calendar sync
-#   echo '{"provider":"outlook","create_calendar_events":true}' | \
-#     OUTLOOK_TOKEN=... expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Why Expanso Edge?
 #   Credentials are read from the executing node's environment, not sent to
@@ -34,22 +32,30 @@ config:
       # STEP 1: Parse input and initialize
       # ═══════════════════════════════════════════════════════════════════════
       - mapping: |
-          meta trace_id = uuid_v4()
-          meta start_time = now()
+          let trace_id = uuid_v4()
+          let start_time = now()
+          meta trace_id = $trace_id
+          meta start_time = $start_time
 
           let input = content().parse_json()
-          meta provider = $input.provider.or("gmail")
-          meta folder = $input.folder.or("INBOX")
-          meta limit = $input.limit.or(50)
-          meta since_hours = $input.since_hours.or(24)
-          meta create_calendar_events = $input.create_calendar_events.or(true)
+          let provider = $input.provider.or("gmail")
+          let folder = $input.folder.or("INBOX")
+          let limit = $input.limit.or(50)
+          let since_hours = $input.since_hours.or(24)
+          meta provider = $provider
+          meta folder = $folder
+          meta limit = $limit
+          meta since_hours = $since_hours
+          meta extract_calendar_events = $input.extract_calendar_events.or(true)
 
           # Calculate date filter
-          let since_date = now().ts_sub("${! meta(\"since_hours\") }h")
+          let since_date = (now().ts_unix() - ($since_hours * 3600)).ts_format("2006-01-02T15:04:05Z07:00")
           meta since_date = $since_date
 
           root.status = "initializing"
-          root.provider = meta("provider")
+          root.provider = $provider
+          root.fixture_mode = $input.fixture_mode.or(false)
+          root.fixture_emails = $input.emails.or([])
 
       - log:
           level: INFO
@@ -57,63 +63,99 @@ config:
             [email-triage] Starting triage: provider=${! meta("provider") }, folder=${! meta("folder") }, limit=${! meta("limit") } (trace: ${! meta("trace_id").slice(0, 8) })
 
       # ═══════════════════════════════════════════════════════════════════════
-      # STEP 2: Fetch emails (simulated - real impl uses provider-specific API)
+      # STEP 2: Fetch normalized email records or use an explicit CI fixture
       # ═══════════════════════════════════════════════════════════════════════
+      - switch:
+          - check: 'this.fixture_mode.or(false)'
+            processors:
+              - mapping: |
+                  root.emails = this.fixture_emails.slice(0, meta("limit").number())
+
+          - check: 'meta("provider") == "gmail"'
+            processors:
+              - mapping: |
+                  let api = env("GMAIL_API_URL").or("https://gmail.googleapis.com/gmail/v1")
+                  let query = ("label:" + meta("folder") + " newer_than:" + meta("since_hours").string() + "h").escape_url_query()
+                  root.url = $api + "/users/me/messages?q=" + $query + "&maxResults=" + meta("limit").string()
+                  meta gmail_api = $api
+              - http:
+                  url: '${! this.url }'
+                  verb: GET
+                  headers:
+                    Authorization: "Bearer ${GMAIL_TOKEN}"
+                  timeout: 30s
+                  retries: 3
+                  rate_limit: email_api
+              - mapping: |
+                  let ids = this.messages.or([]).map_each(message -> message.id)
+                  root = if $ids.length() == 0 {
+                    [{"_empty": true}]
+                  } else {
+                    $ids.map_each(id -> {"url": meta("gmail_api") + "/users/me/messages/" + id + "?format=metadata"})
+                  }
+              - unarchive:
+                  format: json_array
+              - switch:
+                  - check: 'this._empty.or(false)'
+                    processors:
+                      - mapping: 'root = this'
+                  - processors:
+                      - http:
+                          url: '${! this.url }'
+                          verb: GET
+                          headers:
+                            Authorization: "Bearer ${GMAIL_TOKEN}"
+                          timeout: 30s
+                          retries: 3
+                          rate_limit: email_api
+                      - mapping: |
+                          let headers = this.payload.headers.or([]).fold({}, pair -> pair.tally.assign({(pair.value.name.lowercase()): pair.value.value}))
+                          root = {
+                            "id": this.id,
+                            "subject": $headers.get("subject").or(""),
+                            "from": $headers.get("from").or(""),
+                            "to": $headers.get("to").or(""),
+                            "date": $headers.get("date").or(""),
+                            "body": this.snippet.or(""),
+                            "has_attachment": this.payload.parts.or([]).any(part -> part.filename.or("").length() > 0)
+                          }
+              - archive:
+                  format: json_array
+              - mapping: 'root.emails = this.filter(email -> !email._empty.or(false))'
+
+          - check: 'meta("provider") == "outlook"'
+            processors:
+              - mapping: |
+                  let api = env("OUTLOOK_API_URL").or("https://graph.microsoft.com/v1.0")
+                  let folder = meta("folder").escape_url_path()
+                  let fields = "id,subject,from,toRecipients,receivedDateTime,bodyPreview,hasAttachments"
+                  root.url = $api + "/me/mailFolders/" + $folder + "/messages?$top=" + meta("limit").string() + "&$select=" + fields
+              - http:
+                  url: '${! this.url }'
+                  verb: GET
+                  headers:
+                    Authorization: "Bearer ${OUTLOOK_TOKEN}"
+                  timeout: 30s
+                  retries: 3
+                  rate_limit: email_api
+              - mapping: |
+                  root.emails = this.value.or([]).map_each(email -> {
+                    "id": email.id,
+                    "subject": email.subject.or(""),
+                    "from": email.from.emailAddress.address.or(""),
+                    "to": email.toRecipients.or([]).map_each(recipient -> recipient.emailAddress.address),
+                    "date": email.receivedDateTime,
+                    "body": email.bodyPreview.or(""),
+                    "has_attachment": email.hasAttachments.or(false)
+                  })
+
+          - processors:
+              - mapping: 'root = throw("provider must be gmail, outlook, or fixture")'
+
       - mapping: |
-          # Configure EMAIL_API_URL to connect to Gmail/Outlook API
-          # Sample emails shown below - replace with http call to EMAIL_API_URL
-
-          let sample_emails = [
-            {
-              "id": "msg-001",
-              "subject": "URGENT: Server down - need immediate help",
-              "from": "ops@company.com",
-              "to": "you@company.com",
-              "date": now().ts_sub("2h"),
-              "body": "Production server is unresponsive. Please check immediately.",
-              "has_attachment": false
-            },
-            {
-              "id": "msg-002",
-              "subject": "Meeting request: Q1 Planning - Thursday 2pm",
-              "from": "manager@company.com",
-              "to": "you@company.com",
-              "date": now().ts_sub("5h"),
-              "body": "Hi, can we schedule a meeting to discuss Q1 planning? I'm proposing Thursday at 2pm. Let me know if that works.",
-              "has_attachment": false
-            },
-            {
-              "id": "msg-003",
-              "subject": "Weekly Newsletter: Tech Updates",
-              "from": "newsletter@techdigest.com",
-              "to": "you@company.com",
-              "date": now().ts_sub("8h"),
-              "body": "This week in tech: AI developments, new frameworks, and more...",
-              "has_attachment": false
-            },
-            {
-              "id": "msg-004",
-              "subject": "RE: Contract review needed",
-              "from": "legal@company.com",
-              "to": "you@company.com",
-              "date": now().ts_sub("12h"),
-              "body": "Please review the attached contract and provide feedback by EOD Friday.",
-              "has_attachment": true
-            },
-            {
-              "id": "msg-005",
-              "subject": "FYI: New office policies",
-              "from": "hr@company.com",
-              "to": "all@company.com",
-              "date": now().ts_sub("18h"),
-              "body": "Please review the updated office policies in the attached document.",
-              "has_attachment": true
-            }
-          ]
-
-          root.emails = $sample_emails.slice(0, meta("limit"))
+          root = this
           root.fetch_status = "success"
-          root.email_count = $sample_emails.length()
+          root.email_count = this.emails.length()
 
       - log:
           level: INFO
@@ -125,12 +167,7 @@ config:
       # ═══════════════════════════════════════════════════════════════════════
       - mapping: |
           # Prepare batch for AI classification
-          let emails_text = this.emails.map_each(e ->
-            "EMAIL ID: " + e.id + "\n" +
-            "FROM: " + e.from + "\n" +
-            "SUBJECT: " + e.subject + "\n" +
-            "BODY: " + e.body.slice(0, 500) + "\n---"
-          ).join("\n\n")
+          let emails_text = this.emails.map_each(e -> "EMAIL ID: " + e.id + "\nFROM: " + e.from + "\nSUBJECT: " + e.subject + "\nBODY: " + e.body.slice(0, 500) + "\n---").join("\n\n")
 
           root.messages = [
             {
@@ -142,36 +179,31 @@ config:
               "content": "Classify these emails:\n\n" + $emails_text + "\n\nRespond with JSON array: [{\"id\": \"...\", \"category\": \"...\", \"priority\": N, \"action\": \"...\", \"calendar_event\": null or {...}}]"
             }
           ]
-          meta emails = this.emails
+          meta emails_json = this.emails.format_json()
 
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       # ═══════════════════════════════════════════════════════════════════════
       # STEP 4: Merge AI results with email data
       # ═══════════════════════════════════════════════════════════════════════
       - mapping: |
           let ai_response = this.choices.0.message.content
-          let classifications = $ai_response.parse_json().catch([])
+          let parsed = $ai_response.parse_json().catch([])
+          let classifications = if $parsed.type() == "array" { $parsed } else { [] }
 
           # Merge classifications with original emails
-          let emails = meta("emails")
-          let processed_emails = $emails.map_each(email -> email.merge($classifications.filter(c -> c.id == email.id).index(0).or({
-            "category": "fyi",
-            "priority": 3,
-            "action": "review",
-            "calendar_event": null
-          })))
+          let emails = meta("emails_json").parse_json().catch([])
+          let processed_emails = $emails.map_each(email -> email.merge($classifications.filter(c -> c.id == email.id).index(0).or({"category": "fyi", "priority": 3, "action": "review", "calendar_event": null})))
 
           # Extract calendar events
-          let calendar_events = $processed_emails.filter(e -> e.calendar_event != null).map_each(e ->
-            e.calendar_event.merge({
-              "email_id": e.id,
-              "from": e.from,
-              "subject": e.subject
-            })
-          )
+          let calendar_events = if meta("extract_calendar_events") == "true" {
+            $processed_emails.filter(e -> e.calendar_event != null).map_each(e -> e.calendar_event.merge({"email_id": e.id, "from": e.from, "subject": e.subject}))
+          } else {
+            []
+          }
 
           # Count by category
           let urgent_count = $processed_emails.filter(e -> e.category == "urgent").length()
@@ -210,8 +242,8 @@ config:
             "mode": "cli",
             "provider": meta("provider"),
             "folder": meta("folder"),
-            "trace_id": meta("trace_id"),
-            "processing_time_ms": now().ts_sub(meta("start_time")).abs(),
+            "trace_id": meta("trace_id").or(uuid_v4()),
+            "processing_time_ms": now().ts_sub(meta("start_time")).abs() / 1000000,
             "timestamp": now()
           }
 
@@ -220,9 +252,7 @@ config:
       # ═══════════════════════════════════════════════════════════════════════
       - mapping: |
           # For urgent and action-required, suggest quick responses
-          let action_emails = this.emails.filter(e ->
-            e.category == "urgent" || e.category == "action-required"
-          )
+          let action_emails = this.emails.filter(e -> e.category == "urgent" || e.category == "action-required")
 
           root = this
           root.draft_responses = $action_emails.map_each(e -> {
@@ -241,16 +271,14 @@ config:
             [email-triage] Complete: ${! this.summary.processed } emails, ${! this.summary.urgent_count } urgent, ${! this.summary.meetings_found } meetings (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}
 
-# Rate limit resources
-rate_limit_resources:
-  - label: email_api
-    local:
-      count: 10
-      interval: 1s
-  - label: openai_api
-    local:
-      count: 20
-      interval: 60s
+  rate_limit_resources:
+    - label: email_api
+      local:
+        count: 10
+        interval: 1s
+    - label: openai_api
+      local:
+        count: 20
+        interval: 60s

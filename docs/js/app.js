@@ -42,18 +42,23 @@
 
     function initThemeToggle() {
         var button = document.getElementById('theme-toggle');
+
         if (!button) return;
         var root = document.documentElement;
+
         function render() {
             var dark = root.getAttribute('data-theme') === 'dark';
             button.textContent = dark ? 'Light' : 'Dark';
             button.setAttribute('aria-pressed', dark ? 'true' : 'false');
             button.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
         }
+
         button.addEventListener('click', function() {
             var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             root.setAttribute('data-theme', next);
+
             try { localStorage.setItem('theme', next); } catch (e) {}
+
             render();
         });
         render();
@@ -61,6 +66,7 @@
 
     async function init() {
         initThemeToggle();
+
         try {
             await loadCatalog();
             await loadValidationReport();
@@ -68,11 +74,14 @@
             filterAndRender();
 
             var redirectPath = sessionStorage.getItem('spa-redirect');
+
             if (redirectPath) {
                 sessionStorage.removeItem('spa-redirect');
                 history.replaceState(null, '', redirectPath);
             }
+
             var match = window.location.pathname.match(/^\/skill\/([^/]+)\/?$/);
+
             if (match && catalog.skills[match[1]]) {
                 openModal(match[1], true);
             }
@@ -84,16 +93,20 @@
 
     async function loadCatalog() {
         var urls = ['catalog.json', '../catalog.json', GITHUB_RAW_BASE + '/catalog.json'];
+
         for (var i = 0; i < urls.length; i++) {
             try {
                 var response = await fetch(urls[i]);
+
                 if (response.ok) {
                     catalog = await response.json();
                     skillCountEl.textContent = String(catalog.total_skills);
+
                     return;
                 }
             } catch (e) { continue; }
         }
+
         throw new Error('Could not load catalog from any source');
     }
 
@@ -101,11 +114,14 @@
     // than implying a pipeline validates.
     async function loadValidationReport() {
         var urls = ['validation-report.json', '../validation-report.json', GITHUB_RAW_BASE + '/validation-report.json'];
+
         for (var i = 0; i < urls.length; i++) {
             try {
                 var response = await fetch(urls[i]);
+
                 if (response.ok) {
                     validationReport = await response.json();
+
                     return;
                 }
             } catch (e) { continue; }
@@ -114,6 +130,7 @@
 
     function variantStatus(skillName, variant) {
         var entry = validationReport && validationReport.skills && validationReport.skills[skillName];
+
         return entry && entry.variants ? entry.variants[variant] || null : null;
     }
 
@@ -126,12 +143,15 @@
             SKILLS_BASE + '/' + skillName + '/' + filename,
             GITHUB_RAW_BASE + '/skills/' + category + '/' + skillName + '/' + filename
         ];
+
         for (var i = 0; i < urls.length; i++) {
             try {
                 var response = await fetch(urls[i]);
+
                 if (response.ok) return await response.text();
             } catch (e) { continue; }
         }
+
         return null;
     }
 
@@ -190,8 +210,10 @@
 
         document.addEventListener('click', function(e) {
             var copyBtn = e.target.closest('.copy-btn');
+
             if (copyBtn) {
                 var text = copyBtn.dataset.copy;
+
                 if (text) copyToClipboard(text, copyBtn);
             }
         });
@@ -202,17 +224,23 @@
         var skills = Object.entries(catalog.skills);
         filteredSkills = skills.filter(function(entry) {
             var name = entry[0], skill = entry[1];
+
             if (currentCategory !== 'all' && skill.category !== currentCategory) return false;
+
             if (searchQuery) {
                 var searchStr = (name + ' ' + skill.description).toLowerCase();
+
                 if (!searchStr.includes(searchQuery)) return false;
             }
+
             if (filterLocal) {
                 if (!isOffline(skill)) return false;
             }
+
             if (filterNoCreds) {
                 if (skill.credentials.filter(function(c) { return c.required; }).length > 0) return false;
             }
+
             return true;
         });
         renderSkills();
@@ -228,10 +256,13 @@
 
     function renderSkills() {
         while (skillsGrid.firstChild) skillsGrid.removeChild(skillsGrid.firstChild);
+
         if (filteredSkills.length === 0) {
             showNoResults('No skills found matching your criteria.');
+
             return;
         }
+
         filteredSkills.forEach(function(entry) {
             skillsGrid.appendChild(createSkillCard(entry[0], entry[1]));
         });
@@ -271,6 +302,7 @@
         article.appendChild(desc);
         article.appendChild(badges);
         article.addEventListener('click', function() { openModal(name); });
+
         return article;
     }
 
@@ -278,6 +310,7 @@
 
     async function openModal(skillName, skipPush) {
         var skill = catalog.skills[skillName];
+
         if (!skill) return;
 
         if (!skipPush) history.pushState({ skill: skillName }, '', '/skill/' + skillName);
@@ -294,17 +327,20 @@
         var hasCloudVariant = !!variantStatus(skillName, 'cloud');
         // Job skills publish their own job specs instead of the cli/mcp pair.
         var jobFiles = skill.job_specs || [];
+
         var results = await Promise.all([
             fetchSkillFile(skillName, 'skill.yaml', skill.category),
             jobFiles.length ? null : fetchSkillFile(skillName, 'pipeline-cli.yaml', skill.category),
             jobFiles.length ? null : fetchSkillFile(skillName, 'pipeline-mcp.yaml', skill.category),
             hasCloudVariant ? fetchSkillFile(skillName, 'pipeline-cloud.yaml', skill.category) : null
         ].concat(jobFiles.map(function(f) { return fetchSkillFile(skillName, f, skill.category); })));
+
         var jobSpecs = jobFiles.map(function(f, i) { return { file: f, yaml: results[4 + i] }; })
             .filter(function(j) { return !!j.yaml; });
 
         while (modalContent.firstChild) modalContent.removeChild(modalContent.firstChild);
         buildModalContent(skillName, skill, results[0], results[1], results[2], results[3], jobSpecs);
+
         if (window.Prism) Prism.highlightAllUnder(modalContent);
     }
 
@@ -312,6 +348,7 @@
     function proofSummary(proof) {
         if (!proof) return '';
         var when = 'On ' + proof.date + ' (expanso-edge ' + proof.expanso_edge + '): ';
+
         return when + (proof.status === 'executed-cloud-and-local'
             ? 'run end to end on Expanso Cloud (one operator-registered node, not a hosted runner) and on a local-mode node.'
             : 'run end to end on a local-mode node only. It has not been run through Expanso Cloud.');
@@ -325,6 +362,7 @@
 
         var title = document.createElement('h2');
         title.className = 'modal-title';
+        title.id = 'skill-modal-title';
         title.textContent = skillName;
 
         var descP = document.createElement('p');
@@ -350,6 +388,7 @@
         skill.backends.forEach(function(b) {
             var badge = document.createElement('span');
             badge.className = 'badge';
+
             if (b === 'local' || b === 'ollama') {
                 badge.style.background = 'var(--success)';
                 badge.style.color = 'black';
@@ -357,6 +396,7 @@
                 badge.style.background = 'var(--bg-tertiary)';
                 badge.style.color = 'var(--text-primary)';
             }
+
             badge.textContent = b;
             badgesDiv.appendChild(badge);
         });
@@ -496,8 +536,11 @@
                         : 'The job that was run, with only the values in its header comment changed. Set up its dependencies from README.md first.'
                 });
             });
+
             if (hasCloud) pipeSubDefs.push({ id: 'cloud', label: 'Cloud Pipeline', yaml: pipelineCloud, file: 'pipeline-cloud.yaml', desc: 'Cloud-scheduled pipeline. Its input needs nothing from your terminal, so it can run on a remote edge node. Start here for a first run against Expanso Cloud.' });
+
             if (hasCli) pipeSubDefs.push({ id: 'cli', label: 'CLI Pipeline', yaml: pipelineCli, file: 'pipeline-cli.yaml', desc: 'Standalone pipeline. Reads from stdin, processes data, outputs to stdout. A Cloud-scheduled job has no stdin connected to your terminal, so this variant cannot receive your input on a remote node as written.' });
+
             if (hasMcp) pipeSubDefs.push({ id: 'mcp', label: 'MCP Pipeline', yaml: pipelineMcp, file: 'pipeline-mcp.yaml', desc: 'HTTP server pipeline for MCP integration. Exposes an endpoint for AI assistants.' });
 
             pipeSubDefs.forEach(function(sub, idx) {
@@ -528,11 +571,6 @@
                 var bannerLeft = document.createElement('div');
                 bannerLeft.className = 'copy-banner-text';
 
-                var bannerIcon = document.createElement('span');
-                bannerIcon.className = 'copy-banner-icon';
-                bannerIcon.textContent = '📋';
-                bannerLeft.appendChild(bannerIcon);
-
                 var bannerInfo = document.createElement('div');
                 var bannerTitle = document.createElement('div');
                 bannerTitle.className = 'copy-banner-title';
@@ -552,16 +590,12 @@
 
                 var copyBtn = document.createElement('button');
                 copyBtn.className = 'copy-pipeline-btn';
+                copyBtn.type = 'button';
+                copyBtn.setAttribute('aria-live', 'polite');
+                copyBtn.dataset.defaultLabel = 'Copy Full Pipeline';
                 copyBtn.textContent = 'Copy Full Pipeline';
                 copyBtn.addEventListener('click', function() {
-                    copyToClipboard(sub.yaml, copyBtn).then(function() {
-                        copyBtn.textContent = '✅ Copied!';
-                        copyBtn.classList.add('copied-state');
-                        setTimeout(function() {
-                            copyBtn.textContent = 'Copy Full Pipeline';
-                            copyBtn.classList.remove('copied-state');
-                        }, 2500);
-                    });
+                    copyToClipboard(sub.yaml, copyBtn);
                 });
 
                 banner.appendChild(bannerLeft);
@@ -578,6 +612,7 @@
                 var readinessEl = document.createElement('p');
                 readinessEl.className = 'readiness-note' + (status && status.validates ? '' : ' readiness-warn');
                 var validatorVersion = validationReport && validationReport.validator ? validationReport.validator.version : '';
+
                 if (!status) {
                     readinessEl.textContent = 'Validation status unknown. Run both validators below before deploying. Not confirmed by an end-to-end run.';
                 } else if (status.validates && sub.job && skill.proof) {
@@ -587,6 +622,7 @@
                 } else {
                     readinessEl.textContent = 'Rejected by expanso-edge validate ' + validatorVersion + ': ' + (status.error || 'see validation-report.json');
                 }
+
                 subDiv.appendChild(readinessEl);
 
                 // Code block
@@ -606,6 +642,7 @@
                     deployDiv.appendChild(blocked);
                 } else {
                     var skillUrl = getSkillUrl(skillName, sub.file);
+
                     var deployCmd =
                         '# Requires: a saved Cloud profile and a connected edge node.\n' +
                         '# expanso-cli job deploy reads a FILE path or \'-\', not a URL.\n' +
@@ -621,6 +658,7 @@
                         '# Confirm the control plane actually scheduled and executed it:\n' +
                         'expanso-cli job describe <job-name>\n' +
                         'expanso-cli execution list --job-id <job-id>';
+
                     deployDiv.appendChild(createCodeBlock(deployCmd, 'bash'));
                 }
 
@@ -658,6 +696,7 @@
         var title = prettyName + ' \u2013 ' + category + ' Skill | Expanso Skills';
         var desc = skill.description || '';
         var suffix = ' Install and deploy with Expanso.';
+
         if (desc.length + suffix.length <= 160) desc = desc + suffix;
         else if (desc.length > 160) desc = desc.substring(0, 157) + '...';
         var canonical = 'https://skills.expanso.io/skill/' + skillName + '/';
@@ -670,6 +709,7 @@
         setMetaContent('name', 'twitter:title', title);
         setMetaContent('name', 'twitter:description', desc);
         var link = document.querySelector('link[rel="canonical"]');
+
         if (link) link.setAttribute('href', canonical);
     }
 
@@ -682,11 +722,13 @@
         setMetaContent('name', 'twitter:title', defaultTitle);
         setMetaContent('name', 'twitter:description', defaultDescription);
         var link = document.querySelector('link[rel="canonical"]');
+
         if (link) link.setAttribute('href', 'https://skills.expanso.io/');
     }
 
     function setMetaContent(attr, name, content) {
         var el = document.querySelector('meta[' + attr + '="' + name + '"]');
+
         if (el) el.setAttribute('content', content);
     }
 
@@ -707,6 +749,7 @@
 
         wrapper.appendChild(pre);
         wrapper.appendChild(copyBtn);
+
         return wrapper;
     }
 
@@ -736,6 +779,7 @@
             var tr = document.createElement('tr');
             row.forEach(function(cell, index) {
                 var td = document.createElement('td');
+
                 if (codeColumns && codeColumns[index]) {
                     var code = document.createElement('code');
                     code.textContent = cell;
@@ -743,6 +787,7 @@
                 } else {
                     td.textContent = cell;
                 }
+
                 tr.appendChild(td);
             });
             tbody.appendChild(tr);
@@ -750,74 +795,85 @@
         table.appendChild(tbody);
 
         section.appendChild(table);
+
         return section;
     }
 
     function createCopyButton(text) {
         var button = document.createElement('button');
         button.className = 'copy-btn';
+        button.type = 'button';
         button.dataset.copy = text;
+        button.dataset.defaultLabel = 'Copy';
         button.title = 'Copy to clipboard';
+        button.setAttribute('aria-label', 'Copy to clipboard');
+        button.setAttribute('aria-live', 'polite');
+        button.textContent = 'Copy';
 
-        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', '16');
-        svg.setAttribute('height', '16');
-        svg.setAttribute('viewBox', '0 0 24 24');
-        svg.setAttribute('fill', 'none');
-        svg.setAttribute('stroke', 'currentColor');
-        svg.setAttribute('stroke-width', '2');
-
-        var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', '9');
-        rect.setAttribute('y', '9');
-        rect.setAttribute('width', '13');
-        rect.setAttribute('height', '13');
-        rect.setAttribute('rx', '2');
-        rect.setAttribute('ry', '2');
-
-        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1');
-
-        svg.appendChild(rect);
-        svg.appendChild(path);
-        button.appendChild(svg);
         return button;
     }
 
     function closeModal(skipPush) {
         modalOverlay.classList.remove('active');
         document.body.style.overflow = '';
+
         if (!skipPush) history.pushState({}, '', '/');
         resetMetaTags();
     }
 
+    function showCopyFeedback(button, copied) {
+        if (!button) return;
+        var defaultLabel = button.dataset.defaultLabel || 'Copy';
+        window.clearTimeout(button.copyFeedbackTimer);
+        button.classList.remove('copy-success', 'copy-error');
+        button.classList.add(copied ? 'copy-success' : 'copy-error');
+        button.textContent = copied ? 'Copied' : 'Copy failed';
+        button.title = copied ? 'Copied to clipboard' : 'Clipboard copy failed';
+        button.setAttribute('aria-label', button.title);
+        button.copyFeedbackTimer = window.setTimeout(function() {
+            button.classList.remove('copy-success', 'copy-error');
+            button.textContent = defaultLabel;
+            button.title = 'Copy to clipboard';
+            button.setAttribute('aria-label', 'Copy to clipboard');
+        }, 2500);
+    }
+
     async function copyToClipboard(text, button) {
+        var copied = false;
+
         try {
-            await navigator.clipboard.writeText(text);
-            if (button) {
-                button.classList.add('copied');
-                var originalTitle = button.title;
-                button.title = 'Copied!';
-                setTimeout(function() {
-                    button.classList.remove('copied');
-                    button.title = originalTitle;
-                }, 1500);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+                copied = true;
             }
-        } catch (err) {
-            // Fallback
+        } catch (err) {}
+
+        if (!copied) {
             var ta = document.createElement('textarea');
             ta.value = text;
             ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
             ta.style.opacity = '0';
             document.body.appendChild(ta);
             ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
+
+            try {
+                copied = document.execCommand('copy') === true;
+            } catch (err) {
+                copied = false;
+            } finally {
+                document.body.removeChild(ta);
+            }
         }
+
+        showCopyFeedback(button, copied);
+
+        return copied;
     }
 
     function debounce(fn, delay) {
         var timeoutId;
+
         return function() {
             var context = this, args = arguments;
             clearTimeout(timeoutId);

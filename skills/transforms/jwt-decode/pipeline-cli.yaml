@@ -28,8 +28,7 @@ config:
           root.payload = $payload
           root.signature = $signature
           root.valid_format = $parts.length() == 3
-          root.metadata = {"skill": "jwt-decode", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "jwt-decode", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

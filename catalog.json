@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-09-18T06:45:37.697134+00:00",
+  "generated": "2026-10-06T06:37:54.910972+00:00",
   "total_skills": 185,
   "categories": {
     "jobs": {
@@ -82,8 +82,14 @@
         {
           "name": "audio_url",
           "type": "string",
-          "required": true,
-          "description": "URL of audio file to transcribe"
+          "required": false,
+          "description": "HTTPS URL of an audio file to transcribe"
+        },
+        {
+          "name": "language",
+          "type": "string",
+          "required": false,
+          "description": "Optional ISO-639-1 audio language"
         }
       ],
       "outputs": [
@@ -94,10 +100,12 @@
         }
       ],
       "backends": [
-        "openai"
+        "openai",
+        "fixture"
       ],
       "tags": [
         "ai",
+        "local",
         "remote"
       ]
     },
@@ -1306,10 +1314,12 @@
         }
       ],
       "backends": [
-        "replicate"
+        "replicate",
+        "fixture"
       ],
       "tags": [
         "ai",
+        "local",
         "remote"
       ]
     },
@@ -1323,21 +1333,6 @@
           "name": "GMAIL_ACCESS_TOKEN",
           "required": true,
           "description": "Gmail OAuth2 access token"
-        },
-        {
-          "name": "GMAIL_REFRESH_TOKEN",
-          "required": false,
-          "description": "Gmail OAuth2 refresh token for long-lived access"
-        },
-        {
-          "name": "GMAIL_CLIENT_ID",
-          "required": false,
-          "description": "OAuth2 client ID (for token refresh)"
-        },
-        {
-          "name": "GMAIL_CLIENT_SECRET",
-          "required": false,
-          "description": "OAuth2 client secret (for token refresh)"
         }
       ],
       "inputs": [
@@ -1360,31 +1355,27 @@
           "type": "integer",
           "default": 20,
           "description": "Maximum emails to retrieve (1-100)"
-        },
-        {
-          "name": "include_body",
-          "type": "boolean",
-          "default": true,
-          "description": "Include email body content (set false for headers only)"
         }
       ],
       "outputs": [
         {
           "name": "emails",
           "type": "array",
-          "description": "Array of emails: {id, subject, from, to, date, snippet, body, labels}"
+          "description": "Array of messages: {id, subject, from, to, date, snippet, labels, has_attachment}"
         },
         {
           "name": "metadata",
           "type": "object",
-          "description": "Processing metadata: {skill, trace_id, email_count, query, timestamp}"
+          "description": "Processing metadata: {skill, trace_id, email_count, total_estimated, query, timestamp}"
         }
       ],
       "backends": [
-        "gmail-api"
+        "gmail-api",
+        "fixture"
       ],
       "tags": [
         "connectors",
+        "local",
         "remote"
       ]
     },
@@ -1438,21 +1429,18 @@
           "description": "Array of messages: {id, user, text, timestamp, thread_ts, reactions}"
         },
         {
-          "name": "channel_info",
-          "type": "object",
-          "description": "Channel metadata: {id, name, topic, purpose, member_count}"
-        },
-        {
           "name": "metadata",
           "type": "object",
-          "description": "Processing metadata: {skill, trace_id, message_count, timestamp}"
+          "description": "Processing metadata: {skill, trace_id, message_count, total_available, timestamp}"
         }
       ],
       "backends": [
-        "slack-api"
+        "slack-api",
+        "fixture"
       ],
       "tags": [
         "connectors",
+        "local",
         "remote",
         "slack"
       ]
@@ -2277,7 +2265,7 @@
         {
           "name": "NVD_API_KEY",
           "required": false,
-          "description": "NVD API key for higher rate limits"
+          "description": "Reserved for a future NVD backend; the current pipeline uses OSV without an API key"
         }
       ],
       "inputs": [
@@ -2285,7 +2273,7 @@
           "name": "sbom",
           "type": "object",
           "required": true,
-          "description": "CycloneDX or SPDX SBOM"
+          "description": "CycloneDX or SPDX SBOM; each package needs a version and either purl or an explicit OSV ecosystem"
         },
         {
           "name": "severity_threshold",
@@ -2318,11 +2306,9 @@
         }
       ],
       "backends": [
-        "local",
         "remote"
       ],
       "tags": [
-        "local",
         "remote",
         "security"
       ]
@@ -2827,7 +2813,7 @@
         {
           "name": "SIGNING_KEY",
           "required": true,
-          "description": "Base64-encoded ed25519 private key"
+          "description": "HMAC secret containing at least 32 characters"
         }
       ],
       "inputs": [
@@ -7310,20 +7296,9 @@
     "auto-coder": {
       "name": "auto-coder",
       "version": "1.0.0",
-      "description": "Autonomous coding with GitHub integration and CI/CD automation",
+      "description": "Report the execution capabilities required before an autonomous coding request can run",
       "category": "workflows",
-      "credentials": [
-        {
-          "name": "GITHUB_TOKEN",
-          "required": true,
-          "description": ""
-        },
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": ""
-        }
-      ],
+      "credentials": [],
       "inputs": [
         {
           "name": "task",
@@ -7349,16 +7324,29 @@
       ],
       "outputs": [
         {
+          "name": "status",
+          "type": "string",
+          "description": "Always unsupported until repository execution is configured"
+        },
+        {
           "name": "changes",
-          "type": "array"
+          "type": "array",
+          "description": "Empty because this pipeline does not edit repositories"
         },
         {
           "name": "pr_url",
-          "type": "string"
+          "type": "string",
+          "description": "Null because this pipeline does not create pull requests"
         },
         {
           "name": "tests_passed",
-          "type": "boolean"
+          "type": "object",
+          "description": "Null because tests are not run"
+        },
+        {
+          "name": "capability_gap",
+          "type": "object",
+          "description": "Exact missing capabilities and supporting evidence"
         },
         {
           "name": "metadata",
@@ -7366,41 +7354,32 @@
         }
       ],
       "backends": [
-        "openai"
+        "local"
       ],
       "tags": [
-        "openai",
-        "remote",
+        "local",
+        "offline",
         "workflows"
       ]
     },
     "backup-verify": {
       "name": "backup-verify",
       "version": "1.0.0",
-      "description": "Verify backup integrity and sync status across storage providers",
+      "description": "Compare local and backup manifests by path, size, and SHA-256 digest",
       "category": "workflows",
-      "credentials": [
-        {
-          "name": "AWS_ACCESS_KEY_ID",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "AWS_SECRET_ACCESS_KEY",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "GOOGLE_CLOUD_KEY",
-          "required": false,
-          "description": ""
-        }
-      ],
+      "credentials": [],
       "inputs": [
         {
-          "name": "local_paths",
+          "name": "local_manifest",
           "type": "array",
-          "default": []
+          "required": true,
+          "description": "Local manifest entries: [{path, size, sha256}]"
+        },
+        {
+          "name": "backup_manifest",
+          "type": "array",
+          "required": true,
+          "description": "Backup manifest entries: [{path, size, sha256}]"
         },
         {
           "name": "cloud_provider",
@@ -7416,7 +7395,8 @@
         {
           "name": "bucket",
           "type": "string",
-          "required": false
+          "required": false,
+          "description": "Provider that produced backup_manifest; this pipeline does not fetch it"
         }
       ],
       "outputs": [
@@ -7437,7 +7417,6 @@
         "local"
       ],
       "tags": [
-        "google",
         "local",
         "offline",
         "workflows"
@@ -7446,21 +7425,15 @@
     "catalog-reconcile": {
       "name": "catalog-reconcile",
       "version": "1.0.0",
-      "description": "AI-powered product catalog reconciliation across multiple sources",
+      "description": "Deterministic product catalog reconciliation across named source manifests",
       "category": "workflows",
-      "credentials": [
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": ""
-        }
-      ],
+      "credentials": [],
       "inputs": [
         {
           "name": "catalogs",
           "type": "array",
           "required": true,
-          "description": "List of catalog sources to reconcile"
+          "description": "Named catalogs: [{name, items: [{sku, upc, name, ...}]}]"
         },
         {
           "name": "match_fields",
@@ -7491,72 +7464,38 @@
         }
       ],
       "backends": [
-        "openai"
+        "local"
       ],
       "tags": [
-        "openai",
-        "remote",
+        "local",
+        "offline",
         "workflows"
       ]
     },
     "devops-monitor": {
       "name": "devops-monitor",
       "version": "1.0.0",
-      "description": "AI-powered DevOps monitoring with automated log analysis and alerting",
+      "description": "Analyze supplied workflow, log, and metric observations without inventing collector or alert receipts",
       "category": "workflows",
-      "credentials": [
-        {
-          "name": "GITHUB_TOKEN",
-          "required": false,
-          "description": "GitHub personal access token"
-        },
-        {
-          "name": "PROMETHEUS_URL",
-          "required": false,
-          "description": "Prometheus endpoint for metrics"
-        },
-        {
-          "name": "GRAFANA_API_KEY",
-          "required": false,
-          "description": "Grafana API key"
-        },
-        {
-          "name": "SLACK_WEBHOOK",
-          "required": false,
-          "description": "Slack webhook for alerts"
-        },
-        {
-          "name": "PAGERDUTY_KEY",
-          "required": false,
-          "description": "PagerDuty integration key"
-        },
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": "OpenAI for AI analysis"
-        }
-      ],
+      "credentials": [],
       "inputs": [
         {
-          "name": "sources",
-          "type": "array",
-          "default": [
-            "github",
-            "logs"
-          ],
-          "description": "Data sources: github, logs, prometheus, uptime"
-        },
-        {
-          "name": "repos",
+          "name": "workflows",
           "type": "array",
           "default": [],
-          "description": "GitHub repos to monitor (owner/repo format)"
+          "description": "Workflow-run observations from an upstream collector"
         },
         {
-          "name": "log_paths",
+          "name": "errors",
           "type": "array",
           "default": [],
-          "description": "Log file paths to analyze"
+          "description": "Aggregated error events from an upstream log collector"
+        },
+        {
+          "name": "metrics",
+          "type": "object",
+          "default": {},
+          "description": "Metric snapshot to include in the report"
         },
         {
           "name": "alert_threshold",
@@ -7569,12 +7508,6 @@
             "critical"
           ],
           "description": "Minimum severity for alerts"
-        },
-        {
-          "name": "lookback_hours",
-          "type": "integer",
-          "default": 1,
-          "description": "Hours of data to analyze"
         }
       ],
       "outputs": [
@@ -7599,9 +7532,9 @@
           "description": "Key metrics summary"
         },
         {
-          "name": "alerts_sent",
+          "name": "alert_candidates",
           "type": "array",
-          "description": "Alerts that were dispatched"
+          "description": "Issues meeting the configured threshold; no delivery is claimed"
         },
         {
           "name": "metadata",
@@ -7610,25 +7543,24 @@
         }
       ],
       "backends": [
-        "openai"
+        "local"
       ],
       "tags": [
-        "openai",
-        "remote",
-        "slack",
+        "local",
+        "offline",
         "workflows"
       ]
     },
     "email-triage": {
       "name": "email-triage",
       "version": "1.0.0",
-      "description": "AI-powered email triage with calendar sync and response drafting",
+      "description": "AI-powered Gmail and Microsoft 365 triage with response drafting",
       "category": "workflows",
       "credentials": [
         {
           "name": "GMAIL_TOKEN",
           "required": false,
-          "description": "Gmail OAuth token (or use IMAP credentials)"
+          "description": "Gmail OAuth access token"
         },
         {
           "name": "OUTLOOK_TOKEN",
@@ -7636,29 +7568,9 @@
           "description": "Microsoft Graph API token"
         },
         {
-          "name": "IMAP_HOST",
-          "required": false,
-          "description": "IMAP server hostname"
-        },
-        {
-          "name": "IMAP_USER",
-          "required": false,
-          "description": "IMAP username"
-        },
-        {
-          "name": "IMAP_PASS",
-          "required": false,
-          "description": "IMAP password"
-        },
-        {
           "name": "OPENAI_API_KEY",
           "required": true,
           "description": "OpenAI API key for AI processing"
-        },
-        {
-          "name": "CALENDAR_API_KEY",
-          "required": false,
-          "description": "Google Calendar or Outlook Calendar API key"
         }
       ],
       "inputs": [
@@ -7669,7 +7581,7 @@
           "enum": [
             "gmail",
             "outlook",
-            "imap"
+            "fixture"
           ],
           "description": "Email provider to connect"
         },
@@ -7692,29 +7604,22 @@
           "description": "Process emails from last N hours"
         },
         {
-          "name": "categories",
-          "type": "array",
-          "default": [
-            "urgent",
-            "action-required",
-            "meeting",
-            "fyi",
-            "newsletter",
-            "spam"
-          ],
-          "description": "Categories to classify into"
-        },
-        {
-          "name": "auto_archive",
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically archive processed emails"
-        },
-        {
-          "name": "create_calendar_events",
+          "name": "extract_calendar_events",
           "type": "boolean",
           "default": true,
-          "description": "Automatically create calendar events from meeting requests"
+          "description": "Extract proposed calendar events from meeting requests"
+        },
+        {
+          "name": "fixture_mode",
+          "type": "boolean",
+          "default": false,
+          "description": "Use supplied emails instead of a provider API; intended for tests"
+        },
+        {
+          "name": "emails",
+          "type": "array",
+          "default": [],
+          "description": "Normalized emails used only when fixture_mode is true"
         }
       ],
       "outputs": [
@@ -7731,7 +7636,7 @@
         {
           "name": "calendar_events",
           "type": "array",
-          "description": "Calendar events extracted/created"
+          "description": "Proposed calendar events extracted from messages; no event is created"
         },
         {
           "name": "draft_responses",
@@ -7745,8 +7650,10 @@
         }
       ],
       "backends": [
+        "gmail",
+        "microsoft-graph",
         "openai",
-        "ollama"
+        "fixture"
       ],
       "tags": [
         "local",
@@ -7834,7 +7741,7 @@
     "jira-automate": {
       "name": "jira-automate",
       "version": "1.0.0",
-      "description": "Automate Jira/Confluence workflows with AI-powered issue management",
+      "description": "Search, create, and update Jira Cloud issues with authenticated REST API v3 requests",
       "category": "workflows",
       "credentials": [
         {
@@ -7851,11 +7758,6 @@
           "name": "JIRA_API_TOKEN",
           "required": true,
           "description": "Jira API token"
-        },
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": "OpenAI for AI features"
         }
       ],
       "inputs": [
@@ -7866,10 +7768,7 @@
           "enum": [
             "create",
             "update",
-            "search",
-            "summarize",
-            "link_pr",
-            "generate_docs"
+            "search"
           ],
           "description": "Action to perform"
         },
@@ -7922,11 +7821,12 @@
         }
       ],
       "backends": [
-        "openai"
+        "jira-cloud",
+        "fixture"
       ],
       "tags": [
         "jira",
-        "openai",
+        "local",
         "remote",
         "workflows"
       ]
@@ -8188,43 +8088,13 @@
     "morning-briefing": {
       "name": "morning-briefing",
       "version": "1.0.0",
-      "description": "Personalized daily briefing with calendar, weather, news, and tasks",
+      "description": "Summarize supplied calendar, weather, news, and task records into a morning briefing",
       "category": "workflows",
       "credentials": [
         {
-          "name": "GOOGLE_CALENDAR_TOKEN",
-          "required": false,
-          "description": "Google Calendar OAuth token"
-        },
-        {
-          "name": "OPENWEATHER_API_KEY",
-          "required": false,
-          "description": "OpenWeatherMap API key"
-        },
-        {
-          "name": "NEWS_API_KEY",
-          "required": false,
-          "description": "NewsAPI key for headlines"
-        },
-        {
-          "name": "TODOIST_TOKEN",
-          "required": false,
-          "description": "Todoist API token"
-        },
-        {
           "name": "OPENAI_API_KEY",
           "required": true,
-          "description": "OpenAI for summary and priorities"
-        },
-        {
-          "name": "TELEGRAM_BOT_TOKEN",
-          "required": false,
-          "description": "Telegram bot for delivery"
-        },
-        {
-          "name": "SLACK_WEBHOOK",
-          "required": false,
-          "description": "Slack webhook for delivery"
+          "description": "OpenAI for the briefing summary"
         }
       ],
       "inputs": [
@@ -8235,37 +8105,28 @@
           "description": "Location for weather"
         },
         {
-          "name": "news_topics",
+          "name": "calendar",
           "type": "array",
-          "default": [
-            "technology",
-            "business"
-          ],
-          "description": "News topics of interest"
+          "default": [],
+          "description": "Calendar event records from an upstream collector"
         },
         {
-          "name": "calendar_hours",
-          "type": "integer",
-          "default": 24,
-          "description": "Calendar lookahead hours"
+          "name": "weather",
+          "type": "object",
+          "default": {},
+          "description": "Current weather record from an upstream collector"
         },
         {
-          "name": "delivery",
-          "type": "string",
-          "default": "json",
-          "enum": [
-            "json",
-            "telegram",
-            "slack",
-            "email"
-          ],
-          "description": "Delivery method"
+          "name": "news",
+          "type": "array",
+          "default": [],
+          "description": "Headline records from an upstream collector"
         },
         {
-          "name": "voice",
-          "type": "boolean",
-          "default": false,
-          "description": "Include TTS audio version"
+          "name": "tasks",
+          "type": "array",
+          "default": [],
+          "description": "Task records from an upstream collector"
         }
       ],
       "outputs": [
@@ -8280,11 +8141,6 @@
           "description": "AI-generated executive summary"
         },
         {
-          "name": "audio_url",
-          "type": "string",
-          "description": "URL to audio version (if voice enabled)"
-        },
-        {
           "name": "metadata",
           "type": "object",
           "description": "Generation metadata"
@@ -8294,10 +8150,8 @@
         "openai"
       ],
       "tags": [
-        "google",
         "openai",
         "remote",
-        "slack",
         "workflows"
       ]
     },
@@ -8389,36 +8243,16 @@
     "seo-pipeline": {
       "name": "seo-pipeline",
       "version": "1.0.0",
-      "description": "Complete SEO workflow with analysis, reporting, and AI content optimization",
+      "description": "Inspect a public HTTPS page for title, description, headings, links, and image alt text",
       "category": "workflows",
-      "credentials": [
-        {
-          "name": "GOOGLE_SEARCH_CONSOLE_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "AHREFS_API_KEY",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": ""
-        }
-      ],
+      "credentials": [],
       "inputs": [
         {
           "name": "action",
           "type": "string",
           "default": "analyze",
           "enum": [
-            "analyze",
-            "report",
-            "optimize",
-            "keywords",
-            "backlinks"
+            "analyze"
           ]
         },
         {
@@ -8430,6 +8264,12 @@
           "name": "keywords",
           "type": "array",
           "default": []
+        },
+        {
+          "name": "html",
+          "type": "string",
+          "required": false,
+          "description": "Optional captured HTML fixture; when omitted the pipeline fetches url"
         }
       ],
       "outputs": [
@@ -8447,37 +8287,20 @@
         }
       ],
       "backends": [
-        "openai"
+        "local"
       ],
       "tags": [
-        "google",
-        "openai",
-        "remote",
+        "local",
+        "offline",
         "workflows"
       ]
     },
     "site-migrate": {
       "name": "site-migrate",
       "version": "1.0.0",
-      "description": "Migrate websites across platforms (Notion\u2192Astro, WordPress\u2192Hugo, etc.)",
+      "description": "Check whether a requested website migration is implemented by this Edge recipe",
       "category": "workflows",
-      "credentials": [
-        {
-          "name": "NOTION_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "CLOUDFLARE_API_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": ""
-        }
-      ],
+      "credentials": [],
       "inputs": [
         {
           "name": "source",
@@ -8525,23 +8348,31 @@
           "type": "string"
         },
         {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "capability_gap",
+          "type": "object"
+        },
+        {
           "name": "metadata",
           "type": "object"
         }
       ],
       "backends": [
-        "openai"
+        "local"
       ],
       "tags": [
-        "openai",
-        "remote",
+        "local",
+        "offline",
         "workflows"
       ]
     },
     "stripe-reports": {
       "name": "stripe-reports",
       "version": "1.0.0",
-      "description": "Generate AI-powered business reports from Stripe with insights and quick wins",
+      "description": "Generate revenue reports from authenticated Stripe balance transactions",
       "category": "workflows",
       "credentials": [
         {
@@ -8553,11 +8384,6 @@
           "name": "OPENAI_API_KEY",
           "required": true,
           "description": "OpenAI API key for AI insights"
-        },
-        {
-          "name": "SLACK_WEBHOOK",
-          "required": false,
-          "description": "Slack webhook URL for report delivery"
         }
       ],
       "inputs": [
@@ -8575,56 +8401,28 @@
           "description": "Reporting period"
         },
         {
-          "name": "metrics",
-          "type": "array",
-          "default": [
-            "revenue",
-            "subscriptions",
-            "churn",
-            "refunds"
-          ],
-          "description": "Metrics to include"
-        },
-        {
           "name": "include_insights",
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Generate AI insights"
         },
         {
           "name": "include_quick_wins",
           "type": "boolean",
           "default": true,
-          "description": "Identify actionable quick wins"
-        },
-        {
-          "name": "send_slack",
-          "type": "boolean",
-          "default": false,
-          "description": "Send report to Slack"
-        },
-        {
-          "name": "format",
-          "type": "string",
-          "default": "json",
-          "enum": [
-            "json",
-            "markdown",
-            "html"
-          ],
-          "description": "Output format"
+          "description": "Include quick-win actions when AI insights are enabled"
         }
       ],
       "outputs": [
         {
           "name": "report",
           "type": "object",
-          "description": "Complete report: {period, metrics, insights, quick_wins}"
+          "description": "Report period, Unix time range, and generation timestamp"
         },
         {
           "name": "metrics",
           "type": "object",
-          "description": "Raw metrics: {revenue, mrr, churn_rate, new_customers, ...}"
+          "description": "Calculated revenue and balance-transaction counts"
         },
         {
           "name": "insights",
@@ -8634,7 +8432,7 @@
         {
           "name": "quick_wins",
           "type": "array",
-          "description": "Actionable recommendations with potential impact"
+          "description": "AI-generated actions based only on the calculated Stripe metrics"
         },
         {
           "name": "metadata",
@@ -8643,27 +8441,23 @@
         }
       ],
       "backends": [
-        "openai"
+        "stripe",
+        "openai",
+        "fixture"
       ],
       "tags": [
+        "local",
         "openai",
         "remote",
-        "slack",
         "workflows"
       ]
     },
     "task-dashboard": {
       "name": "task-dashboard",
       "version": "1.0.0",
-      "description": "Mission control dashboard for AI agent task queue management",
+      "description": "Summarize task records supplied by an upstream queue or task system",
       "category": "workflows",
-      "credentials": [
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": ""
-        }
-      ],
+      "credentials": [],
       "inputs": [
         {
           "name": "action",
@@ -8678,8 +8472,15 @@
         },
         {
           "name": "task",
-          "type": "string",
-          "required": false
+          "type": "object",
+          "required": false,
+          "description": "Retained for compatibility; state-changing actions report unsupported"
+        },
+        {
+          "name": "tasks",
+          "type": "array",
+          "required": true,
+          "description": "Current task records to summarize"
         }
       ],
       "outputs": [
@@ -8701,11 +8502,11 @@
         }
       ],
       "backends": [
-        "openai"
+        "local"
       ],
       "tags": [
-        "openai",
-        "remote",
+        "local",
+        "offline",
         "workflows"
       ]
     },
@@ -8764,51 +8565,55 @@
     "todoist-automate": {
       "name": "todoist-automate",
       "version": "1.0.0",
-      "description": "AI-powered Todoist automation with smart prioritization and scheduling",
+      "description": "Manage Todoist tasks through authenticated Todoist API v1 requests",
       "category": "workflows",
       "credentials": [
         {
           "name": "TODOIST_TOKEN",
           "required": true,
           "description": "Todoist API token"
-        },
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": "OpenAI for AI features"
-        },
-        {
-          "name": "TELEGRAM_BOT_TOKEN",
-          "required": false,
-          "description": "Telegram bot for notifications"
         }
       ],
       "inputs": [
         {
           "name": "action",
           "type": "string",
-          "default": "sync",
+          "default": "list",
           "enum": [
-            "sync",
+            "list",
             "create",
-            "prioritize",
-            "schedule",
-            "remind"
+            "update",
+            "complete"
           ]
         },
         {
-          "name": "project",
+          "name": "project_id",
           "type": "string",
           "required": false
         },
         {
-          "name": "task",
+          "name": "task_id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "description",
           "type": "string",
           "required": false
         },
         {
           "name": "due_date",
           "type": "string",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "integer",
           "required": false
         }
       ],
@@ -8827,10 +8632,11 @@
         }
       ],
       "backends": [
-        "openai"
+        "todoist",
+        "fixture"
       ],
       "tags": [
-        "openai",
+        "local",
         "remote",
         "workflows"
       ]
@@ -8838,22 +8644,12 @@
     "voice-admin": {
       "name": "voice-admin",
       "version": "1.0.0",
-      "description": "Voice-driven business admin for scheduling, invoicing, and task management",
+      "description": "Transcribe voice commands and extract proposed admin actions without claiming external execution",
       "category": "workflows",
       "credentials": [
         {
           "name": "OPENAI_API_KEY",
           "required": true,
-          "description": ""
-        },
-        {
-          "name": "TWILIO_ACCOUNT_SID",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "QUICKBOOKS_TOKEN",
-          "required": false,
           "description": ""
         }
       ],
@@ -8861,17 +8657,24 @@
         {
           "name": "audio",
           "type": "string",
-          "description": "Base64 audio or audio URL"
+          "description": "Deprecated; use audio_url"
+        },
+        {
+          "name": "audio_url",
+          "type": "string",
+          "description": "HTTPS URL of an audio object"
+        },
+        {
+          "name": "language",
+          "type": "string",
+          "description": "Optional ISO-639-1 audio language"
         },
         {
           "name": "action",
           "type": "string",
-          "default": "transcribe_and_act",
+          "default": "transcribe_and_extract",
           "enum": [
-            "transcribe",
-            "schedule",
-            "invoice",
-            "task"
+            "transcribe_and_extract"
           ]
         }
       ],
@@ -8886,7 +8689,13 @@
         },
         {
           "name": "confirmations",
-          "type": "array"
+          "type": "array",
+          "description": "Always empty; external actions are not executed"
+        },
+        {
+          "name": "execution_status",
+          "type": "string",
+          "description": "proposed_only"
         },
         {
           "name": "metadata",
@@ -8894,9 +8703,11 @@
         }
       ],
       "backends": [
-        "openai"
+        "openai",
+        "fixture"
       ],
       "tags": [
+        "local",
         "openai",
         "remote",
         "workflows"

@@ -27,8 +27,7 @@ config:
           root.hex = "#" + $hex_full
           root.input = $color
           root.valid = $is_hex && ($hex_val.length() == 3 || $hex_val.length() == 6)
-          root.metadata = {"skill": "color-convert", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "color-convert", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

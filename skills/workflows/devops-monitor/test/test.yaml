@@ -1,8 +1,10 @@
-# Test: devops-monitor
 tests:
-  - name: "Monitors and analyzes"
-    skip: true
-    input: '{"sources": ["github", "logs"]}'
+  - name: "Analyzes supplied workflow and log observations"
+    input: '{"workflows":[{"id":"run-1","repo":"org/app","name":"CI","status":"failure"}],"errors":[{"id":"db-1","message":"database timeout","count":12}],"metrics":{"cpu_avg":45},"alert_threshold":"high"}'
     expected_output:
-      metadata:
-        skill: "devops-monitor"
+      status:
+        overall_health: degraded
+        issue_count: 2
+        observed_issue_count: 2
+      metrics:
+        cpu_avg: 45

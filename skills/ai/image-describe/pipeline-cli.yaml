@@ -26,12 +26,12 @@ config:
       - openai_chat_completion:
           api_key: "${OPENAI_API_KEY}"
           model: gpt-4o-mini
+          tools: []
 
       - mapping: |
           root.description = this.choices.0.message.content
           root.image_url = meta("image_url")
-          root.metadata = {"skill": "image-describe", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "image-describe", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

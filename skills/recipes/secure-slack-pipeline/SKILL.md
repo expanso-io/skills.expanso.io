@@ -33,7 +33,8 @@ export EXPANSO_API_KEYS="key123:marketing-bot,key456:data-analyst"
 export ACCESS_POLICY="marketing-bot:slack-read:read,data-analyst:slack-read:read"
 
 # Start the pipeline
-expanso-edge run pipeline.yaml
+expanso-edge validate pipeline.yaml
+expanso-cli job deploy pipeline.yaml
 
 # Call it (from your agent or curl)
 curl -X POST http://localhost:4195/secure-slack-read \

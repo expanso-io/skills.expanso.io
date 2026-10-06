@@ -4,7 +4,7 @@
 # Verify JWT token.
 #
 # Usage:
-#   echo "eyJ..." | JWT_SECRET=... expanso-edge run pipeline-cli.yaml
+#   expanso-edge validate pipeline-cli.yaml
 #
 # Validates against: docs.expanso.io/schemas/pipeline.schema.json
 
@@ -65,7 +65,7 @@ config:
           root.metadata = {
             "skill": "jwt-verify",
             "mode": "cli",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 
@@ -75,5 +75,4 @@ config:
             [jwt-verify] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

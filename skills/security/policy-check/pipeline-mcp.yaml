@@ -25,7 +25,7 @@ config:
             throw("config field is required")
           } else if $policy == null {
             throw("policy field is required")
-          } else { "" }
+          } else { {} }
 
           let deny_rules = $policy.deny.or([])
           let violations = []
@@ -37,7 +37,7 @@ config:
             "skill": "policy-check",
             "mode": "mcp",
             "rules_checked": $deny_rules.length(),
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

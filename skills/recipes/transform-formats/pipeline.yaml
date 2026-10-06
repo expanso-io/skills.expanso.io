@@ -17,71 +17,68 @@ config:
     processors:
       # Step 1: Detect input format from Content-Type or structure
       - mapping: |
-          root = this
           let content = this.string()
-
-          root.source_format = if content.has_prefix("{") || content.has_prefix("[") {
+          let source_format = if $content.has_prefix("{") || $content.has_prefix("[") {
             "json"
-          } else if content.has_prefix("<?xml") || content.has_prefix("<") {
+          } else if $content.has_prefix("<?xml") || $content.has_prefix("<") {
             "xml"
-          } else if content.count(",") >= 1 {
+          } else if $content.contains(",") {
             "csv"
           } else {
             "text"
           }
 
-          root.raw = content
-          meta source_format = root.source_format
+          root = this
+          root.source_format = $source_format
+          root.raw = $content
+          meta source_format = $source_format
 
       # Step 2: Parse to normalized structure
       - switch:
           - check: 'meta("source_format") == "json"'
             processors:
-              - json_documents:
-                  parts: []
+              - mapping: 'root = this.raw.parse_json()'
 
           - check: 'meta("source_format") == "xml"'
             processors:
+              - mapping: 'root = this.raw'
               - xml:
                   operator: to_json
 
           - check: 'meta("source_format") == "csv"'
             processors:
-              - csv:
-                  parse_header_row: true
+              - mapping: 'root = this.raw.parse_csv()'
 
       # Step 3: Transform to target format (based on Accept header or default)
       - mapping: |
-          root = this
-          let target = meta("http_accept").or("application/json")
-
-          root.target_format = if target.contains("xml") {
+          let target = meta("Accept").or("application/json")
+          let target_format = if $target.contains("xml") {
             "xml"
-          } else if target.contains("csv") {
+          } else if $target.contains("csv") {
             "csv"
           } else {
             "json"
           }
 
-          meta target_format = root.target_format
+          root = this
+          root.target_format = $target_format
+          meta target_format = $target_format
 
       # Step 4: Encode to target format
       - switch:
           - check: 'meta("target_format") == "xml"'
             processors:
-              - xml:
-                  operator: from_json
+              - mapping: 'root = this.format_xml()'
 
           - check: 'meta("target_format") == "csv"'
             processors:
               - mapping: |
-                  root = if this.type() == "array" {
-                    this
-                  } else {
-                    [this]
-                  }
-              - unarchive:
-                  format: csv_lines
+                  let rows = if this.type() == "array" { this } else { [this] }
+                  let first = $rows.index(0)
+                  let keys = if $first.type() == "object" { $first.keys().sort() } else { ["value"] }
+                  let header = $keys.map_each(key -> "\"" + $key.replace_all("\"", "\"\"") + "\"").join(",")
+                  let data_rows = $rows.map_each(row -> $keys.map_each(key -> "\"" + $row.get($key).string().replace_all("\"", "\"\"") + "\"").join(","))
+                  root = $header + "\n" + $data_rows.join("\n")
 
       # Step 5: Add transformation metadata
       - mapping: |
@@ -93,11 +90,7 @@ config:
           }
 
   output:
-    http_server:
-      sync_response:
-        status: 200
-        headers:
-          Content-Type: "${!meta(\"target_format\")}"
+    sync_response: {}
 
 logger:
   level: INFO

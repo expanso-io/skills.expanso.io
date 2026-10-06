@@ -1,29 +1,30 @@
 # Skill: voice-admin
 # Version: 1.0.0
 #
-# Voice-driven business administration for blue-collar professionals.
-# Inspired by @thespearing's plumber workflow.
+# Transcribe voice commands and extract proposed administrative actions.
 
 name: voice-admin
 version: 1.0.0
-description: Voice-driven business admin for scheduling, invoicing, and task management
+description: Transcribe voice commands and extract proposed admin actions without claiming external execution
 
 credentials:
   - name: OPENAI_API_KEY
     required: true
-  - name: TWILIO_ACCOUNT_SID
-    required: false
-  - name: QUICKBOOKS_TOKEN
-    required: false
 
 inputs:
   - name: audio
     type: string
-    description: Base64 audio or audio URL
+    description: Deprecated; use audio_url
+  - name: audio_url
+    type: string
+    description: HTTPS URL of an audio object
+  - name: language
+    type: string
+    description: Optional ISO-639-1 audio language
   - name: action
     type: string
-    default: transcribe_and_act
-    enum: [transcribe, schedule, invoice, task]
+    default: transcribe_and_extract
+    enum: [transcribe_and_extract]
 
 outputs:
   - name: transcript
@@ -32,14 +33,23 @@ outputs:
     type: array
   - name: confirmations
     type: array
+    description: Always empty; external actions are not executed
+  - name: execution_status
+    type: string
+    description: proposed_only
   - name: metadata
     type: object
 
 backends:
   - name: openai
     type: remote
+    requires: [OPENAI_API_KEY]
+  - name: fixture
+    type: local
+    requires: []
+    description: Explicit deterministic transcript and actions for CI
 
 components:
   inputs: [stdin, http_server]
-  processors: [mapping, openai_transcription, openai_chat_completion, log]
+  processors: [mapping, http, openai_transcription, openai_chat_completion, switch, log]
   outputs: [stdout, sync_response]

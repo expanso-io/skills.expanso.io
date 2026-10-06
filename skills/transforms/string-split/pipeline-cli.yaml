@@ -25,8 +25,7 @@ config:
           root.by_newline = $by_newline
           root.by_pipe = $by_pipe
           root.comma_count = $by_comma.length()
-          root.metadata = {"skill": "string-split", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "string-split", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

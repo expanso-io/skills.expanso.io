@@ -31,8 +31,7 @@ config:
           root.aspect_ratio = $ar
           root.ratio_decimal = $ratio
           root.orientation = if $w > $h { "landscape" } else if $h > $w { "portrait" } else { "square" }
-          root.metadata = {"skill": "image-dimensions", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "image-dimensions", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

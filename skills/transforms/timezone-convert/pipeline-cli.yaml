@@ -21,8 +21,7 @@ config:
           root.timezone = $tz
           root.converted = $ts.ts_tz($tz).catch($ts)
           root.utc = $ts
-          root.metadata = {"skill": "timezone-convert", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "timezone-convert", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -6,13 +6,12 @@ labels:
   category: data-transformation
   pattern: deduplication
 
-cache_resources:
-  - label: dedup_cache
-    memory:
-      default_ttl: 1h
-      cap: 100000
-
 config:
+  cache_resources:
+    - label: dedup_cache
+      memory:
+        default_ttl: 1h
+
   input:
     http_server:
       address: "0.0.0.0:8080"
@@ -22,15 +21,12 @@ config:
   pipeline:
     processors:
       # Step 1: Parse and validate
-      - json_documents:
-          parts: []
-
       - mapping: |
           root = this
           root.received_at = now()
 
           # Validate required fields
-          root = if !this.event_id.exists() {
+          root = if this.event_id == null {
             throw("Missing required field: event_id")
           } else {
             this
@@ -42,10 +38,10 @@ config:
 
           # Create composite key for deduplication
           # Options: event_id only, or event_id + type + timestamp window
+          let window = (this.timestamp.or(now()).ts_unix() / 60).floor()
           root.dedup_key = if this.dedup_strategy.or("event_id") == "composite" {
             # Composite: event_type + source + 1-minute window
-            let window = (this.timestamp.or(now()).ts_unix() / 60).floor()
-            this.event_type.or("unknown") + ":" + this.source.or("unknown") + ":" + window.string()
+            this.event_type.or("unknown") + ":" + this.source.or("unknown") + ":" + $window.string()
           } else {
             # Simple: just event_id
             this.event_id
@@ -61,12 +57,13 @@ config:
 
       - mapping: |
           root = this
-          root.is_duplicate = meta("cache_result").exists() && meta("cache_result") != ""
-          meta is_duplicate = root.is_duplicate
+          let is_duplicate = meta("cache_result") != null && meta("cache_result") != ""
+          root.is_duplicate = $is_duplicate
+          meta is_duplicate = $is_duplicate
 
       # Step 4: Store new events in cache
       - switch:
-          - check: '!meta("is_duplicate")'
+          - check: 'this.is_duplicate == false'
             processors:
               - cache:
                   resource: dedup_cache
@@ -85,24 +82,29 @@ config:
 
   output:
     switch:
+      cases:
       # New events → downstream processing
-      - check: '!meta("is_duplicate")'
-        output:
-          kafka:
-            addresses: ["${KAFKA_BROKERS:localhost:9092}"]
-            topic: unique-events
-            batching:
-              count: 100
-              period: 5s
+        - check: 'this.is_duplicate == false'
+          output:
+            kafka:
+              addresses: ["${KAFKA_BROKERS}"]
+              topic: unique-events
+              ack_replicas: true
+              tls:
+                enabled: true
+              sasl:
+                mechanism: SCRAM-SHA-512
+                user: "${KAFKA_USERNAME}"
+                password: "${KAFKA_PASSWORD}"
+              batching:
+                count: 100
+                period: 5s
 
       # Duplicates → metrics/logging only
-      - output:
-          file:
-            path: "/var/expanso/duplicates/${!timestamp_unix_date('2006-01-02')}/dupes.jsonl"
-            codec: lines
-            batching:
-              count: 500
-              period: 60s
+        - output:
+            file:
+              path: "/var/expanso/duplicates/${!timestamp_unix_date('2006-01-02')}/dupes.jsonl"
+              codec: lines
 
 logger:
   level: INFO

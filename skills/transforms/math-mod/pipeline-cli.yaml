@@ -21,8 +21,7 @@ config:
           root.dividend = $dividend
           root.divisor = $divisor
           root.valid = $divisor != 0
-          root.metadata = {"skill": "math-mod", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "math-mod", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

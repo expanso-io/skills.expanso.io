@@ -27,8 +27,7 @@ config:
           root.only_in_a = $only_in_a
           root.only_in_b = $only_in_b
           root.equal = $only_in_a.length() == 0 && $only_in_b.length() == 0 && $a_keys.length() == $b_keys.length()
-          root.metadata = {"skill": "json-diff", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "json-diff", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

@@ -4,7 +4,7 @@ description: Handle failed messages with dead-letter queue pattern and retry log
 metadata:
   openclaw:
     requires:
-      bins: [expanso]
+      bins: [expanso-edge, expanso-cli]
     tags: [expanso, data-routing, dlq, error-handling, recipe]
 ---
 

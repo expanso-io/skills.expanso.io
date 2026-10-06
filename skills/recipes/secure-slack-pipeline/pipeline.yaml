@@ -28,27 +28,24 @@ config:
           meta trace_id = uuid_v4()
           meta start_time = now()
 
-          let api_key_header = meta("http_header_x-expanso-api-key").or("")
+          let api_key_header = meta("X-Expanso-Api-Key").or("")
           let api_keys_env = env("EXPANSO_API_KEYS").or("")
 
           if $api_keys_env == "" {
-            throw("no EXPANSO_API_KEYS configured — auth required")
+            root = throw("no EXPANSO_API_KEYS configured — auth required")
           }
 
           if $api_key_header == "" {
-            throw("missing X-Expanso-Api-Key header — auth required")
+            root = throw("missing X-Expanso-Api-Key header — auth required")
           }
 
-          let found = $api_keys_env.split(",").map_each(entry -> {
-            "key": entry.split(":").index(0),
-            "agent": entry.split(":").index(1)
-          }).filter(e -> e.key == $api_key_header)
+          let found = $api_keys_env.split(",").filter(entry -> entry.has_prefix($api_key_header + ":"))
 
           if $found.length() == 0 {
-            throw("invalid API key — access denied")
+            root = throw("invalid API key — access denied")
           }
 
-          meta agent = $found.index(0).agent
+          meta agent = $found.index(0).split(":").index(1)
           root = content().parse_json()
 
       - log:
@@ -62,15 +59,15 @@ config:
       - mapping: |
           let channel = this.channel.or("")
           if $channel == "" {
-            throw("channel is required")
+            root = throw("channel is required")
           }
           if !$channel.re_match("^[A-Z0-9]{1,15}$") {
-            throw("invalid channel ID format: must be alphanumeric")
+            root = throw("invalid channel ID format: must be alphanumeric")
           }
 
           let limit = this.limit.or(20)
           if $limit < 1 || $limit > 100 {
-            throw("limit must be between 1 and 100")
+            root = throw("limit must be between 1 and 100")
           }
 
           meta channel = $channel
@@ -86,19 +83,15 @@ config:
           let agent = meta("agent")
           let policy = env("ACCESS_POLICY").or("")
           if $policy == "" {
-            throw("no ACCESS_POLICY configured — deny by default")
+            root = throw("no ACCESS_POLICY configured — deny by default")
           }
 
           # Policy format: "agent:resource:action,agent:resource:action"
           let rules = $policy.split(",")
-          let matched = $rules.any(r -> {
-            let parts = r.split(":")
-            (parts.index(0) == $agent || parts.index(0) == "*") &&
-            (parts.index(1) == "slack-read" || parts.index(1) == "*")
-          })
+          let matched = $rules.contains($agent + ":slack-read:read") || $rules.contains($agent + ":slack-read:*") || $rules.contains($agent + ":*:*") || $rules.contains("*:*:*")
 
           if !$matched {
-            throw("access denied for agent " + $agent + " on resource slack-read")
+            root = throw("access denied for agent " + $agent + " on resource slack-read")
           }
           root = this
 
@@ -124,7 +117,7 @@ config:
                 Authorization: "Bearer ${SLACK_BOT_TOKEN}"
                 Content-Type: "application/json"
               rate_limit: slack_api
-        catch:
+      - catch:
           - mapping: |
               root.source = "slack"
               root.resource = "conversations.history"
@@ -139,7 +132,7 @@ config:
                 "skill": "secure-slack-pipeline",
                 "agent": meta("agent"),
                 "channel": meta("channel"),
-                "trace_id": meta("trace_id"),
+                "trace_id": meta("trace_id").or(uuid_v4()),
                 "success": false,
                 "error": error(),
                 "timestamp": now()
@@ -158,7 +151,7 @@ config:
             root = this
           } else {
             if this.ok.or(false) == false {
-              throw("Slack API error: " + this.error.or("unknown"))
+              root = throw("Slack API error: " + this.error.or("unknown"))
             }
             root = this
           }
@@ -170,12 +163,7 @@ config:
           if this.exists("error") && this.exists("source") {
             root = this
           } else {
-            root.messages = this.messages.or([]).map_each(m -> m.merge({
-              "text": m.text.or("")
-                .re_replace_all("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}", "[EMAIL]")
-                .re_replace_all("\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b", "[PHONE]")
-                .re_replace_all("\\b\\d{3}-\\d{2}-\\d{4}\\b", "[SSN]")
-            }))
+            root.messages = this.messages.or([]).map_each(m -> m.merge({"text": m.text.or("").re_replace_all("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}", "[EMAIL]").re_replace_all("\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b", "[PHONE]").re_replace_all("\\b\\d{3}-\\d{2}-\\d{4}\\b", "[SSN]")}))
           }
 
       # ═══════════════════════════════════════════════════════════════════════
@@ -211,7 +199,7 @@ config:
               "skill": "secure-slack-pipeline",
               "agent": meta("agent"),
               "channel": meta("channel"),
-              "trace_id": meta("trace_id"),
+              "trace_id": meta("trace_id").or(uuid_v4()),
               "message_count": this.messages.length(),
               "success": true,
               "timestamp": now()

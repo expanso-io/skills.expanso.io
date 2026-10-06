@@ -24,8 +24,7 @@ config:
           root.formatted = $formatted
           root.original = $num
           root.format = $format
-          root.metadata = {"skill": "number-format", "mode": "cli", "trace_id": meta("trace_id"), "timestamp": now()}
+          root.metadata = {"skill": "number-format", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4()), "timestamp": now()}
 
   output:
-    stdout:
-      codec: json_object
+    stdout: {}

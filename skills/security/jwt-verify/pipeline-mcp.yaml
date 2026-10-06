@@ -4,7 +4,7 @@
 # HTTP endpoint for JWT verification.
 #
 # Usage:
-#   JWT_SECRET=... PORT=8080 expanso-edge run pipeline-mcp.yaml
+#   expanso-edge validate pipeline-mcp.yaml
 #
 #   curl -X POST http://localhost:8080/verify \
 #     -H "Content-Type: application/json" \
@@ -34,7 +34,7 @@ config:
 
           root = if $token.length() == 0 {
             throw("token field is required")
-          } else { "" }
+          } else { {} }
 
           let parts = $token.split(".")
           let valid_structure = $parts.length() == 3
@@ -71,7 +71,7 @@ config:
           root.metadata = {
             "skill": "jwt-verify",
             "mode": "mcp",
-            "trace_id": meta("trace_id"),
+            "trace_id": meta("trace_id").or(uuid_v4()),
             "timestamp": now()
           }
 

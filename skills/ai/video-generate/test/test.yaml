@@ -1,7 +1,13 @@
 # Test: video-generate
 tests:
-  - name: "Generates video"
-    skip: true
-    input: '{"script": "Hello world", "duration_seconds": 30}'
+  - name: "Returns an explicit deterministic video fixture"
+    input: '{"prompt":"A cat playing piano","fixture_mode":true,"fixture_video_url":"https://fixtures.example/cat-piano.mp4"}'
     expected_output:
-      status: "generated"
+      video_url: "https://fixtures.example/cat-piano.mp4"
+      status: "succeeded"
+      error: null
+      metadata:
+        skill: video-generate
+        model: minimax/video-01
+        prediction_id: fixture-video-001
+        fixture: true

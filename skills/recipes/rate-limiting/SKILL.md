@@ -4,7 +4,7 @@ description: Rate limit streaming data with backpressure and overflow handling
 metadata:
   openclaw:
     requires:
-      bins: [expanso]
+      bins: [expanso-edge, expanso-cli]
     tags: [expanso, data-routing, rate-limiting, flow-control, recipe]
 ---
 

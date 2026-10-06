@@ -1,23 +1,15 @@
-# Example: Email triage with calendar integration
+# Example: Email triage with proposed calendar events
 #
-# Process emails and automatically create calendar events
+# Process emails and extract meeting proposals for review. This does not create
+# calendar events.
 
 input:
   provider: outlook
   folder: INBOX
   limit: 100
   since_hours: 48
-  create_calendar_events: true
-  auto_archive: false
-  categories:
-    - urgent
-    - action-required
-    - meeting
-    - fyi
-    - newsletter
-    - spam
+  extract_calendar_events: true
 
 # Required environment variables:
 # - OUTLOOK_TOKEN: Microsoft Graph API token
 # - OPENAI_API_KEY: For AI classification
-# - CALENDAR_API_KEY: For creating calendar events
