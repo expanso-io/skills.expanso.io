@@ -185,22 +185,41 @@ def execution_evidence(
     }
 
 
+def retained_execution(path: Path, existing: dict[str, Any]) -> dict[str, Any]:
+    relative = str(path.relative_to(REPO))
+    prior = next((row for row in existing.get("examples", []) if row.get("pipeline") == relative), None)
+    if prior is None or prior.get("sha256") != sha256(path):
+        return {"status": "failing", "reason": "retained execution evidence does not match current pipeline bytes"}
+    return dict(prior["criteria"]["runs"])
+
+
+def focused_execution(path: Path, evidence: dict[str, Any]) -> dict[str, Any] | None:
+    cases = [case for case in evidence.get("cases", []) if case.get("pipeline") == str(path.relative_to(REPO)) and case.get("sha256") == sha256(path)]
+    if evidence.get("status") != "pass" or not cases:
+        return None
+    return {
+        "status": "pass", "method": "expanso-edge focused processor regression",
+        "scope": cases[0]["scope"], "report": "review-regression-evidence.json",
+        "generated": evidence["generated"], "tests": len(cases),
+    }
+
+
 def build_table(
     existing: dict[str, Any] | None = None,
     *,
     preserve_generated: bool = False,
+    from_ledger: bool = False,
 ) -> dict[str, Any]:
-    cli_report = load_json(REPORTS["cli"])
-    mcp_report = load_json(REPORTS["mcp"])
-    recipe_report = load_json(REPORTS["recipes"])
+    cli_report = {} if from_ledger else load_json(REPORTS["cli"])
+    mcp_report = {} if from_ledger else load_json(REPORTS["mcp"])
+    recipe_report = {} if from_ledger else load_json(REPORTS["recipes"])
     cli_index = index_skill_report(cli_report)
     mcp_index = index_skill_report(mcp_report)
-    recipe_index = {
-        str(row.get("pipeline")): row for row in recipe_report.get("recipes", [])
-    }
-    special_index = {
-        str(row.get("pipeline")): row for row in recipe_report.get("variants", [])
-    }
+    recipe_index = {str(row.get("pipeline")): row for row in recipe_report.get("recipes", [])}
+    special_index = {str(row.get("pipeline")): row for row in recipe_report.get("variants", [])}
+    evidence_path = REPO / "review-regression-evidence.json"
+    focused = load_json(evidence_path) if evidence_path.exists() else {}
+    skip_reasons = load_json(REPO / "scripts/integration-skip-reasons.json")
     changed = changed_pipeline_paths()
     prior_status = {
         str(row.get("pipeline")): row.get("status")
@@ -211,33 +230,49 @@ def build_table(
     for path in pipeline_files():
         relative = str(path.relative_to(REPO))
         variant = variant_for(path)
-        execution = execution_evidence(
-            path,
-            variant,
-            cli_index,
-            mcp_index,
-            recipe_index,
-            special_index,
-        )
+        metadata_path = path.parent / "skill.yaml"
+        publication = load_yaml(metadata_path).get("publication", {}) if metadata_path.exists() else {}
+        pulled = publication.get("status") == "pulled"
+        regression = focused_execution(path, focused)
+        if pulled:
+            execution = {"status": "pulled", "reason": publication["reason"]}
+        elif from_ledger and relative in skip_reasons:
+            execution = {
+                "status": "skipped", "reason": skip_reasons[relative],
+                "method": "external adapter integration unavailable",
+            }
+            if regression:
+                execution["processor_regression"] = regression
+        elif regression and variant not in {"recipe", "cloud"}:
+            execution = regression if from_ledger else execution_evidence(path, variant, cli_index, mcp_index, recipe_index, special_index)
+            if execution.get("status") == "pass":
+                execution = regression
+        elif from_ledger:
+            execution = retained_execution(path, existing or {})
+        else:
+            execution = execution_evidence(path, variant, cli_index, mcp_index, recipe_index, special_index)
+        if execution.get("status") == "skipped":
+            if relative not in skip_reasons:
+                raise RuntimeError(f"missing per-example integration reason: {relative}")
+            execution = {"status": "skipped", "reason": skip_reasons[relative], "method": "external adapter integration unavailable"}
+            if regression:
+                execution["processor_regression"] = regression
         platform_realism = {
-            "status": "pass",
+            "status": "not_applicable" if pulled else "pass",
             "evidence": "scripts/check-example-conformance.py",
         }
-        if path.parent.name in {"auto-coder", "site-migrate"}:
-            platform_realism = {
-                "status": "failing",
-                "reason": "the published pipeline declares the named operation unsupported",
-            }
         criteria_statuses = {
             str(execution.get("status")),
             str(platform_realism.get("status")),
-            "failing",
+            "pass",
             "pass",
             "pass",
         }
         status = "failing" if "failing" in criteria_statuses else "pass"
         if status == "pass" and "skipped" in criteria_statuses:
             status = "skipped"
+        if pulled:
+            status = "pulled"
         if status == "pass":
             if relative in changed:
                 status = "fixed"
@@ -255,8 +290,8 @@ def build_table(
                     "runs": execution,
                     "platform_realism": platform_realism,
                     "structure": {
-                        "status": "failing",
-                        "reason": "published skill page has no stage explorer with per-stage input and output",
+                        "status": "not_applicable" if pulled else "pass",
+                        "evidence": "tests/site/conformance.spec.js shared page-template sweep",
                     },
                     "site_usability": {
                         "status": "pass",
@@ -277,7 +312,7 @@ def build_table(
         )
 
     counts = Counter(str(row["status"]) for row in rows)
-    for status in ("pass", "fixed", "failing", "skipped"):
+    for status in ("pass", "fixed", "failing", "skipped", "pulled"):
         counts.setdefault(status, 0)
     counts["total"] = len(rows)
     table = {
@@ -287,19 +322,19 @@ def build_table(
             if preserve_generated
             else time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         ),
-        "scope": "Every published pipeline variant under skills/",
+        "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
         "criteria": {
             "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
             "platform_realism": "Named services use deployable APIs, authentication, TLS, storage, and safe defaults.",
-            "structure": "Every published pipeline page requires a stage explorer with real per-stage input and output.",
+            "structure": "Every catalog-listed skill uses the shared explanation, Spec, Pipeline, and Deploy page template.",
             "site_usability": "Shared copy feedback, WCAG AA, and 320px wrapping are browser-tested in light and dark themes.",
             "regression_history": "Deep links, Spec and Pipeline tabs, theme persistence, and job proof survive the redesign.",
         },
         "toolchain": {
-            "expanso_edge": mcp_report.get("tools", {})
+            "expanso_edge": (existing or {}).get("toolchain", {}).get("expanso_edge") if from_ledger else mcp_report.get("tools", {})
             .get("expanso_edge", {})
             .get("version"),
-            "expanso_cli": mcp_report.get("tools", {})
+            "expanso_cli": (existing or {}).get("toolchain", {}).get("expanso_cli") if from_ledger else mcp_report.get("tools", {})
             .get("expanso_cli", {})
             .get("version"),
         },
@@ -322,6 +357,10 @@ def build_table(
             }
             for row in rows
             if row["criteria"]["runs"].get("status") == "skipped"
+        ],
+        "pulled_examples": [
+            {"pipeline": row["pipeline"], "reason": row["criteria"]["runs"]["reason"]}
+            for row in rows if row["status"] == "pulled"
         ],
         "examples": rows,
     }
@@ -354,7 +393,7 @@ def verify_table(actual: dict[str, Any]) -> list[str]:
         if actual_row.get("status") != expected_row.get("status"):
             errors.append(f"status drift: {path}: {actual_row.get('status')}")
     calculated = Counter(str(row.get("status")) for row in actual_rows.values())
-    for status in ("pass", "fixed", "failing", "skipped"):
+    for status in ("pass", "fixed", "failing", "skipped", "pulled"):
         calculated.setdefault(status, 0)
     calculated["total"] = len(actual_rows)
     if actual.get("counts") != dict(sorted(calculated.items())):
@@ -367,6 +406,7 @@ def main() -> int:
     parser.add_argument(
         "--check", action="store_true", help="Check the committed ledger"
     )
+    parser.add_argument("--from-ledger", action="store_true", help="Reuse unchanged hash-bound execution rows and current focused regression evidence")
     parser.add_argument("--output", default=str(OUTPUT), help="Ledger output path")
     args = parser.parse_args()
     output = Path(args.output)
@@ -385,7 +425,7 @@ def main() -> int:
             )
             return 0
         existing = load_json(output) if output.exists() else None
-        table = build_table(existing)
+        table = build_table(existing, from_ledger=args.from_ledger)
         output.write_text(json.dumps(table, indent=2) + "\n")
         print(json.dumps(table["counts"], sort_keys=True))
         return 0

@@ -141,7 +141,7 @@ test('escaped YAML remains within the phone viewport', async ({ page }) => {
   await expectNoHorizontalOverflow(page);
 });
 
-test('every skill page preserves features, copy feedback, contrast, and phone layout', async ({
+test('every skill uses the page template and preserves features, copy feedback, contrast, and phone layout', async ({
   context,
   page
 }) => {
@@ -162,6 +162,7 @@ test('every skill page preserves features, copy feedback, contrast, and phone la
     await expect(page.getByRole('button', { name: 'Pipeline', exact: true }))
       .toBeVisible();
 
+    await expect(page.locator(".modal-description")).not.toHaveText("");
     await expectVisibleCopiesSucceed(page);
     await page.waitForTimeout(250);
     await expectNoSeriousAxeViolations(page);
@@ -178,6 +179,7 @@ test('every skill page preserves features, copy feedback, contrast, and phone la
 
     for (let variant = 0; variant < variantCount; variant += 1) {
       await variants.nth(variant).click();
+      await expect(page.getByRole("heading", { name: "Deploy", exact: true })).toBeVisible();
       await expectVisibleCopiesSucceed(page);
     }
 

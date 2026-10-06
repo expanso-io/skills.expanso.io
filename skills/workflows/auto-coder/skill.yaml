@@ -51,3 +51,7 @@ components:
   inputs: [stdin, http_server]
   processors: [mapping, log]
   outputs: [stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: Repository checkout, code execution, tests, and pull-request creation are not implemented.

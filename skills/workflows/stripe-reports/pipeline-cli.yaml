@@ -41,6 +41,7 @@ config:
           meta period = this.period
           meta trace_id = this._trace_id
           meta include_insights = this._include_insights
+          meta include_quick_wins = this._include_quick_wins
           meta start_unix = this._start_unix
           meta end_unix = this._end_unix
           meta stripe_url = $base + "/balance_transactions?created%5Bgte%5D=" + this._start_unix.string() + "&created%5Blte%5D=" + this._end_unix.string() + "&limit=100"
@@ -58,6 +59,7 @@ config:
           root.period = meta("period")
           root._trace_id = meta("trace_id")
           root._include_insights = meta("include_insights") == "true"
+          root._include_quick_wins = meta("include_quick_wins") == "true"
           root._start_unix = meta("start_unix").number()
           root._end_unix = meta("end_unix").number()
           root.transactions = this.data.or([])

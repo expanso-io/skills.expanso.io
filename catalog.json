@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "generated": "2026-10-06T08:24:35.341205+00:00",
-  "total_skills": 185,
+  "generated": "2026-10-06T09:15:58.584247+00:00",
+  "total_skills": 183,
   "categories": {
     "jobs": {
       "description": "Whole jobs you may be asked to build (RSS engine, data migration, notifications, RAG, ...). Each was run end to end; its skill.yaml `proof` block says where, and what was not proved",
@@ -14,7 +14,7 @@
     },
     "workflows": {
       "description": "End-to-end automation workflows combining multiple services",
-      "skill_count": 19,
+      "skill_count": 17,
       "tags": [
         "automation",
         "workflow",
@@ -7387,75 +7387,6 @@
         "utilities"
       ]
     },
-    "auto-coder": {
-      "name": "auto-coder",
-      "version": "1.0.0",
-      "description": "Report the execution capabilities required before an autonomous coding request can run",
-      "category": "workflows",
-      "credentials": [],
-      "inputs": [
-        {
-          "name": "task",
-          "type": "string",
-          "required": true,
-          "description": "Coding task to accomplish"
-        },
-        {
-          "name": "repo",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "branch",
-          "type": "string",
-          "default": "auto-coder"
-        },
-        {
-          "name": "create_pr",
-          "type": "boolean",
-          "default": true
-        }
-      ],
-      "outputs": [
-        {
-          "name": "status",
-          "type": "string",
-          "description": "Always unsupported until repository execution is configured"
-        },
-        {
-          "name": "changes",
-          "type": "array",
-          "description": "Empty because this pipeline does not edit repositories"
-        },
-        {
-          "name": "pr_url",
-          "type": "string",
-          "description": "Null because this pipeline does not create pull requests"
-        },
-        {
-          "name": "tests_passed",
-          "type": "object",
-          "description": "Null because tests are not run"
-        },
-        {
-          "name": "capability_gap",
-          "type": "object",
-          "description": "Exact missing capabilities and supporting evidence"
-        },
-        {
-          "name": "metadata",
-          "type": "object"
-        }
-      ],
-      "backends": [
-        "local"
-      ],
-      "tags": [
-        "local",
-        "offline",
-        "workflows"
-      ]
-    },
     "backup-verify": {
       "name": "backup-verify",
       "version": "1.0.0",
@@ -8367,80 +8298,6 @@
         {
           "name": "recommendations",
           "type": "array"
-        },
-        {
-          "name": "metadata",
-          "type": "object"
-        }
-      ],
-      "backends": [
-        "local"
-      ],
-      "tags": [
-        "local",
-        "offline",
-        "workflows"
-      ]
-    },
-    "site-migrate": {
-      "name": "site-migrate",
-      "version": "1.0.0",
-      "description": "Check whether a requested website migration is implemented by this Edge recipe",
-      "category": "workflows",
-      "credentials": [],
-      "inputs": [
-        {
-          "name": "source",
-          "type": "string",
-          "required": true,
-          "enum": [
-            "notion",
-            "wordpress",
-            "ghost",
-            "markdown"
-          ]
-        },
-        {
-          "name": "destination",
-          "type": "string",
-          "required": true,
-          "enum": [
-            "astro",
-            "hugo",
-            "nextjs",
-            "static"
-          ]
-        },
-        {
-          "name": "source_url",
-          "type": "string",
-          "required": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "pages_migrated",
-          "type": "integer"
-        },
-        {
-          "name": "assets_migrated",
-          "type": "integer"
-        },
-        {
-          "name": "errors",
-          "type": "array"
-        },
-        {
-          "name": "deploy_url",
-          "type": "string"
-        },
-        {
-          "name": "status",
-          "type": "string"
-        },
-        {
-          "name": "capability_gap",
-          "type": "object"
         },
         {
           "name": "metadata",

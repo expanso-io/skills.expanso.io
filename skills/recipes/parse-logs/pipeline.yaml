@@ -17,7 +17,7 @@ config:
     processors:
       # Step 1: Detect log format
       - mapping: |
-          root = this
+          root = {}
           let content = this.string()
 
           root.detected_format = if $content.has_prefix("{") || $content.has_prefix("[") {
@@ -42,6 +42,7 @@ config:
             processors:
               - mapping: |
                   let parsed = this.original.parse_json().catch(null)
+                  meta log_format = if $parsed == null { "parse_failed" } else { "json" }
                   root = if $parsed == null { {"raw_content": this.original, "parse_error": "invalid JSON"} } else { $parsed }
                   root.timestamp = root.timestamp.or(root."@timestamp").or(now())
                   root.level = root.level.or(root.severity).or("INFO").uppercase()
@@ -80,7 +81,7 @@ config:
           - check: 'meta("log_format") == "csv"'
             processors:
               - mapping: |
-                  let fields = this.original.split(",")
+                  let fields = this.original.parse_csv(false).index(0)
                   root.timestamp = $fields.index(0).or("")
                   root.level = $fields.index(1).or("INFO").uppercase()
                   root.service = $fields.index(2).or("")
@@ -92,6 +93,11 @@ config:
                   root.raw_content = this.original
                   root.format = "unknown"
                   root.requires_investigation = true
+
+      - catch:
+          - mapping: |
+              meta log_format = "parse_failed"
+              root = {"raw_content": this.original, "parse_error": error()}
 
       # Step 3: Add processing metadata
       - mapping: |

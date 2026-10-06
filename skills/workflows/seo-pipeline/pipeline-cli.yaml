@@ -42,7 +42,8 @@ config:
       - mapping: |
           let html = this.html
           let title_matches = $html.re_find_all_submatch("(?is)<title[^>]*>\\s*([^<]+?)\\s*</title>")
-          let description_matches = $html.re_find_all_submatch("(?is)<meta[^>]+name=[\\\"']description[\\\"'][^>]+content=[\\\"']([^\\\"']*)[\\\"'][^>]*>")
+          let description_tags = $html.re_find_all("(?is)<meta\\s[^>]*>").filter(tag -> tag.re_match("(?is)\\sname\\s*=\\s*[\\\"']description[\\\"']"))
+          let description_matches = $description_tags.map_each(tag -> tag.re_find_all_submatch("(?is)\\scontent\\s*=\\s*[\\\"']([^\\\"']*)[\\\"']")).flatten()
           let h1_count = $html.re_find_all("(?is)<h1(?:\\s|>)").length()
           let link_count = $html.re_find_all("(?is)<a(?:\\s|>)").length()
           let images = $html.re_find_all("(?is)<img(?:\\s|>)[^>]*>")

@@ -315,6 +315,9 @@ def build_catalog(source_dir: Path, layout: str) -> tuple[dict, dict[str, list[s
             print(f"Skipping {skill_name}: no valid skill.yaml", file=sys.stderr)
             continue
 
+        if skill_data.get("publication", {}).get("status") == "pulled":
+            continue
+
         # Determine category
         category = resolve_category(skill_name, category_hint)
         category_skills[category].append(skill_name)

@@ -77,6 +77,9 @@ config:
           root = this
           root.location = this.location.without("latitude", "longitude")
 
+      - catch:
+          - mapping: root = deleted()
+
   # Persistent local output. Access controls, retention, and downstream review
   # remain deployment responsibilities; this transform is not a legal finding.
   output:
