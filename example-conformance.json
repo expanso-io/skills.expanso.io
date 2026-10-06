@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T18:32:42Z",
+  "generated": "2026-10-06T22:06:51Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -10,8 +10,8 @@
     "regression_history": "Deep links, Spec and Pipeline tabs, theme persistence, and job proof survive the redesign."
   },
   "toolchain": {
-    "expanso_edge": "v2.1.21",
-    "expanso_cli": "Expanso CLI version v2.1.21"
+    "expanso_edge": "v2.1.22",
+    "expanso_cli": "Expanso CLI version v2.1.22"
   },
   "history_review": {
     "baseline": "git history through 699bea8",
@@ -3176,7 +3176,7 @@
     },
     {
       "pipeline": "skills/jobs/data-migration-engine/pipeline.yaml",
-      "sha256": "5c20d79611edd1028f1ada92e15b4d961cba1ebd3ff2944d8aa5886fa079369f",
+      "sha256": "16cd64e901d28b9763df2d473f66aeedd220a13ca4a9bf5f4321fb5d9b5aa922",
       "category": "jobs",
       "skill": "data-migration-engine",
       "variant": "job",
@@ -3189,7 +3189,7 @@
           "proof_date": "2026-09-18",
           "expanso_edge": "v2.1.21",
           "record": "skills/jobs/PROOF-2026-09-18.md",
-          "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. The top-level restart_policy never and the signed balance formula are newer than the Cloud run. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
+          "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. The top-level restart_policy never and the signed balance formula are newer than the Cloud run. The dated proof also predates the current verified-TLS requirement. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
         },
         "platform_realism": {
           "status": "pass",
@@ -3463,7 +3463,7 @@
     },
     {
       "pipeline": "skills/jobs/webhook-fan-out/pipeline.yaml",
-      "sha256": "dc5a32ef1012bab29161c658df999b38006c89ca8cdf67ca9361f9624c6ab338",
+      "sha256": "39ba0f02a822575626e47adc0056491d8634e5601a485d6251d4bd5c85e42687",
       "category": "jobs",
       "skill": "webhook-fan-out",
       "variant": "job",
@@ -3476,7 +3476,7 @@
           "proof_date": "2026-09-18",
           "expanso_edge": "v2.1.21",
           "record": "skills/jobs/PROOF-2026-09-18.md",
-          "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
+          "note": "The dated run predates the current authentication and TLS requirements, so it is not proof of the current security behavior. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
         },
         "platform_realism": {
           "status": "pass",
@@ -3504,7 +3504,7 @@
     },
     {
       "pipeline": "skills/recipes/aggregate-time-windows/pipeline.yaml",
-      "sha256": "ddbb58060c5517d977d1271c7376356bf5967ec54fd8d7c9b2ba647db5827dd4",
+      "sha256": "3daf91fa5c17e9892c4ad631152134cd5c7017dcc1a1ff0fcee621ea60123bc9",
       "category": "recipes",
       "skill": "aggregate-time-windows",
       "variant": "recipe",
@@ -3615,7 +3615,7 @@
     },
     {
       "pipeline": "skills/recipes/content-splitting/pipeline.yaml",
-      "sha256": "57c4ee153416b9712c2f8c53a96f1e23bfef477523f70ebcc9da74193fc857fd",
+      "sha256": "1eee073f412b755e252e34f6e4449401e64a203fd82dfa0c5e6ecd8d029555a2",
       "category": "recipes",
       "skill": "content-splitting",
       "variant": "recipe",
@@ -3800,7 +3800,7 @@
     },
     {
       "pipeline": "skills/recipes/deduplicate-events/pipeline.yaml",
-      "sha256": "97e190870178e56ef35b756cbe16060eb4791263d5ffb344c0fb6bf62a7d3c24",
+      "sha256": "ac621916a0ac179fcbe605a8d719bb4570b644844468492be286fd39dad987e1",
       "category": "recipes",
       "skill": "deduplicate-events",
       "variant": "recipe",
@@ -3914,7 +3914,7 @@
     },
     {
       "pipeline": "skills/recipes/enforce-schema/pipeline.yaml",
-      "sha256": "1bd9b351f64bc20a5e101349e35479f745264649cae96356986918e2c7b7b02d",
+      "sha256": "e59bfc22321067849baf4348014cdad890e52b5a42024c241edaa07d1ae4d008",
       "category": "recipes",
       "skill": "enforce-schema",
       "variant": "recipe",
@@ -4284,7 +4284,7 @@
     },
     {
       "pipeline": "skills/recipes/parse-logs/pipeline.yaml",
-      "sha256": "da2510f98d88fdef7b917581973d7a3ed16b5a5cd73bd4ce9abf12e01a7dbba0",
+      "sha256": "5fc3b5dcc8dde734d3836d1e227c56a0bd58e3bcd25673ce93be4932f1d66fdc",
       "category": "recipes",
       "skill": "parse-logs",
       "variant": "recipe",
@@ -4321,7 +4321,7 @@
     },
     {
       "pipeline": "skills/recipes/priority-queues/pipeline.yaml",
-      "sha256": "195c673f8a4348dfffa329572fc4745387b603c842a6ed43975ea14e006f2d80",
+      "sha256": "a95916afdfecd07a90f11c74c5287b2268d59864a7d2fe2119398537d6130696",
       "category": "recipes",
       "skill": "priority-queues",
       "variant": "recipe",
@@ -5314,7 +5314,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 6,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 5
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -5633,7 +5640,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 6,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 5
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -14301,7 +14315,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": null,
-          "published_adapters_intact": true
+          "published_adapters_intact": true,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 5
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -15716,7 +15737,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 3
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -16339,7 +16367,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",

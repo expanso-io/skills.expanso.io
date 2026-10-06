@@ -40,8 +40,12 @@ def main():
         cli = shutil.which("expanso-cli")
         assert runner.wait_for_api(cli, api), "Edge API did not start"
         path = ROOT / "skills/transforms/slug-generate/pipeline-mcp.yaml"
-        deployed, _, details = runner.deploy(path, cli, api)
+        deployed, job_name, details = runner.deploy(path, cli, api)
         assert deployed, details
+        ready, reason = runner.wait_for_execution_running(
+            cli, job_name, api, timeout=45
+        )
+        assert ready, reason
         assert runner.wait_for_port(port, timeout=15), "Published MCP listener did not bind PORT"
         response = requests.post(f"http://127.0.0.1:{port}/slugify", json={"text": "Hello World!"}, timeout=10)
         assert response.status_code == 200, response.text

@@ -4,9 +4,7 @@ tests:
   - name: "Convert JSON array"
     input: '[{"name":"Alice","age":30}]'
     expected:
-      has_field: csv
-      has_field: row_count
-      has_field: columns
+      has_field: [csv, row_count, columns]
       metadata_has: [skill, trace_id, timestamp]
 
   - name: "Preserves dotted literal keys"

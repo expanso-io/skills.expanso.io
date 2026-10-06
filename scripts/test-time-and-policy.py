@@ -86,10 +86,32 @@ def main():
                         assert before - hours * 3600 - 1 <= cutoff <= after - hours * 3600, query
                 cfg = reg.config("recipes/aggregate-time-windows", "recipe")
                 cfg.pop("buffer")
+                processors = cfg["pipeline"]["processors"]
+                invalid = suite.execute(
+                    {
+                        "_source_pipeline": cfg["_source_pipeline"],
+                        "pipeline": {"processors": processors[:2]},
+                    },
+                    {
+                        "sensor_id": "a",
+                        "location": "room",
+                        "timestamp": "2026-10-06T12:03:00Z",
+                        "temperature": "bad",
+                    },
+                )
+                assert invalid is None, invalid
                 cfg["pipeline"]["processors"] = [
                     {"unarchive": {"format": "json_array"}},
                     {"mapping": 'root = this\nmeta window_end_timestamp = "2026-10-06T12:05:00Z"'},
-                ] + [cfg["pipeline"]["processors"][-1], {"archive": {"format": "json_array"}}]
+                    processors[-2],
+                    processors[-1],
+                    {"archive": {"format": "json_array"}},
+                ]
+                invalid = suite.execute(cfg, [
+                    {"sensor_id": "a", "location": "room", "aggregation_level": "sensor",
+                     "group_key": "a", "timestamp": "2026-10-06T12:03:00Z", "temperature": "bad"},
+                ])
+                assert invalid in (None, []), invalid
                 for timestamps in [
                     ["2026-10-06T12:03:20Z", "2026-10-06T12:03:00Z"],
                     ["2026-10-06T12:03:00.200Z", "2026-10-06T13:03:00.100+01:00"],

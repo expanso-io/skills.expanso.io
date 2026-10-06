@@ -8,7 +8,19 @@ author:
   url: https://expanso.io
   avatar: EX
 job: 'A webhook fan-out: deliver every event to several endpoints.'
-credentials: []
+credentials:
+- name: WEBHOOK_SECRET
+  required: true
+  description: Shared HMAC-SHA256 secret used to authenticate inbound events.
+- name: RECEIVER_A_TOKEN
+  required: true
+  description: Bearer token sent only to receiver A over HTTPS.
+- name: RECEIVER_B_TOKEN
+  required: true
+  description: Bearer token sent only to receiver B over HTTPS.
+- name: RECEIVER_C_TOKEN
+  required: true
+  description: Bearer token sent only to receiver C over HTTPS.
 inputs: []
 outputs: []
 backends:
@@ -29,6 +41,7 @@ proof:
   status: executed-local-only
   date: '2026-09-18'
   expanso_edge: v2.1.21
+  authentication_matches_current: false
   record: skills/jobs/PROOF-2026-09-18.md
   runs:
   - where: local-mode-node
@@ -41,19 +54,30 @@ proof:
   not_proved:
   - Any run through Cloud; real third-party receivers (receivers were
     local test sinks).
-  note: The job spec has the same structure as the job that ran. Only
-    the values listed in its header comment differ, and long mappings
-    are rewrapped. Inputs in the runs were synthetic fixtures unless
-    a proved line says otherwise.
+  - The current HMAC input verification, HTTPS requirement, and receiver
+    bearer authentication, which were added after the dated run.
+  note: The dated run predates the current authentication and TLS
+    requirements, so it is not proof of the current security behavior.
+    Inputs in the runs were synthetic fixtures unless a proved line says
+    otherwise.
 dependencies:
   network_egress:
     required: true
     endpoints:
     - host: each receiver
-      protocol: http(s)
-      purpose: POST each event
+      protocol: https
+      purpose: POST each event with receiver-specific bearer authentication
   third_party_apis: []
-  credentials_transmitted: []
+  credentials_transmitted:
+  - name: RECEIVER_A_TOKEN
+    to: receiver A in the HTTPS Authorization header
+    not_to: [Expanso Cloud, pipeline definition, other receivers]
+  - name: RECEIVER_B_TOKEN
+    to: receiver B in the HTTPS Authorization header
+    not_to: [Expanso Cloud, pipeline definition, other receivers]
+  - name: RECEIVER_C_TOKEN
+    to: receiver C in the HTTPS Authorization header
+    not_to: [Expanso Cloud, pipeline definition, other receivers]
   data_leaving_host:
   - what: every event body
     to: every receiver

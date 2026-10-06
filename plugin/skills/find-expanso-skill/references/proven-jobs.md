@@ -56,6 +56,7 @@ list before they rely on it.
 - Change data capture. This is a batch copy; a CDC job (postgres_cdc) did not initialize in testing and is unproven.
 - The top-level restart_policy never on Expanso Cloud with this spec; it was added after the Cloud run.
 - Negative balances on Expanso Cloud. The Cloud and 994/6 runs used the earlier formula and had only non-negative balances; the signed formula ran on a local-mode node only.
+- The current sslmode=verify-full database connections, which were added after the dated runs.
 
 ## log-reduction
 
@@ -187,3 +188,4 @@ list before they rely on it.
 **Not proved:**
 
 - Any run through Cloud; real third-party receivers (receivers were local test sinks).
+- The current HMAC input verification, HTTPS requirement, and receiver bearer authentication, which were added after the dated run.

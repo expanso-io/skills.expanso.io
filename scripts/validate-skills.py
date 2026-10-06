@@ -33,7 +33,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 
 # Readiness vocabulary. Nothing here may reach `verified-executed`; that label is
-# earned only by a dated Cloud run record with pinned versions, control-plane
+# earned only by a dated Cloud run record with exact versions, control-plane
 # identifiers and a downstream receipt.
 READY_VALIDATED = "validated-not-executed"
 READY_INVALID = "invalid-does-not-validate"

@@ -61,6 +61,10 @@ EXPLANATORY_COMMAND_PHRASES = (
     "does not run",
     "cannot run",
 )
+ENV_PLACEHOLDER_PATTERN = re.compile(
+    r"\$\{([A-Z][A-Z0-9_]*)(?::[^}]*)?\}"
+)
+ENV_CALL_PATTERN = re.compile(r'env\("([A-Z][A-Z0-9_]*)"\)')
 
 
 def pipeline_files() -> list[Path]:
@@ -156,6 +160,104 @@ def check_http(path: Path, where: tuple[str, ...], config: Any) -> list[str]:
         if not auth:
             issues.append(
                 f"{path}: {component_context(where)} service call must authenticate"
+            )
+    return issues
+
+
+def metadata_names(entries: Any) -> set[str]:
+    if not isinstance(entries, list):
+        return set()
+    return {
+        str(entry.get("name"))
+        for entry in entries
+        if isinstance(entry, dict) and entry.get("name")
+    }
+
+
+def job_security_metadata_issues(
+    path: Path,
+    document: dict[str, Any],
+    metadata: dict[str, Any] | None = None,
+) -> list[str]:
+    """Match job security metadata to executable authentication and TLS."""
+    if path.parents[1].name != "jobs":
+        return []
+    metadata_path = path.parent / "skill.yaml"
+    if metadata is None:
+        if not metadata_path.exists():
+            return [f"{path}: authenticated job has no skill metadata"]
+        metadata = yaml.safe_load(metadata_path.read_text())
+    if not isinstance(metadata, dict):
+        return [f"{metadata_path}: metadata must be a mapping"]
+
+    transmitted: set[str] = set()
+    for where, value in walk(document):
+        if (
+            where
+            and where[-1].lower() == "authorization"
+            and isinstance(value, str)
+        ):
+            transmitted.update(ENV_PLACEHOLDER_PATTERN.findall(value))
+    text = path.read_text()
+    local_auth = set(ENV_CALL_PATTERN.findall(text)) if "hmac_" in text else set()
+    actual = transmitted | local_auth
+    uses_verified_tls = "sslmode=verify-full" in text
+    if not actual and not uses_verified_tls:
+        return []
+
+    issues: list[str] = []
+    dependencies = metadata.get("dependencies")
+    dependencies = dependencies if isinstance(dependencies, dict) else {}
+    network = dependencies.get("network_egress")
+    network = network if isinstance(network, dict) else {}
+    proof = metadata.get("proof")
+    proof = proof if isinstance(proof, dict) else {}
+    if actual:
+        declared = metadata_names(metadata.get("credentials"))
+        missing = sorted(actual - declared)
+        if missing:
+            issues.append(
+                f"{metadata_path}: authentication credentials are not declared: {missing}"
+            )
+        declared_transmitted = metadata_names(
+            dependencies.get("credentials_transmitted")
+        )
+        if declared_transmitted != transmitted:
+            issues.append(
+                f"{metadata_path}: transmitted credentials "
+                f"{sorted(declared_transmitted)} do not match Authorization fields "
+                f"{sorted(transmitted)}"
+            )
+        endpoints = network.get("endpoints")
+        endpoints = endpoints if isinstance(endpoints, list) else []
+        protocols = {
+            str(endpoint.get("protocol", "")).lower()
+            for endpoint in endpoints
+            if isinstance(endpoint, dict)
+        }
+        if transmitted and protocols != {"https"}:
+            issues.append(
+                f"{metadata_path}: authenticated receiver metadata must require HTTPS"
+            )
+        if (
+            proof.get("authentication_matches_current") is True
+            and not isinstance(proof.get("authentication_execution"), dict)
+        ):
+            issues.append(
+                f"{metadata_path}: current authentication claim lacks execution evidence"
+            )
+    if uses_verified_tls:
+        tls = network.get("tls")
+        if not isinstance(tls, dict) or tls.get("required") is not True:
+            issues.append(
+                f"{metadata_path}: verified database TLS is not declared"
+            )
+        if (
+            proof.get("tls_matches_current") is True
+            and not isinstance(proof.get("tls_execution"), dict)
+        ):
+            issues.append(
+                f"{metadata_path}: current TLS claim lacks execution evidence"
             )
     return issues
 
@@ -293,6 +395,9 @@ def main() -> int:
     issues = validation_issues(files)
     for path in files:
         issues.extend(platform_issues(path))
+        document = yaml.safe_load(path.read_text())
+        if isinstance(document, dict):
+            issues.extend(job_security_metadata_issues(path, document))
     issues.extend(command_issues())
     if issues:
         print("Example conformance failed:", file=sys.stderr)

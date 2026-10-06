@@ -29,7 +29,7 @@ jobs:
           node-version: "22"
           cache: npm
 
-      - name: Install pinned Expanso validators
+      - name: Install latest Expanso validators
         shell: bash
         run: |
           set -euo pipefail
@@ -37,22 +37,20 @@ jobs:
           mkdir -p "$bin_dir"
           curl -fsSL https://get.expanso.io/edge/install.sh \
             | EXPANSO_INSTALL_DIR="$bin_dir" \
-              EXPANSO_VERSION=v2.1.21 \
               USE_SUDO=false \
               bash
           curl -fsSL https://get.expanso.io/cli/install.sh \
             | EXPANSO_INSTALL_DIR="$bin_dir" \
-              EXPANSO_VERSION=v2.1.21 \
               USE_SUDO=false \
               bash
           echo "$bin_dir" >> "$GITHUB_PATH"
-          test "$("$bin_dir/expanso-edge" version)" = "v2.1.21"
-          test "$("$bin_dir/expanso-cli" version)" = \
-            "Expanso CLI version v2.1.21"
+          "$bin_dir/expanso-edge" version
+          "$bin_dir/expanso-cli" version
 
       - name: Validate YAML and skill structure
         run: |
           uv run -s scripts/audit-skills.py
+          uv run -s scripts/test-edge-harness-readiness.py
 
       - name: Validate every job spec and pipeline config
         run: |

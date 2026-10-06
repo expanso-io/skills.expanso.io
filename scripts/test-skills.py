@@ -14,11 +14,13 @@ from __future__ import annotations
 
 import argparse
 import atexit
+import fcntl
 import hashlib
 import hmac
 import json
 import os
 import re
+import signal
 import shutil
 import socket
 import subprocess
@@ -37,6 +39,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SKILLS_DIR = REPO_ROOT / "skills"
 CONFORMANCE_DIR = REPO_ROOT / ".conformance"
 HARNESS_MCP_BEARER_TOKEN = "expanso-harness-mcp-token-32-chars"
+PORT_RANGE_START = 20_000
+PORT_RANGE_STOP = 30_000
+_PORT_LOCKS: list[Any] = []
 
 
 class DupKeyLoader(yaml.SafeLoader):
@@ -101,22 +106,29 @@ class EdgeProcess:
             "--data-dir",
             str(self.data_dir),
             "--log-level",
-            "warn",
+            os.environ.get("EXPANSO_TEST_LOG_LEVEL", "warn"),
         ]
         self.log_file.parent.mkdir(parents=True, exist_ok=True)
         log_handle = open(self.log_file, "w")
         self.process = subprocess.Popen(
-            cmd, stdout=log_handle, stderr=log_handle, env=env
+            cmd,
+            stdout=log_handle,
+            stderr=log_handle,
+            env=env,
+            start_new_session=True,
         )
 
     def stop(self) -> None:
         if not self.process:
             return
-        self.process.terminate()
+        process_group = self.process.pid
+        if self.process.poll() is None:
+            os.killpg(process_group, signal.SIGTERM)
         try:
             self.process.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            self.process.kill()
+            os.killpg(process_group, signal.SIGKILL)
+            self.process.wait(timeout=5)
         self.process = None
 
 
@@ -235,10 +247,34 @@ def compute_test_fingerprint(
     return h.hexdigest()
 
 
+def port_candidates():
+    """Yield the dedicated harness range in a process-specific order."""
+    size = PORT_RANGE_STOP - PORT_RANGE_START
+    start = (os.getpid() * 7919) % size
+    for offset in range(size):
+        yield PORT_RANGE_START + ((start + offset) % size)
+
+
 def find_free_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("127.0.0.1", 0))
-        return s.getsockname()[1]
+    """Lock a non-ephemeral port for this run before returning it."""
+    lock_dir = CONFORMANCE_DIR / "port-locks"
+    lock_dir.mkdir(parents=True, exist_ok=True)
+    for port in port_candidates():
+        lock_handle = (lock_dir / f"{port}.lock").open("a+")
+        try:
+            fcntl.flock(lock_handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            lock_handle.close()
+            continue
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.bind(("0.0.0.0", port))
+        except OSError:
+            lock_handle.close()
+            continue
+        _PORT_LOCKS.append(lock_handle)
+        return port
+    raise RuntimeError("no free port in dedicated harness range 20000-29999")
 
 
 def wait_for_port(port: int, timeout: float = 45.0) -> bool:
@@ -269,6 +305,115 @@ def wait_for_api(endpoint: str, timeout: float = 10.0) -> bool:
             return True
         time.sleep(0.3)
     return False
+
+
+TERMINAL_EXECUTION_STATES = {
+    "cancelled",
+    "canceled",
+    "completed",
+    "failed",
+    "stopped",
+}
+
+
+def wait_for_execution_running(
+    expanso_cli: str,
+    job_name: str,
+    api_url: str,
+    timeout: float = 45,
+) -> tuple[bool, str]:
+    """Wait for Edge's execution state, not the earlier TCP bind."""
+    deadline = time.monotonic() + timeout
+    job_id = ""
+    last_state = "missing"
+    while time.monotonic() < deadline:
+        if not job_id:
+            described = subprocess.run(
+                [
+                    expanso_cli,
+                    "job",
+                    "describe",
+                    job_name,
+                    "--endpoint",
+                    api_url,
+                    "--format",
+                    "json",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=10,
+            )
+            if described.returncode == 0:
+                try:
+                    job_id = str(json.loads(described.stdout).get("id", ""))
+                except json.JSONDecodeError:
+                    pass
+        if job_id:
+            listed = subprocess.run(
+                [
+                    expanso_cli,
+                    "execution",
+                    "list",
+                    "--job-id",
+                    job_id,
+                    "--endpoint",
+                    api_url,
+                    "--format",
+                    "json",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=10,
+            )
+            if listed.returncode == 0:
+                try:
+                    rows = json.loads(listed.stdout)
+                except json.JSONDecodeError:
+                    rows = []
+                states = [
+                    str(row.get("status", {}).get("observed_state", {}).get(
+                        "state_type", "missing"
+                    )).lower()
+                    for row in rows
+                    if isinstance(row, dict)
+                ]
+                if "running" in states:
+                    return True, "running"
+                terminal = next(
+                    (state for state in states if state in TERMINAL_EXECUTION_STATES),
+                    None,
+                )
+                if terminal:
+                    return False, f"execution reached terminal state {terminal}"
+                if states:
+                    last_state = ", ".join(states)
+        time.sleep(0.2)
+    return False, (
+        f"execution did not reach running within {timeout:g}s "
+        f"(last state: {last_state})"
+    )
+
+
+def listener_bind_address_in_use(
+    edge_log: Path | None,
+    offset: int,
+    port: int,
+) -> bool:
+    """Return true only for this attempt's listener bind collision."""
+    if not edge_log or not edge_log.exists():
+        return False
+    with edge_log.open("rb") as log_handle:
+        log_handle.seek(offset)
+        text = log_handle.read().decode(errors="replace")
+    return bool(
+        re.search(
+            rf"failed to bind to address [^ ]*:{port}:.*address already in use",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def generate_command(instruction: str, shell: str) -> str:
@@ -1128,7 +1273,6 @@ def execute_test(
     published_adapters_intact = variant == "mcp"
     published_processors_intact = not processor_fixtures_used
 
-    port = find_free_port()
     config = pipeline_spec.setdefault("config", {})
     if variant == "cli":
         # Scheduled Edge jobs cannot receive terminal stdin. For execution
@@ -1137,7 +1281,7 @@ def execute_test(
         # README.md#run-the-skill-test-harness defines the proof boundary.
         config["input"] = {
             "http_server": {
-                "address": f"127.0.0.1:{port}",
+                "address": "127.0.0.1:0",
                 "path": "/test",
                 "allowed_verbs": ["POST"],
                 "timeout": "60s",
@@ -1165,7 +1309,9 @@ def execute_test(
         address = http_server.get("address", "")
         if not re.search(r"\$\{PORT(?::[^}]*)?\}", address):
             return {"status": "failed", "reason": "MCP input must bind its advertised PORT", "errors": [], "status_code": 0, "output": {}}, True
-        http_server["address"] = re.sub(r"\$\{PORT(?::[^}]*)?\}", str(port), address)
+        mcp_address_template = address
+    else:
+        mcp_address_template = ""
     path = http_server.get("path", "/")
     allowed = http_server.get("allowed_verbs", ["POST"])
     method = allowed[0] if isinstance(allowed, list) and allowed else "POST"
@@ -1199,27 +1345,99 @@ def execute_test(
             observed.append({"log": {"level": "WARN", "message": f"EXPLORER_STAGE_{index}_{side} ${{! content().string().quote() }}"}})
     pipeline_spec["config"].setdefault("pipeline", {})["processors"] = observed
 
-    pipeline_spec["name"] = f"{skill_name}-{variant}-test-{port}"
-
     jobs_dir = run_dir / "jobs"
     jobs_dir.mkdir(parents=True, exist_ok=True)
-    temp_job = jobs_dir / f"{skill_name}-{variant}-{port}-{uuid.uuid4().hex}.yaml"
-    with open(temp_job, "w") as f:
-        yaml.safe_dump(pipeline_spec, f, sort_keys=False)
+    listener_ports: list[int] = []
+    listener_bind_retries = 0
+    while True:
+        port = find_free_port()
+        listener_ports.append(port)
+        http_server = pipeline_spec["config"]["input"]["http_server"]
+        if variant == "cli":
+            http_server["address"] = f"127.0.0.1:{port}"
+        else:
+            http_server["address"] = re.sub(
+                r"\$\{PORT(?::[^}]*)?\}",
+                str(port),
+                mcp_address_template,
+            )
+        pipeline_spec["name"] = f"{skill_name}-{variant}-test-{port}"
 
-    deploy = subprocess.run(
-        [expanso_cli, "job", "deploy", str(temp_job), "--endpoint", api_url],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    if deploy.returncode != 0:
+        temp_job = (
+            jobs_dir
+            / f"{skill_name}-{variant}-{port}-{uuid.uuid4().hex}.yaml"
+        )
+        with open(temp_job, "w") as f:
+            yaml.safe_dump(pipeline_spec, f, sort_keys=False)
+
+        attempt_log_offset = (
+            edge_log.stat().st_size
+            if edge_log and edge_log.exists()
+            else 0
+        )
+        deploy = subprocess.run(
+            [
+                expanso_cli,
+                "job",
+                "deploy",
+                str(temp_job),
+                "--endpoint",
+                api_url,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if deploy.returncode != 0:
+            return {
+                "status": "failed",
+                "reason": f"job deploy failed: {deploy.stderr.strip()}",
+                "errors": [],
+                "status_code": 0,
+                "output": {},
+                "listener_bind_retries": listener_bind_retries,
+                "listener_ports": listener_ports,
+            }, False
+
+        ready, ready_reason = wait_for_execution_running(
+            expanso_cli,
+            pipeline_spec["name"],
+            api_url,
+            timeout=45,
+        )
+        if ready:
+            break
+
+        subprocess.run(
+            [
+                expanso_cli,
+                "job",
+                "delete",
+                pipeline_spec["name"],
+                "--endpoint",
+                api_url,
+                "--yes",
+                "--force",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        retry_bind = listener_bind_address_in_use(
+            edge_log,
+            attempt_log_offset,
+            port,
+        )
+        if retry_bind and listener_bind_retries < 2:
+            listener_bind_retries += 1
+            continue
         return {
             "status": "failed",
-            "reason": f"job deploy failed: {deploy.stderr.strip()}",
+            "reason": ready_reason,
             "errors": [],
             "status_code": 0,
             "output": {},
+            "listener_bind_retries": listener_bind_retries,
+            "listener_ports": listener_ports,
         }, False
 
     if not wait_for_port(port, timeout=15.0):
@@ -1243,6 +1461,8 @@ def execute_test(
             "errors": [],
             "status_code": 0,
             "output": {},
+            "listener_bind_retries": listener_bind_retries,
+            "listener_ports": listener_ports,
         }, False
 
     url = f"http://127.0.0.1:{port}{path}"
@@ -1345,6 +1565,8 @@ def execute_test(
             "errors": [],
             "status_code": 0,
             "output": {},
+            "listener_bind_retries": listener_bind_retries,
+            "listener_ports": listener_ports,
         }, False
 
     time.sleep(0.1)
@@ -1397,6 +1619,8 @@ def execute_test(
         "edge_errors": unexpected_errors,
         "published_adapters_intact": published_adapters_intact,
         "published_processors_intact": published_processors_intact,
+        "listener_bind_retries": listener_bind_retries,
+        "listener_ports": listener_ports,
     }
     stages = {}
     for match in re.finditer(r'EXPLORER_STAGE_(\d+)_(input|output) ("(?:[^"\\]|\\.)*")', edge_log_text):

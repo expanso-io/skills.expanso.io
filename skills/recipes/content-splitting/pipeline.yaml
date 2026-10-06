@@ -29,20 +29,18 @@ config:
           }
 
           root = this
-          root.batch_id = $batch_id
-          root.received_at = now()
-          root.data_type = $data_type
 
           meta data_type = $data_type
           meta batch_id = $batch_id
+          meta received_at = now()
 
       # Step 2: Extract items to split
       - mapping: |
-          let items = if this.data_type == "json_array" {
+          let items = if meta("data_type") == "json_array" {
             this.items
-          } else if this.data_type == "records" {
+          } else if meta("data_type") == "records" {
             this.records
-          } else if this.data_type == "raw_array" {
+          } else if meta("data_type") == "raw_array" {
             this
           } else {
             [this]
@@ -63,7 +61,15 @@ config:
 
       # Step 4: Enrich each item with batch context
       - mapping: |
-          root = this
+          root = if meta("data_type") == "single" {
+            this.merge({
+              "batch_id": meta("batch_id"),
+              "received_at": meta("received_at"),
+              "data_type": meta("data_type")
+            })
+          } else {
+            this
+          }
           root.batch_context = {
             "batch_id": meta("batch_id"),
             "item_index": count("items"),

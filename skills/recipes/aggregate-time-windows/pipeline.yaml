@@ -50,6 +50,9 @@ config:
             ]
           }
 
+      - catch:
+          - mapping: 'root = deleted()'
+
       - unarchive:
           format: json_array
 
@@ -90,6 +93,9 @@ config:
           } else {
             deleted()
           }
+
+      - catch:
+          - mapping: 'root = deleted()'
 
   output:
     kafka:

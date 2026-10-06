@@ -31,6 +31,7 @@ proof:
   status: executed-cloud-and-local
   date: '2026-09-18'
   expanso_edge: v2.1.21
+  tls_matches_current: false
   record: skills/jobs/PROOF-2026-09-18.md
   runs:
   - where: expanso-cloud
@@ -67,15 +68,21 @@ proof:
   - Negative balances on Expanso Cloud. The Cloud and 994/6 runs used
     the earlier formula and had only non-negative balances; the signed
     formula ran on a local-mode node only.
+  - The current sslmode=verify-full database connections, which were
+    added after the dated runs.
   note: The job spec has the same structure as the job that ran. Only
     the values listed in its header comment differ, and long mappings
     are rewrapped. The top-level restart_policy never and the signed
-    balance formula are newer than the Cloud run. Inputs in the runs
-    were synthetic fixtures unless a proved line says otherwise.
+    balance formula are newer than the Cloud run. The dated proof also
+    predates the current verified-TLS requirement. Inputs in the runs were
+    synthetic fixtures unless a proved line says otherwise.
 dependencies:
   network_egress:
     required: false
     scope: Only to the two databases.
+    tls:
+      required: true
+      verification: PostgreSQL sslmode=verify-full with a trusted CA
   third_party_apis: []
   credentials_transmitted:
   - name: database credentials in the two DSNs

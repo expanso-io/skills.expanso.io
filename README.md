@@ -479,7 +479,7 @@ credential and your data to that provider.
 ## Pipeline shape & readiness
 
 Every row is at its true label. **No row is `verified-executed`.** A row may only
-be promoted by a dated run record on current Expanso Cloud carrying pinned
+be promoted by a dated run record on current Expanso Cloud recording exact
 versions, control-plane identifiers, and a downstream receipt. Component
 availability alone does not promote a row: it establishes that the component
 exists, not that the shape runs.

@@ -133,6 +133,10 @@ class Suite:
         ok, _, output = runner.deploy(path, CLI, self.api)
         assert ok, output
         try:
+            ready, reason = runner.wait_for_execution_running(
+                CLI, name, self.api, timeout=45
+            )
+            assert ready, reason
             assert runner.wait_for_port(port), path.read_text()
             results = []
             for _ in range(repeat):

@@ -1,7 +1,7 @@
 tests:
-- name: Withdrawn capability returns no success receipt
-  input: '{}'
-  expected_output:
-    status: unsupported
-    publication: pulled
-    skill: openapi-validate
+  - name: Withdrawn capability returns no success receipt
+    input: '{}'
+    expected_output:
+      status: unsupported
+      publication: pulled
+      skill: openapi-validate

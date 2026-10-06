@@ -741,6 +741,14 @@
 
     // ── Helpers ──────────────────────────────────────────────
 
+    function stageValueText(value) {
+        if (value === undefined) return 'Not recorded';
+
+        if (Object.prototype.toString.call(value) === '[object String]') return value;
+
+        return JSON.stringify(value, null, 2);
+    }
+
     function createStageExplorer(data) {
         var section = document.createElement('section');
         section.className = 'stage-explorer modal-section';
@@ -775,7 +783,7 @@
                 var heading = document.createElement('h4');
                 heading.textContent = part[0];
                 details.appendChild(heading);
-                var text = part[1] === undefined ? 'Not recorded' : typeof part[1] === 'string' ? part[1] : JSON.stringify(part[1], null, 2);
+                var text = stageValueText(part[1]);
                 var block = createCodeBlock(text, part[2] === 'stage-config' ? 'yaml' : 'json');
                 block.classList.add(part[2]);
                 details.appendChild(block);

@@ -6,8 +6,7 @@ tests:
     env:
       LENGTH: "20"
     expected:
-      has_field: result
-      has_field: truncated
+      has_field: [result, truncated]
       metadata_has: [skill, trace_id, timestamp]
 
   - name: "Short text unchanged"
@@ -18,5 +17,4 @@ tests:
       original_length: 5
       final_length: 5
     expected:
-      has_field: result
-      has_field: original_length
+      has_field: [result, original_length]

@@ -14,9 +14,11 @@ from __future__ import annotations
 
 import argparse
 import atexit
+import fcntl
 import hashlib
 import json
 import os
+import signal
 import shutil
 import socket
 import subprocess
@@ -34,6 +36,9 @@ import yaml
 REPO = Path(__file__).resolve().parents[1]
 RECIPES = REPO / "skills" / "recipes"
 CONFORMANCE = REPO / ".conformance"
+PORT_RANGE_START = 20_000
+PORT_RANGE_STOP = 30_000
+_PORT_LOCKS: list[Any] = []
 
 VALID_ENCRYPTION_ENV = {
     "FIELD_ENCRYPTION_KEY_HEX": "0123456789abcdef" * 4,
@@ -81,7 +86,7 @@ class Edge:
             "--data-dir",
             str(self.data_dir),
             "--log-level",
-            "warn",
+            os.environ.get("EXPANSO_TEST_LOG_LEVEL", "warn"),
         ]
         self.log_file.parent.mkdir(parents=True, exist_ok=True)
         log = self.log_file.open("w")
@@ -92,16 +97,19 @@ class Edge:
             stderr=log,
             env=process_env,
             text=True,
+            start_new_session=True,
         )
 
     def stop(self) -> None:
         if not self.process:
             return
-        self.process.terminate()
+        process_group = self.process.pid
+        if self.process.poll() is None:
+            os.killpg(process_group, signal.SIGTERM)
         try:
             self.process.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            self.process.kill()
+            os.killpg(process_group, signal.SIGKILL)
             self.process.wait(timeout=5)
         self.process = None
 
@@ -136,10 +144,34 @@ class SlackFixtureHandler(BaseHTTPRequestHandler):
         return
 
 
+def port_candidates():
+    """Yield the dedicated harness range in a process-specific order."""
+    size = PORT_RANGE_STOP - PORT_RANGE_START
+    start = (os.getpid() * 7919) % size
+    for offset in range(size):
+        yield PORT_RANGE_START + ((start + offset) % size)
+
+
 def free_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
+    """Lock a non-ephemeral port for this run before returning it."""
+    lock_dir = CONFORMANCE / "port-locks"
+    lock_dir.mkdir(parents=True, exist_ok=True)
+    for port in port_candidates():
+        lock_handle = (lock_dir / f"{port}.lock").open("a+")
+        try:
+            fcntl.flock(lock_handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            lock_handle.close()
+            continue
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.bind(("0.0.0.0", port))
+        except OSError:
+            lock_handle.close()
+            continue
+        _PORT_LOCKS.append(lock_handle)
+        return port
+    raise RuntimeError("no free port in dedicated harness range 20000-29999")
 
 
 def wait_for_port(port: int, timeout: float = 20) -> bool:
@@ -168,6 +200,99 @@ def wait_for_api(cli: str, api_url: str, timeout: float = 20) -> bool:
             return True
         time.sleep(0.2)
     return False
+
+
+TERMINAL_EXECUTION_STATES = {
+    "cancelled",
+    "canceled",
+    "completed",
+    "failed",
+    "stopped",
+}
+
+
+def wait_for_execution_running(
+    cli: str,
+    job_name: str,
+    api_url: str,
+    timeout: float = 45,
+    namespace: str = "",
+) -> tuple[bool, str]:
+    """Wait for Edge's execution state, not the earlier TCP bind."""
+    deadline = time.monotonic() + timeout
+    job_id = ""
+    last_state = "missing"
+    while time.monotonic() < deadline:
+        if not job_id:
+            describe_command = [
+                cli,
+                "job",
+                "describe",
+                job_name,
+                "--endpoint",
+                api_url,
+                "--format",
+                "json",
+            ]
+            if namespace:
+                describe_command.extend(["--namespace", namespace])
+            described = subprocess.run(
+                describe_command,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=10,
+            )
+            if described.returncode == 0:
+                try:
+                    job_id = str(json.loads(described.stdout).get("id", ""))
+                except json.JSONDecodeError:
+                    pass
+        if job_id:
+            listed = subprocess.run(
+                [
+                    cli,
+                    "execution",
+                    "list",
+                    "--job-id",
+                    job_id,
+                    "--endpoint",
+                    api_url,
+                    "--format",
+                    "json",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=10,
+            )
+            if listed.returncode == 0:
+                try:
+                    rows = json.loads(listed.stdout)
+                except json.JSONDecodeError:
+                    rows = []
+                states = [
+                    str(row.get("status", {}).get("observed_state", {}).get(
+                        "state_type", "missing"
+                    )).lower()
+                    for row in rows
+                    if isinstance(row, dict)
+                ]
+                if "running" in states:
+                    return True, "running"
+                terminal = next(
+                    (state for state in states if state in TERMINAL_EXECUTION_STATES),
+                    None,
+                )
+                if terminal:
+                    return False, f"execution reached terminal state {terminal}"
+                if states:
+                    last_state = ", ".join(states)
+        time.sleep(0.2)
+    return False, (
+        f"execution did not reach running within {timeout:g}s "
+        f"(last state: {last_state})"
+    )
 
 
 def tool_evidence(binary: str) -> dict[str, str]:
@@ -228,13 +353,42 @@ def deploy(path: Path, cli: str, api_url: str) -> tuple[bool, str, str]:
     return result.returncode == 0, name, (result.stdout + result.stderr).strip()
 
 
-def delete_job(cli: str, name: str, api_url: str) -> None:
+def delete_job(
+    cli: str,
+    name: str,
+    api_url: str,
+    namespace: str = "",
+) -> None:
+    target = name
+    if namespace:
+        described = subprocess.run(
+            [
+                cli,
+                "job",
+                "describe",
+                name,
+                "--namespace",
+                namespace,
+                "--endpoint",
+                api_url,
+                "--format",
+                "json",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if described.returncode == 0:
+            try:
+                target = str(json.loads(described.stdout).get("id", name))
+            except json.JSONDecodeError:
+                pass
     subprocess.run(
         [
             cli,
             "job",
             "delete",
-            name,
+            target,
             "--endpoint",
             api_url,
             "--yes",
@@ -267,11 +421,22 @@ def run_edge_case(
     atexit.register(edge.stop)
     if not wait_for_api(cli, api_url):
         return None, edge, "expanso-edge local API did not start"
+    document = yaml.safe_load(path.read_text())
+    namespace = str(document.get("namespace", ""))
     ok, job_name, deploy_output = deploy(path, cli, api_url)
     if not ok:
         return None, edge, f"job deploy failed: {deploy_output}"
     port = int(request["port"])
     try:
+        ready, reason = wait_for_execution_running(
+            cli,
+            job_name,
+            api_url,
+            timeout=45,
+            namespace=namespace,
+        )
+        if not ready:
+            return None, edge, reason
         if not wait_for_port(port):
             return None, edge, f"published HTTP input did not listen on {port}"
         response = requests.request(
@@ -285,7 +450,7 @@ def run_edge_case(
         time.sleep(0.3)
         return response, edge, None
     finally:
-        delete_job(cli, job_name, api_url)
+        delete_job(cli, job_name, api_url, namespace=namespace)
 
 
 def stop_edge(edge: Edge) -> None:

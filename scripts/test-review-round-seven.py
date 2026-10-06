@@ -102,11 +102,17 @@ def main():
             assert result["error"] and result["is_duplicate"] is None, result
             assert result["dedup_result"]["is_duplicate"] is None, result
         cfg = round_six.routed(reg.config("recipes/content-splitting", "recipe"), ["processed", "dead_letter"])
-        for item, destination in [({}, "dead_letter"), ({"id": 1}, "processed"), ("invalid", "dead_letter")]:
-            result = suite.execute(cfg, {"items": [item]}, retain_output=True)
+        cases = [
+            ({"items": [{}]}, "dead_letter", {}),
+            ({}, "dead_letter", {}),
+            ({"items": [{"id": 1}]}, "processed", {"id": 1}),
+            ({"items": ["invalid"]}, "dead_letter", "invalid"),
+        ]
+        for payload, destination, original in cases:
+            result = suite.execute(cfg, payload, retain_output=True)
             assert result["destination"] == destination, result
             if destination == "dead_letter":
-                assert result["invalid"] and result["original"] == item, result
+                assert result["invalid"] and result["original"] == original, result
         for recipe, payload in [
             (
                 "encrypt-data",
