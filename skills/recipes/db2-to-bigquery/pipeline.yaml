@@ -114,7 +114,9 @@ config:
           root._lineage = this._lineage
 
           # Add BigQuery partition field
-          root._partition_date = this.TRANSACTION_DATE.string().ts_parse("2006-01-02T15:04:05Z07:00").ts_format("2006-01-02")
+          let source_timestamp = this.TRANSACTION_DATE.string()
+          let parsed_timestamp = $source_timestamp.ts_parse("2006-01-02T15:04:05.999999999Z07:00").catch($source_timestamp.ts_parse("2006-01-02"))
+          root._partition_date = $parsed_timestamp.ts_format("2006-01-02")
 
       # Step 6: Validate required fields before loading
       - mapping: |

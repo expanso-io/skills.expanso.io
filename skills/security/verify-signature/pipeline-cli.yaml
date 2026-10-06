@@ -60,6 +60,10 @@ config:
             "timestamp": now()
           }
 
+      - catch:
+          - mapping: |
+              root = {"valid": false, "error": error()}
+
       - log:
           level: INFO
           message: |

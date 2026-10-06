@@ -50,5 +50,9 @@ config:
             "timestamp": now()
           }
 
+      - catch:
+          - mapping: |
+              root = {"status": "error", "error": error()}
+
   output:
     stdout: {}

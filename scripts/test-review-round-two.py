@@ -120,14 +120,16 @@ def main():
                 assert result["format"] == expected, result
                 if expected == "csv":
                     assert (result["service"], result["message"]) == ("billing,worker", "failed"), result
-            manifest = {"name": "my-app", "version": "1.0", "dependencies": {"@babel/core": "7.0.0", "@a/b-c": "1.0", "@a-b/c": "1.0"}, "devDependencies": {"@a/b-c": "1.0"}}
+            manifest = {"name": "my-app", "version": "1.0", "dependencies": {"@babel/core": "7.0.0", "@a/b-c": "1.0", "@a-b/c": "1.0", "lodash.merge": "4.6.2"}, "devDependencies": {"@a/b-c": "1.0"}}
             for variant in ["cli", "mcp"]:
                 cfg = reg.config("security/sbom-generate", variant)
                 result = suite.execute(cfg, {"packages": manifest, "format": "spdx"} if variant == "mcp" else manifest)
                 assert result["sbom"]["name"] == "my-app", result
                 packages = result["sbom"]["packages"]
-                assert len(packages) == 4 and len({package["SPDXID"] for package in packages}) == 4, result
+                assert len(packages) == 5 and len({package["SPDXID"] for package in packages}) == 5, result
                 assert all(re.fullmatch(r"SPDXRef-[A-Za-z0-9.-]+", package["SPDXID"]) for package in packages), result
+                dotted = next(package for package in packages if package["name"] == "lodash.merge")
+                assert dotted["versionInfo"] == "4.6.2", dotted
                 cfg = reg.config("connectors/gmail-read", variant)
                 gmail_transports(cfg["pipeline"], endpoint)
                 for list_status, failed_id, ids in [(401, None, ["good"]), (200, "bad", ["good", "bad"]), (200, None, []), (200, None, ["good", "other"])]:
