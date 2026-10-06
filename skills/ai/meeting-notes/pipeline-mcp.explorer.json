@@ -1,0 +1,142 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "c11f696a3f2e5160c8545fb608790e620da1320bb6cf0bfe2c919244af30e246",
+  "date": "2026-10-06T11:36:36Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Extracts action items from transcript",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "transcript": "Alice: We need to finish the report by Friday. Bob: I'll handle the data analysis."
+        }
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "You are a professional meeting notes assistant. Extract structured notes from transcripts. Always respond with valid JSON containing: summary (2-3 sentences), key_points (array of strings), action_items (array of {assignee, task, due_date}), decisions (array of strings), attendees (array of names mentioned).",
+              "role": "system"
+            },
+            {
+              "content": "Extract structured meeting notes from this transcript:\n\nAlice: We need to finish the report by Friday. Bob: I'll handle the data analysis.",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "openai_chat_completion",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "You are a professional meeting notes assistant. Extract structured notes from transcripts. Always respond with valid JSON containing: summary (2-3 sentences), key_points (array of strings), action_items (array of {assignee, task, due_date}), decisions (array of strings), attendees (array of names mentioned).",
+              "role": "system"
+            },
+            {
+              "content": "Extract structured meeting notes from this transcript:\n\nAlice: We need to finish the report by Friday. Bob: I'll handle the data analysis.",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "metadata": {
+            "action_item_count": 0,
+            "input_hash": "4342e981cf8559e8c15ffd4da50559ad27730391b14113cef42a44a15e16ce8b",
+            "input_length": "82",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "skill": "meeting-notes",
+            "timestamp": "2026-10-06T04:36:35.728433-07:00",
+            "trace_id": "0f3e0607-b8e2-4835-88fe-d24a71f40544"
+          },
+          "notes": {
+            "action_items": [],
+            "attendees": [],
+            "decisions": [],
+            "key_points": [],
+            "result": "mock",
+            "summary": "{\"result\": \"mock\"}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "metadata": {
+            "action_item_count": 0,
+            "input_hash": "4342e981cf8559e8c15ffd4da50559ad27730391b14113cef42a44a15e16ce8b",
+            "input_length": "82",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "skill": "meeting-notes",
+            "timestamp": "2026-10-06T04:36:35.728433-07:00",
+            "trace_id": "0f3e0607-b8e2-4835-88fe-d24a71f40544"
+          },
+          "notes": {
+            "action_items": [],
+            "attendees": [],
+            "decisions": [],
+            "key_points": [],
+            "result": "mock",
+            "summary": "{\"result\": \"mock\"}"
+          }
+        }
+      ],
+      "output": [
+        {
+          "metadata": {
+            "action_item_count": 0,
+            "input_hash": "4342e981cf8559e8c15ffd4da50559ad27730391b14113cef42a44a15e16ce8b",
+            "input_length": "82",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "skill": "meeting-notes",
+            "timestamp": "2026-10-06T04:36:35.728433-07:00",
+            "trace_id": "0f3e0607-b8e2-4835-88fe-d24a71f40544"
+          },
+          "notes": {
+            "action_items": [],
+            "attendees": [],
+            "decisions": [],
+            "key_points": [],
+            "result": "mock",
+            "summary": "{\"result\": \"mock\"}"
+          }
+        }
+      ]
+    }
+  ]
+}

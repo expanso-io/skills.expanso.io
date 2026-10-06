@@ -1,0 +1,65 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "b11b15dbd0e119d512822d31645c60ff7dde02e5cc92e86c1d8d9569404bdb93",
+  "date": "2026-10-06T11:41:40Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Format as heading",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "text": "My Title",
+          "format": "heading",
+          "level": 2
+        }
+      ],
+      "output": [
+        {
+          "format": "heading",
+          "markdown": "## My Title",
+          "metadata": {
+            "format_type": "heading",
+            "mode": "mcp",
+            "skill": "markdown-format",
+            "timestamp": "2026-10-06T04:41:39.821246-07:00",
+            "trace_id": "045e8d40-07c2-4003-bb2b-a16e5f667519"
+          },
+          "original": "My Title"
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "format": "heading",
+          "markdown": "## My Title",
+          "metadata": {
+            "format_type": "heading",
+            "mode": "mcp",
+            "skill": "markdown-format",
+            "timestamp": "2026-10-06T04:41:39.821246-07:00",
+            "trace_id": "045e8d40-07c2-4003-bb2b-a16e5f667519"
+          },
+          "original": "My Title"
+        }
+      ],
+      "output": [
+        {
+          "format": "heading",
+          "markdown": "## My Title",
+          "metadata": {
+            "format_type": "heading",
+            "mode": "mcp",
+            "skill": "markdown-format",
+            "timestamp": "2026-10-06T04:41:39.821246-07:00",
+            "trace_id": "045e8d40-07c2-4003-bb2b-a16e5f667519"
+          },
+          "original": "My Title"
+        }
+      ]
+    }
+  ]
+}

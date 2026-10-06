@@ -1,0 +1,83 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "bb4e90a6720e1bef8cffbfbb8876fba0633f512fb5a39af492ddc9a8b00394b0",
+  "date": "2026-10-06T11:44:24Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Normalizes Jira search results",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "action": "search",
+          "project": "TEST"
+        }
+      ],
+      "output": [
+        {
+          "action": "search",
+          "project": "TEST"
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "action": "search",
+          "project": "TEST"
+        }
+      ],
+      "output": [
+        {
+          "_trace_id": "54799e12-19c1-4b72-8f90-9c7c12700ff4",
+          "action": "search",
+          "project": "TEST"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "input": [
+        {
+          "_trace_id": "54799e12-19c1-4b72-8f90-9c7c12700ff4",
+          "action": "search",
+          "project": "TEST"
+        }
+      ],
+      "output": [
+        {
+          "action": "search",
+          "issues": [
+            {
+              "assignee": "dev@example.test",
+              "key": "TEST-101",
+              "status": "To Do",
+              "summary": "Fix login"
+            }
+          ],
+          "metadata": {
+            "action": "search",
+            "mode": "mcp",
+            "skill": "jira-automate",
+            "source": "jira_api",
+            "timestamp": "2026-10-06T04:44:23.979102-07:00",
+            "trace_id": "54799e12-19c1-4b72-8f90-9c7c12700ff4"
+          },
+          "result": {
+            "issues": [
+              {
+                "assignee": "dev@example.test",
+                "key": "TEST-101",
+                "status": "To Do",
+                "summary": "Fix login"
+              }
+            ],
+            "next_page_token": null
+          }
+        }
+      ]
+    }
+  ]
+}

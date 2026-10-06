@@ -1,0 +1,214 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "8f7ee2760df067ccf7fd75008645b792a60272185b2b2876a7209ec3ae2bad4d",
+  "date": "2026-10-06T11:44:14Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Verifies backups",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "cloud_provider": "s3",
+          "bucket": "my-backup",
+          "local_manifest": [
+            {
+              "path": "a.txt",
+              "size": 3,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "b.txt",
+              "size": 4,
+              "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            }
+          ],
+          "backup_manifest": [
+            {
+              "path": "a.txt",
+              "size": 3,
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "b.txt",
+              "size": 5,
+              "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "differences": [
+            {
+              "backup": {
+                "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "size": 5
+              },
+              "local": {
+                "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "size": 4
+              },
+              "path": "b.txt",
+              "status": "content_mismatch"
+            }
+          ],
+          "metadata": {
+            "bucket": "my-backup",
+            "cloud_provider": "s3",
+            "mode": "cli",
+            "skill": "backup-verify",
+            "trace_id": "51410b26-970e-4d7e-89be-b4367569145f"
+          },
+          "status": {
+            "backup_bytes": 8,
+            "backup_files": 2,
+            "differences": 1,
+            "local_bytes": 7,
+            "local_files": 2,
+            "verified": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "differences": [
+            {
+              "backup": {
+                "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "size": 5
+              },
+              "local": {
+                "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "size": 4
+              },
+              "path": "b.txt",
+              "status": "content_mismatch"
+            }
+          ],
+          "metadata": {
+            "bucket": "my-backup",
+            "cloud_provider": "s3",
+            "mode": "cli",
+            "skill": "backup-verify",
+            "trace_id": "51410b26-970e-4d7e-89be-b4367569145f"
+          },
+          "status": {
+            "backup_bytes": 8,
+            "backup_files": 2,
+            "differences": 1,
+            "local_bytes": 7,
+            "local_files": 2,
+            "verified": false
+          }
+        }
+      ],
+      "output": [
+        {
+          "differences": [
+            {
+              "backup": {
+                "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "size": 5
+              },
+              "local": {
+                "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "size": 4
+              },
+              "path": "b.txt",
+              "status": "content_mismatch"
+            }
+          ],
+          "metadata": {
+            "bucket": "my-backup",
+            "cloud_provider": "s3",
+            "mode": "cli",
+            "skill": "backup-verify",
+            "trace_id": "51410b26-970e-4d7e-89be-b4367569145f"
+          },
+          "status": {
+            "backup_bytes": 8,
+            "backup_files": 2,
+            "differences": 1,
+            "local_bytes": 7,
+            "local_files": 2,
+            "verified": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "catch",
+      "input": [
+        {
+          "differences": [
+            {
+              "backup": {
+                "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "size": 5
+              },
+              "local": {
+                "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "size": 4
+              },
+              "path": "b.txt",
+              "status": "content_mismatch"
+            }
+          ],
+          "metadata": {
+            "bucket": "my-backup",
+            "cloud_provider": "s3",
+            "mode": "cli",
+            "skill": "backup-verify",
+            "trace_id": "51410b26-970e-4d7e-89be-b4367569145f"
+          },
+          "status": {
+            "backup_bytes": 8,
+            "backup_files": 2,
+            "differences": 1,
+            "local_bytes": 7,
+            "local_files": 2,
+            "verified": false
+          }
+        }
+      ],
+      "output": [
+        {
+          "differences": [
+            {
+              "backup": {
+                "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "size": 5
+              },
+              "local": {
+                "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "size": 4
+              },
+              "path": "b.txt",
+              "status": "content_mismatch"
+            }
+          ],
+          "metadata": {
+            "bucket": "my-backup",
+            "cloud_provider": "s3",
+            "mode": "cli",
+            "skill": "backup-verify",
+            "trace_id": "51410b26-970e-4d7e-89be-b4367569145f"
+          },
+          "status": {
+            "backup_bytes": 8,
+            "backup_files": 2,
+            "differences": 1,
+            "local_bytes": 7,
+            "local_files": 2,
+            "verified": false
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "bf8eccd1d2e5a41c608d84e8606d1148f468299b6df34002c0f05ca6bcc912cd",
+  "date": "2026-10-06T11:41:51Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Find maximum",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        [
+          5,
+          2,
+          8,
+          1
+        ]
+      ],
+      "output": [
+        {
+          "count": 4,
+          "max": 8,
+          "metadata": {
+            "mode": "cli",
+            "skill": "math-max",
+            "timestamp": "2026-10-06T04:41:51.431913-07:00",
+            "trace_id": "109a1d30-afc9-470f-a47f-d6257c8b9060"
+          }
+        }
+      ]
+    }
+  ]
+}

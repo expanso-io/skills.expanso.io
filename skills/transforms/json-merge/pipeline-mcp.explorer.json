@@ -1,0 +1,41 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "c411a90df41f7e52d487ef3a6a23440911d4bbedfed1d07d12b30a235efb0a38",
+  "date": "2026-10-06T11:41:20Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Merge JSON objects",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "objects": [
+            {
+              "a": 1
+            },
+            {
+              "b": 2
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "merged": {
+            "a": 1,
+            "b": 2
+          },
+          "metadata": {
+            "mode": "mcp",
+            "skill": "json-merge",
+            "timestamp": "2026-10-06T04:41:20.068714-07:00",
+            "trace_id": "fdf7bef2-62d3-4258-a58f-94c2987a4c92"
+          },
+          "object_count": 2,
+          "valid": true
+        }
+      ]
+    }
+  ]
+}

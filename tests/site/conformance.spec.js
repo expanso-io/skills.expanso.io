@@ -198,7 +198,7 @@ test('retains deep links, spec and pipeline tabs, theme, and job proof', async (
   await expect(page.getByRole('button', { name: 'Pipeline', exact: true })).toBeVisible();
   const deepLink = page.url();
   await page.reload();
-  await expect(page).toHaveURL(deepLink);
+  await expect(page).toHaveURL(`${deepLink}/`);
   await expect(page.locator('#modal-overlay')).toHaveClass(/active/);
 
   await page.locator('.modal-close').click();

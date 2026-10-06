@@ -1,0 +1,33 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "472aa1fa2e03dc57c17d5655aba44d6f8bc98e55d63753a727cfed0a22ef2f84",
+  "date": "2026-10-06T11:42:15Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Parse path",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "/path/to/file.txt"
+      ],
+      "output": [
+        {
+          "basename": "file",
+          "depth": 3,
+          "dirname": "/path/to",
+          "extension": ".txt",
+          "filename": "ZmlsZS50eHQ=",
+          "is_absolute": true,
+          "metadata": {
+            "mode": "cli",
+            "skill": "path-parse",
+            "timestamp": "2026-10-06T04:42:15.08011-07:00",
+            "trace_id": "0e85eba0-3c82-4b6f-9ca4-3f721b05785f"
+          },
+          "path": "L3BhdGgvdG8vZmlsZS50eHQ="
+        }
+      ]
+    }
+  ]
+}

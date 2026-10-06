@@ -1,0 +1,75 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "3b1e274fe46cea049c65a101237a74f193d10f4b683cf90874fe39b62e6a1752",
+  "date": "2026-10-06T11:43:46Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Converts YAML to JSON",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "config": "key: value\nnested:\n  item: 123"
+        }
+      ],
+      "output": [
+        {
+          "json": {
+            "key": "value",
+            "nested": {
+              "item": 123
+            }
+          },
+          "metadata": {
+            "detected_format": "yaml",
+            "input_hash": null,
+            "mode": "mcp",
+            "skill": "config-normalize",
+            "timestamp": "2026-10-06T04:43:46.227182-07:00",
+            "trace_id": "3a632cdc-c5a6-4141-a39d-91eb31027bce"
+          }
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "json": {
+            "key": "value",
+            "nested": {
+              "item": 123
+            }
+          },
+          "metadata": {
+            "detected_format": "yaml",
+            "input_hash": null,
+            "mode": "mcp",
+            "skill": "config-normalize",
+            "timestamp": "2026-10-06T04:43:46.227182-07:00",
+            "trace_id": "3a632cdc-c5a6-4141-a39d-91eb31027bce"
+          }
+        }
+      ],
+      "output": [
+        {
+          "json": {
+            "key": "value",
+            "nested": {
+              "item": 123
+            }
+          },
+          "metadata": {
+            "detected_format": "yaml",
+            "input_hash": null,
+            "mode": "mcp",
+            "skill": "config-normalize",
+            "timestamp": "2026-10-06T04:43:46.227182-07:00",
+            "trace_id": "3a632cdc-c5a6-4141-a39d-91eb31027bce"
+          }
+        }
+      ]
+    }
+  ]
+}

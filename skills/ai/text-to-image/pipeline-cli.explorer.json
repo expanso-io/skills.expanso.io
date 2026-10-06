@@ -1,0 +1,101 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "24de0399dbc027d12b07c982258246cc4f3c48b00e3fd508f4e53e2eb3b1c3d7",
+  "date": "2026-10-06T11:36:52Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Generates image",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "a red apple"
+      ],
+      "output": [
+        "a red apple"
+      ]
+    },
+    {
+      "name": "openai_image_generation",
+      "input": [
+        "a red apple"
+      ],
+      "output": [
+        {
+          "data": [
+            {
+              "revised_prompt": "mock prompt",
+              "url": "https://example.com/mock.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "data": [
+            {
+              "revised_prompt": "mock prompt",
+              "url": "https://example.com/mock.png"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "image_url": "https://example.com/mock.png",
+          "metadata": {
+            "mode": "cli",
+            "model": "dall-e-3",
+            "original_prompt": "a red apple",
+            "quality": "fixture",
+            "size": "fixture",
+            "skill": "text-to-image",
+            "style": "fixture",
+            "timestamp": "2026-10-06T04:36:52.170371-07:00",
+            "trace_id": "22ed6e76-76bf-4de4-8520-783bc639c143"
+          },
+          "revised_prompt": "mock prompt"
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "image_url": "https://example.com/mock.png",
+          "metadata": {
+            "mode": "cli",
+            "model": "dall-e-3",
+            "original_prompt": "a red apple",
+            "quality": "fixture",
+            "size": "fixture",
+            "skill": "text-to-image",
+            "style": "fixture",
+            "timestamp": "2026-10-06T04:36:52.170371-07:00",
+            "trace_id": "22ed6e76-76bf-4de4-8520-783bc639c143"
+          },
+          "revised_prompt": "mock prompt"
+        }
+      ],
+      "output": [
+        {
+          "image_url": "https://example.com/mock.png",
+          "metadata": {
+            "mode": "cli",
+            "model": "dall-e-3",
+            "original_prompt": "a red apple",
+            "quality": "fixture",
+            "size": "fixture",
+            "skill": "text-to-image",
+            "style": "fixture",
+            "timestamp": "2026-10-06T04:36:52.170371-07:00",
+            "trace_id": "22ed6e76-76bf-4de4-8520-783bc639c143"
+          },
+          "revised_prompt": "mock prompt"
+        }
+      ]
+    }
+  ]
+}

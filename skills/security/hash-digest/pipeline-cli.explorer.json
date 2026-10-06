@@ -1,0 +1,63 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "852a3e35dc6600c510c01ad94593bea5f4874bafc9ae1601ba2a9efda9d2cea0",
+  "date": "2026-10-06T11:37:52Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "sha256_default",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "Hello, World!"
+      ],
+      "output": [
+        {
+          "algorithm": "fixture",
+          "hash": "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f",
+          "input_length": 13,
+          "metadata": {
+            "algorithm": "fixture",
+            "input_length": 13,
+            "mode": "cli",
+            "skill": "hash-digest",
+            "timestamp": "2026-10-06T04:37:52.082792-07:00",
+            "trace_id": "1d4cfa6e-a2b1-493e-9be2-e73f3de32056"
+          }
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "algorithm": "fixture",
+          "hash": "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f",
+          "input_length": 13,
+          "metadata": {
+            "algorithm": "fixture",
+            "input_length": 13,
+            "mode": "cli",
+            "skill": "hash-digest",
+            "timestamp": "2026-10-06T04:37:52.082792-07:00",
+            "trace_id": "1d4cfa6e-a2b1-493e-9be2-e73f3de32056"
+          }
+        }
+      ],
+      "output": [
+        {
+          "algorithm": "fixture",
+          "hash": "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f",
+          "input_length": 13,
+          "metadata": {
+            "algorithm": "fixture",
+            "input_length": 13,
+            "mode": "cli",
+            "skill": "hash-digest",
+            "timestamp": "2026-10-06T04:37:52.082792-07:00",
+            "trace_id": "1d4cfa6e-a2b1-493e-9be2-e73f3de32056"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "ecc1683d8dd79d1bc5cb2d243da27c0381a3f13abfe4aa4e406644f6933ef4a7",
+  "date": "2026-10-06T11:44:19Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Analyzes supplied workflow and log observations",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "workflows": [
+            {
+              "id": "run-1",
+              "repo": "org/app",
+              "name": "CI",
+              "status": "failure"
+            }
+          ],
+          "errors": [
+            {
+              "id": "db-1",
+              "message": "database timeout",
+              "count": 12
+            }
+          ],
+          "metrics": {
+            "cpu_avg": 45
+          },
+          "alert_threshold": "high"
+        }
+      ],
+      "output": [
+        {
+          "alert_candidates": [
+            {
+              "description": "org/app / CI is failure",
+              "severity": "high",
+              "source": "workflow",
+              "source_id": "run-1",
+              "suggestion": "Inspect the recorded workflow run and its logs"
+            },
+            {
+              "description": "database timeout",
+              "severity": "high",
+              "source": "logs",
+              "source_id": "db-1",
+              "suggestion": "Inspect the source log events and affected service"
+            }
+          ],
+          "issues": [
+            {
+              "description": "org/app / CI is failure",
+              "severity": "high",
+              "source": "workflow",
+              "source_id": "run-1",
+              "suggestion": "Inspect the recorded workflow run and its logs"
+            },
+            {
+              "description": "database timeout",
+              "severity": "high",
+              "source": "logs",
+              "source_id": "db-1",
+              "suggestion": "Inspect the source log events and affected service"
+            }
+          ],
+          "metadata": {
+            "alert_threshold": "high",
+            "mode": "mcp",
+            "skill": "devops-monitor",
+            "source": "request",
+            "timestamp": "2026-10-06T04:44:19.575044-07:00",
+            "trace_id": "24605a3f-fefc-45a1-9053-f865c070f03e"
+          },
+          "metrics": {
+            "cpu_avg": 45
+          },
+          "status": {
+            "issue_count": 2,
+            "observed_issue_count": 2,
+            "overall_health": "degraded"
+          },
+          "workflows": [
+            {
+              "id": "run-1",
+              "name": "CI",
+              "repo": "org/app",
+              "status": "failure"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

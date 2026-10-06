@@ -1,0 +1,32 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "f2c78dd9bbad9dfcadf9a88abb81774c317ffa65110bc3b4842df28c6616ab75",
+  "date": "2026-10-06T11:44:04Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Detect media type",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "filename": "photo.jpg"
+        }
+      ],
+      "output": [
+        {
+          "category": "image",
+          "extension": "jpg",
+          "filename": "photo.jpg",
+          "media_type": "image/jpeg",
+          "metadata": {
+            "mode": "mcp",
+            "skill": "media-type-detect",
+            "timestamp": "2026-10-06T04:44:03.779963-07:00",
+            "trace_id": "b491f0ab-159e-497e-812e-0646e91a3992"
+          }
+        }
+      ]
+    }
+  ]
+}

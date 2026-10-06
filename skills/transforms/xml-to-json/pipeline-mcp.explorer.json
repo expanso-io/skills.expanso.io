@@ -1,0 +1,35 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "9cfc0094bbd4ece601344db161a92e0b6295f6873cd81debf339eaa66f4b916d",
+  "date": "2026-10-06T11:43:37Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Convert XML to JSON",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "xml": "<root><item>test</item></root>"
+        }
+      ],
+      "output": [
+        {
+          "error": "",
+          "json": {
+            "root": {
+              "item": "test"
+            }
+          },
+          "metadata": {
+            "mode": "mcp",
+            "skill": "xml-to-json",
+            "timestamp": "2026-10-06T04:43:37.173032-07:00",
+            "trace_id": "4c79f64c-9fa9-46ff-9ad5-6e51429a7e30"
+          },
+          "valid": true
+        }
+      ]
+    }
+  ]
+}

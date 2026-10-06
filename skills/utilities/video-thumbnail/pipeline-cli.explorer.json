@@ -1,0 +1,33 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "f145471c9e5c7bd7f6ff4ee67ce0bc07b560b1f5ea00591fe4d6918d2edb5008",
+  "date": "2026-10-06T11:44:12Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Generate thumbnail info",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "video_url": "https://example.com/video.mp4",
+          "timestamp": 30
+        }
+      ],
+      "output": [
+        {
+          "metadata": {
+            "mode": "cli",
+            "skill": "video-thumbnail",
+            "timestamp": "2026-10-06T04:44:12.665652-07:00",
+            "trace_id": "87dd6837-cd8d-48f3-bdac-8b1c2ba31bec"
+          },
+          "suggested_filename": "thumbnail_30s.jpg",
+          "thumbnail_time": "null:00:30",
+          "timestamp_seconds": 30,
+          "video_url": "https://example.com/video.mp4"
+        }
+      ]
+    }
+  ]
+}

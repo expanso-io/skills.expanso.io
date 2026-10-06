@@ -1,0 +1,61 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "2a24a3ee8ab9575728b48d6de08ddc6ee091fd32e18f746069d7024c9ec82add",
+  "date": "2026-10-06T11:43:47Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Valid email",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "user@example.com"
+      ],
+      "output": [
+        {
+          "domain": "ZXhhbXBsZS5jb20=",
+          "email": "dXNlckBleGFtcGxlLmNvbQ==",
+          "metadata": {
+            "mode": "cli",
+            "skill": "email-validate",
+            "timestamp": "2026-10-06T04:43:47.593395-07:00",
+            "trace_id": "a83d394d-6f8d-4df3-82a8-21f343682abd"
+          },
+          "user": "dXNlcg==",
+          "valid": true
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "domain": "ZXhhbXBsZS5jb20=",
+          "email": "dXNlckBleGFtcGxlLmNvbQ==",
+          "metadata": {
+            "mode": "cli",
+            "skill": "email-validate",
+            "timestamp": "2026-10-06T04:43:47.593395-07:00",
+            "trace_id": "a83d394d-6f8d-4df3-82a8-21f343682abd"
+          },
+          "user": "dXNlcg==",
+          "valid": true
+        }
+      ],
+      "output": [
+        {
+          "domain": "ZXhhbXBsZS5jb20=",
+          "email": "dXNlckBleGFtcGxlLmNvbQ==",
+          "metadata": {
+            "mode": "cli",
+            "skill": "email-validate",
+            "timestamp": "2026-10-06T04:43:47.593395-07:00",
+            "trace_id": "a83d394d-6f8d-4df3-82a8-21f343682abd"
+          },
+          "user": "dXNlcg==",
+          "valid": true
+        }
+      ]
+    }
+  ]
+}

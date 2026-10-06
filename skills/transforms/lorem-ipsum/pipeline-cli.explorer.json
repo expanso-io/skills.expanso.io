@@ -1,0 +1,30 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "a5b869c52030af6328c6847c50ced95f0e7dafe12420fd7a83c04a53f2c11452",
+  "date": "2026-10-06T11:41:36Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Generate lorem ipsum",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        ""
+      ],
+      "output": [
+        {
+          "characters": 445,
+          "metadata": {
+            "mode": "cli",
+            "skill": "lorem-ipsum",
+            "timestamp": "2026-10-06T04:41:36.168387-07:00",
+            "trace_id": "a4ed59ab-6880-4047-953a-badfdf9ef4c9"
+          },
+          "paragraphs": 1,
+          "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+          "words": 69
+        }
+      ]
+    }
+  ]
+}

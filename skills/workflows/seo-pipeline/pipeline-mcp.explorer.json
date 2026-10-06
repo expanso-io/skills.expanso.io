@@ -1,0 +1,68 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "f740fca90cc87a71a37cdbec1458b5cdb70052cfad11963f86d6f2c052ff5c46",
+  "date": "2026-10-06T11:44:33Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Analyzes URL",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "url": "https://example.com",
+          "html": "<!doctype html><html><head><title>Example</title><meta name=\"description\" content=\"An example page\"><meta name=\"viewport\" content=\"width=device-width\"></head><body><h1>Example</h1><a href=\"/more\">More</a><img src=\"hero.png\" alt=\"Hero\"></body></html>"
+        }
+      ],
+      "output": [
+        {
+          "html": "<!doctype html><html><head><title>Example</title><meta name=\"description\" content=\"An example page\"><meta name=\"viewport\" content=\"width=device-width\"></head><body><h1>Example</h1><a href=\"/more\">More</a><img src=\"hero.png\" alt=\"Hero\"></body></html>",
+          "url": "https://example.com"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "input": [
+        {
+          "html": "<!doctype html><html><head><title>Example</title><meta name=\"description\" content=\"An example page\"><meta name=\"viewport\" content=\"width=device-width\"></head><body><h1>Example</h1><a href=\"/more\">More</a><img src=\"hero.png\" alt=\"Hero\"></body></html>",
+          "url": "https://example.com"
+        }
+      ],
+      "output": [
+        {
+          "html": "<!doctype html><html><head><title>Example</title><meta name=\"description\" content=\"An example page\"><meta name=\"viewport\" content=\"width=device-width\"></head><body><h1>Example</h1><a href=\"/more\">More</a><img src=\"hero.png\" alt=\"Hero\"></body></html>"
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "html": "<!doctype html><html><head><title>Example</title><meta name=\"description\" content=\"An example page\"><meta name=\"viewport\" content=\"width=device-width\"></head><body><h1>Example</h1><a href=\"/more\">More</a><img src=\"hero.png\" alt=\"Hero\"></body></html>"
+        }
+      ],
+      "output": [
+        {
+          "analysis": {
+            "h1_count": 1,
+            "has_viewport": true,
+            "image_count": 1,
+            "images_missing_alt": 0,
+            "link_count": 1,
+            "meta_description": "An example page",
+            "score": 100,
+            "title": "Example",
+            "url": "https://example.com"
+          },
+          "metadata": {
+            "mode": "mcp",
+            "skill": "seo-pipeline",
+            "trace_id": "31ead0bc-21d6-4b98-8ad3-9c538c9da189"
+          },
+          "recommendations": []
+        }
+      ]
+    }
+  ]
+}

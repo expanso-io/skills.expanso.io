@@ -1,0 +1,31 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "71203bbff428a5b48ad8bded3c9ff9adf999fd998996c5104e3e2bf651ffcecb",
+  "date": "2026-10-06T11:40:44Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Add days to date",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "days": 7
+        }
+      ],
+      "output": [
+        {
+          "days_added": 7,
+          "metadata": {
+            "mode": "mcp",
+            "skill": "date-add",
+            "timestamp": "2026-10-06T04:40:44.107459-07:00",
+            "trace_id": "181692a1-9ff3-44ce-afa8-b8bd5aeb62de"
+          },
+          "original": "2026-10-06T04:40:44.107399-07:00",
+          "result": "2026-10-13T04:40:44.107399-07:00"
+        }
+      ]
+    }
+  ]
+}

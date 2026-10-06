@@ -1,0 +1,36 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "cb12342f18c59250e7fb6165630f344ef4e284ac01101e54ae9da3c71c116d07",
+  "date": "2026-10-06T11:41:42Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Extract TOC",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "markdown": "# Title\n## Section"
+        }
+      ],
+      "output": [
+        {
+          "h1_count": 1,
+          "h2_count": 1,
+          "h3_count": 0,
+          "heading_count": 2,
+          "headings": [
+            "# Title",
+            "## Section"
+          ],
+          "metadata": {
+            "mode": "mcp",
+            "skill": "markdown-toc",
+            "timestamp": "2026-10-06T04:41:42.482775-07:00",
+            "trace_id": "a164ccfc-9965-47e6-b622-32530d90fc20"
+          }
+        }
+      ]
+    }
+  ]
+}

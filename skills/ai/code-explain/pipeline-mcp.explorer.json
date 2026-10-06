@@ -1,0 +1,118 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "8451be5959d400f6008de34d7b87b13f8161102d8ea399dcb44716f12205d5d6",
+  "date": "2026-10-06T11:36:12Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "simple_function",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "code": "def add(a, b):\n  return a + b\n"
+        }
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "You are a code explainer. Explain code clearly with step-by-step breakdown. Cover what the code does and why.",
+              "role": "system"
+            },
+            {
+              "content": "Explain this code:\n\n```\ndef add(a, b):\n  return a + b\n\n```",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "You are a code explainer. Explain code clearly with step-by-step breakdown. Cover what the code does and why.",
+              "role": "system"
+            },
+            {
+              "content": "Explain this code:\n\n```\ndef add(a, b):\n  return a + b\n\n```",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "Mock response: def add(a, b):\n  return a + b"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "Mock response: def add(a, b):\n  return a + b"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "explanation": "Mock response: def add(a, b):\n  return a + b",
+          "metadata": {
+            "input_hash": "f58b2f308ba0109a06d5f5c27ea4443c886ca7262bf5ed5d0673ff5a454e2fce",
+            "input_length": "30",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "skill": "code-explain",
+            "timestamp": "2026-10-06T04:36:12.106524-07:00",
+            "trace_id": "6dc244d9-9254-488c-aea7-1a2b4b714b39"
+          }
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "explanation": "Mock response: def add(a, b):\n  return a + b",
+          "metadata": {
+            "input_hash": "f58b2f308ba0109a06d5f5c27ea4443c886ca7262bf5ed5d0673ff5a454e2fce",
+            "input_length": "30",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "skill": "code-explain",
+            "timestamp": "2026-10-06T04:36:12.106524-07:00",
+            "trace_id": "6dc244d9-9254-488c-aea7-1a2b4b714b39"
+          }
+        }
+      ],
+      "output": [
+        {
+          "explanation": "Mock response: def add(a, b):\n  return a + b",
+          "metadata": {
+            "input_hash": "f58b2f308ba0109a06d5f5c27ea4443c886ca7262bf5ed5d0673ff5a454e2fce",
+            "input_length": "30",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "skill": "code-explain",
+            "timestamp": "2026-10-06T04:36:12.106524-07:00",
+            "trace_id": "6dc244d9-9254-488c-aea7-1a2b4b714b39"
+          }
+        }
+      ]
+    }
+  ]
+}

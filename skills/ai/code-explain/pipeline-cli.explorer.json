@@ -1,0 +1,122 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "1e47c8fa5503ec9b32fdce14f2df74c092ccaeb9e857d0cfaf7a23be6f879a22",
+  "date": "2026-10-06T11:36:11Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "simple_function",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "def add(a, b):\n  return a + b\n"
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "You are a code explainer. Explain code clearly with step-by-step breakdown. Cover what the code does and why.",
+              "role": "system"
+            },
+            {
+              "content": "The code is written in fixture.\n\nExplain this code:\n\n```\ndef add(a, b):\n  return a + b\n\n```",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "You are a code explainer. Explain code clearly with step-by-step breakdown. Cover what the code does and why.",
+              "role": "system"
+            },
+            {
+              "content": "The code is written in fixture.\n\nExplain this code:\n\n```\ndef add(a, b):\n  return a + b\n\n```",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "Mock response: def add(a, b):\n  return a + b"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "Mock response: def add(a, b):\n  return a + b"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "explanation": "Mock response: def add(a, b):\n  return a + b",
+          "metadata": {
+            "detail_level": "fixture",
+            "input_hash": "f58b2f308ba0109a06d5f5c27ea4443c886ca7262bf5ed5d0673ff5a454e2fce",
+            "input_length": "30",
+            "language": "fixture",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "skill": "code-explain",
+            "timestamp": "2026-10-06T04:36:11.031031-07:00",
+            "trace_id": "daad75c1-afae-467e-8bfc-d15210a240e2"
+          }
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "explanation": "Mock response: def add(a, b):\n  return a + b",
+          "metadata": {
+            "detail_level": "fixture",
+            "input_hash": "f58b2f308ba0109a06d5f5c27ea4443c886ca7262bf5ed5d0673ff5a454e2fce",
+            "input_length": "30",
+            "language": "fixture",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "skill": "code-explain",
+            "timestamp": "2026-10-06T04:36:11.031031-07:00",
+            "trace_id": "daad75c1-afae-467e-8bfc-d15210a240e2"
+          }
+        }
+      ],
+      "output": [
+        {
+          "explanation": "Mock response: def add(a, b):\n  return a + b",
+          "metadata": {
+            "detail_level": "fixture",
+            "input_hash": "f58b2f308ba0109a06d5f5c27ea4443c886ca7262bf5ed5d0673ff5a454e2fce",
+            "input_length": "30",
+            "language": "fixture",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "skill": "code-explain",
+            "timestamp": "2026-10-06T04:36:11.031031-07:00",
+            "trace_id": "daad75c1-afae-467e-8bfc-d15210a240e2"
+          }
+        }
+      ]
+    }
+  ]
+}

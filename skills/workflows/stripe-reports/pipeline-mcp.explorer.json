@@ -1,0 +1,67 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "88c43f49dd4edbb4076b81291a80d566fb0c73a0ccebf758701f0ee301e82baa",
+  "date": "2026-10-06T11:44:35Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Groups Stripe minor-unit totals by currency",
+  "errors": [
+    "Oct  6 04:44:35.412 ERR failed assignment (line 9): STRIPE_API_URL must be an https URL component=edge_service execution_id=e-94a15c28-e3c5-4b9e-89f5-05874ebe3a5c label=\"\" path=root.pipeline.processors.6.try.1 pipeline_id=j-3e6e1979-6c4b-408d-8fba-52059203298d pipeline_version=1"
+  ],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "period": "today",
+          "include_insights": false
+        }
+      ],
+      "output": [
+        {
+          "include_insights": false,
+          "period": "today"
+        }
+      ]
+    },
+    {
+      "name": "try",
+      "input": [
+        {
+          "include_insights": false,
+          "period": "today"
+        }
+      ],
+      "output": [
+        {
+          "_end_unix": 1791287075,
+          "_include_insights": false,
+          "_include_quick_wins": true,
+          "_start_unix": 1791200675,
+          "_trace_id": "8f53b862-92b1-4d43-8e20-e2b3900c0ab3",
+          "include_insights": false,
+          "period": "today"
+        }
+      ]
+    },
+    {
+      "name": "catch",
+      "input": [
+        {
+          "_end_unix": 1791287075,
+          "_include_insights": false,
+          "_include_quick_wins": true,
+          "_start_unix": 1791200675,
+          "_trace_id": "8f53b862-92b1-4d43-8e20-e2b3900c0ab3",
+          "include_insights": false,
+          "period": "today"
+        }
+      ],
+      "output": [
+        {
+          "error": "failed assignment (line 9): STRIPE_API_URL must be an https URL",
+          "status": "error"
+        }
+      ]
+    }
+  ]
+}

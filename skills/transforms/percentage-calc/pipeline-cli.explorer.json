@@ -1,0 +1,31 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "3a9a3781e2d194207add0f01a6cfa57115b32fe51767c51bee7e5b7dfd685f8f",
+  "date": "2026-10-06T11:42:17Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Calculate percentage",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "50/200"
+      ],
+      "output": [
+        {
+          "formatted": "25%",
+          "metadata": {
+            "mode": "cli",
+            "skill": "percentage-calc",
+            "timestamp": "2026-10-06T04:42:17.413133-07:00",
+            "trace_id": "2ef22ba9-02cb-466d-b7fd-1b2de47dc32b"
+          },
+          "percentage": 25,
+          "ratio": 0.25,
+          "total": 200,
+          "value": 50
+        }
+      ]
+    }
+  ]
+}

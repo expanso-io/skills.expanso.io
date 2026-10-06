@@ -1,0 +1,59 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "5710cc7230b98704bf9a3f3d7a01b8179f3e3bd05e53ca233706b9dcf17dfcae",
+  "date": "2026-10-06T11:30:22Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Generate slug",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "text": "Hello World! This is a Test"
+        }
+      ],
+      "output": [
+        {
+          "metadata": {
+            "mode": "mcp",
+            "skill": "slug-generate",
+            "timestamp": "2026-10-06T04:30:22.094567-07:00",
+            "trace_id": "abc57ff0-539b-479a-a697-6d0c25d9eb5d"
+          },
+          "original": "Hello World! This is a Test",
+          "separator": "-",
+          "slug": "hello-world-this-is-a-test"
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "metadata": {
+            "mode": "mcp",
+            "skill": "slug-generate",
+            "timestamp": "2026-10-06T04:30:22.094567-07:00",
+            "trace_id": "abc57ff0-539b-479a-a697-6d0c25d9eb5d"
+          },
+          "original": "Hello World! This is a Test",
+          "separator": "-",
+          "slug": "hello-world-this-is-a-test"
+        }
+      ],
+      "output": [
+        {
+          "metadata": {
+            "mode": "mcp",
+            "skill": "slug-generate",
+            "timestamp": "2026-10-06T04:30:22.094567-07:00",
+            "trace_id": "abc57ff0-539b-479a-a697-6d0c25d9eb5d"
+          },
+          "original": "Hello World! This is a Test",
+          "separator": "-",
+          "slug": "hello-world-this-is-a-test"
+        }
+      ]
+    }
+  ]
+}

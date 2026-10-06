@@ -1,0 +1,38 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "bd1a0529187acf960cb96525e435eed628b7aa743e4966a30d4615bee2b727f5",
+  "date": "2026-10-06T11:43:25Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Check type",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "output": [
+        {
+          "input": "WzEsIDIsIDNd",
+          "is_array": true,
+          "is_bool": false,
+          "is_null": false,
+          "is_number": false,
+          "is_object": false,
+          "is_string": false,
+          "metadata": {
+            "mode": "cli",
+            "skill": "type-check",
+            "timestamp": "2026-10-06T04:43:25.246934-07:00",
+            "trace_id": "9ec9c517-c7ea-48ee-b95d-e52529d4d1d8"
+          },
+          "type": "array"
+        }
+      ]
+    }
+  ]
+}

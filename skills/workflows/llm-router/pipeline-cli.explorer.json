@@ -1,0 +1,153 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "6123e7eca5e59fe6a6dc9aca51a26966ce64ef0e19c5d0c114fba60f3abafcdc",
+  "date": "2026-10-06T11:44:25Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Routes simple prompt to mini model",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "prompt": "Say hello",
+          "task_type": "simple"
+        }
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "Say hello",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "Say hello",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "Say hello",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "openai_chat_completion",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "Say hello",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "Mock response: {\"prompt\": \"Say hello\", \"task_type\": \"simple\"}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "Mock response: {\"prompt\": \"Say hello\", \"task_type\": \"simple\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "cost": {
+            "cost_cents": 0,
+            "tokens": 0
+          },
+          "metadata": {
+            "latency_ms": 362000,
+            "mode": "cli",
+            "priority": "balanced",
+            "skill": "llm-router",
+            "task_type": "simple",
+            "timestamp": "2026-10-06T04:44:25.341103-07:00",
+            "trace_id": "fea811f4-2651-41b0-a69b-3e947dc012fe"
+          },
+          "model_used": "gpt-4o-mini",
+          "response": "Mock response: {\"prompt\": \"Say hello\", \"task_type\": \"simple\"}",
+          "routing_reason": "Default fallback"
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "cost": {
+            "cost_cents": 0,
+            "tokens": 0
+          },
+          "metadata": {
+            "latency_ms": 362000,
+            "mode": "cli",
+            "priority": "balanced",
+            "skill": "llm-router",
+            "task_type": "simple",
+            "timestamp": "2026-10-06T04:44:25.341103-07:00",
+            "trace_id": "fea811f4-2651-41b0-a69b-3e947dc012fe"
+          },
+          "model_used": "gpt-4o-mini",
+          "response": "Mock response: {\"prompt\": \"Say hello\", \"task_type\": \"simple\"}",
+          "routing_reason": "Default fallback"
+        }
+      ],
+      "output": [
+        {
+          "cost": {
+            "cost_cents": 0,
+            "tokens": 0
+          },
+          "metadata": {
+            "latency_ms": 362000,
+            "mode": "cli",
+            "priority": "balanced",
+            "skill": "llm-router",
+            "task_type": "simple",
+            "timestamp": "2026-10-06T04:44:25.341103-07:00",
+            "trace_id": "fea811f4-2651-41b0-a69b-3e947dc012fe"
+          },
+          "model_used": "gpt-4o-mini",
+          "response": "Mock response: {\"prompt\": \"Say hello\", \"task_type\": \"simple\"}",
+          "routing_reason": "Default fallback"
+        }
+      ]
+    }
+  ]
+}

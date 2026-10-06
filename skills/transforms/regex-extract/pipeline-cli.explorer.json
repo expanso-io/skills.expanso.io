@@ -1,0 +1,73 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "b1b0ba34afd3dc8b0180e88b992ec810a84bf55795ee19294ca5ce4c92309151",
+  "date": "2026-10-06T11:42:22Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Extract words",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "Hello World Test"
+      ],
+      "output": [
+        {
+          "count": 3,
+          "has_match": true,
+          "matches": [
+            "Hello",
+            "World",
+            "Test"
+          ],
+          "metadata": {
+            "mode": "cli",
+            "skill": "regex-extract",
+            "timestamp": "2026-10-06T04:42:22.336933-07:00",
+            "trace_id": "98f841b7-ac7b-4414-adaa-b6e05232db97"
+          },
+          "pattern": "\\w+"
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "count": 3,
+          "has_match": true,
+          "matches": [
+            "Hello",
+            "World",
+            "Test"
+          ],
+          "metadata": {
+            "mode": "cli",
+            "skill": "regex-extract",
+            "timestamp": "2026-10-06T04:42:22.336933-07:00",
+            "trace_id": "98f841b7-ac7b-4414-adaa-b6e05232db97"
+          },
+          "pattern": "\\w+"
+        }
+      ],
+      "output": [
+        {
+          "count": 3,
+          "has_match": true,
+          "matches": [
+            "Hello",
+            "World",
+            "Test"
+          ],
+          "metadata": {
+            "mode": "cli",
+            "skill": "regex-extract",
+            "timestamp": "2026-10-06T04:42:22.336933-07:00",
+            "trace_id": "98f841b7-ac7b-4414-adaa-b6e05232db97"
+          },
+          "pattern": "\\w+"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "bc90ea174ebd9f1dd5dd905daeb3caea4255be9a7142343bfbddc904168d51da",
+  "date": "2026-10-06T11:43:23Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Convert timezone",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "timezone": "UTC"
+        }
+      ],
+      "output": [
+        {
+          "converted": "2026-10-06T11:43:22.947271Z",
+          "metadata": {
+            "mode": "cli",
+            "skill": "timezone-convert",
+            "timestamp": "2026-10-06T04:43:22.947285-07:00",
+            "trace_id": "932d3e94-4c9e-4817-aabc-2cd6f0f3f120"
+          },
+          "original": "2026-10-06T04:43:22.947271-07:00",
+          "timezone": "UTC",
+          "utc": "2026-10-06T04:43:22.947271-07:00"
+        }
+      ]
+    }
+  ]
+}

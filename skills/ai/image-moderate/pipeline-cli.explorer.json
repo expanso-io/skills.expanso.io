@@ -1,0 +1,144 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "31fc532edd691073d4cd2575e12198abe6ee7032e9d3059d0820320ea6882351",
+  "date": "2026-10-06T11:36:25Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Moderates image",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "https://example.com/test.jpg"
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "You are a content moderation expert. Analyze images for policy violations. Return JSON: {\"flagged\": boolean, \"categories\": {\"violence\": boolean, \"sexual\": boolean, \"hate\": boolean, \"self_harm\": boolean, \"illegal\": boolean, \"dangerous\": boolean}, \"scores\": {same keys with 0-1 confidence}, \"reasoning\": \"brief explanation\"}. Be objective and accurate.",
+              "role": "system"
+            },
+            {
+              "content": [
+                {
+                  "image_url": {
+                    "url": null
+                  },
+                  "type": "image_url"
+                },
+                {
+                  "text": "Analyze this image for content policy violations.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "openai_chat_completion",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "You are a content moderation expert. Analyze images for policy violations. Return JSON: {\"flagged\": boolean, \"categories\": {\"violence\": boolean, \"sexual\": boolean, \"hate\": boolean, \"self_harm\": boolean, \"illegal\": boolean, \"dangerous\": boolean}, \"scores\": {same keys with 0-1 confidence}, \"reasoning\": \"brief explanation\"}. Be objective and accurate.",
+              "role": "system"
+            },
+            {
+              "content": [
+                {
+                  "image_url": {
+                    "url": null
+                  },
+                  "type": "image_url"
+                },
+                {
+                  "text": "Analyze this image for content policy violations.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "categories": null,
+          "flagged": null,
+          "metadata": {
+            "image_url": "https://example.com/test.jpg",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "skill": "image-moderate",
+            "timestamp": "2026-10-06T04:36:24.702445-07:00",
+            "trace_id": "918bb212-717f-4bc1-b6c5-2f4d27930428"
+          },
+          "reasoning": null,
+          "scores": null
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "categories": null,
+          "flagged": null,
+          "metadata": {
+            "image_url": "https://example.com/test.jpg",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "skill": "image-moderate",
+            "timestamp": "2026-10-06T04:36:24.702445-07:00",
+            "trace_id": "918bb212-717f-4bc1-b6c5-2f4d27930428"
+          },
+          "reasoning": null,
+          "scores": null
+        }
+      ],
+      "output": [
+        {
+          "categories": null,
+          "flagged": null,
+          "metadata": {
+            "image_url": "https://example.com/test.jpg",
+            "mode": "cli",
+            "model": "gpt-4o-mini",
+            "skill": "image-moderate",
+            "timestamp": "2026-10-06T04:36:24.702445-07:00",
+            "trace_id": "918bb212-717f-4bc1-b6c5-2f4d27930428"
+          },
+          "reasoning": null,
+          "scores": null
+        }
+      ]
+    }
+  ]
+}

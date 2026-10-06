@@ -1,0 +1,136 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "ba90d879fd9227639f3c4f92890fa46e5289a101fbfa639fb7b493c9ec059f59",
+  "date": "2026-10-06T11:37:13Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Reads and filters a Slack API response",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "channel": "C01234567",
+          "query": "deploy"
+        }
+      ],
+      "output": [
+        {
+          "_trace_id": "a26a34ab-9347-4472-820b-8ac7b4d8c567",
+          "channel": "C01234567",
+          "limit": 20,
+          "query": "deploy",
+          "since_hours": 24
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "_trace_id": "a26a34ab-9347-4472-820b-8ac7b4d8c567",
+          "channel": "C01234567",
+          "limit": 20,
+          "query": "deploy",
+          "since_hours": 24
+        }
+      ],
+      "output": [
+        {
+          "_trace_id": "a26a34ab-9347-4472-820b-8ac7b4d8c567",
+          "channel": "C01234567",
+          "limit": 20,
+          "query": "deploy",
+          "since_hours": 24
+        }
+      ]
+    },
+    {
+      "name": "try",
+      "input": [
+        {
+          "_trace_id": "a26a34ab-9347-4472-820b-8ac7b4d8c567",
+          "channel": "C01234567",
+          "limit": 20,
+          "query": "deploy",
+          "since_hours": 24
+        }
+      ],
+      "output": [
+        {
+          "_trace_id": "a26a34ab-9347-4472-820b-8ac7b4d8c567",
+          "channel": "C01234567",
+          "limit": 20,
+          "query": "deploy",
+          "since_hours": 24
+        }
+      ]
+    },
+    {
+      "name": "catch",
+      "input": [
+        {
+          "_trace_id": "a26a34ab-9347-4472-820b-8ac7b4d8c567",
+          "channel": "C01234567",
+          "limit": 20,
+          "query": "deploy",
+          "since_hours": 24
+        }
+      ],
+      "output": [
+        {
+          "error": "failed assignment (line 5): SLACK_API_URL must be an https URL",
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "error": "failed assignment (line 5): SLACK_API_URL must be an https URL",
+          "ok": false
+        }
+      ],
+      "output": [
+        {
+          "error": "failed assignment (line 5): SLACK_API_URL must be an https URL",
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "error": "failed assignment (line 5): SLACK_API_URL must be an https URL",
+          "ok": false
+        }
+      ],
+      "output": [
+        {
+          "count": 0,
+          "data": [],
+          "error": "failed assignment (line 5): SLACK_API_URL must be an https URL",
+          "messages": [],
+          "metadata": {
+            "channel": null,
+            "message_count": 0,
+            "mode": "cli",
+            "query": "",
+            "skill": "slack-read",
+            "source": "slack_api",
+            "success": false,
+            "timestamp": "2026-10-06T04:37:13.495364-07:00",
+            "total_available": 0,
+            "trace_id": null
+          },
+          "resource": "conversations.history",
+          "schema_version": "1.0",
+          "sensitivity": "raw",
+          "source": "slack",
+          "trace_id": null
+        }
+      ]
+    }
+  ]
+}

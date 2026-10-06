@@ -1,0 +1,88 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "02fb532af12cd99bcdb586656ebdd860f0e4dadf08256334c46be5c32f0c53f6",
+  "date": "2026-10-06T11:36:50Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "find_files",
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "instruction": "find all python files"
+        }
+      ],
+      "output": [
+        {
+          "messages": [
+            {
+              "content": "You are a CLI command generator. Convert natural language to bash commands. Return JSON with 'command' and 'explanation'. Be precise and safe.",
+              "role": "system"
+            },
+            {
+              "content": "Convert to bash command:\n\nfind all python files\n\nReturn JSON: {\"command\": \"...\", \"explanation\": \"...\"}",
+              "role": "user"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "input": [
+        {
+          "messages": [
+            {
+              "content": "You are a CLI command generator. Convert natural language to bash commands. Return JSON with 'command' and 'explanation'. Be precise and safe.",
+              "role": "system"
+            },
+            {
+              "content": "Convert to bash command:\n\nfind all python files\n\nReturn JSON: {\"command\": \"...\", \"explanation\": \"...\"}",
+              "role": "user"
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mapping",
+      "input": [
+        {
+          "choices": [
+            {
+              "message": {
+                "content": "{\"result\": \"mock\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "output": [
+        {
+          "command": "",
+          "explanation": "",
+          "metadata": {
+            "input_hash": "60cb1788da620099377d8cdc77f8ac66cdaa079e45ae10906d239b4fd9d89c1e",
+            "mode": "mcp",
+            "model": "gpt-4o-mini",
+            "skill": "text-to-command",
+            "timestamp": "2026-10-06T04:36:50.509573-07:00",
+            "trace_id": "2a4e0ac6-310c-4930-9469-1c42701bb67f"
+          },
+          "shell": "bash"
+        }
+      ]
+    }
+  ]
+}

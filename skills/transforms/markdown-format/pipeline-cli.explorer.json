@@ -1,0 +1,61 @@
+{
+  "schema": "expanso-stage-execution/1",
+  "pipeline_sha256": "b9f1c3936e875111fccfa2507a873da46e14683c053c7c60b9e339b16cc485f8",
+  "date": "2026-10-06T11:41:39Z",
+  "scope": "Local Expanso Edge processor sample; scheduling selector removed; input/output adapters replaced by loopback HTTP; OpenAI processors mocked; environment references use test values; configured provider responses use test mappings; unconfigured HTTP providers fail at loopback. Not platform or Cloud execution proof.",
+  "sample": "Format as heading",
+  "errors": [],
+  "stages": [
+    {
+      "name": "mapping",
+      "input": [
+        "My Title"
+      ],
+      "output": [
+        {
+          "format": "heading",
+          "markdown": "## My Title",
+          "metadata": {
+            "format_type": "heading",
+            "mode": "cli",
+            "skill": "markdown-format",
+            "timestamp": "2026-10-06T04:41:38.847441-07:00",
+            "trace_id": "8a31b8b8-e64f-4fe7-9201-80c7cce1dde6"
+          },
+          "original": "TXkgVGl0bGU="
+        }
+      ]
+    },
+    {
+      "name": "log",
+      "input": [
+        {
+          "format": "heading",
+          "markdown": "## My Title",
+          "metadata": {
+            "format_type": "heading",
+            "mode": "cli",
+            "skill": "markdown-format",
+            "timestamp": "2026-10-06T04:41:38.847441-07:00",
+            "trace_id": "8a31b8b8-e64f-4fe7-9201-80c7cce1dde6"
+          },
+          "original": "TXkgVGl0bGU="
+        }
+      ],
+      "output": [
+        {
+          "format": "heading",
+          "markdown": "## My Title",
+          "metadata": {
+            "format_type": "heading",
+            "mode": "cli",
+            "skill": "markdown-format",
+            "timestamp": "2026-10-06T04:41:38.847441-07:00",
+            "trace_id": "8a31b8b8-e64f-4fe7-9201-80c7cce1dde6"
+          },
+          "original": "TXkgVGl0bGU="
+        }
+      ]
+    }
+  ]
+}
