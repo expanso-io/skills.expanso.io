@@ -210,7 +210,7 @@ config:
                 }
           gcp_cloud_storage:
             bucket: "${EU_ARCHIVE_BUCKET}"  # Must be EU-region bucket
-            path: "transactions/${!now().format(\"2006/01/02\")}/eu-${!timestamp_unix()}.json"
+            path: "transactions/${!now().ts_format(\"2006/01/02\")}/eu-${!timestamp_unix_nano()}-${!uuid_v4()}.json"
             content_type: application/json
             batching:
               count: 1000

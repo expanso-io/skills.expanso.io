@@ -46,6 +46,7 @@ def workflow_contract():
         "-s",
         "scripts/test-edge-harness-readiness.py",
     ] in commands
+    assert ["uv", "run", "-s", "scripts/test-current-review.py", "--jobs-only"] in commands
     for variant in ["cli", "mcp"]:
         assert ["uv", "run", "-s", "scripts/test-skills.py", "--variant", variant,
                 "--no-cache", "--max-reruns", "1", "--report", f".conformance/full-{variant}.json"] in commands

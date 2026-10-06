@@ -119,7 +119,7 @@ config:
         - aws_s3:
             bucket: "${S3_BUCKET}"
             region: "${AWS_REGION}"
-            path: "logs/${!timestamp_unix_date('2006/01/02')}/${!uuid_v4()}.jsonl"
+            path: "logs/${!now().ts_format(\"2006/01/02\")}/${!uuid_v4()}.jsonl"
             batching:
               count: 500
               period: 60s

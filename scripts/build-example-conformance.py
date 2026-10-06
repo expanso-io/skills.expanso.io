@@ -186,7 +186,7 @@ def execution_evidence(
             "test_environment": result.get("test_environment"),
         }
 
-    job_report = REPO / "skills" / "jobs" / "execution-report.json"
+    job_report = REPO / ".conformance" / "job-execution.json"
     if job_report.exists():
         result = next((row for row in load_json(job_report).get("jobs", []) if row.get("pipeline") == relative), None)
         if result is not None:
@@ -195,7 +195,7 @@ def execution_evidence(
             return {
                 "status": {"pass": "pass", "skipped": "skipped"}.get(result.get("status"), "failing"),
                 "method": "expanso-edge current-SHA intact job execution",
-                "report": "skills/jobs/execution-report.json",
+                "report": ".conformance/job-execution.json",
                 "sha256": result["sha256"],
                 "reason": result.get("reason"),
             }

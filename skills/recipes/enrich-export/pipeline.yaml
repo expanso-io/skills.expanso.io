@@ -109,7 +109,7 @@ config:
         # Primary S3 export
         - aws_s3:
             bucket: ${S3_BUCKET_NAME}
-            path: logs/year=${!timestamp("2006")}/month=${!timestamp("01")}/day=${!timestamp("02")}/logs_${!timestamp_unix()}.jsonl.gz
+            path: logs/year=${!now().ts_format("2006")}/month=${!now().ts_format("01")}/day=${!now().ts_format("02")}/logs_${!timestamp_unix_nano()}-${!uuid_v4()}.jsonl.gz
             batching:
               count: 200
               period: ${BATCH_PERIOD:-2m}
@@ -136,7 +136,7 @@ config:
                 }
           aws_s3:
             bucket: ${S3_ERROR_BUCKET_NAME:-${S3_BUCKET_NAME}}
-            path: errors/year=${!timestamp("2006")}/month=${!timestamp("01")}/day=${!timestamp("02")}/error_${!timestamp_unix()}.jsonl
+            path: errors/year=${!now().ts_format("2006")}/month=${!now().ts_format("01")}/day=${!now().ts_format("02")}/error_${!timestamp_unix_nano()}-${!uuid_v4()}.jsonl
             batching:
               count: 50
               period: 1m

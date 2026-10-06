@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T22:06:51Z",
+  "generated": "2026-10-06T23:06:05Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -10,8 +10,8 @@
     "regression_history": "Deep links, Spec and Pipeline tabs, theme persistence, and job proof survive the redesign."
   },
   "toolchain": {
-    "expanso_edge": "v2.1.22",
-    "expanso_cli": "Expanso CLI version v2.1.22"
+    "expanso_edge": "v2.1.21",
+    "expanso_cli": "Expanso CLI version v2.1.21"
   },
   "history_review": {
     "baseline": "git history through 699bea8",
@@ -27,9 +27,9 @@
   "counts": {
     "failing": 0,
     "fixed": 76,
-    "pass": 64,
+    "pass": 57,
     "pulled": 24,
-    "skipped": 230,
+    "skipped": 237,
     "total": 394
   },
   "skipped_reasons": [
@@ -232,6 +232,34 @@
     {
       "pipeline": "skills/connectors/webhook-receive/pipeline-cli.yaml",
       "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded."
+    },
+    {
+      "pipeline": "skills/jobs/ci-fixtures/pipeline.yaml",
+      "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded."
+    },
+    {
+      "pipeline": "skills/jobs/log-reduction/pipeline.yaml",
+      "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded."
+    },
+    {
+      "pipeline": "skills/jobs/notification-engine/pipeline.yaml",
+      "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded."
+    },
+    {
+      "pipeline": "skills/jobs/rag-embed-retrieve/pipeline-query.yaml",
+      "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded."
+    },
+    {
+      "pipeline": "skills/jobs/rag-embed-retrieve/pipeline.yaml",
+      "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded."
+    },
+    {
+      "pipeline": "skills/jobs/rss-feed-engine/pipeline.yaml",
+      "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded."
+    },
+    {
+      "pipeline": "skills/jobs/sensor-telemetry-mqtt/pipeline.yaml",
+      "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded."
     },
     {
       "pipeline": "skills/recipes/aggregate-time-windows/pipeline.yaml",
@@ -3142,7 +3170,8 @@
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
+          "status": "skipped",
+          "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded.",
           "method": "dated end-to-end execution proof",
           "proof_status": "executed-local-only",
           "proof_date": "2026-09-18",
@@ -3172,7 +3201,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "skipped"
     },
     {
       "pipeline": "skills/jobs/data-migration-engine/pipeline.yaml",
@@ -3184,12 +3213,10 @@
       "criteria": {
         "runs": {
           "status": "pass",
-          "method": "dated end-to-end execution proof",
-          "proof_status": "executed-cloud-and-local",
-          "proof_date": "2026-09-18",
-          "expanso_edge": "v2.1.21",
-          "record": "skills/jobs/PROOF-2026-09-18.md",
-          "note": "The job spec has the same structure as the job that ran. Only the values listed in its header comment differ, and long mappings are rewrapped. The top-level restart_policy never and the signed balance formula are newer than the Cloud run. The dated proof also predates the current verified-TLS requirement. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
+          "method": "expanso-edge current-SHA intact job execution",
+          "report": ".conformance/job-execution.json",
+          "sha256": "16cd64e901d28b9763df2d473f66aeedd220a13ca4a9bf5f4321fb5d9b5aa922",
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -3224,7 +3251,8 @@
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
+          "status": "skipped",
+          "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded.",
           "method": "dated end-to-end execution proof",
           "proof_status": "executed-local-only",
           "proof_date": "2026-09-18",
@@ -3254,7 +3282,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "skipped"
     },
     {
       "pipeline": "skills/jobs/notification-engine/pipeline.yaml",
@@ -3265,7 +3293,8 @@
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
+          "status": "skipped",
+          "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded.",
           "method": "dated end-to-end execution proof",
           "proof_status": "executed-cloud-and-local",
           "proof_date": "2026-09-18",
@@ -3295,7 +3324,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "skipped"
     },
     {
       "pipeline": "skills/jobs/rag-embed-retrieve/pipeline-query.yaml",
@@ -3306,7 +3335,8 @@
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
+          "status": "skipped",
+          "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded.",
           "method": "dated end-to-end execution proof",
           "proof_status": "executed-cloud-and-local",
           "proof_date": "2026-09-18",
@@ -3336,7 +3366,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "skipped"
     },
     {
       "pipeline": "skills/jobs/rag-embed-retrieve/pipeline.yaml",
@@ -3347,7 +3377,8 @@
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
+          "status": "skipped",
+          "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded.",
           "method": "dated end-to-end execution proof",
           "proof_status": "executed-cloud-and-local",
           "proof_date": "2026-09-18",
@@ -3377,7 +3408,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "skipped"
     },
     {
       "pipeline": "skills/jobs/rss-feed-engine/pipeline.yaml",
@@ -3388,7 +3419,8 @@
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
+          "status": "skipped",
+          "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded.",
           "method": "dated end-to-end execution proof",
           "proof_status": "executed-cloud-and-local",
           "proof_date": "2026-09-18",
@@ -3418,7 +3450,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "skipped"
     },
     {
       "pipeline": "skills/jobs/sensor-telemetry-mqtt/pipeline.yaml",
@@ -3429,7 +3461,8 @@
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
+          "status": "skipped",
+          "reason": "Only historical execution proof is available; no current-hash intact job execution is recorded.",
           "method": "dated end-to-end execution proof",
           "proof_status": "executed-local-only",
           "proof_date": "2026-09-18",
@@ -3459,7 +3492,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "skipped"
     },
     {
       "pipeline": "skills/jobs/webhook-fan-out/pipeline.yaml",
@@ -3471,12 +3504,10 @@
       "criteria": {
         "runs": {
           "status": "pass",
-          "method": "dated end-to-end execution proof",
-          "proof_status": "executed-local-only",
-          "proof_date": "2026-09-18",
-          "expanso_edge": "v2.1.21",
-          "record": "skills/jobs/PROOF-2026-09-18.md",
-          "note": "The dated run predates the current authentication and TLS requirements, so it is not proof of the current security behavior. Inputs in the runs were synthetic fixtures unless a proved line says otherwise."
+          "method": "expanso-edge current-SHA intact job execution",
+          "report": ".conformance/job-execution.json",
+          "sha256": "39ba0f02a822575626e47adc0056491d8634e5601a485d6251d4bd5c85e42687",
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -3652,7 +3683,7 @@
     },
     {
       "pipeline": "skills/recipes/cross-border-gdpr/pipeline.yaml",
-      "sha256": "b58227ec61d188018abc75e483e4a4bf2faccbf98461c8c1756fa06ed1c90ae0",
+      "sha256": "1e2ae7f8bb57c3bbb411ec3cdf3049975d190fd6fbc46c1d0b9f2b325686bd8a",
       "category": "recipes",
       "skill": "cross-border-gdpr",
       "variant": "recipe",
@@ -3661,7 +3692,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires an EU PostgreSQL database, BigQuery append credentials, an EU archive bucket, and approved transfer policy; processor regressions do not prove transfers.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -3951,7 +3989,7 @@
     },
     {
       "pipeline": "skills/recipes/enrich-export/pipeline.yaml",
-      "sha256": "2d0eb627567721bdec8bbf30cf5276772f9c16869ec1ec7fb02d5c133bc25260",
+      "sha256": "d00401a0634afed66c841ff354ec3d7aa1ba51301ff740524437d2e26123e186",
       "category": "recipes",
       "skill": "enrich-export",
       "variant": "recipe",
@@ -3960,7 +3998,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires AWS S3 credentials and a destination bucket to verify generated enriched object uploads.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 2
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4034,7 +4079,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires Kafka, AWS S3 credentials, authenticated HTTP receivers, and persistent files to verify every branch.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4071,7 +4123,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires Kafka input, AWS S3 credentials and bucket, and persistent file outputs to verify fan-out delivery.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4182,7 +4241,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires Kafka source with TLS/SASL credentials and AWS S3 credentials and bucket to observe archived objects.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4219,7 +4285,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires source SQL databases, backup destination credentials, and a scheduled execution environment to verify durable backups.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 4
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4321,7 +4394,7 @@
     },
     {
       "pipeline": "skills/recipes/priority-queues/pipeline.yaml",
-      "sha256": "a95916afdfecd07a90f11c74c5287b2268d59864a7d2fe2119398537d6130696",
+      "sha256": "af4005052ef16817de0a127bcf2448ada0088e466e784dc7bdcbb5874227bdba",
       "category": "recipes",
       "skill": "priority-queues",
       "variant": "recipe",
@@ -4330,7 +4403,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires Kafka priority topics and TLS/SASL credentials to verify priority-specific delivery.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 2
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4358,7 +4438,7 @@
     },
     {
       "pipeline": "skills/recipes/production-log-pipeline/pipeline.yaml",
-      "sha256": "b6935785860b896c28a7489ee6b18371fa2262b3312da53bf5b0eda3647ff91f",
+      "sha256": "6470ca01edee819c1e369becbacf752a79b18e57d8a3f1fbd5986cc932cc5d51",
       "category": "recipes",
       "skill": "production-log-pipeline",
       "variant": "recipe",
@@ -4367,7 +4447,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires ingress TLS certificate/key, Elasticsearch credentials, AWS S3 credentials, and authenticated alert receiver; startup regressions do not verify external sinks.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -5267,14 +5354,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 6,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -5314,14 +5394,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 6,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -5361,7 +5434,14 @@
           "report": ".conformance/full-cli.json",
           "tests": 3,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -5401,7 +5481,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 3,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -5593,14 +5680,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 6,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -5640,14 +5720,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 6,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -14268,14 +14341,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -14315,14 +14381,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": null,
-          "published_adapters_intact": true,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "published_adapters_intact": true
         },
         "platform_realism": {
           "status": "pass",
@@ -15690,14 +15749,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 3
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -15737,14 +15789,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 3
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -16156,7 +16201,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
-      "sha256": "71d0a8a440b044eb7663140d6ed91e6495d46fb8346003f7d7bb6f3113d6472b",
+      "sha256": "c64d578e1cb6316b9cc78fa5e810dc28bfe80d1ef037a4594eb8434a5e3f3ca2",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "cli",
@@ -16168,7 +16213,14 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 7
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -16196,7 +16248,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-mcp.yaml",
-      "sha256": "879c1b5b86488700c17c4cee972374fcfc05a7c191546ecd29d38d8f6438760c",
+      "sha256": "6717af7f55612d975491878ca2786009c248aec6a9e96c573d2efdeee8ab95f6",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "mcp",
@@ -16208,7 +16260,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": null,
-          "published_adapters_intact": true
+          "published_adapters_intact": true,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 7
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -16320,14 +16379,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -16367,14 +16419,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",

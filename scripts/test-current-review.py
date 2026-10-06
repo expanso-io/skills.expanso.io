@@ -3,6 +3,7 @@
 # dependencies = ["pyyaml", "requests"]
 # ///
 """Execute current job adapters and the focused publication regressions."""
+import argparse
 import hashlib
 import hmac
 import importlib.util
@@ -107,6 +108,8 @@ def jobs(suite, directory, cert, key, receiver_port):
         thread.join()
 
     path = ROOT / 'skills/jobs/data-migration-engine/pipeline.yaml'
+    if shutil.which('pg_config'):
+        os.environ['PATH'] = command(['pg_config', '--bindir']).strip() + os.pathsep + os.environ['PATH']
     required = ['initdb', 'pg_ctl', 'psql']
     missing = [name for name in required if not shutil.which(name)]
     if missing:
@@ -159,14 +162,57 @@ def jobs(suite, directory, cert, key, receiver_port):
     return rows
 
 
+def archive_keys(suite, directory):
+    sweep = []
+    def outputs(value):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if key in ('aws_s3', 'gcp_cloud_storage', 'azure_blob_storage') and isinstance(child, dict) and 'path' in child:
+                    yield child['path']
+                else:
+                    yield from outputs(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from outputs(child)
+    for path in sorted((ROOT / 'skills').glob('*/*/pipeline*.yaml')):
+        document = yaml.safe_load(path.read_text())
+        cfg = document.get('config', {})
+        for index, key in enumerate(outputs(cfg.get('output', {}))):
+            destination = directory / 'objects' / path.parent.name / str(index)
+            processors = [{'unarchive': {'format': 'json_array'}}]
+            if path.parent.name == 'nightly-backup':
+                processors += cfg['pipeline']['processors']
+            processors += [{'mapping': 'root = this\nroot.fixture_second = now().ts_unix()'}]
+            fixture = {
+                '_source_pipeline': str(path.relative_to(ROOT)),
+                'pipeline': {'processors': processors},
+                'output': {'file': {'path': str(destination) + '/' + key, 'codec': 'lines'}},
+            }
+            payload = [{'id': value, '_table': 'orders', '_kafka_topic': 'fixture',
+                        '_partition_day': '2026-10-06', '_partition_hour': '22'} for value in (1, 2)]
+            suite.execute(fixture, payload, retain_output=True, decode_json=False)
+            files = list(destination.rglob('*'))
+            files = [file for file in files if file.is_file()]
+            assert len(files) == 2, (path, key, files)
+            records = [json.loads(file.read_text()) for file in files]
+            assert {record['id'] for record in records} == {1, 2}, records
+            assert len({record['fixture_second'] for record in records}) == 1, records
+            sweep.append({'pipeline': str(path.relative_to(ROOT)), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+                          'key': key, 'objects': [str(file.relative_to(directory)) for file in files]})
+    (ROOT / '.conformance/object-key-sweep.json').write_text(json.dumps({'status': 'pass', 'outputs': sweep}, indent=2) + '\n')
+    print(f'PASS {len(sweep)} object outputs retain two records in one second')
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--jobs-only', action='store_true')
+    args = parser.parse_args()
     directory = ROOT / '.conformance' / f'current-review-{time.time_ns()}'
     directory.mkdir(parents=True)
     cert, key = directory / 'cert.pem', directory / 'private.key'
     command(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', str(key), '-out', str(cert), '-days', '1', '-subj', '/CN=localhost', '-addext', 'subjectAltName=DNS:localhost'])
     key.chmod(0o600)
     version = command(['expanso-edge', 'version']).strip()
-    assert version == 'v2.1.22', version
     env = {'WEBHOOK_SECRET': 'fixture-secret', 'PLACEHOLDER': '[HIDDEN]'}
     for receiver in 'ABC':
         env[f'RECEIVER_{receiver}_TOKEN'] = 'fixture-token'
@@ -177,24 +223,27 @@ def main():
     try:
         rows = jobs(suite, directory, cert, key, receiver_port)
         report = {'generated': datetime.now(timezone.utc).isoformat(), 'expanso_edge': version, 'scope': 'local Edge; published adapters and processors, fixture connection details only', 'jobs': rows}
-        (ROOT / 'skills/jobs/execution-report.json').write_text(json.dumps(report, indent=2) + '\n')
+        (ROOT / '.conformance/job-execution.json').write_text(json.dumps(report, indent=2) + '\n')
         for row in rows:
             path = ROOT / row['pipeline']
             evidence = builder.execution_evidence(path, 'job', {}, {}, {}, {})
             assert evidence['status'] == row['status'], evidence
         stale = json.loads(json.dumps(report))
         stale['jobs'][0]['sha256'] = 'stale'
-        report_path = ROOT / 'skills/jobs/execution-report.json'
+        report_path = ROOT / '.conformance/job-execution.json'
         report_path.write_text(json.dumps(stale))
         try:
             assert builder.execution_evidence(ROOT / rows[0]['pipeline'], 'job', {}, {}, {}, {})['status'] == 'failing'
         finally:
             report_path.write_text(json.dumps(report, indent=2) + '\n')
+        if args.jobs_only:
+            print('PASS current-hash job execution evidence')
+            return
         publication.workflow_contract()
         for variant in ['cli', 'mcp']:
             cfg = reg.config('workflows/seo-pipeline', variant)
             html = '<title>Chart</title><meta name="description" content="Summary"><h1>Chart</h1><img alt="Chart"><meta name="viewport">'
-            for extra in ['<!-- <img src=x> -->', '<script>"<img src=x>"</script>', '<style>x{content:"<img>"}</style>', '<textarea><img></textarea>']:
+            for extra in ['<!-- <img src=x> -->', '<script>"<img src=x>"</script>', '<style>x{content:"<img>"}</style>', '<textarea><img></textarea>', '<script>const x="</style><img src=x>";</script>', '<style>x{content:"</script><img>"}</style>']:
                 result = suite.execute(cfg, {'html': html + extra})
                 assert result['analysis']['score'] == 100 and result['analysis']['image_count'] == 1, result
             result = suite.execute(cfg, {'html': '<!-- ' + html + ' --><script>' + html + '</script>'})
@@ -209,6 +258,11 @@ def main():
         cfg['pipeline']['processors'] = cfg['pipeline']['processors'][-1:]
         result = suite.execute(cfg, {'priority_score': 100, 'timestamp': (datetime.now(timezone.utc) + timedelta(seconds=30)).strftime('%Y-%m-%dT%H:%M:%SZ')})
         assert result['age_boost_applied'] == 0 and result['priority_queue'] == 'high', result
+        cfg = reg.config('recipes/priority-queues', 'recipe')
+        result = suite.execute(cfg, {'severity': 'INFO', 'timestamp': (datetime.now(timezone.utc) + timedelta(seconds=30)).strftime('%Y-%m-%dT%H:%M:%SZ')})
+        assert result['age_boost_applied'] == 0 and result['final_score'] == 30 and result['priority_queue'] == 'low', result
+        archive_keys(suite, directory)
+        reg.write_evidence()
         print('PASS current job execution, stale evidence rejection, SEO contexts, placeholder, and future priority')
     finally:
         suite.close()

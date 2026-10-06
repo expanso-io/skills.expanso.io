@@ -83,6 +83,9 @@ jobs:
           uv run -s scripts/test-recipes.py \
             --report .conformance/recipe-execution.json
 
+      - name: Execute authenticated TLS job fixtures
+        run: uv run -s scripts/test-current-review.py --jobs-only
+
       - name: Check generated reports and catalogs
         run: |
           uv run -s scripts/validate-skills.py --check
@@ -131,5 +134,6 @@ jobs:
             .conformance/full-mcp.json
             .conformance/negative-inputs.json
             .conformance/recipe-execution.json
+            .conformance/job-execution.json
             playwright-report/
           if-no-files-found: error
