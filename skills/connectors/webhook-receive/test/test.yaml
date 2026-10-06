@@ -32,3 +32,11 @@ tests:
       json_contains:
         event:
           type: "unknown"
+
+  - name: "rejects an invalid webhook signature"
+    input: '{"action":"opened","pull_request":{"title":"Untrusted"}}'
+    env:
+      WEBHOOK_SECRET: "fixture-webhook-secret-at-least-32-bytes"
+    invalid_webhook_signature: true
+    expected:
+      error_or_empty: true

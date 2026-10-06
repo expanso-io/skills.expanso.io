@@ -39,6 +39,29 @@ async function expectNoSeriousAxeViolations(page) {
   expect(violations).toEqual([]);
 }
 
+async function catalogSkillNames(page) {
+  const response = await page.request.get('/catalog.json');
+  expect(response.ok()).toBeTruthy();
+  const catalog = await response.json();
+
+  return Object.keys(catalog.skills).sort();
+}
+
+async function expectVisibleCopiesSucceed(page) {
+  const controls = page.locator(
+    '#modal-content .copy-pipeline-btn:visible, ' +
+    '#modal-content .code-copy-btn:visible'
+  );
+
+  const count = await controls.count();
+
+  for (let index = 0; index < count; index += 1) {
+    const control = controls.nth(index);
+    await control.click();
+    await expect(control).toHaveText(/Copied/);
+  }
+}
+
 test('copy controls report success and failure on the clicked control', async ({
   context,
   page
@@ -116,6 +139,51 @@ test('escaped YAML remains within the phone viewport', async ({ page }) => {
   await expect(page.locator('#modal-content .code-block:visible code').first())
     .toBeVisible();
   await expectNoHorizontalOverflow(page);
+});
+
+test('every skill page preserves features, copy feedback, contrast, and phone layout', async ({
+  context,
+  page
+}) => {
+  test.setTimeout(60 * 60 * 1000);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const names = await catalogSkillNames(page);
+
+  for (const name of names) {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(`/skill/${name}`);
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('theme', 'light');
+    });
+    await expect(page.locator('#modal-overlay')).toHaveClass(/active/);
+    await expect(page.getByRole('button', { name: 'Spec', exact: true }))
+      .toBeVisible();
+    await expect(page.getByRole('button', { name: 'Pipeline', exact: true }))
+      .toBeVisible();
+
+    await expectVisibleCopiesSucceed(page);
+    await page.waitForTimeout(250);
+    await expectNoSeriousAxeViolations(page);
+    await page.evaluate(() => document.querySelector('#theme-toggle').click());
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.waitForTimeout(250);
+    await expectNoSeriousAxeViolations(page);
+
+    await page.getByRole('button', { name: 'Pipeline', exact: true }).click();
+    const variants = page.locator('.pipeline-sub-tab');
+    const variantCount = await variants.count();
+    expect(variantCount, `${name} must retain a published pipeline variant`)
+      .toBeGreaterThan(0);
+
+    for (let variant = 0; variant < variantCount; variant += 1) {
+      await variants.nth(variant).click();
+      await expectVisibleCopiesSucceed(page);
+    }
+
+    await page.setViewportSize({ width: 320, height: 800 });
+    await expectNoHorizontalOverflow(page);
+  }
 });
 
 test('retains deep links, spec and pipeline tabs, theme, and job proof', async ({

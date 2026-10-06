@@ -62,6 +62,9 @@ outputs:
   - name: data
     type: array
     description: "Array of messages: {id, subject, from, to, date, snippet, labels, has_attachment}"
+  - name: emails
+    type: array
+    description: Compatibility alias for data
   - name: count
     type: integer
     description: Number of messages in data

@@ -53,10 +53,11 @@ config:
           let sig_header_name = env("WEBHOOK_SIGNATURE_HEADER").or("X-Hub-Signature-256")
           let provided_sig = meta($sig_header_name).or("")
           let expected = "sha256=" + meta("raw_body").hash("hmac_sha256", $secret).encode("hex")
-          root = if $secret == "" || $provided_sig == "" || $expected != $provided_sig {
+          let verified = $secret != "" && $provided_sig != "" && $expected == $provided_sig
+          meta signature_status = if $verified { "verified" } else { "rejected" }
+          root = if !$verified {
             deleted()
           } else {
-            meta signature_status = "verified"
             this
           }
 

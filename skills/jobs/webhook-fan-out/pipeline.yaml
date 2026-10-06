@@ -44,7 +44,7 @@ config:
       pattern: fan_out
       outputs:
         - http_client:
-            url: "https://RECEIVER_A_HOST/notify"
+            url: "https://${RECEIVER_A_HOST}/notify"
             verb: POST
             headers:
               Content-Type: application/json
@@ -52,7 +52,7 @@ config:
             retries: 5
             retry_period: 200ms
         - http_client:
-            url: "https://RECEIVER_B_HOST/notify"
+            url: "https://${RECEIVER_B_HOST}/notify"
             verb: POST
             headers:
               Content-Type: application/json
@@ -60,7 +60,7 @@ config:
             retries: 5
             retry_period: 200ms
         - http_client:
-            url: "https://RECEIVER_C_HOST/notify"
+            url: "https://${RECEIVER_C_HOST}/notify"
             verb: POST
             headers:
               Content-Type: application/json

@@ -181,8 +181,8 @@ metrics:
   prometheus:
     prefix: smart_buffer
 
-rate_limit_resources:
-  - label: inbound_http
-    local:
-      count: 10000
-      interval: 1s
+  rate_limit_resources:
+    - label: inbound_http
+      local:
+        count: 10000
+        interval: 1s

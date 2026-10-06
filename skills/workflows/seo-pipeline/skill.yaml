@@ -21,7 +21,7 @@ inputs:
   - name: html
     type: string
     required: false
-    description: Optional captured HTML fixture; when omitted the pipeline fetches url
+    description: Optional caller-supplied HTML; when omitted the pipeline fetches url
 
 outputs:
   - name: analysis
