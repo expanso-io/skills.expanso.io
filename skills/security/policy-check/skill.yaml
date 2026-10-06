@@ -50,3 +50,7 @@ components:
   outputs:
     - stdout
     - sync_response
+
+publication:
+  status: pulled
+  reason: "Reports policy approval and checked rules without evaluating the configured rules."

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "generated": "2026-10-06T09:15:58.584247+00:00",
-  "total_skills": 183,
+  "generated": "2026-10-06T10:23:12.660131+00:00",
+  "total_skills": 174,
   "categories": {
     "jobs": {
       "description": "Whole jobs you may be asked to build (RSS engine, data migration, notifications, RAG, ...). Each was run end to end; its skill.yaml `proof` block says where, and what was not proved",
@@ -14,7 +14,7 @@
     },
     "workflows": {
       "description": "End-to-end automation workflows combining multiple services",
-      "skill_count": 17,
+      "skill_count": 13,
       "tags": [
         "automation",
         "workflow",
@@ -33,7 +33,7 @@
     },
     "security": {
       "description": "Security, compliance, and cryptographic operations",
-      "skill_count": 16,
+      "skill_count": 14,
       "tags": [
         "security",
         "compliance",
@@ -63,7 +63,7 @@
     },
     "utilities": {
       "description": "General utilities and helper functions",
-      "skill_count": 16,
+      "skill_count": 13,
       "tags": [
         "utility",
         "helper",
@@ -2506,63 +2506,6 @@
         "security"
       ]
     },
-    "jwt-verify": {
-      "name": "jwt-verify",
-      "version": "1.0.0",
-      "description": "Verify JWT signature and extract/validate claims",
-      "category": "security",
-      "credentials": [
-        {
-          "name": "JWT_SECRET",
-          "required": false,
-          "description": "Secret for HMAC verification"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "token",
-          "type": "string",
-          "required": true,
-          "description": "JWT token to verify"
-        },
-        {
-          "name": "verify_exp",
-          "type": "boolean",
-          "default": true,
-          "description": "Check expiration"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "valid",
-          "type": "boolean",
-          "description": "Whether token is valid"
-        },
-        {
-          "name": "header",
-          "type": "object",
-          "description": "JWT header"
-        },
-        {
-          "name": "claims",
-          "type": "object",
-          "description": "JWT payload/claims"
-        },
-        {
-          "name": "metadata",
-          "type": "object",
-          "description": "Verification details"
-        }
-      ],
-      "backends": [
-        "local"
-      ],
-      "tags": [
-        "local",
-        "offline",
-        "security"
-      ]
-    },
     "log-sanitize": {
       "name": "log-sanitize",
       "version": "1.0.0",
@@ -2750,52 +2693,6 @@
         "local",
         "openai",
         "remote",
-        "security"
-      ]
-    },
-    "policy-check": {
-      "name": "policy-check",
-      "version": "1.0.0",
-      "description": "Check configuration against policy rules (allow/deny with reasons)",
-      "category": "security",
-      "credentials": [],
-      "inputs": [
-        {
-          "name": "config",
-          "type": "object",
-          "required": true,
-          "description": "Configuration to check"
-        },
-        {
-          "name": "policy",
-          "type": "object",
-          "required": true,
-          "description": "Policy rules: {allow: [...], deny: [...]}"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "allowed",
-          "type": "boolean",
-          "description": "Whether config passes all policies"
-        },
-        {
-          "name": "violations",
-          "type": "array",
-          "description": "List of policy violations"
-        },
-        {
-          "name": "metadata",
-          "type": "object",
-          "description": "Check metadata"
-        }
-      ],
-      "backends": [
-        "local"
-      ],
-      "tags": [
-        "local",
-        "offline",
         "security"
       ]
     },
@@ -6771,75 +6668,6 @@
         "utilities"
       ]
     },
-    "determinism-test": {
-      "name": "determinism-test",
-      "version": "1.0.0",
-      "description": "Run input N times and measure output determinism/stability",
-      "category": "utilities",
-      "credentials": [
-        {
-          "name": "OPENAI_API_KEY",
-          "required": false,
-          "description": "For testing LLM-based pipelines"
-        }
-      ],
-      "inputs": [
-        {
-          "name": "input",
-          "type": "any",
-          "required": true,
-          "description": "Input to test"
-        },
-        {
-          "name": "runs",
-          "type": "integer",
-          "default": 3,
-          "description": "Number of runs"
-        },
-        {
-          "name": "pipeline",
-          "type": "string",
-          "required": false,
-          "description": "Pipeline to test"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "stable",
-          "type": "boolean",
-          "description": "Whether all outputs matched"
-        },
-        {
-          "name": "stability_score",
-          "type": "number",
-          "description": "Percentage of matching outputs (0-100)"
-        },
-        {
-          "name": "outputs",
-          "type": "array",
-          "description": "All outputs collected"
-        },
-        {
-          "name": "diffs",
-          "type": "array",
-          "description": "Differences between outputs"
-        },
-        {
-          "name": "metadata",
-          "type": "object",
-          "description": "Test metadata"
-        }
-      ],
-      "backends": [
-        "local"
-      ],
-      "tags": [
-        "local",
-        "offline",
-        "openai",
-        "utilities"
-      ]
-    },
     "email-validate": {
       "name": "email-validate",
       "version": "1.0.0",
@@ -7167,58 +6995,6 @@
         "utilities"
       ]
     },
-    "openapi-validate": {
-      "name": "openapi-validate",
-      "version": "1.0.0",
-      "description": "Validate HTTP requests/responses against OpenAPI specification",
-      "category": "utilities",
-      "credentials": [],
-      "inputs": [
-        {
-          "name": "spec",
-          "type": "object",
-          "required": true,
-          "description": "OpenAPI specification"
-        },
-        {
-          "name": "request",
-          "type": "object",
-          "required": false,
-          "description": "HTTP request to validate"
-        },
-        {
-          "name": "response",
-          "type": "object",
-          "required": false,
-          "description": "HTTP response to validate"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "valid",
-          "type": "boolean",
-          "description": "Whether request/response matches spec"
-        },
-        {
-          "name": "errors",
-          "type": "array",
-          "description": "Validation errors"
-        },
-        {
-          "name": "metadata",
-          "type": "object",
-          "description": "Validation metadata"
-        }
-      ],
-      "backends": [
-        "local"
-      ],
-      "tags": [
-        "local",
-        "offline",
-        "utilities"
-      ]
-    },
     "random-number": {
       "name": "random-number",
       "version": "1.0.0",
@@ -7244,63 +7020,6 @@
           "name": "number",
           "type": "integer",
           "description": "Random number"
-        }
-      ],
-      "backends": [
-        "local"
-      ],
-      "tags": [
-        "local",
-        "offline",
-        "utilities"
-      ]
-    },
-    "retry-wrapper": {
-      "name": "retry-wrapper",
-      "version": "1.0.0",
-      "description": "Wrap commands with automatic retry and exponential backoff",
-      "category": "utilities",
-      "credentials": [],
-      "inputs": [
-        {
-          "name": "command",
-          "type": "string",
-          "required": true,
-          "description": "Command to execute and retry"
-        },
-        {
-          "name": "max_retries",
-          "type": "integer",
-          "default": 3,
-          "description": "Maximum retry attempts"
-        },
-        {
-          "name": "backoff_ms",
-          "type": "integer",
-          "default": 1000,
-          "description": "Initial backoff in milliseconds"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "output",
-          "type": "string",
-          "description": "Command output"
-        },
-        {
-          "name": "attempts",
-          "type": "integer",
-          "description": "Number of attempts made"
-        },
-        {
-          "name": "success",
-          "type": "boolean",
-          "description": "Whether command succeeded"
-        },
-        {
-          "name": "metadata",
-          "type": "object",
-          "description": "Execution metadata"
         }
       ],
       "backends": [
@@ -7677,82 +7396,6 @@
         "workflows"
       ]
     },
-    "health-integrate": {
-      "name": "health-integrate",
-      "version": "1.0.0",
-      "description": "Integrate wearable health data with calendar and fitness optimization",
-      "category": "workflows",
-      "credentials": [
-        {
-          "name": "OURA_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "FITBIT_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "GOOGLE_CALENDAR_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": ""
-        }
-      ],
-      "inputs": [
-        {
-          "name": "sources",
-          "type": "array",
-          "default": [
-            "oura",
-            "calendar"
-          ]
-        },
-        {
-          "name": "optimize_for",
-          "type": "string",
-          "default": "energy",
-          "enum": [
-            "energy",
-            "sleep",
-            "recovery",
-            "performance"
-          ]
-        }
-      ],
-      "outputs": [
-        {
-          "name": "health_summary",
-          "type": "object"
-        },
-        {
-          "name": "recommendations",
-          "type": "array"
-        },
-        {
-          "name": "schedule_adjustments",
-          "type": "array"
-        },
-        {
-          "name": "metadata",
-          "type": "object"
-        }
-      ],
-      "backends": [
-        "openai"
-      ],
-      "tags": [
-        "google",
-        "openai",
-        "remote",
-        "workflows"
-      ]
-    },
     "jira-automate": {
       "name": "jira-automate",
       "version": "1.0.0",
@@ -7958,90 +7601,6 @@
         "workflows"
       ]
     },
-    "marketing-auto": {
-      "name": "marketing-auto",
-      "version": "1.0.0",
-      "description": "Self-running marketing automation with AI content and analytics",
-      "category": "workflows",
-      "credentials": [
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": ""
-        },
-        {
-          "name": "TWITTER_API_KEY",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "LINKEDIN_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "MAILCHIMP_API_KEY",
-          "required": false,
-          "description": ""
-        }
-      ],
-      "inputs": [
-        {
-          "name": "action",
-          "type": "string",
-          "default": "campaign",
-          "enum": [
-            "campaign",
-            "content",
-            "analytics",
-            "schedule"
-          ]
-        },
-        {
-          "name": "platform",
-          "type": "string",
-          "default": "all",
-          "enum": [
-            "all",
-            "twitter",
-            "linkedin",
-            "email",
-            "blog"
-          ]
-        },
-        {
-          "name": "topic",
-          "type": "string",
-          "required": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "content",
-          "type": "array"
-        },
-        {
-          "name": "schedule",
-          "type": "array"
-        },
-        {
-          "name": "analytics",
-          "type": "object"
-        },
-        {
-          "name": "metadata",
-          "type": "object"
-        }
-      ],
-      "backends": [
-        "openai"
-      ],
-      "tags": [
-        "openai",
-        "remote",
-        "workflows"
-      ]
-    },
     "meal-planner": {
       "name": "meal-planner",
       "version": "1.0.0",
@@ -8170,91 +7729,6 @@
       "tags": [
         "openai",
         "remote",
-        "workflows"
-      ]
-    },
-    "multi-platform-chat": {
-      "name": "multi-platform-chat",
-      "version": "1.0.0",
-      "description": "Route AI agent responses across multiple messaging platforms",
-      "category": "workflows",
-      "credentials": [
-        {
-          "name": "TELEGRAM_BOT_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "DISCORD_BOT_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "SLACK_BOT_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "WHATSAPP_TOKEN",
-          "required": false,
-          "description": ""
-        },
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": ""
-        }
-      ],
-      "inputs": [
-        {
-          "name": "message",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "platform",
-          "type": "string",
-          "required": true,
-          "enum": [
-            "telegram",
-            "discord",
-            "slack",
-            "whatsapp",
-            "all"
-          ]
-        },
-        {
-          "name": "channel_id",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "user_id",
-          "type": "string",
-          "required": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "response",
-          "type": "string"
-        },
-        {
-          "name": "sent_to",
-          "type": "array"
-        },
-        {
-          "name": "metadata",
-          "type": "object"
-        }
-      ],
-      "backends": [
-        "openai"
-      ],
-      "tags": [
-        "openai",
-        "remote",
-        "slack",
         "workflows"
       ]
     },
@@ -8454,58 +7928,6 @@
       "tags": [
         "local",
         "offline",
-        "workflows"
-      ]
-    },
-    "terminal-services": {
-      "name": "terminal-services",
-      "version": "1.0.0",
-      "description": "Terminal-first integrations for 40+ popular services",
-      "category": "workflows",
-      "credentials": [
-        {
-          "name": "OPENAI_API_KEY",
-          "required": true,
-          "description": ""
-        }
-      ],
-      "inputs": [
-        {
-          "name": "service",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "action",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "params",
-          "type": "object",
-          "default": {}
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "type": "object"
-        },
-        {
-          "name": "formatted_output",
-          "type": "string"
-        },
-        {
-          "name": "metadata",
-          "type": "object"
-        }
-      ],
-      "backends": [
-        "openai"
-      ],
-      "tags": [
-        "openai",
-        "remote",
         "workflows"
       ]
     },

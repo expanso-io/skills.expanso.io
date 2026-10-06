@@ -33,6 +33,7 @@ config:
           }
 
           root.original = $content
+          meta original_log = $content
           meta log_format = root.detected_format
 
       # Step 2: Parse based on detected format
@@ -51,6 +52,7 @@ config:
           # Access logs (Apache/Nginx)
           - check: 'meta("log_format") == "access_log"'
             processors:
+              - mapping: 'root = this.original'
               - grok:
                   expressions:
                     - '%{IPORHOST:client_ip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "%{WORD:method} %{NOTSPACE:path}(?: HTTP/%{NUMBER:http_version})?" %{NUMBER:status} (?:%{NUMBER:bytes}|-)'
@@ -65,16 +67,18 @@ config:
           # Syslog
           - check: 'meta("log_format") == "syslog"'
             processors:
+              - mapping: 'root = this.original'
               - grok:
                   expressions:
                     - '<%{POSINT:priority}>%{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:hostname} %{DATA:program}(?:\[%{POSINT:pid}\])?: %{GREEDYDATA:message}'
               - mapping: |
                   root = this
                   let pri = this.priority.number()
-                  root.facility = (pri / 8).floor()
-                  root.severity = pri % 8
-                  root.level = if this.severity <= 3 { "ERROR" }
-                              else if this.severity <= 4 { "WARN" }
+                  root.facility = ($pri / 8).floor()
+                  let severity = $pri % 8
+                  root.severity = $severity
+                  root.level = if $severity <= 3 { "ERROR" }
+                              else if $severity <= 4 { "WARN" }
                               else { "INFO" }
 
           # CSV logs
@@ -97,7 +101,7 @@ config:
       - catch:
           - mapping: |
               meta log_format = "parse_failed"
-              root = {"raw_content": this.original, "parse_error": error()}
+              root = {"raw_content": meta("original_log"), "parse_error": error()}
 
       # Step 3: Add processing metadata
       - mapping: |

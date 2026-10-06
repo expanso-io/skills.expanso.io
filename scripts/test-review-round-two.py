@@ -189,7 +189,7 @@ def main():
         failed_table = builder.build_table()
         failed_stripe = next(row for row in failed_table["examples"] if row["pipeline"] == str(stripe_path.relative_to(ROOT)))
         assert failed_stripe["status"] == "failing", failed_stripe
-        assert len(failed_table["pulled_examples"]) == 4
+        assert len(failed_table["pulled_examples"]) == 22
         gmail = next(row for row in failed_table["examples"] if row["pipeline"] == "skills/connectors/gmail-read/pipeline-cli.yaml")
         assert gmail["status"] == "failing" and gmail["criteria"]["runs"]["status"] == "failing", gmail
         assert gmail["criteria"]["runs"]["processor_regression"]["status"] == "pass", gmail

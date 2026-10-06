@@ -17,26 +17,7 @@ config:
   pipeline:
     processors:
       - mapping: |
-          let spec = this.spec
-          meta trace_id = uuid_v4()
-
-          root = if $spec == null { throw("spec field is required") } else { {} }
-
-          let valid = $spec.openapi.or("").length() > 0 || $spec.swagger.or("").length() > 0
-
-          root.valid = $valid
-          root.errors = if !$valid { ["Missing or invalid OpenAPI spec"] } else { [] }
-          root.metadata = {
-            "skill": "openapi-validate",
-            "mode": "mcp",
-            "spec_version": $spec.openapi.or($spec.swagger).or("unknown"),
-            "trace_id": meta("trace_id").or(uuid_v4()),
-            "timestamp": now()
-          }
-
-      - log:
-          level: INFO
-          message: "[openapi-validate] MCP valid: ${! this.valid }"
+          root = {"status": "unsupported", "publication": "pulled", "skill": "openapi-validate", "reason": "Reports request or response validity from a version field without validating against the OpenAPI contract."}
 
   output:
     sync_response: {}

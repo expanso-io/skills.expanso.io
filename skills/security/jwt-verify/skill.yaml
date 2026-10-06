@@ -56,3 +56,7 @@ components:
   outputs:
     - stdout
     - sync_response
+
+publication:
+  status: pulled
+  reason: "Reports tokens as valid without verifying their cryptographic signatures."

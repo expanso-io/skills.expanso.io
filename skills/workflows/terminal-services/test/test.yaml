@@ -1,8 +1,7 @@
-# Test: terminal-services
 tests:
-  - name: "Calls service"
-    skip: true
-    input: '{"service": "github", "action": "repos"}'
-    expected_output:
-      result:
-        status: "ok"
+- name: Withdrawn capability returns no success receipt
+  input: '{}'
+  expected_output:
+    status: unsupported
+    publication: pulled
+    skill: terminal-services

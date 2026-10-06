@@ -34,3 +34,7 @@ components:
   inputs: [stdin, http_server]
   processors: [mapping, http, log]
   outputs: [stdout, sync_response]
+
+publication:
+  status: pulled
+  reason: "Reports completed service actions without contacting any service."

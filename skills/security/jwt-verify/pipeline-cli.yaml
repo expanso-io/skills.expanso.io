@@ -19,60 +19,7 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          let token = content().trim()
-
-          # Split JWT parts
-          let parts = $token.split(".")
-          let valid_structure = $parts.length() == 3
-
-          let header = if $valid_structure { $parts.index(0).decode("base64").parse_json().catch({}) } else { null }
-          let claims = if $valid_structure { $parts.index(1).decode("base64").parse_json().catch({}) } else { null }
-
-          # Check expiration
-          let exp = if $valid_structure { $claims.exp.or(0) } else { 0 }
-          let now_ts = now().ts_unix()
-          let expired = $exp > 0 && $exp < $now_ts
-
-          # Note: Signature verification requires crypto primitives not available in Bloblang.
-          # This skill validates structure, decodes claims, and checks expiration.
-          # For full cryptographic verification, use a dedicated JWT library.
-          let sig_valid = true  # Structure-only validation
-
-          root = if !$valid_structure {
-            {
-              "valid": false,
-              "error": "Invalid JWT structure",
-              "header": null,
-              "claims": null
-            }
-          } else {
-            {
-              "valid": !$expired && $sig_valid,
-              "header": $header,
-              "claims": $claims,
-              "verification": {
-                "expired": $expired,
-                "exp": $exp,
-                "iat": $claims.iat,
-                "iss": $claims.iss,
-                "aud": $claims.aud,
-                "algorithm": $header.alg
-              }
-            }
-          }
-
-          root.metadata = {
-            "skill": "jwt-verify",
-            "mode": "cli",
-            "trace_id": meta("trace_id").or(uuid_v4()),
-            "timestamp": now()
-          }
-
-      - log:
-          level: INFO
-          message: |
-            [jwt-verify] Valid: ${! this.valid } (trace: ${! meta("trace_id").slice(0, 8) })
+          root = {"status": "unsupported", "publication": "pulled", "skill": "jwt-verify", "reason": "Reports tokens as valid without verifying their cryptographic signatures."}
 
   output:
     stdout: {}

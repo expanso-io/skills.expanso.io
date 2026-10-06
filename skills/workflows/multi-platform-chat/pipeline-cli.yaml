@@ -11,36 +11,7 @@ config:
   pipeline:
     processors:
       - mapping: |
-          meta trace_id = uuid_v4()
-          let input = content().parse_json()
-          let message = $input.message.or("")
-          let platform = $input.platform.or("telegram")
-
-          meta message = $message
-          meta platform = $platform
-
-          root.messages = [
-            {"role": "system", "content": "You are a helpful assistant responding via " + $platform + ". Keep responses concise and appropriate for chat."},
-            {"role": "user", "content": $message}
-          ]
-
-      - openai_chat_completion:
-          api_key: "${OPENAI_API_KEY}"
-          model: gpt-4o-mini
-          tools: []
-
-      - mapping: |
-          let response = this.choices.0.message.content
-          let platform = meta("platform")
-
-          root.response = $response
-          root.platform = $platform
-          root.sent_to = if $platform == "all" { ["telegram", "discord", "slack"] } else { [$platform] }
-          root.metadata = {"skill": "multi-platform-chat", "mode": "cli", "trace_id": meta("trace_id").or(uuid_v4())}
-
-      - log:
-          level: INFO
-          message: "[multi-platform-chat] Sent to ${! this.platform }"
+          root = {"status": "unsupported", "publication": "pulled", "skill": "multi-platform-chat", "reason": "Claims message delivery without sending responses to the named messaging platforms."}
 
   output:
     stdout: {}

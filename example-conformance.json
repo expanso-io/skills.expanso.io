@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T10:05:36Z",
+  "generated": "2026-10-06T10:23:13Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -27,8 +27,8 @@
   "counts": {
     "failing": 0,
     "fixed": 6,
-    "pass": 356,
-    "pulled": 4,
+    "pass": 338,
+    "pulled": 22,
     "skipped": 28,
     "total": 394
   },
@@ -148,6 +148,46 @@
   ],
   "pulled_examples": [
     {
+      "pipeline": "skills/security/jwt-verify/pipeline-cli.yaml",
+      "reason": "Reports tokens as valid without verifying their cryptographic signatures."
+    },
+    {
+      "pipeline": "skills/security/jwt-verify/pipeline-mcp.yaml",
+      "reason": "Reports tokens as valid without verifying their cryptographic signatures."
+    },
+    {
+      "pipeline": "skills/security/policy-check/pipeline-cli.yaml",
+      "reason": "Reports policy approval and checked rules without evaluating the configured rules."
+    },
+    {
+      "pipeline": "skills/security/policy-check/pipeline-mcp.yaml",
+      "reason": "Reports policy approval and checked rules without evaluating the configured rules."
+    },
+    {
+      "pipeline": "skills/utilities/determinism-test/pipeline-cli.yaml",
+      "reason": "Copies one input hash instead of executing the requested pipeline repeatedly and measuring its output stability."
+    },
+    {
+      "pipeline": "skills/utilities/determinism-test/pipeline-mcp.yaml",
+      "reason": "Copies one input hash instead of executing the requested pipeline repeatedly and measuring its output stability."
+    },
+    {
+      "pipeline": "skills/utilities/openapi-validate/pipeline-cli.yaml",
+      "reason": "Reports request or response validity from a version field without validating against the OpenAPI contract."
+    },
+    {
+      "pipeline": "skills/utilities/openapi-validate/pipeline-mcp.yaml",
+      "reason": "Reports request or response validity from a version field without validating against the OpenAPI contract."
+    },
+    {
+      "pipeline": "skills/utilities/retry-wrapper/pipeline-cli.yaml",
+      "reason": "Reports command success and retry attempts without execution; running caller-supplied commands would introduce a security risk."
+    },
+    {
+      "pipeline": "skills/utilities/retry-wrapper/pipeline-mcp.yaml",
+      "reason": "Reports command success and retry attempts without execution; running caller-supplied commands would introduce a security risk."
+    },
+    {
       "pipeline": "skills/workflows/auto-coder/pipeline-cli.yaml",
       "reason": "Repository checkout, code execution, tests, and pull-request creation are not implemented."
     },
@@ -156,12 +196,44 @@
       "reason": "Repository checkout, code execution, tests, and pull-request creation are not implemented."
     },
     {
+      "pipeline": "skills/workflows/health-integrate/pipeline-cli.yaml",
+      "reason": "Fabricates wearable health observations and calendar recommendations without reading supplied data or integrating providers."
+    },
+    {
+      "pipeline": "skills/workflows/health-integrate/pipeline-mcp.yaml",
+      "reason": "Fabricates wearable health observations and calendar recommendations without reading supplied data or integrating providers."
+    },
+    {
+      "pipeline": "skills/workflows/marketing-auto/pipeline-cli.yaml",
+      "reason": "Fabricates campaign content, scheduling, and analytics without generating content or invoking marketing services."
+    },
+    {
+      "pipeline": "skills/workflows/marketing-auto/pipeline-mcp.yaml",
+      "reason": "Fabricates campaign content, scheduling, and analytics without generating content or invoking marketing services."
+    },
+    {
+      "pipeline": "skills/workflows/multi-platform-chat/pipeline-cli.yaml",
+      "reason": "Claims message delivery without sending responses to the named messaging platforms."
+    },
+    {
+      "pipeline": "skills/workflows/multi-platform-chat/pipeline-mcp.yaml",
+      "reason": "Claims message delivery without sending responses to the named messaging platforms."
+    },
+    {
       "pipeline": "skills/workflows/site-migrate/pipeline-cli.yaml",
       "reason": "Named source connectors, asset migration, site build, and deployment are not implemented."
     },
     {
       "pipeline": "skills/workflows/site-migrate/pipeline-mcp.yaml",
       "reason": "Named source connectors, asset migration, site build, and deployment are not implemented."
+    },
+    {
+      "pipeline": "skills/workflows/terminal-services/pipeline-cli.yaml",
+      "reason": "Reports completed service actions without contacting any service."
+    },
+    {
+      "pipeline": "skills/workflows/terminal-services/pipeline-mcp.yaml",
+      "reason": "Reports completed service actions without contacting any service."
     }
   ],
   "examples": [
@@ -2675,7 +2747,7 @@
     },
     {
       "pipeline": "skills/recipes/content-splitting/pipeline.yaml",
-      "sha256": "6ca7f4b0063db04a034c6c03418da7aca258c8fdb3429b7e6c50d749c5ca2e48",
+      "sha256": "99a9eaebab66b017d8ae363a081feaf3fde4763bec0d6ec5063cd4bb7f947ab0",
       "category": "recipes",
       "skill": "content-splitting",
       "variant": "recipe",
@@ -2684,7 +2756,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires a Kafka destination and persistent file outputs to verify all split messages.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 2
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -2795,14 +2874,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires a TLS IBM DB2 database and Google BigQuery write identity and dataset to verify row transfer.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 6
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -2867,7 +2939,7 @@
     },
     {
       "pipeline": "skills/recipes/deduplicate-events/pipeline.yaml",
-      "sha256": "aef254187e47e6a7b88e7058c5f36496dfd0ab88267b1c452b653b499c49cedb",
+      "sha256": "c9f0266dca7a8563be522191cff4a13ab81184ab4b89cf326e954a2f193d5242",
       "category": "recipes",
       "skill": "deduplicate-events",
       "variant": "recipe",
@@ -2876,7 +2948,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires Kafka source/destination topics and persistent output files to observe deduplicated delivery.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 2
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -3351,7 +3430,7 @@
     },
     {
       "pipeline": "skills/recipes/parse-logs/pipeline.yaml",
-      "sha256": "31097f1fde603c127ac9f8c9a5bb0f5ffcda7dbc58ac0c525b27a18025f19a3f",
+      "sha256": "da2510f98d88fdef7b917581973d7a3ed16b5a5cd73bd4ce9abf12e01a7dbba0",
       "category": "recipes",
       "skill": "parse-logs",
       "variant": "recipe",
@@ -3360,7 +3439,14 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires an authenticated analytics HTTP receiver and persistent dead-letter files; processor regressions do not verify those destinations.",
-          "method": "external adapter integration unavailable"
+          "method": "external adapter integration unavailable",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 2
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -4080,25 +4166,29 @@
     },
     {
       "pipeline": "skills/security/jwt-verify/pipeline-cli.yaml",
-      "sha256": "795fb286b374c042e71205ba7ea925df203c3ad219c349cbd6195b1f288beaf7",
+      "sha256": "8318e6e58c16f9b491277dee8244a746a63501f272c45b07025bcb9bf3245da2",
       "category": "security",
       "skill": "jwt-verify",
       "variant": "cli",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-cli.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Reports tokens as valid without verifying their cryptographic signatures.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -4115,29 +4205,33 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/security/jwt-verify/pipeline-mcp.yaml",
-      "sha256": "60ad325b5fe6745435abd67be0f3acfb4a605fc08d8a279bb634f81c51710704",
+      "sha256": "825b3718ebb1bf1b5cced665046da6990488194ef78d2387f80cfeb9df3a68a4",
       "category": "security",
       "skill": "jwt-verify",
       "variant": "mcp",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-mcp.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Reports tokens as valid without verifying their cryptographic signatures.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -4154,7 +4248,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/security/log-sanitize/pipeline-cli.yaml",
@@ -4470,25 +4564,29 @@
     },
     {
       "pipeline": "skills/security/policy-check/pipeline-cli.yaml",
-      "sha256": "81fb40b903a8506ded424997d3888478aad977c397973262057e74c56cef17ea",
+      "sha256": "eef01b02d627732f3934f135c87378054bd93e1f026c90d51985397ab9dbcb2e",
       "category": "security",
       "skill": "policy-check",
       "variant": "cli",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-cli.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Reports policy approval and checked rules without evaluating the configured rules.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -4505,29 +4603,33 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/security/policy-check/pipeline-mcp.yaml",
-      "sha256": "5b4259db82ce4e4e7efd8f69a0a743c2be70686e517bece8f10a91603b388c40",
+      "sha256": "e6ef437c2e33d5aa4819042b2b54949b2a9e2be8486730f53f05752cc625cf7e",
       "category": "security",
       "skill": "policy-check",
       "variant": "mcp",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-mcp.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Reports policy approval and checked rules without evaluating the configured rules.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -4544,7 +4646,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/security/sbom-generate/pipeline-cli.yaml",
@@ -12931,25 +13033,29 @@
     },
     {
       "pipeline": "skills/utilities/determinism-test/pipeline-cli.yaml",
-      "sha256": "833e8b33147cd70ef29bb24936b6caa7bd33f754658eb5efcfde35381d7ac852",
+      "sha256": "b68ef6a6db9ceb78ec5be87bab80d8847dfc42a90e96c9fa31c496033cd48098",
       "category": "utilities",
       "skill": "determinism-test",
       "variant": "cli",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-cli.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Copies one input hash instead of executing the requested pipeline repeatedly and measuring its output stability.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -12966,29 +13072,33 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/utilities/determinism-test/pipeline-mcp.yaml",
-      "sha256": "efac3a8fdcd94f87ea05dca5b3c1d78b59c630ffc403e442578f1634533c7968",
+      "sha256": "77d27d5bb9fbe937f521bfbd37e8cd5ff9d5b02094dc79bd3dde2d36831a9cf3",
       "category": "utilities",
       "skill": "determinism-test",
       "variant": "mcp",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-mcp.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Copies one input hash instead of executing the requested pipeline repeatedly and measuring its output stability.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -13005,7 +13115,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/utilities/email-validate/pipeline-cli.yaml",
@@ -13633,25 +13743,29 @@
     },
     {
       "pipeline": "skills/utilities/openapi-validate/pipeline-cli.yaml",
-      "sha256": "3cbf030182af24b1554d4b5f7a9e7189288d3cd14140e75ac106e871a3b3fdbf",
+      "sha256": "d661652ab445accf6a97e01b95490909f515af38892680ca19ace7be15e14318",
       "category": "utilities",
       "skill": "openapi-validate",
       "variant": "cli",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-cli.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Reports request or response validity from a version field without validating against the OpenAPI contract.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -13668,29 +13782,33 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/utilities/openapi-validate/pipeline-mcp.yaml",
-      "sha256": "81e910d8fdf3461b35f13d9f34d43f3b3b5846b07cc0fd512a0572c9714b4961",
+      "sha256": "67342c90c74d77f3ce00d132e8198cf84d03f279521767f209a42a4a46371ce5",
       "category": "utilities",
       "skill": "openapi-validate",
       "variant": "mcp",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-mcp.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Reports request or response validity from a version field without validating against the OpenAPI contract.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -13707,7 +13825,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/utilities/random-number/pipeline-cli.yaml",
@@ -13789,25 +13907,29 @@
     },
     {
       "pipeline": "skills/utilities/retry-wrapper/pipeline-cli.yaml",
-      "sha256": "e6ab2856dd4780b1d5419333a1bb8f80a50330b69c568fea1ab755a3e3a281e9",
+      "sha256": "3d8adbe243e4fc31ad9430254b4c3f6972cf5917d700b0df633fbbdfbfeeba2f",
       "category": "utilities",
       "skill": "retry-wrapper",
       "variant": "cli",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-cli.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Reports command success and retry attempts without execution; running caller-supplied commands would introduce a security risk.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -13824,29 +13946,33 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/utilities/retry-wrapper/pipeline-mcp.yaml",
-      "sha256": "c762c4b3ef6b6705f3c317167a8aee985974640f7d11253bf82b2e48ba79804e",
+      "sha256": "6e8c313c2ef6a55d6e18919fed78109f249ac6a4ab45dead09c1fb0d90d472fc",
       "category": "utilities",
       "skill": "retry-wrapper",
       "variant": "mcp",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-mcp.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Reports command success and retry attempts without execution; running caller-supplied commands would introduce a security risk.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -13863,7 +13989,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/utilities/uuid-generate/pipeline-cli.yaml",
@@ -14106,14 +14232,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-cli.json",
           "tests": 1,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 2
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -14152,14 +14271,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-mcp.json",
           "tests": 1,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 2
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -14198,14 +14310,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-cli.json",
           "tests": 1,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 4
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -14244,14 +14349,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-mcp.json",
           "tests": 1,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 4
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -14368,14 +14466,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-cli.json",
           "tests": 3,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -14414,14 +14505,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-mcp.json",
           "tests": 3,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 5
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -14449,25 +14533,29 @@
     },
     {
       "pipeline": "skills/workflows/health-integrate/pipeline-cli.yaml",
-      "sha256": "cce3393810bafbfc224dc2b6363a2c11665b093e1a6fe8831251dc315031b617",
+      "sha256": "8c3ba0085e84623e7cd82f623962c5289f06840cb67018f3fd52b4c4c1ce0b90",
       "category": "workflows",
       "skill": "health-integrate",
       "variant": "cli",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-cli.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Fabricates wearable health observations and calendar recommendations without reading supplied data or integrating providers.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -14484,29 +14572,33 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/workflows/health-integrate/pipeline-mcp.yaml",
-      "sha256": "d01f6a3314e33db4645c7c9d84b92970fc69c569d6c233b079538f9c6817a11e",
+      "sha256": "7c1f4831b8e7b164666caa51474cf157ced0fa7f7a7732d9a81c50b0dac88997",
       "category": "workflows",
       "skill": "health-integrate",
       "variant": "mcp",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-mcp.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Fabricates wearable health observations and calendar recommendations without reading supplied data or integrating providers.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -14523,7 +14615,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/workflows/jira-automate/pipeline-cli.yaml",
@@ -14538,14 +14630,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-cli.json",
           "tests": 1,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 4
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -14584,14 +14669,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-mcp.json",
           "tests": 1,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 4
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -14697,25 +14775,29 @@
     },
     {
       "pipeline": "skills/workflows/marketing-auto/pipeline-cli.yaml",
-      "sha256": "c6f625d3cce3be45d1f0fb6de4b3750488aa79a45a1d962644f26dba04c66232",
+      "sha256": "dbc2c9cfbcafa98286b2294dc79efb3c4f755ae1e7f9a98f0bd3613c374bd97c",
       "category": "workflows",
       "skill": "marketing-auto",
       "variant": "cli",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-cli.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Fabricates campaign content, scheduling, and analytics without generating content or invoking marketing services.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -14732,29 +14814,33 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/workflows/marketing-auto/pipeline-mcp.yaml",
-      "sha256": "193387d1d7c54294c4a1757df846fb9045c13ba4f9ea0fe4438f3d4b905a9e0d",
+      "sha256": "381d89179916f146ba06940b849ad5b749bc2d3be302e655b6a91ecbdae87dfd",
       "category": "workflows",
       "skill": "marketing-auto",
       "variant": "mcp",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-mcp.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Fabricates campaign content, scheduling, and analytics without generating content or invoking marketing services.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -14771,7 +14857,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/workflows/meal-planner/pipeline-cli.yaml",
@@ -14931,25 +15017,29 @@
     },
     {
       "pipeline": "skills/workflows/multi-platform-chat/pipeline-cli.yaml",
-      "sha256": "e3610f102c3432f6ee9942a5bfdac68d404643d9405e2cc5243451745fcd3b15",
+      "sha256": "6bec497c5a6b5c37c1132cf771f352fe5a30f924e2fef8776171d82d5645aace",
       "category": "workflows",
       "skill": "multi-platform-chat",
       "variant": "cli",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-cli.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Claims message delivery without sending responses to the named messaging platforms.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -14966,29 +15056,33 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/workflows/multi-platform-chat/pipeline-mcp.yaml",
-      "sha256": "c6e14dc17c2c4d81b068533ca48e62909f38b450ba86eae28e4a7cf663319ee7",
+      "sha256": "6f8d50cf4ec6cd108fbb3d36220063c92be39a84ce23ccbdc8ff5844ed395e0a",
       "category": "workflows",
       "skill": "multi-platform-chat",
       "variant": "mcp",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-mcp.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Claims message delivery without sending responses to the named messaging platforms.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -15005,7 +15099,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
@@ -15170,14 +15264,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-cli.json",
           "tests": 1,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 4
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -15216,14 +15303,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-mcp.json",
           "tests": 1,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 4
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -15329,25 +15409,29 @@
     },
     {
       "pipeline": "skills/workflows/terminal-services/pipeline-cli.yaml",
-      "sha256": "5023ab1958c2ce77d8927f0444a8833b320c03dbf96ccbb4892ba1301521c2c3",
+      "sha256": "8f7a620a742c3eda74663db5bb1561469d052838e3a5144d8eb3a2cc65cb7178",
       "category": "workflows",
       "skill": "terminal-services",
       "variant": "cli",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-cli.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Reports completed service actions without contacting any service.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -15364,29 +15448,33 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/workflows/terminal-services/pipeline-mcp.yaml",
-      "sha256": "04d5fd637e3356a4b8cd005e4e412e8a6e696b88a065402b8ed3e53b2d1afab1",
+      "sha256": "3dfc5fc11f30444c9fa9b8924280df8d41eac5dd22574fc3b48f9b5ac40b166b",
       "category": "workflows",
       "skill": "terminal-services",
       "variant": "mcp",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA harness execution",
-          "report": ".conformance/full-mcp.json",
-          "tests": 1,
-          "reason": null
+          "status": "pulled",
+          "reason": "Reports completed service actions without contacting any service.",
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 1
+          }
         },
         "platform_realism": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "scripts/check-example-conformance.py"
         },
         "structure": {
-          "status": "pass",
+          "status": "not_applicable",
           "evidence": "tests/site/conformance.spec.js shared page-template sweep"
         },
         "site_usability": {
@@ -15403,7 +15491,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "pass"
+      "status": "pulled"
     },
     {
       "pipeline": "skills/workflows/todoist-automate/pipeline-cli.yaml",
@@ -15418,14 +15506,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-cli.json",
           "tests": 1,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 6
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
@@ -15464,14 +15545,7 @@
           "method": "expanso-edge current-SHA harness execution",
           "report": ".conformance/full-mcp.json",
           "tests": 1,
-          "reason": null,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 6
-          }
+          "reason": null
         },
         "platform_realism": {
           "status": "pass",
