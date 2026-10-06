@@ -2,6 +2,10 @@ name: CI
 
 on:
   workflow_call:
+    inputs:
+      upload_pages_artifact:
+        type: boolean
+        default: false
   push:
     branches: [main]
   pull_request:
@@ -116,13 +120,14 @@ jobs:
           fi
 
       - name: Check the built site for retired analytics tags
-        # Builds the per-skill pages the way pages.yml does, into a scratch
-        # copy, and fails if GTM or the old ph.expanso.io proxy comes back.
-        run: |
-          SITE="$RUNNER_TEMP/site"
-          cp -r docs "$SITE"
-          uv run -s scripts/build-seo.py --catalog catalog.json --output "$SITE"
-          uv run -s scripts/check-site-tags.py "$SITE"
+        run: uv run -s scripts/check-site-tags.py docs
+
+      - name: Upload checked Pages site
+        if: inputs.upload_pages_artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: github-pages
+          path: docs/
 
       - name: Upload execution evidence
         if: always()

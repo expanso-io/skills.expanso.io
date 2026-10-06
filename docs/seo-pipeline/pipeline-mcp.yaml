@@ -51,15 +51,15 @@ config:
                   "assigned": attr.0.contains("=")
                 })
               }
-              let html = this.html.re_find_all("(?is)<!--.*?(?:-->|$)|<script\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>.*?(?:</script\\s*>|$)|<style\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>.*?(?:</style\\s*>|$)|<textarea\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>.*?(?:</textarea\\s*>|$)|<xmp\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>.*?(?:</xmp\\s*>|$)|<iframe\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>.*?(?:</iframe\\s*>|$)|<noembed\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>.*?(?:</noembed\\s*>|$)|<noframes\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>.*?(?:</noframes\\s*>|$)|<plaintext\\b[^>]*>.*|<(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>|[^<]+|<").filter(token -> !token.re_match("(?is)^(?:<!--|<(?:script|style|textarea|xmp|iframe|noembed|noframes|plaintext)\\b)")).join("")
-              let title_matches = $html.re_find_all_submatch("(?is)<title[^>]*>\\s*([^<]+?)\\s*</title>")
-              let meta_tags = $html.re_find_all("(?is)<meta\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>")
+              let html = this.html.re_find_all("(?is)<!--.*?(?:-->|$)|<script(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>.*?(?:</script\\s*>|$)|<style(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>.*?(?:</style\\s*>|$)|<textarea(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>.*?(?:</textarea\\s*>|$)|<xmp(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>.*?(?:</xmp\\s*>|$)|<iframe(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>.*?(?:</iframe\\s*>|$)|<noembed(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>.*?(?:</noembed\\s*>|$)|<noframes(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>.*?(?:</noframes\\s*>|$)|<plaintext(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>.*|<(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>|[^<]+|<").filter(token -> !token.re_match("(?is)^(?:<!--|<(?:script|style|textarea|xmp|iframe|noembed|noframes|plaintext)(?:\\s|/|>))")).join("")
+              let title_matches = $html.re_find_all_submatch("(?is)<title(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>\\s*([^<]+?)\\s*</title\\s*>")
+              let meta_tags = $html.re_find_all("(?is)<meta(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>")
               let meta_attributes = $meta_tags.map_each(tag -> tag.apply("html_attributes"))
               let description_tags = $meta_attributes.filter(attrs -> attrs.filter(attr -> attr.name == "name" && attr.value.lowercase() == "description").length() > 0)
               let descriptions = $description_tags.map_each(attrs -> attrs.filter(attr -> attr.name == "content").index(0).value.catch("")).filter(value -> value != "")
-              let h1_count = $html.re_find_all("(?is)<h1(?:\\s|>)").length()
-              let link_count = $html.re_find_all("(?is)<a(?:\\s|>)").length()
-              let images = $html.re_find_all("(?is)<img\\b(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>")
+              let h1_count = $html.re_find_all("(?is)<h1(?:\\s|/?>)").length()
+              let link_count = $html.re_find_all("(?is)<a(?:\\s|/?>)").length()
+              let images = $html.re_find_all("(?is)<img(?:[\\s/](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*)?>")
               let images_missing_alt = $images.filter(tag -> tag.apply("html_attributes").filter(attr -> attr.name == "alt" && attr.assigned).length() == 0).length()
               let has_viewport = $meta_attributes.filter(attrs -> attrs.filter(attr -> attr.name == "name" && attr.value.lowercase() == "viewport").length() > 0).length() > 0
               let title = if $title_matches.length() > 0 { $title_matches.0.1.trim() } else { "" }

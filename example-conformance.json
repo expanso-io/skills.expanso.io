@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T23:06:05Z",
+  "generated": "2026-10-06T23:47:11Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -3692,14 +3692,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires an EU PostgreSQL database, BigQuery append credentials, an EU archive bucket, and approved transfer policy; processor regressions do not prove transfers.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -3998,14 +3991,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires AWS S3 credentials and a destination bucket to verify generated enriched object uploads.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 2
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -4079,14 +4065,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires Kafka, AWS S3 credentials, authenticated HTTP receivers, and persistent files to verify every branch.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -4123,14 +4102,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires Kafka input, AWS S3 credentials and bucket, and persistent file outputs to verify fan-out delivery.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -4241,14 +4213,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires Kafka source with TLS/SASL credentials and AWS S3 credentials and bucket to observe archived objects.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -4285,14 +4250,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires source SQL databases, backup destination credentials, and a scheduled execution environment to verify durable backups.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 4
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -4403,14 +4361,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires Kafka priority topics and TLS/SASL credentials to verify priority-specific delivery.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 2
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -4447,14 +4398,7 @@
         "runs": {
           "status": "skipped",
           "reason": "Requires ingress TLS certificate/key, Elasticsearch credentials, AWS S3 credentials, and authenticated alert receiver; startup regressions do not verify external sinks.",
-          "method": "external adapter integration unavailable",
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "method": "external adapter integration unavailable"
         },
         "platform_realism": {
           "status": "pass",
@@ -5434,14 +5378,7 @@
           "report": ".conformance/full-cli.json",
           "tests": 3,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -5481,14 +5418,7 @@
           "report": ".conformance/full-mcp.json",
           "tests": 3,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false,
-          "processor_regression": {
-            "status": "pass",
-            "method": "expanso-edge focused processor regression",
-            "scope": "processor regression with loopback input/output and provider fixtures",
-            "report": ".conformance/focused-regressions.json",
-            "tests": 1
-          }
+          "published_adapters_intact": false
         },
         "platform_realism": {
           "status": "pass",
@@ -16201,7 +16131,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
-      "sha256": "c64d578e1cb6316b9cc78fa5e810dc28bfe80d1ef037a4594eb8434a5e3f3ca2",
+      "sha256": "c540b4ba2a89e320e41821db1a62882ffe7f69cb682a5cd9f1a699bf16b5314b",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "cli",
@@ -16219,7 +16149,7 @@
             "method": "expanso-edge focused processor regression",
             "scope": "processor regression with loopback input/output and provider fixtures",
             "report": ".conformance/focused-regressions.json",
-            "tests": 7
+            "tests": 11
           }
         },
         "platform_realism": {
@@ -16248,7 +16178,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-mcp.yaml",
-      "sha256": "6717af7f55612d975491878ca2786009c248aec6a9e96c573d2efdeee8ab95f6",
+      "sha256": "4a9b8d8e055f6232c62ddf597e9239d763425147b35c5911ff5e5e2c63ce680b",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "mcp",
@@ -16266,7 +16196,7 @@
             "method": "expanso-edge focused processor regression",
             "scope": "processor regression with loopback input/output and provider fixtures",
             "report": ".conformance/focused-regressions.json",
-            "tests": 7
+            "tests": 11
           }
         },
         "platform_realism": {
@@ -16367,7 +16297,7 @@
     },
     {
       "pipeline": "skills/workflows/stripe-reports/pipeline-cli.yaml",
-      "sha256": "0de24501d97d883da001ddef7b6428933d7f4dc507adace5ee3234804351b801",
+      "sha256": "dcef7e6e81d88d769331a6d26095d3febea2555b81ce0750875496f8a906e13a",
       "category": "workflows",
       "skill": "stripe-reports",
       "variant": "cli",
@@ -16379,7 +16309,14 @@
           "report": ".conformance/full-cli.json",
           "tests": 1,
           "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 9
+          }
         },
         "platform_realism": {
           "status": "pass",
@@ -16407,7 +16344,7 @@
     },
     {
       "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
-      "sha256": "68222c5c747afc54881569ee194c8fc6c503f0aa3adc54c83c53481f73e55df5",
+      "sha256": "a24ec26ba3693cbf78119be328fb84029b8a4b76053bdfff4ff5468b0a7996fe",
       "category": "workflows",
       "skill": "stripe-reports",
       "variant": "mcp",
@@ -16419,7 +16356,14 @@
           "report": ".conformance/full-mcp.json",
           "tests": 1,
           "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
-          "published_adapters_intact": false
+          "published_adapters_intact": false,
+          "processor_regression": {
+            "status": "pass",
+            "method": "expanso-edge focused processor regression",
+            "scope": "processor regression with loopback input/output and provider fixtures",
+            "report": ".conformance/focused-regressions.json",
+            "tests": 9
+          }
         },
         "platform_realism": {
           "status": "pass",

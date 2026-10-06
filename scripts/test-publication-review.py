@@ -52,9 +52,26 @@ def workflow_contract():
                 "--no-cache", "--max-reruns", "1", "--report", f".conformance/full-{variant}.json"] in commands
     assert ["uv", "run", "-s", "scripts/test-recipes.py", "--report", ".conformance/recipe-execution.json"] in commands
     assert ["npm", "run", "test:site"] in commands
-    for job in [jobs["deploy"], ci["jobs"]["conformance"]]:
+    for job in [ci["jobs"]["conformance"]]:
         checkout = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/checkout@"))
         assert "ref" not in checkout.get("with", {})
+    assert jobs["conformance"]["with"]["upload_pages_artifact"] == "true"
+    steps = ci["jobs"]["conformance"]["steps"]
+    upload_index, upload = next((index, step) for index, step in enumerate(steps)
+                                if step.get("uses", "").startswith("actions/upload-pages-artifact@"))
+    browser_index = next(index for index, step in enumerate(steps)
+                         if shlex.split(step.get("run", "")) == ["npm", "run", "test:site"])
+    assert upload_index > browser_index
+    assert upload["if"] == "inputs.upload_pages_artifact"
+    assert upload["with"]["path"] == "docs/"
+    assert commands.count(["uv", "run", "-s", "scripts/stage-pages.py"]) == 1
+    deployment_steps = jobs["deploy"]["steps"]
+    assert all("run" not in step for step in deployment_steps)
+    deployment = next(step for step in deployment_steps
+                      if step.get("uses", "").startswith("actions/deploy-pages@"))
+    assert deployment["with"]["artifact_name"] == upload["with"]["name"]
+    assert all(not step.get("uses", "").startswith(("actions/checkout@", "actions/upload-pages-artifact@"))
+               for step in deployment_steps)
     print("PASS Pages requires reusable execution and browser conformance at caller SHA", flush=True)
 
 

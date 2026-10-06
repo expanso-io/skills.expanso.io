@@ -21,6 +21,8 @@ concurrency:
 jobs:
   conformance:
     uses: ./.github/workflows/ci.yml
+    with:
+      upload_pages_artifact: true
 
   deploy:
     needs: conformance
@@ -30,34 +32,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v6
-
-      - name: Build site with skills
-        run: uv run -s scripts/stage-pages.py
-
-      - name: Check published artifacts
-        run: uv run -s scripts/test-pages-publication.py
-
-      - name: Check for retired analytics tags
-        run: python scripts/check-site-tags.py docs
-
       - name: Setup Pages
         uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages

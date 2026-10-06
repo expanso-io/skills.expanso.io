@@ -34,6 +34,15 @@ class QuietHandler(serving.SiteHandler):
         pass
 
 
+def check_explorer_values(name, explorer):
+    assert explorer, (name, "no explorer variants")
+    for variant, recording in explorer.items():
+        assert recording["stages"], (name, variant, "no stages")
+        for index, stage in enumerate(recording["stages"]):
+            missing = {"input", "output"} - stage.keys()
+            assert not missing, (name, variant, index, "missing stage values", missing)
+
+
 def check_publication(output):
     serving.DOCS = output
     server = ThreadingHTTPServer(("127.0.0.1", 0), QuietHandler)
@@ -51,6 +60,9 @@ def check_publication(output):
             expected.add(Path("explorer.json"))
             actual = {p.relative_to(output / name) for p in (output / name).rglob("*") if p.is_file()}
             assert actual == expected, (name, actual ^ expected)
+            with urlopen(f"{endpoint}/{name}/explorer.json") as response:
+                explorer = json.load(response)
+            check_explorer_values(name, explorer)
             for pipeline in (pipeline for source in directories for pipeline in source.glob("pipeline*.yaml")):
                 with urlopen(f"{endpoint}/{name}/{pipeline.name}") as response:
                     assert response.read() == pipeline.read_bytes(), pipeline

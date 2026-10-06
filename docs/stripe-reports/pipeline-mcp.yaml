@@ -4,12 +4,9 @@ name: stripe-reports-mcp
 type: pipeline
 
 config:
-  http:
-    enabled: true
-    address: "0.0.0.0:${PORT:-8080}"
-
   input:
     http_server:
+      address: "0.0.0.0:${PORT:-8080}"
       path: /report
       allowed_verbs: [POST]
       timeout: 60s
@@ -39,15 +36,16 @@ config:
               let period = this.period.or("today").string()
               meta start_time = now()
               let end_unix = now().ts_unix()
+              let day_start = ($end_unix / 86400).floor().int64() * 86400
               let start_unix = match $period {
-                "today" => $end_unix - 86400,
-                "yesterday" => $end_unix - 172800,
+                "today" => $day_start,
+                "yesterday" => $day_start - 86400,
                 "week" => $end_unix - 604800,
                 "month" => $end_unix - 2592000,
                 "quarter" => $end_unix - 7776000,
                 _ => $end_unix - 86400
               }
-              let range_end = if $period == "yesterday" { $end_unix - 86400 } else { $end_unix }
+              let range_end = if $period == "yesterday" { $day_start - 1 } else { $end_unix }
 
               root = this
               root.period = $period
@@ -102,7 +100,7 @@ config:
                 "currency": entry.key.uppercase(),
                 "minor_unit_exponent": if ["bhd", "iqd", "jod", "kwd", "lyd", "omr", "tnd"].contains(entry.key) {
                   3
-                } else if ["bif", "clp", "djf", "gnf", "isk", "jpy", "kmf", "krw", "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf"].contains(entry.key) {
+                } else if ["bif", "clp", "djf", "gnf", "jpy", "kmf", "krw", "mga", "pyg", "rwf", "vnd", "vuv", "xaf", "xof", "xpf"].contains(entry.key) {
                   0
                 } else {
                   2
