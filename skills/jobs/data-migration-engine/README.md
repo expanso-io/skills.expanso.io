@@ -20,6 +20,8 @@ Not proved:
 - Change data capture. This is a batch copy; a CDC job (postgres_cdc) did not initialize in testing and is unproven.
 - `restart_policy: never` on Expanso Cloud with this spec; it was added after the Cloud run.
 - Negative balances on Expanso Cloud; the signed formula ran on a local-mode node only.
+- The current `sslmode=verify-full` connections, which were added after the
+  dated runs.
 
 ## Components
 
@@ -38,6 +40,13 @@ Not proved:
 Each `pipeline*.yaml` header lists the values to edit for your environment.
 
 ## Set up the dependencies
+
+Both DSNs now require `sslmode=verify-full`. Configure PostgreSQL TLS with
+certificates matching the DSN hostnames, and make the issuing CA trusted by the
+PostgreSQL driver on the executing node (for example, with `sslrootcert` in each
+DSN). Replace the source and destination DSNs with those TLS endpoints; local
+socket connections in the seed commands below do not verify the pipeline's TLS
+connections. The dated runs did not prove this TLS configuration.
 
 ```bash
 # PostgreSQL (tested with 14.23). Seed the sample tables,

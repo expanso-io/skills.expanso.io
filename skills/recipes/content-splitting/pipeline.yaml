@@ -74,7 +74,7 @@ config:
   output:
     switch:
       cases:
-      # Valid items → processing queue
+        # Valid items → processing queue
         - check: 'meta("is_valid") == "true"'
           output:
             kafka:
@@ -91,7 +91,7 @@ config:
                 count: 100
                 period: 5s
 
-      # Invalid items → DLQ
+        # Invalid items → DLQ
         - output:
             file:
               path: "/var/expanso/dlq/${!timestamp_unix_date('2006-01-02')}/invalid-items.jsonl"

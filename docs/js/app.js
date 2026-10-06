@@ -329,6 +329,7 @@
         var jobFiles = skill.job_specs || [];
         var explorerJson = await fetchSkillFile(skillName, 'explorer.json', skill.category);
         var explorers = explorerJson ? JSON.parse(explorerJson) : {};
+
         var extraFiles = Object.keys(explorers).filter(function(file) {
             return ['pipeline-cli.yaml', 'pipeline-mcp.yaml', 'pipeline-cloud.yaml'].indexOf(file) === -1;
         });

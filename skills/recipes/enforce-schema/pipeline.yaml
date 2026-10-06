@@ -88,7 +88,7 @@ config:
   output:
     switch:
       cases:
-      # Valid data → analytics
+        # Valid data → analytics
         - check: 'meta("validation_status") == "passed"'
           output:
             http_client:
@@ -101,7 +101,7 @@ config:
                 count: 100
                 period: 5s
 
-      # Invalid data → DLQ
+        # Invalid data → DLQ
         - output:
             file:
               path: "/var/log/expanso/dlq/${!timestamp_unix_date('2006-01-02')}/failures.jsonl"

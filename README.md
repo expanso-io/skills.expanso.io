@@ -29,11 +29,9 @@ The dated, sanitized run record with the Cloud job and execution ids is
 "Cloud" means submitted to an Expanso Cloud workspace and executed by one
 operator-registered node chosen by label, with the job's dependencies on
 that host; it is not a hosted runner. "Local" means a local-mode node only.
-Each job spec has the same structure as the job that ran; only the values
-listed in its header comment differ, and long mappings are rewrapped. Four
-changes are newer than the runs and were not re-run on Cloud: the RSS
-fetch-error guard, the RAG URL-based chunk id and the migration's signed
-balance formula (each validated on a local-mode node only), and `restart_policy: never` on the bounded jobs.
+The dated record describes the versions that ran. For changes made after those
+runs and their proof limits, see each job's README; the historical record does
+not prove the current pipeline bytes.
 Not proven, and not published as working jobs:
 live X (Twitter) ingestion, change data capture, delivery into Slack or
 email, and the native `qdrant` output (the RAG job writes through Qdrant's
@@ -426,10 +424,13 @@ dependencies or execution fixtures are unavailable, including the cloud-first
 variant. The dated, per-pipeline result is published as
 [`example-conformance.json`](https://skills.expanso.io/example-conformance.json).
 
-The site explorer reads SHA-bound `pipeline*.explorer.json` records generated
-by `scripts/record-explorer.py`. These illustrative local processor samples
-disclose replaced adapters and provider fixtures; they are not Cloud or platform
-execution proof. Arrow keys move between stages while retaining scroll position.
+The CLI/MCP harness records per-stage input and output in its execution reports.
+`scripts/record-standalone-stages.py` records illustrative samples for standalone
+jobs and variants. `scripts/stage-pages.py` combines samples whose pipeline SHA
+matches the source bytes into each published skill's `explorer.json`, which the
+site reads. The samples disclose replaced adapters and provider fixtures; they
+are not Cloud or platform execution proof. Arrow keys move between stages while
+retaining scroll position.
 
 ### Test a New Expanso CLI/Edge Cut
 

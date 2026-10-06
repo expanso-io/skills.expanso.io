@@ -1,18 +1,8 @@
-# pipeline.yaml: the data-migration job, as run on 2026-09-18
-# on Expanso Cloud with expanso-edge v2.1.21. The top-level
-# restart_policy: never was added after that run and has not been
-# re-run on Cloud with this spec. The signed balance formula is
-# also newer: the Cloud and 994/6 runs used the earlier formula
-# (their fixture had only non-negative balances); the signed one
-# was validated on a local-mode node only. See
-# skills/jobs/PROOF-2026-09-18.md.
-# Body copied from expanso-io/docs.expanso.io commit f6eab2b,
-# docs/recipes/data-migration.mdx (draft); 2 wrapped flow list(s)
-# rewritten as block lists, restart_policy added, and the balance
-# formula made sign-aware. Otherwise its
-# structure matches the proven run's config; long mappings are only
-# rewrapped. Set
-# these values for your environment:
+# pipeline.yaml: the data-migration job, derived from
+# expanso-io/docs.expanso.io commit f6eab2b,
+# docs/recipes/data-migration.mdx (draft).
+# See README.md for dependency setup and the scope of the dated
+# execution proof. Set these values for your environment:
 #   .input.sql_select.dsn =
 #     postgres://USER:PASS@SRC_HOST:5432/SRC_DB?sslmode=verify-full
 #   .output.switch.cases[0].output.file.path =

@@ -37,12 +37,15 @@ under `skills.<name>` (recipes whose name collides with another skill appear as
 
 | `readiness` | What to tell the user |
 |---|---|
-| `validated-not-executed` | Every variant passes the strict validator. It has **never been run end to end**. Treat as a starting point and test it. |
+| `validated-not-executed` | Every variant passes the strict validator. See the [readiness contract](../../../README.md#catalog-api) for execution proof limits. |
 | `invalid-does-not-validate` | At least one variant is **rejected** by `expanso-edge validate`. Show the `variants.<v>.error` text. Do not deploy as is; fix it first with the `validate-expanso-pipeline` skill. |
 | `verified-executed` | Reserved. No skill currently holds it. Never claim it. |
 
 `job_spec_accepted: true` only means the file is a well-formed job spec. It is
 **not** evidence that the pipeline is valid. Do not present it as such.
+
+Check `https://skills.expanso.io/example-conformance.json` and any dated skill
+proof for execution evidence and its scope.
 
 ## Step 4: pick the right file
 

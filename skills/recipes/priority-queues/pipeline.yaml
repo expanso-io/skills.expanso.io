@@ -99,7 +99,7 @@ config:
   output:
     switch:
       cases:
-      # Critical → immediate processing
+        # Critical → immediate processing
         - check: 'meta("priority_queue") == "critical"'
           output:
             kafka:
@@ -116,7 +116,7 @@ config:
                 count: 1
                 period: 0s
 
-      # High priority → fast processing
+        # High priority → fast processing
         - check: 'meta("priority_queue") == "high"'
           output:
             kafka:
@@ -133,7 +133,7 @@ config:
                 count: 10
                 period: 2s
 
-      # Normal priority → standard processing
+        # Normal priority → standard processing
         - check: 'meta("priority_queue") == "normal"'
           output:
             kafka:
@@ -150,7 +150,7 @@ config:
                 count: 50
                 period: 10s
 
-      # Low priority → batch processing
+        # Low priority → batch processing
         - output:
             kafka:
               addresses: ["${KAFKA_BROKERS}"]

@@ -148,9 +148,8 @@ tests:
 ```
 
 Run the new skill through [the test harness](README.md#run-the-skill-test-harness).
-Record its illustrative per-stage input and output with
-`scripts/record-explorer.py`; the shared site explorer requires SHA-bound
-`pipeline*.explorer.json` files. See the harness guide for their proof scope.
+See that guide for recording per-stage samples, staging the site explorer,
+and the samples' proof scope.
 
 ### 6. Add Documentation
 

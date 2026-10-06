@@ -15,6 +15,8 @@ Proved:
 Not proved:
 
 - Any run through Cloud; real third-party receivers (receivers were local test sinks).
+- The current HMAC input verification and receiver bearer authentication,
+  which were added after the dated run.
 
 ## Components
 
@@ -32,13 +34,42 @@ Each `pipeline*.yaml` header lists the values to edit for your environment.
 
 ## Set up the dependencies
 
+On the executing node, set `WEBHOOK_SECRET` and `RECEIVER_A_HOST`,
+`RECEIVER_B_HOST`, `RECEIVER_C_HOST`, plus the corresponding
+`RECEIVER_A_TOKEN`, `RECEIVER_B_TOKEN`, and `RECEIVER_C_TOKEN`. The hosts are
+hostnames, optionally with ports; the pipeline adds `https://` and `/notify`.
+Receivers must have trusted TLS certificates and accept the configured bearer
+tokens. Each receiver receives every accepted event body and its own token.
+
+Send `X-Webhook-Signature` as the lowercase hexadecimal HMAC-SHA256 of the exact
+request body, using `WEBHOOK_SECRET`. Missing secrets or mismatched signatures
+discard the event. The signing client needs the same secret in its environment.
+After deployment, post the sample events to the node's loopback listener:
+
 ```bash
-# Set the three http_client urls to receivers you control,
-# deploy, then post the sample events:
-while IFS= read -r ev; do
-  curl -s -X POST -H 'Content-Type: application/json' \
-    --data "$ev" http://127.0.0.1:8089/webhook
-done < events.jsonl
+uv run --no-project -- python - <<'PY'
+import hashlib
+import hmac
+import os
+import urllib.request
+
+secret = os.environ["WEBHOOK_SECRET"].encode()
+with open("events.jsonl", "rb") as events:
+    for line in events:
+        body = line.rstrip(b"\r\n")
+        signature = hmac.new(secret, body, hashlib.sha256).hexdigest()
+        request = urllib.request.Request(
+            "http://127.0.0.1:8089/webhook",
+            data=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-Webhook-Signature": signature,
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=30) as response:
+            print(response.status)
+PY
 ```
 
 ## Validate, deploy, confirm

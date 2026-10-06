@@ -91,7 +91,7 @@ config:
   output:
     switch:
       cases:
-      # New events → downstream processing
+        # New events → downstream processing
         - check: 'this.is_duplicate == false'
           output:
             kafka:
@@ -108,7 +108,7 @@ config:
                 count: 100
                 period: 5s
 
-      # Duplicates → metrics/logging only
+        # Duplicates → metrics/logging only
         - output:
             file:
               path: "/var/expanso/duplicates/${!timestamp_unix_date('2006-01-02')}/dupes.jsonl"

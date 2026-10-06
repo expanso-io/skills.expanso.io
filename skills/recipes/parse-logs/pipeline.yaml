@@ -113,7 +113,7 @@ config:
   output:
     switch:
       cases:
-      # Parsed logs → analytics
+        # Parsed logs → analytics
         - check: 'meta("log_format") != "parse_failed" && meta("log_format") != "unknown"'
           output:
             http_client:
@@ -126,7 +126,7 @@ config:
                 count: 100
                 period: 5s
 
-      # Failed/unknown → DLQ
+        # Failed/unknown → DLQ
         - output:
             file:
               path: "/var/log/expanso/dlq/${!timestamp_unix_date('2006-01-02')}/unparsed.jsonl"
