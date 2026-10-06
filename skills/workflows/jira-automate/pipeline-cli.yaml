@@ -75,55 +75,59 @@ config:
 
           - check: 'this.action == "create"'
             processors:
-              - mapping: |
-                  let base = env("JIRA_URL").trim_suffix("/")
-                  meta trace_id = this._trace_id
-                  meta jira_auth = "Basic " + (env("JIRA_EMAIL").or("") + ":" + env("JIRA_API_TOKEN").or("")).encode("base64")
-                  meta jira_action = this.action
-                  meta jira_url = $base + "/rest/api/3/issue"
-                  root = if !$base.re_match("^https://") {
-                    throw("JIRA_URL must be an https URL")
-                  } else if this.project.length() == 0 || this.summary.or("").length() == 0 {
-                    throw("project and summary are required for create")
-                  } else {
-                    {
-                      "fields": {
-                        "project": {"key": this.project},
-                        "summary": this.summary,
-                        "description": {
-                          "type": "doc",
-                          "version": 1,
-                          "content": [{
-                            "type": "paragraph",
-                            "content": [{"type": "text", "text": this.description.or("")}]
-                          }]
-                        },
-                        "issuetype": {"name": this.issue_type.or("Task")}
+              - try:
+                  - mapping: |
+                      let base = env("JIRA_URL").trim_suffix("/")
+                      meta trace_id = this._trace_id
+                      meta jira_auth = "Basic " + (env("JIRA_EMAIL").or("") + ":" + env("JIRA_API_TOKEN").or("")).encode("base64")
+                      meta jira_action = this.action
+                      meta jira_url = $base + "/rest/api/3/issue"
+                      root = if !$base.re_match("^https://") {
+                        throw("JIRA_URL must be an https URL")
+                      } else if this.project.length() == 0 || this.summary.or("").length() == 0 {
+                        throw("project and summary are required for create")
+                      } else {
+                        {
+                          "fields": {
+                            "project": {"key": this.project},
+                            "summary": this.summary,
+                            "description": {
+                              "type": "doc",
+                              "version": 1,
+                              "content": [{
+                                "type": "paragraph",
+                                "content": [{"type": "text", "text": this.description.or("")}]
+                              }]
+                            },
+                            "issuetype": {"name": this.issue_type.or("Task")}
+                          }
+                        }
                       }
-                    }
-                  }
-              - http:
-                  url: '${! meta("jira_url") }'
-                  verb: POST
-                  headers:
-                    Authorization: '${! meta("jira_auth") }'
-                    Accept: application/json
-                    Content-Type: application/json
-                  timeout: 30s
-                  retries: 3
-                  rate_limit: jira_api
-              - mapping: |
-                  root.action = meta("jira_action")
-                  root.result = {"issue": {"id": this.id, "key": this.key, "self": this.self}}
-                  root.issues = [root.result.issue]
-                  root.metadata = {
-                    "skill": "jira-automate",
-                    "mode": "cli",
-                    "action": meta("jira_action"),
-                    "source": "jira_api",
-                    "trace_id": meta("trace_id").or(uuid_v4()),
-                    "timestamp": now()
-                  }
+                  - http:
+                      url: '${! meta("jira_url") }'
+                      verb: POST
+                      headers:
+                        Authorization: '${! meta("jira_auth") }'
+                        Accept: application/json
+                        Content-Type: application/json
+                      timeout: 30s
+                      retries: 3
+                      rate_limit: jira_api
+                  - mapping: |
+                      root.action = meta("jira_action")
+                      root.result = {"issue": {"id": this.id, "key": this.key, "self": this.self}}
+                      root.issues = [root.result.issue]
+                      root.metadata = {
+                        "skill": "jira-automate",
+                        "mode": "cli",
+                        "action": meta("jira_action"),
+                        "source": "jira_api",
+                        "trace_id": meta("trace_id").or(uuid_v4()),
+                        "timestamp": now()
+                      }
+              - catch:
+                  - mapping: |
+                      root = {"status": "error", "error": error()}
 
           - check: 'this.action == "update"'
             processors:

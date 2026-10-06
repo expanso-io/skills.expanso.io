@@ -12,18 +12,18 @@ tests:
         period: today
       metrics:
         revenue_by_currency:
-          - gross_minor: 12000
-            net_minor: 9600
-            fees_minor: 400
-            refunds_minor: 2000
-            currency: USD
-            minor_unit_exponent: 2
           - gross_minor: 5000
             net_minor: 4900
             fees_minor: 100
             refunds_minor: 0
             currency: JPY
             minor_unit_exponent: 0
+          - gross_minor: 12000
+            net_minor: 9600
+            fees_minor: 400
+            refunds_minor: 2000
+            currency: USD
+            minor_unit_exponent: 2
         transactions:
           total: 3
           available: 2
