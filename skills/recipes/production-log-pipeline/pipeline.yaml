@@ -93,6 +93,9 @@ config:
             ).encode("hex")
           } else { deleted() }
 
+      - catch:
+          - mapping: root = deleted()
+
   output:
     broker:
       pattern: fan_out

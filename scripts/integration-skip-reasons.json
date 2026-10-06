@@ -26,5 +26,5 @@
   "skills/recipes/remove-pii/pipeline.yaml": "Requires a node-only pseudonym key and persistent minimized-event file output; processor regressions do not verify file delivery.",
   "skills/recipes/s3-to-postgres/pipeline.yaml": "Requires AWS S3 read credentials and a TLS PostgreSQL database/write identity to verify object ingestion and durable rows.",
   "skills/recipes/smart-buffering/pipeline.yaml": "Requires an authenticated destination receiver and timed load fixtures to observe priority-specific batches and escalation.",
-  "skills/transforms/json-pretty/pipeline-cloud.yaml": "Published stdin input requires an attached terminal, which a Cloud-scheduled node cannot receive; use the HTTP or file variant for scheduled execution."
+  "skills/transforms/json-pretty/pipeline-cloud.yaml": "The recipe runner has no bounded generate/stdout execution adapter that captures the three generated records and checks their output; this credential-free variant supports scheduled execution."
 }

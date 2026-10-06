@@ -23,7 +23,8 @@ config:
           let threshold_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
           let min_severity = $threshold_order.get($threshold).or(1)
 
-          let workflow_issues = $workflows.filter(run -> !["success", "completed"].contains(run.status.or("unknown"))).map_each(run -> {
+          let workflow_states = $workflows.map_each(run -> run.assign({"status": if run.status.or("") == "completed" { run.conclusion.or("unknown") } else { run.status.or("unknown") }}))
+          let workflow_issues = $workflow_states.filter(run -> run.status != "success").map_each(run -> {
             "severity": if run.status.or("") == "failure" { "high" } else { "medium" },
             "source": "workflow",
             "description": run.repo.or("unknown") + " / " + run.name.or("workflow") + " is " + run.status.or("unknown"),

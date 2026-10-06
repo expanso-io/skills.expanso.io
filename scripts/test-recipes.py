@@ -600,6 +600,7 @@ def main() -> int:
         report["security_checks"].append({
             "name": "review-regressions",
             "status": "pass" if regressions.returncode == 0 else "fail",
+            "supplemental_evidence": json.loads((CONFORMANCE / "focused-regressions.json").read_text()) if regressions.returncode == 0 else None,
         })
         webhook_check = run_webhook_fanout_rejection(cli, run_dir)
         report["security_checks"].append(webhook_check)
