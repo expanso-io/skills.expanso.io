@@ -1,6 +1,6 @@
 {
   "schema": "expanso-public-example-conformance/1",
-  "generated": "2026-10-06T23:47:11Z",
+  "generated": "2026-10-07T00:04:14Z",
   "scope": "Catalog-listed skills and recipes; pulled variants are retained as withdrawal records",
   "criteria": {
     "runs": "Validates and executes on Expanso Edge with sample input, or has dated end-to-end job proof.",
@@ -26,10 +26,10 @@
   },
   "counts": {
     "failing": 0,
-    "fixed": 76,
+    "fixed": 75,
     "pass": 57,
     "pulled": 24,
-    "skipped": 237,
+    "skipped": 238,
     "total": 394
   },
   "skipped_reasons": [
@@ -952,6 +952,10 @@
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
       "reason": "The execution harness replaces stdin/stdout with loopback HTTP; no current-SHA intact-adapter execution is recorded."
+    },
+    {
+      "pipeline": "skills/workflows/seo-pipeline/pipeline-mcp.yaml",
+      "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded."
     },
     {
       "pipeline": "skills/workflows/stripe-reports/pipeline-cli.yaml",
@@ -16131,7 +16135,7 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-cli.yaml",
-      "sha256": "c540b4ba2a89e320e41821db1a62882ffe7f69cb682a5cd9f1a699bf16b5314b",
+      "sha256": "acf9384a5b9d56ea5aa4fd983aa7a2a1b51ea0e43d82fed3aa63eda441762d6b",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "cli",
@@ -16149,7 +16153,7 @@
             "method": "expanso-edge focused processor regression",
             "scope": "processor regression with loopback input/output and provider fixtures",
             "report": ".conformance/focused-regressions.json",
-            "tests": 11
+            "tests": 14
           }
         },
         "platform_realism": {
@@ -16178,25 +16182,25 @@
     },
     {
       "pipeline": "skills/workflows/seo-pipeline/pipeline-mcp.yaml",
-      "sha256": "4a9b8d8e055f6232c62ddf597e9239d763425147b35c5911ff5e5e2c63ce680b",
+      "sha256": "51abc6423e38631d9f2ce06872f8781caf9bba8096a651e231ff03d661a02b32",
       "category": "workflows",
       "skill": "seo-pipeline",
       "variant": "mcp",
       "classification": "complete_pipeline",
       "criteria": {
         "runs": {
-          "status": "pass",
-          "method": "expanso-edge current-SHA intact execution",
+          "status": "skipped",
+          "method": "supplemental expanso-edge harness execution",
           "report": ".conformance/full-mcp.json",
           "tests": 1,
-          "reason": null,
-          "published_adapters_intact": true,
+          "reason": "The execution harness rewrites external provider processors with fixtures; no current-SHA intact-processor execution is recorded.",
+          "published_adapters_intact": false,
           "processor_regression": {
             "status": "pass",
             "method": "expanso-edge focused processor regression",
             "scope": "processor regression with loopback input/output and provider fixtures",
             "report": ".conformance/focused-regressions.json",
-            "tests": 11
+            "tests": 14
           }
         },
         "platform_realism": {
@@ -16221,7 +16225,7 @@
         "job_spec": "expanso-cli job validate --offline",
         "pipeline_config": "expanso-edge validate"
       },
-      "status": "fixed"
+      "status": "skipped"
     },
     {
       "pipeline": "skills/workflows/site-migrate/pipeline-cli.yaml",
@@ -16297,7 +16301,7 @@
     },
     {
       "pipeline": "skills/workflows/stripe-reports/pipeline-cli.yaml",
-      "sha256": "dcef7e6e81d88d769331a6d26095d3febea2555b81ce0750875496f8a906e13a",
+      "sha256": "32f6983471e911f33696a73a18cd53ea9eaec0138beb931c8bbfef426d59ba59",
       "category": "workflows",
       "skill": "stripe-reports",
       "variant": "cli",
@@ -16315,7 +16319,7 @@
             "method": "expanso-edge focused processor regression",
             "scope": "processor regression with loopback input/output and provider fixtures",
             "report": ".conformance/focused-regressions.json",
-            "tests": 9
+            "tests": 10
           }
         },
         "platform_realism": {
@@ -16344,7 +16348,7 @@
     },
     {
       "pipeline": "skills/workflows/stripe-reports/pipeline-mcp.yaml",
-      "sha256": "a24ec26ba3693cbf78119be328fb84029b8a4b76053bdfff4ff5468b0a7996fe",
+      "sha256": "9a37da56dab9afc417feba3e8fae6a87ddb92eff085853534f45f3763d45caf1",
       "category": "workflows",
       "skill": "stripe-reports",
       "variant": "mcp",
@@ -16362,7 +16366,7 @@
             "method": "expanso-edge focused processor regression",
             "scope": "processor regression with loopback input/output and provider fixtures",
             "report": ".conformance/focused-regressions.json",
-            "tests": 9
+            "tests": 10
           }
         },
         "platform_realism": {

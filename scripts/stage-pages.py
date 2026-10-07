@@ -21,10 +21,16 @@ def stage_observations(repository):
     observations = {}
     reports = list((repository / "execution-reports").glob("*.json*"))
     reports += list((repository / ".conformance").glob("full-*.json"))
+    reports += [path for path in (repository / ".conformance").glob("recipe*execution.json")]
     for path in reports:
         opener = gzip.open if path.suffix == ".gz" else open
         with opener(path, "rt") as handle:
             report = json.load(handle)
+        for trace in report.get("stage_traces", []):
+            pipeline = Path(trace["pipeline"])
+            observations[(pipeline.parent.name, pipeline.stem.removeprefix("pipeline-"), trace["sha256"])] = {
+                key: trace[key] for key in ("stages", "scope", "date", "sample", "adapter_values")
+            }
         for skill in report.get("skills", []):
             sample = next((test for test in skill.get("tests", []) if test.get("status") == "passed" and (test.get("stages") or test.get("adapter_values"))), None)
             if sample:

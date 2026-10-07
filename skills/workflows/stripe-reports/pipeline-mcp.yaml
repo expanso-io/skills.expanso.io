@@ -91,10 +91,10 @@ config:
               }))
               let totals = $keyed.fold({}, pair -> pair.tally.assign({
                 (pair.value._currency): {
-                  "gross_minor": pair.tally.get(pair.value._currency).or({"gross_minor": 0}).gross_minor + if pair.value.type.or("") == "charge" { pair.value.amount.or(0) } else { 0 },
+                  "gross_minor": pair.tally.get(pair.value._currency).or({"gross_minor": 0}).gross_minor + if ["charge", "payment"].contains(pair.value.type.or("")) { pair.value.amount.or(0) } else { 0 },
                   "net_minor": pair.tally.get(pair.value._currency).or({"net_minor": 0}).net_minor + pair.value.net.or(0),
                   "fees_minor": pair.tally.get(pair.value._currency).or({"fees_minor": 0}).fees_minor + pair.value.fee.or(0),
-                  "refunds_minor": pair.tally.get(pair.value._currency).or({"refunds_minor": 0}).refunds_minor + if pair.value.type.or("") == "refund" { pair.value.amount.or(0).abs() } else { 0 }
+                  "refunds_minor": pair.tally.get(pair.value._currency).or({"refunds_minor": 0}).refunds_minor + if ["refund", "payment_refund"].contains(pair.value.type.or("")) { pair.value.amount.or(0).abs() } else { 0 }
                 }
               })).key_values().sort_by(entry -> entry.key).map_each(entry -> entry.value.assign({
                 "currency": entry.key.uppercase(),

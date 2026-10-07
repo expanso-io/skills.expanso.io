@@ -16,6 +16,7 @@ import argparse
 import atexit
 import fcntl
 import hashlib
+import importlib.util
 import json
 import os
 import signal
@@ -758,6 +759,10 @@ def main() -> int:
         print(f"{result['status'].upper():7} {result['name']}{suffix}")
 
     if not args.recipes:
+        stage_spec = importlib.util.spec_from_file_location("recipe_stages", REPO / "scripts/record-recipe-stages.py")
+        stage_module = importlib.util.module_from_spec(stage_spec)
+        stage_spec.loader.exec_module(stage_module)
+        report["stage_traces"] = stage_module.record(paths, run_dir / "stage-traces")
         for regression_script in ["test-review-round-two.py", "test-review-round-four.py", "test-review-round-six.py", "test-review-round-seven.py", "test-circuit-failover.py", "test-publication-review.py", "test-time-and-policy.py", "test-backup-and-html.py", "test-auth-html-formats.py", "test-provider-and-cache.py", "test-current-review.py", "test-pages-and-periods.py"]:
             regressions = subprocess.run(
                 ["uv", "run", "-s", str(REPO / "scripts" / regression_script)],

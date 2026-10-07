@@ -42,11 +42,17 @@ def main():
             raise AssertionError(f'missing {field} did not fail the publication gate')
     directory = ROOT / '.conformance' / f'pages-periods-{time.time_ns()}'
     directory.mkdir(parents=True)
-    suite = reg.Suite(directory, {})
+    suite = reg.Suite(directory, {'STRIPE_API_KEY': 'fixture-token', 'OPENAI_API_KEY': 'unused-fixture-token', 'MCP_BEARER_TOKEN': reg.TOKEN})
     try:
         html = '<title>Chart</title><meta name="description" content="Summary"><h1>Chart</h1><img alt="Chart"><meta name="viewport">'
         for variant in ('cli', 'mcp'):
             cfg = reg.config('workflows/seo-pipeline', variant)
+            for fragment in ('<div title="<img src=x>"></div>', '<div title="<meta name=description content=Fake><meta name=viewport><h1>Fake</h1><a>Fake</a>"></div>'):
+                result = suite.execute(cfg, {'html': fragment + html})
+                assert result['analysis']['score'] == 100 and result['analysis']['image_count'] == 1, result
+                assert result['analysis']['h1_count'] == 1 and result['analysis']['link_count'] == 0, result
+            result = suite.execute(cfg, {'html': '<div title="<title>Fake</title><meta name=description content=Fake><meta name=viewport>"></div><h1>Chart</h1>'})
+            assert result['analysis']['score'] == 35 and result['analysis']['meta_description'] == '' and result['analysis']['title'] == '', result
             for tag in ('script-loader', 'style-guide', 'textarea-box', 'xmp-player', 'iframe-card', 'noembed-box', 'noframes-panel', 'plaintext-widget'):
                 result = suite.execute(cfg, {'html': f'<{tag}></{tag}>' + html})
                 assert result['analysis']['score'] == 100 and result['analysis']['image_count'] == 1, result
@@ -58,6 +64,15 @@ def main():
             assert result['analysis']['score'] == 100 and result['analysis']['image_count'] == 1, result
             cfg = reg.config('workflows/stripe-reports', variant)
             initialization = next(processor['try'] for processor in cfg['pipeline']['processors'] if 'try' in processor)
+            payment_fixture = copy.deepcopy(cfg)
+            payment_initialization = next(processor['try'] for processor in payment_fixture['pipeline']['processors'] if 'try' in processor)
+            for index, processor in enumerate(payment_initialization):
+                if 'http' in processor:
+                    payment_initialization[index] = {'mapping': 'root = {"has_more": false, "data": [{"type": "payment", "amount": 1200, "fee": 30, "net": 1170, "currency": "usd", "status": "available"}, {"type": "payment_refund", "amount": -200, "fee": 0, "net": -200, "currency": "usd", "status": "available"}]}'}
+            result = suite.execute(payment_fixture, {'period': 'today', 'include_insights': False}, headers={'Authorization': 'Bearer ' + reg.TOKEN})
+            assert result['metrics']['revenue_by_currency'][0]['gross_minor'] == 1200, result
+            assert result['metrics']['revenue_by_currency'][0]['refunds_minor'] == 200, result
+            assert result['metrics']['revenue_by_currency'][0]['net_minor'] == 970, result
             for timestamp in ('2026-10-06T15:00:00+00:00', '2026-10-07T00:00:00+00:00', '2024-03-01T00:01:00+00:00'):
                 now = datetime.fromisoformat(timestamp)
                 clock = int(now.timestamp())
