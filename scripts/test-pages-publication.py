@@ -91,6 +91,8 @@ def check_publication(output):
                 with urlopen(f"{endpoint}/{source.parent.name}/{source.name}") as response:
                     assert row["sha256"] == hashlib.sha256(response.read()).hexdigest(), row["pipeline"]
         pages = {p.name for p in (output / "skill").iterdir()}
+        published_names = {Path(row["pipeline"]).parent.name for row in ledger["examples"] if row["status"] != "pulled"}
+        assert pages == published_names, ("published pages missing", published_names - pages, "extra pages", pages - published_names)
         assert pages == set(json.loads((output / "catalog.json").read_text())["skills"]), pages
         print(f"PASS {count} published pipeline downloads; pulled downloads return 404")
     finally:

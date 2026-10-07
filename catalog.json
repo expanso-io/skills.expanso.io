@@ -1,8 +1,16 @@
 {
   "version": "1.0.0",
-  "generated": "2026-10-06T22:42:02.049062+00:00",
-  "total_skills": 173,
+  "generated": "2026-10-07T01:04:08.130072+00:00",
+  "total_skills": 202,
   "categories": {
+    "recipes": {
+      "description": "Complete data processing recipe pipelines",
+      "skill_count": 29,
+      "tags": [
+        "recipe",
+        "data-pipeline"
+      ]
+    },
     "jobs": {
       "description": "Whole jobs you may be asked to build (RSS engine, data migration, notifications, RAG, ...). Each was run end to end; its skill.yaml `proof` block says where, and what was not proved",
       "skill_count": 8,
@@ -8103,6 +8111,383 @@
         "openai",
         "remote",
         "workflows"
+      ]
+    },
+    "aggregate-time-windows": {
+      "name": "aggregate-time-windows",
+      "version": "1.0.0",
+      "description": "Event-time sensor and location aggregates over five-minute sliding windows emitted every minute.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "circuit-breakers": {
+      "name": "circuit-breakers",
+      "version": "1.0.0",
+      "description": "Complete Circuit Breaker Pipeline - Demonstrates fallback chain with Primary API, Secondary API, Local storage, and DLQ.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "content-routing": {
+      "name": "content-routing",
+      "version": "1.0.0",
+      "description": "Route messages to different outputs based on their content",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "content-splitting": {
+      "name": "content-splitting",
+      "version": "1.0.0",
+      "description": "Complete Content Splitting Pipeline - Splits batch payloads (arrays, CSVs) into individual records for processing.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "cross-border-gdpr": {
+      "name": "cross-border-gdpr",
+      "version": "1.0.0",
+      "description": "Pseudonymize and minimize EU data before an approved cross-border transfer",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "db2-to-bigquery": {
+      "name": "db2-to-bigquery",
+      "version": "1.0.0",
+      "description": "Migrate financial transactions from DB2 to BigQuery with transformations",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "dead-letter-queue": {
+      "name": "dead-letter-queue",
+      "version": "1.0.0",
+      "description": "Handle failed messages with DLQ pattern",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "deduplicate-events": {
+      "name": "deduplicate-events",
+      "version": "1.0.0",
+      "description": "Complete Event Deduplication Pipeline - Detects and filters duplicate events using cache-based deduplication.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "encrypt-data": {
+      "name": "encrypt-data",
+      "version": "1.0.0",
+      "description": "Authenticated field envelopes with a unique IV and separate encryption and MAC keys.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "encryption-patterns": {
+      "name": "encryption-patterns",
+      "version": "1.0.0",
+      "description": "Authenticated encryption envelopes for payment, contact, address, and temporal fields.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "enforce-schema": {
+      "name": "enforce-schema",
+      "version": "1.0.0",
+      "description": "Complete Schema Validation Pipeline - Validates incoming data against JSON Schema, routes failures to DLQ.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "enrich-export": {
+      "name": "enrich-export",
+      "version": "1.0.0",
+      "description": "Production-ready pipeline for enriching logs with metadata and exporting to Amazon S3.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "fan-out-kafka": {
+      "name": "fan-out-kafka",
+      "version": "1.0.0",
+      "description": "Fan-out pipeline with file and Kafka destinations",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "fan-out-pattern": {
+      "name": "fan-out-pattern",
+      "version": "1.0.0",
+      "description": "Complete fan-out pipeline with all destinations and fallbacks",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "fan-out-s3": {
+      "name": "fan-out-s3",
+      "version": "1.0.0",
+      "description": "Fan-out pipeline with file, Kafka, and S3 destinations",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "filter-severity": {
+      "name": "filter-severity",
+      "version": "1.0.0",
+      "description": "Complete Log Severity Filtering Pipeline with JSON parsing, intelligent severity detection, and conditional routing.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "http-webhook-ingestion": {
+      "name": "http-webhook-ingestion",
+      "version": "1.0.0",
+      "description": "Ingest HTTP webhooks with validation and forward to Kafka",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "kafka-to-s3": {
+      "name": "kafka-to-s3",
+      "version": "1.0.0",
+      "description": "Stream Kafka messages to S3 with intelligent partitioning",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "nightly-backup": {
+      "name": "nightly-backup",
+      "version": "1.0.0",
+      "description": "Backup orders and inventory to cloud cold storage",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "normalize-timestamps": {
+      "name": "normalize-timestamps",
+      "version": "1.0.0",
+      "description": "Complete Timestamp Normalization Pipeline with format detection, UTC conversion, and metadata enrichment.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "parse-logs": {
+      "name": "parse-logs",
+      "version": "1.0.0",
+      "description": "Complete Multi-Format Log Parser - Detects and parses JSON, CSV, access logs, and syslog formats.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "priority-queues": {
+      "name": "priority-queues",
+      "version": "1.0.0",
+      "description": "Complete Priority Queue Pipeline - Routes events to different queues based on severity, customer tier, and event type.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "production-log-pipeline": {
+      "name": "production-log-pipeline",
+      "version": "1.0.0",
+      "description": "Complete Production Log Pipeline - HTTP input, validation, enrichment, filtering, PII redaction, and multi-destination output.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "rate-limiting": {
+      "name": "rate-limiting",
+      "version": "1.0.0",
+      "description": "Apply rate limiting with backpressure",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "remove-pii": {
+      "name": "remove-pii",
+      "version": "1.0.0",
+      "description": "Data minimization and keyed pseudonyms for common identifiers; legal review still required",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "s3-to-postgres": {
+      "name": "s3-to-postgres",
+      "version": "1.0.0",
+      "description": "Load JSON files from S3 into PostgreSQL",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "secure-slack-pipeline": {
+      "name": "secure-slack-pipeline",
+      "version": "1.0.0",
+      "description": "Complete secure Slack reader pipeline demonstrating Expanso Edge composable security. All stages run inside a single pipeline \u2014 auth, validation, access control, data fetch, PII redaction, field fencing, and audit.\n",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "smart-buffering": {
+      "name": "smart-buffering",
+      "version": "1.0.0",
+      "description": "Priority-aware routing with tier-specific batching and age-based escalation",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
+      ]
+    },
+    "transform-formats": {
+      "name": "transform-formats",
+      "version": "1.0.0",
+      "description": "Complete Format Transformation Pipeline - Transforms between JSON, CSV, and XML formats with auto-detection.",
+      "category": "recipes",
+      "credentials": [],
+      "inputs": [],
+      "outputs": [],
+      "backends": [],
+      "tags": [
+        "recipes"
       ]
     }
   }

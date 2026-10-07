@@ -22,6 +22,11 @@ import yaml
 
 # Define skill categories with patterns
 CATEGORY_RULES = {
+    "recipes": {
+        "description": "Complete data processing recipe pipelines",
+        "patterns": [],
+        "tags": ["recipe", "data-pipeline"],
+    },
     "jobs": {
         "description": (
             "Whole jobs you may be asked to build (RSS engine, data migration, "
@@ -244,7 +249,11 @@ def load_skill_yaml(skill_path: Path) -> dict | None:
     """Load and parse skill.yaml file."""
     skill_file = skill_path / "skill.yaml"
     if not skill_file.exists():
-        return None
+        recipe_file = skill_path / "pipeline.yaml"
+        if not recipe_file.exists():
+            return None
+        recipe = yaml.safe_load(recipe_file.read_text())
+        return {"name": skill_path.name, "description": recipe["description"]}
     try:
         with open(skill_file) as f:
             return yaml.safe_load(f)
@@ -277,6 +286,10 @@ def iter_skill_dirs(source_dir: Path, layout: str) -> list[tuple[str | None, Pat
         for skill_dir in sorted(category_dir.iterdir()):
             if skill_dir.is_dir() and (skill_dir / "skill.yaml").exists():
                 skills.append((category_dir.name, skill_dir))
+    known_names = {directory.name for _, directory in skills}
+    for skill_dir in sorted((source_dir / "recipes").glob("*")):
+        if skill_dir.name not in known_names and (skill_dir / "pipeline.yaml").is_file():
+            skills.append(("recipes", skill_dir))
     return skills
 
 

@@ -1,7 +1,41 @@
 {
   "version": "1.0.0",
-  "total_skills": 173,
+  "total_skills": 202,
   "categories": {
+    "recipes": {
+      "skill_count": 29,
+      "skills": [
+        "aggregate-time-windows",
+        "circuit-breakers",
+        "content-routing",
+        "content-splitting",
+        "cross-border-gdpr",
+        "db2-to-bigquery",
+        "dead-letter-queue",
+        "deduplicate-events",
+        "encrypt-data",
+        "encryption-patterns",
+        "enforce-schema",
+        "enrich-export",
+        "fan-out-kafka",
+        "fan-out-pattern",
+        "fan-out-s3",
+        "filter-severity",
+        "http-webhook-ingestion",
+        "kafka-to-s3",
+        "nightly-backup",
+        "normalize-timestamps",
+        "parse-logs",
+        "priority-queues",
+        "production-log-pipeline",
+        "rate-limiting",
+        "remove-pii",
+        "s3-to-postgres",
+        "secure-slack-pipeline",
+        "smart-buffering",
+        "transform-formats"
+      ]
+    },
     "jobs": {
       "skill_count": 8,
       "skills": [

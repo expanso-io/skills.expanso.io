@@ -93,9 +93,13 @@ test('pipeline stages expose recorded input/output and preserve scroll', async (
   expect(await page.locator('.modal').evaluate(el => el.scrollTop)).toBe(before);
 });
 
-// The staged catalog is the published skill inventory; give each sibling its
+// The published ledger is the inventory; give each sibling its
 // own budget so the total catalog size cannot time out an otherwise passing sweep.
-for (const name of Object.keys(require('../../docs/catalog.json').skills)) {
+const publishedNames = [...new Set(require('../../docs/example-conformance.json').examples
+  .filter(row => row.status !== 'pulled')
+  .map(row => row.pipeline.split('/').at(-2)))].sort();
+
+for (const name of publishedNames) {
   test(`every published sibling exposes its actual pipeline stages: ${name}`, async ({ page }) => {
     test.setTimeout(120_000);
     const ledger = await (await page.request.get('/example-conformance.json')).json();
