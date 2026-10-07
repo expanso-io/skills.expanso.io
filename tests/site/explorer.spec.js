@@ -93,14 +93,14 @@ test('pipeline stages expose recorded input/output and preserve scroll', async (
   expect(await page.locator('.modal').evaluate(el => el.scrollTop)).toBe(before);
 });
 
-test('every published sibling exposes its actual pipeline stages', async ({ page }) => {
-  test.setTimeout(480_000);
-  const response = await page.request.get('/catalog.json');
-  const catalog = await response.json();
-  const ledger = await (await page.request.get('/example-conformance.json')).json();
-  let variants = 0;
+// The staged catalog is the published skill inventory; give each sibling its
+// own budget so the total catalog size cannot time out an otherwise passing sweep.
+for (const name of Object.keys(require('../../docs/catalog.json').skills)) {
+  test(`every published sibling exposes its actual pipeline stages: ${name}`, async ({ page }) => {
+    test.setTimeout(120_000);
+    const ledger = await (await page.request.get('/example-conformance.json')).json();
+    let variants = 0;
 
-  for (const name of Object.keys(catalog.skills)) {
     await page.goto(`/skill/${name}/`);
     await page.getByRole('button', { name: 'Pipeline', exact: true }).click();
 
@@ -136,10 +136,9 @@ test('every published sibling exposes its actual pipeline stages', async ({ page
       expect(await page.locator('.modal').evaluate(el => el.scrollTop)).toBe(before);
       variants += 1;
     }
-  }
-
-  console.log(`Explorer sweep: ${Object.keys(catalog.skills).length} skills, ${variants} variants`);
-});
+    console.log(`Explorer sweep: ${name}, ${variants} variants`);
+  });
+}
 
 test('published explorer data records current input and output for every stage', async ({ request }) => {
   const catalog = await (await request.get('/catalog.json')).json();

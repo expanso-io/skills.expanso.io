@@ -31,6 +31,13 @@ async function expectNoHorizontalOverflow(page) {
 }
 
 async function expectNoSeriousAxeViolations(page) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    // Allow newly applied styles to create their transitions before observing them.
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+  await page.waitForFunction(() => document.getAnimations().every(animation =>
+    animation.playState !== 'running' && !animation.pending));
   const results = await new AxeBuilder({ page }).analyze();
 
   const violations = results.violations.filter((violation) =>
@@ -111,15 +118,19 @@ test('copy controls report success and failure on the clicked control', async ({
 test('light and dark surfaces have no serious accessibility violations', async ({
   page
 }) => {
+  test.setTimeout(60_000);
   await waitForCatalog(page);
+  // Exercise rendering readiness with transitions longer than a fixed delay.
+  await page.addStyleTag({ content: `
+    * { transition-duration: 2s !important; }
+    .tab-content { animation-duration: 2s !important; }
+  ` });
   await expectNoSeriousAxeViolations(page);
   await page.locator('.skill-card').first().click();
   await page.getByRole('button', { name: 'Pipeline', exact: true }).click();
-  await page.waitForTimeout(250);
   await expectNoSeriousAxeViolations(page);
   await page.evaluate(() => document.querySelector('#theme-toggle').click());
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await page.waitForTimeout(250);
   await expectNoSeriousAxeViolations(page);
 });
 
@@ -164,11 +175,9 @@ test('every skill uses the page template and preserves features, copy feedback, 
 
     await expect(page.locator(".modal-description")).not.toHaveText("");
     await expectVisibleCopiesSucceed(page);
-    await page.waitForTimeout(250);
     await expectNoSeriousAxeViolations(page);
     await page.evaluate(() => document.querySelector('#theme-toggle').click());
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    await page.waitForTimeout(250);
     await expectNoSeriousAxeViolations(page);
 
     await page.getByRole('button', { name: 'Pipeline', exact: true }).click();
