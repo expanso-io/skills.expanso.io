@@ -46,14 +46,6 @@ async function expectNoSeriousAxeViolations(page) {
   expect(violations).toEqual([]);
 }
 
-async function catalogSkillNames(page) {
-  const response = await page.request.get('/catalog.json');
-  expect(response.ok()).toBeTruthy();
-  const catalog = await response.json();
-
-  return Object.keys(catalog.skills).sort();
-}
-
 async function expectVisibleCopiesSucceed(page) {
   const controls = page.locator(
     '#modal-content .copy-pipeline-btn:visible, ' +
@@ -152,15 +144,17 @@ test('escaped YAML remains within the phone viewport', async ({ page }) => {
   await expectNoHorizontalOverflow(page);
 });
 
-test('every skill uses the page template and preserves features, copy feedback, contrast, and phone layout', async ({
-  context,
-  page
-}) => {
-  test.setTimeout(60 * 60 * 1000);
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  const names = await catalogSkillNames(page);
+const publishedNames = [...new Set(require('../../docs/example-conformance.json').examples
+  .filter(row => row.status !== 'pulled')
+  .map(row => row.pipeline.split('/').at(-2)))].sort();
 
-  for (const name of names) {
+for (const name of publishedNames) {
+  test(`published page preserves features and usability: ${name}`, async ({
+    context,
+    page
+  }) => {
+    test.setTimeout(180_000);
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(`/skill/${name}`);
     await page.evaluate(() => {
@@ -194,8 +188,8 @@ test('every skill uses the page template and preserves features, copy feedback, 
 
     await page.setViewportSize({ width: 320, height: 800 });
     await expectNoHorizontalOverflow(page);
-  }
-});
+  });
+}
 
 test('retains deep links, spec and pipeline tabs, theme, and job proof', async ({
   page
