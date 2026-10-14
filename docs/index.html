@@ -131,6 +131,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+    <!-- The shared consent contract, built by `npm run build`. A classic script (no async,
+         defer or module), so window.__expansoConsent exists before the scripts below run. -->
+    <script src="js/consent-runtime.js"></script>
     <!-- Before app.js: it reads the /skill/<name> landing path that app.js clears. -->
     <script src="js/analytics.js"></script>
     <script src="js/app.js"></script>

@@ -1,0 +1,21 @@
+{
+  "name": "expanso-skills-site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "packageManager": "npm@12.0.2",
+  "scripts": {
+    "build": "esbuild src/consent-runtime.js --bundle --format=iife --platform=browser --target=es2017 --minify --legal-comments=none --outfile=docs/js/consent-runtime.js",
+    "pretest": "npm run build",
+    "test": "node --import ./scripts/node-test-globals.mjs --test --test-reporter=spec src/__tests__/cookieConsentUtils.test.ts tests/consent-runtime.test.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

@@ -93,6 +93,18 @@ after touching a job, and CI runs it with `--check`. Also run
 claude.ai/directory/manage with plugin path `plugin`; raise `version` in
 `plugin/.claude-plugin/plugin.json` on every release.
 
+## Analytics
+
+`docs/js/consent-runtime.js` is built, not committed. Run `npm ci && npm run build` before a
+local preview (`just serve` runs both). The build bundles `src/consent-runtime.js` and
+the shared consent contract `src/cookieConsentUtils.ts` with esbuild into one classic script;
+`npm test` builds first, then runs the contract test and the bundle test. Never edit
+`src/cookieConsentUtils.ts` or `src/__tests__/cookieConsentUtils.test.ts`: they are copies
+of expanso-cloud's canonical files, and expanso-cloud's `CLAUDE.md` lists every copy. Copy
+both again from expanso-cloud; the test here keeps the `'../cookieConsentUtils.ts'` import
+(with the extension), as expanso.io's does, because plain Node runs it (Node 22.18 or later,
+`.node-version`).
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

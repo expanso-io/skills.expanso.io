@@ -4,9 +4,14 @@
 default:
     @just --list
 
-# Serve the website locally with hot reload
-serve:
+# Serve the website locally with hot reload (builds the consent runtime first)
+serve: build-runtime
     npx live-server docs --port=8080
+
+# Bundle the shared consent contract into docs/js/consent-runtime.js (runs npm ci first if node_modules is missing)
+build-runtime:
+    test -d node_modules || npm ci
+    npm run build
 
 # Build the catalog from skills
 build-catalog:

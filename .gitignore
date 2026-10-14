@@ -42,3 +42,7 @@ secrets.yaml
 # Generated SEO assets (built in CI)
 docs/sitemap.xml
 docs/skill/
+
+# Node: npm ci, and the consent runtime that npm run build writes
+node_modules/
+docs/js/consent-runtime.js
