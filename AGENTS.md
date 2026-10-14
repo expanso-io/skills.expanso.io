@@ -105,6 +105,13 @@ both again from expanso-cloud; the test here keeps the `'../cookieConsentUtils.t
 (with the extension), as expanso.io's does, because plain Node runs it (Node 22.18 or later,
 `.node-version`).
 
+`npm run test:browser` runs `tests/browser/` in Chromium (install it once with
+`npx playwright install chromium`). `tests/browser/harness.mjs` serves
+`https://skills.expanso.io/` from `docs/` and keeps every request off the network; use it for
+every browser test, so that PostHog never receives a test event. The banner is
+`docs/js/privacy-choices.js`: keep "cookie-consent" out of its file name and "cookie" out of
+its ids and classes, because filter lists block or hide them.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
