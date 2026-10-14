@@ -1,13 +1,20 @@
 /*
  * PostHog analytics for skills.expanso.io.
  *
- * Same project, proxy and privacy defaults as docs.expanso.io
- * (src/analytics/client.mjs there): events go through web.t.expanso.io, no
- * autocapture, no session recording, no person profiles, Do Not Track is
- * respected, and URLs are reduced to origin + path. Nothing is stored in
- * cookies or localStorage unless the visitor accepted the shared
- * `expanso-cookie-consent` cookie on an expanso.io site; otherwise the
- * identity lives in memory for this page view only.
+ * Consent is owned by the shared contract (src/cookieConsentUtils.ts, a copy of
+ * expanso-cloud's canonical file), which js/consent-runtime.js installs at
+ * window.__expansoConsent just before this script. The lanes are the main sites'
+ * (expanso.io's posthog-loader.js, docs.expanso.io's Providers.tsx): after an accept, or
+ * for an undecided visitor outside the EU, posthog-js keeps its identity in the shared
+ * .expanso.io cookie; an undecided EU visitor (or one without the expanso-geo cookie) and a
+ * visitor who declined are counted cookieless, with no identity stored on the device (after a
+ * decline posthog-js keeps only its opt-out flag). A later choice (in this tab, in another
+ * tab, on another Expanso site) moves the SDK to its lane.
+ * PostHog ignores Do Not Track, as on the main sites: the consent lanes decide.
+ *
+ * Everything else is this site's own: the token, the proxy (events go through
+ * web.t.expanso.io), the events below, the context fields on each of them, and URLs reduced
+ * to origin + path. No autocapture, page leave, heatmaps, web vitals or session recording.
  *
  * This only sees people using a browser. It does NOT show whether pages are
  * indexed, whether agents fetch llms.txt or pipeline files directly,
@@ -16,7 +23,8 @@
  *
  * Only runs on skills.expanso.io. On localhost, `?analytics_debug=1`
  * records events in window.__expansoAnalyticsEvents instead of sending
- * them, so behaviour can be checked without touching production data.
+ * them, so behaviour can be checked without touching production data. The
+ * SDK does not load then, so those events have no identity_mode.
  */
 (function () {
     'use strict';
@@ -31,8 +39,9 @@
     // scripts/check-site-tags.py fails while this file is not the pinned core.
     var SDK_CORE_PATH = '/js/array-1.435.6.js';
     var SITE_HOST = 'skills.expanso.io';
-    var CONSENT_COOKIE = 'expanso-cookie-consent';
     var SCHEMA_VERSION = '2026-09-18';
+    // The contract's status, as the consent_state value skills' events have always carried.
+    var CONSENT_STATE = { yes: 'granted', no: 'denied', undecided: 'unset' };
 
     var host = window.location.hostname;
     var params = new URLSearchParams(window.location.search);
@@ -40,17 +49,11 @@
         params.get('analytics_debug') === '1';
     if (host !== SITE_HOST && !debug) return;
 
-    function dntEnabled() {
-        return [navigator.doNotTrack, window.doNotTrack, navigator.msDoNotTrack]
-            .some(function (v) { return ['1', 'yes'].indexOf(String(v).toLowerCase()) !== -1; });
-    }
-    if (dntEnabled()) return;
-
-    function consent() {
-        var part = document.cookie.split(';').map(function (p) { return p.trim(); })
-            .filter(function (p) { return p.indexOf(CONSENT_COOKIE + '=') === 0; })[0];
-        var value = part ? part.slice(CONSENT_COOKIE.length + 1) : '';
-        return value === 'true' ? 'granted' : value === 'false' ? 'denied' : 'unset';
+    var consent = window.__expansoConsent;
+    if (!consent) {
+        // js/consent-runtime.js did not run. Never guess a lane: no analytics on this page.
+        console.warn('[posthog] consent runtime missing; analytics disabled for this page');
+        return;
     }
 
     function cleanUrl(value) {
@@ -69,19 +72,27 @@
         return 'browser_unclassified';
     }
 
-    var state = consent();
+    // The visit's source, on the page-load $pageview and on the one a lane change sends: with
+    // save_referrer off, nothing else gives the new identity's session its source.
+    var referrerHost = '';
+    try {
+        if (document.referrer) referrerHost = new URL(document.referrer).hostname;
+    } catch (e) {}
+
     var campaign = {};
     ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(function (k) {
         if (params.has(k)) campaign[k] = params.get(k).slice(0, 200);
     });
 
+    // identity_mode is not here: before_send sets it from the lane the SDK captured the event
+    // in. consent_state is read from the contract for each event, because the choice can
+    // change while the page is open.
     function context() {
         var ctx = {
             site_id: 'expanso_skills',
             site_host: window.location.hostname,
             analytics_schema_version: SCHEMA_VERSION,
-            consent_state: state,
-            identity_mode: state === 'granted' ? 'persistent' : 'ephemeral',
+            consent_state: CONSENT_STATE[consent.getCookieConsent()],
             traffic_class: trafficClass(),
             is_synthetic: params.get('analytics_test') === '1',
             $current_url: cleanUrl(window.location.href),
@@ -107,49 +118,92 @@
     // through this, so they get the context fields above and go where every event goes.
     window.__expansoSkillsCapture = capture;
 
+    function beforeSend(ev) {
+        // Never send full URLs with query strings or fragments. The SDK
+        // adds its own URL properties (e.g. $session_entry_url), so clean
+        // every *url / *referrer value that is an http(s) URL; sentinels
+        // such as '$direct' are left alone.
+        [ev.properties, ev.$set, ev.$set_once].forEach(function (props) {
+            if (!props) return;
+            Object.keys(props).forEach(function (k) {
+                var v = props[k];
+                if (/(url|referrer)$/i.test(k) && typeof v === 'string' &&
+                    /^https?:\/\//i.test(v)) {
+                    props[k] = cleanUrl(v);
+                }
+            });
+        });
+        // The SDK marks every cookieless event with $cookieless_mode before before_send, so
+        // identity_mode reports the lane the event was captured in (examples.expanso.io's rule).
+        if (ev.properties) ev.properties.identity_mode = ev.properties.$cookieless_mode ? 'ephemeral' : 'persistent';
+        return ev;
+    }
+
+    // Whether the SDK runs in the persistent lane (opted in), not the cookieless one. Never
+    // throws, because the consent change still has to reach the SDK.
+    function persistentLane(ph) {
+        try {
+            return ph.has_opted_in_capturing();
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function startSdk() {
+        var ph = window.posthog;
+        if (!ph || typeof ph.init !== 'function') return;
+        var status = consent.getCookieConsent();
+        // Before init: mirror the shared cookie into the SDK's per-origin consent flag, or a
+        // visitor who accepted on another Expanso site starts cookieless here and loses the
+        // shared identity. A flag left by an earlier accept does not outlive a decline.
+        consent.syncSdkConsentFlag(POSTHOG_KEY, status);
+        // The lane (opt-out by default, cookieless on reject, persistence, the .expanso.io
+        // identity cookie on this host, the pinned defaults date) is the contract's. The rest
+        // is skills' own. Nothing below may change a key of the contract's slice.
+        var options = consent.consentInitOptions(window.location.hostname);
+        options.api_host = API_HOST;
+        // One $pageview per page load, sent below, and one more per lane change (watchConsent
+        // below); app.js's pushState calls add none.
+        options.capture_pageview = false;
+        options.capture_pageleave = false;
+        options.autocapture = false;
+        options.capture_dead_clicks = false;
+        options.capture_heatmaps = false;
+        options.capture_performance = false;
+        options.disable_session_recording = true;
+        options.advanced_disable_feature_flags = true;
+        options.save_campaign_params = false;
+        options.save_referrer = false;
+        options.before_send = beforeSend;
+        try {
+            ph.init(POSTHOG_KEY, options);
+        } catch (e) {
+            // posthog-js can throw in locked-down storage contexts. No analytics on this page.
+            console.warn('[posthog] init failed; analytics disabled for this page', e);
+            return;
+        }
+        consent.applyConsent(ph, status);
+        // A later choice: in this tab, in another tab (focus, visibility), on another Expanso
+        // site (the same shared cookie).
+        consent.watchConsent(function (next) {
+            // A move between the cookieless and the persistent lane makes posthog-js start a
+            // new identity and session; give the new session a page view of its own, with the
+            // visit's source. The landing skill stays on the page-load one: one landing.
+            var wasPersistent = persistentLane(ph);
+            consent.applyConsent(ph, next);
+            if (persistentLane(ph) !== wasPersistent) {
+                capture('$pageview', { referrer_host: referrerHost });
+            }
+        });
+        sdk = ph;
+        queue.splice(0).forEach(function (item) { sdk.capture(item[0], item[1]); });
+    }
+
     if (!debug) {
         var script = document.createElement('script');
         script.async = true;
         script.src = SDK_CORE_PATH;
-        script.onload = function () {
-            if (!window.posthog || typeof window.posthog.init !== 'function') return;
-            window.posthog.init(POSTHOG_KEY, {
-                api_host: API_HOST,
-                persistence: state === 'granted' ? 'localStorage+cookie' : 'memory',
-                capture_pageview: false,
-                capture_pageleave: false,
-                autocapture: false,
-                capture_dead_clicks: false,
-                capture_heatmaps: false,
-                capture_performance: false,
-                disable_session_recording: true,
-                disable_surveys: true,
-                advanced_disable_feature_flags: true,
-                person_profiles: 'never',
-                respect_dnt: true,
-                save_campaign_params: false,
-                save_referrer: false,
-                before_send: function (ev) {
-                    // Never send full URLs with query strings or fragments. The SDK
-                    // adds its own URL properties (e.g. $session_entry_url), so clean
-                    // every *url / *referrer value that is an http(s) URL; sentinels
-                    // such as '$direct' are left alone.
-                    [ev.properties, ev.$set, ev.$set_once].forEach(function (props) {
-                        if (!props) return;
-                        Object.keys(props).forEach(function (k) {
-                            var v = props[k];
-                            if (/(url|referrer)$/i.test(k) && typeof v === 'string' &&
-                                /^https?:\/\//i.test(v)) {
-                                props[k] = cleanUrl(v);
-                            }
-                        });
-                    });
-                    return ev;
-                }
-            });
-            sdk = window.posthog;
-            queue.splice(0).forEach(function (item) { sdk.capture(item[0], item[1]); });
-        };
+        script.onload = startSdk;
         document.head.appendChild(script);
     }
 
@@ -159,9 +213,7 @@
     try { landing = sessionStorage.getItem('spa-redirect'); } catch (e) {}
     capture('$pageview', {
         landing_skill_path: landing || null,
-        referrer_host: document.referrer ? (function () {
-            try { return new URL(document.referrer).hostname; } catch (e) { return ''; }
-        })() : ''
+        referrer_host: referrerHost
     });
 
     var overlay = document.getElementById('modal-overlay');

@@ -106,6 +106,12 @@ both again from expanso-cloud; the test here keeps the `'../cookieConsentUtils.t
 (with the extension), as expanso.io's does, because plain Node runs it (Node 22.18 or later,
 `.node-version`).
 
+`docs/js/analytics.js` starts PostHog in the consent lanes of the main sites, through the
+contract (`window.__expansoConsent`): `syncSdkConsentFlag` before `init`, the contract's
+`consentInitOptions`, then `applyConsent` and `watchConsent`. Never read or write the
+`expanso-cookie-consent` cookie or posthog-js's consent flag yourself, and never set
+`persistence`, `cookieless_mode` or another key of `consentInitOptions` after it.
+
 PostHog's SDK core is not loaded from the PostHog proxy. `npm run build` also copies
 `node_modules/posthog-js/dist/array.js` (the version `package.json` pins) to
 `docs/js/array-<version>.js` (git-ignored), and `docs/js/analytics.js` loads that file

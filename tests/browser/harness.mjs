@@ -1,7 +1,8 @@
 // The test browser for skills.expanso.io. Nothing a test does may reach the network, and
 // PostHog must never receive a test event:
 //
-// - context.route serves https://skills.expanso.io/* from the local docs/ folder, answers
+// - context.route serves https://skills.expanso.io/* (and the local preview
+//   http://localhost:8080/*) from the local docs/ folder, answers
 //   every web.t.expanso.io request here, and aborts every other request;
 // - the browser runs behind a proxy where nothing listens (bypassed only for
 //   skills.expanso.io, which the route serves), so a request the route cannot see, such as an
@@ -28,6 +29,9 @@ import { chromium } from 'playwright';
 
 export const SITE = 'https://skills.expanso.io';
 const SITE_HOST = 'skills.expanso.io';
+// A local preview, where only ?analytics_debug=1 turns analytics.js on. Served from docs/ too.
+export const LOCAL_PREVIEW = 'http://localhost:8080';
+const SITE_ORIGINS = new Set([SITE, LOCAL_PREVIEW]);
 const POSTHOG_HOST = 'web.t.expanso.io';
 const DEAD_PROXY = 'http://127.0.0.1:9';
 const PROBE_URL = `https://${POSTHOG_HOST}/static/array.js?fence-probe=1`;
@@ -105,6 +109,24 @@ const REMOTE_CONFIG = {
 };
 const REMOTE_CONFIG_JS = 'window._POSTHOG_REMOTE_CONFIG = window._POSTHOG_REMOTE_CONFIG || {};\n' +
   `window._POSTHOG_REMOTE_CONFIG[${JSON.stringify(TOKEN)}] = ${JSON.stringify({ config: REMOTE_CONFIG, siteApps: [] })};\n`;
+
+// posthog-js's identity cookie for this project, and the id every cookieless event carries.
+export const IDENTITY_COOKIE = `ph_${TOKEN}_posthog`;
+// The localStorage key where posthog-js records an opt-in or opt-out (the choice, not an identity).
+export const OPT_OUT_FLAG = `__ph_opt_in_out_${TOKEN}`;
+export const COOKIELESS_ID = '$posthog_cookieless';
+
+/** The identity cookie another Expanso site leaves on .expanso.io (from expanso.io's real-SDK test). */
+export function identityCookie(distinctId) {
+  return {
+    name: IDENTITY_COOKIE,
+    value: encodeURIComponent(JSON.stringify({ distinct_id: distinctId, $device_id: distinctId, $user_state: 'anonymous' })),
+    domain: '.expanso.io',
+    path: '/',
+    secure: true,
+    sameSite: 'Lax',
+  };
+}
 
 /** The shared consent cookie, as an Expanso site writes it: Domain=expanso.io. */
 export function consentCookie(value) {
@@ -209,7 +231,7 @@ class Traffic {
     const request = route.request();
     const url = new URL(request.url());
     try {
-      if (url.protocol === 'https:' && url.hostname === SITE_HOST && request.method() === 'GET') {
+      if (SITE_ORIGINS.has(url.origin) && request.method() === 'GET') {
         this.site.push(url.pathname);
         const failure = this.unavailable[url.pathname];
         if (failure === 'abort') {
@@ -311,11 +333,12 @@ export async function launchBrowser() {
 }
 
 /**
- * A fresh context with the given cookies, on https://skills.expanso.io/ (or `pathname`).
- * `unavailable` makes site files fail ({ '/js/<file>': 404 | 'abort' }). Returns the page,
- * its context, the page errors and the traffic record.
+ * A fresh context with the given cookies, on https://skills.expanso.io/ (or `pathname`, or
+ * another `origin`: LOCAL_PREVIEW). `unavailable` makes site files fail
+ * ({ '/js/<file>': 404 | 'abort' }). Returns the page, its context, the page errors and the
+ * traffic record.
  */
-export async function openSite(browser, { cookies = [], viewport, pathname = '/', unavailable = {} } = {}) {
+export async function openSite(browser, { cookies = [], viewport, pathname = '/', origin = SITE, unavailable = {}, referer } = {}) {
   for (const [file, failure] of Object.entries(unavailable)) {
     assert.ok(failure === 404 || failure === 'abort', `unavailable ${file}: ${failure} is not 404 or 'abort'`);
   }
@@ -339,7 +362,7 @@ export async function openSite(browser, { cookies = [], viewport, pathname = '/'
   trafficOf.set(page, traffic);
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await page.goto(`${SITE}${pathname}`, { waitUntil: 'load' });
+  await page.goto(`${origin}${pathname}`, { waitUntil: 'load', referer });
   return { context, page, pageErrors, traffic };
 }
 
@@ -360,15 +383,39 @@ export async function cookiesNamed(context, name) {
 }
 
 /**
- * The events with this name that PostHog received from the page, once at least one arrived.
+ * The events with this name that PostHog received from the page, once at least `count` arrived.
  * posthog-js sends its queue every 3 seconds, so this waits up to 10.
  */
-export async function sdkEvents(page, name) {
+export async function sdkEvents(page, name, count = 1) {
   const traffic = trafficOf.get(page);
   const matching = () => traffic.events.filter((e) => e.event === name);
-  for (const deadline = Date.now() + 10_000; !matching().length && Date.now() < deadline;) {
+  for (const deadline = Date.now() + 10_000; matching().length < count && Date.now() < deadline;) {
     await page.waitForTimeout(100);
   }
-  assert.ok(matching().length, `PostHog received no ${name}; it received: ${traffic.events.map((e) => e.event).join(', ') || 'nothing'}`);
+  assert.ok(matching().length >= count, `PostHog received ${matching().length} ${name}, expected ${count}; ` +
+    `it received: ${traffic.events.map((e) => e.event).join(', ') || 'nothing'}`);
   return matching();
+}
+
+/** The distinct_id in each identity cookie of the context, as "<distinct_id>@<domain>". */
+export async function identityCookies(context) {
+  return (await cookiesNamed(context, IDENTITY_COOKIE)).map((cookie) => {
+    try {
+      return `${JSON.parse(decodeURIComponent(cookie.value)).distinct_id}@${cookie.domain}`;
+    } catch {
+      return `unreadable@${cookie.domain}`;
+    }
+  });
+}
+
+/** Everything posthog-js could keep about a visitor in this browser (from examples' collector test). */
+export async function storedIdentity(page) {
+  const storage = await page.evaluate(() => ({
+    localStorage: Object.keys(localStorage).filter((key) => key.startsWith('ph_') || key.startsWith('__ph_opt_in_out_')),
+    sessionStorage: Object.keys(sessionStorage).filter((key) => key.startsWith('ph_')),
+  }));
+  const cookies = (await page.context().cookies())
+    .filter((cookie) => cookie.name.startsWith('ph_'))
+    .map((cookie) => `${cookie.name}@${cookie.domain}`);
+  return { cookies, ...storage };
 }
