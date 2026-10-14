@@ -14,7 +14,11 @@
  *
  * Everything else is this site's own: the token, the proxy (events go through
  * web.t.expanso.io), the events below, the context fields on each of them, and URLs reduced
- * to origin + path. No autocapture, page leave, heatmaps, web vitals or session recording.
+ * to origin + path. The capture settings are docs.expanso.io's: autocapture, page leave,
+ * heatmaps, web vitals and session replay (when the PostHog project turns it on). Replay masks
+ * every input, as on cloud.expanso.io, so the search text is never recorded, and its URLs are
+ * origin + path too. The events the
+ * SDK sends by itself get the same context fields as the events below.
  *
  * This only sees people using a browser. It does NOT show whether pages are
  * indexed, whether agents fetch llms.txt or pipeline files directly,
@@ -118,7 +122,26 @@
     // through this, so they get the context fields above and go where every event goes.
     window.__expansoSkillsCapture = capture;
 
+    // An http(s) URL reduced to origin + path; any other value stays as it is.
+    function cleanIfUrl(value) {
+        return typeof value === 'string' && /^https?:\/\//i.test(value) ? cleanUrl(value) : value;
+    }
+
+    // Every replay URL (meta href, $url_changed, network request names) passes through the
+    // recorder's maskCapturedNetworkRequestFn in posthog-js 1.435.6. It must always return req:
+    // a missing return makes the recorder drop the meta event or the network entry.
+    function cleanReplayUrl(req) {
+        if (req && typeof req.name === 'string') req.name = cleanIfUrl(req.name);
+        if (req && typeof req.url === 'string') req.url = cleanIfUrl(req.url);
+        return req;
+    }
+
+    function isRecord(value) {
+        return typeof value === 'object' && value !== null && !Array.isArray(value);
+    }
+
     function beforeSend(ev) {
+        if (!ev) return ev;
         // Never send full URLs with query strings or fragments. The SDK
         // adds its own URL properties (e.g. $session_entry_url), so clean
         // every *url / *referrer value that is an http(s) URL; sentinels
@@ -126,16 +149,59 @@
         [ev.properties, ev.$set, ev.$set_once].forEach(function (props) {
             if (!props) return;
             Object.keys(props).forEach(function (k) {
-                var v = props[k];
-                if (/(url|referrer)$/i.test(k) && typeof v === 'string' &&
-                    /^https?:\/\//i.test(v)) {
-                    props[k] = cleanUrl(v);
-                }
+                if (/(url|referrer)$/i.test(k)) props[k] = cleanIfUrl(props[k]);
             });
+        });
+        if (!ev.properties) return ev;
+        var props = ev.properties;
+        // Autocapture names each clicked link's href in $elements_chain (and $elements).
+        if (typeof props.$elements_chain === 'string') {
+            props.$elements_chain = props.$elements_chain.replace(/href="([^"]*)"/g,
+                function (match, href) { return 'href="' + cleanIfUrl(href) + '"'; });
+        }
+        if (Array.isArray(props.$elements)) {
+            props.$elements.forEach(function (el) {
+                if (isRecord(el) && 'attr__href' in el) el.attr__href = cleanIfUrl(el.attr__href);
+            });
+        }
+        // Heatmap batches key their points by page URL; keys that clean to the same URL merge.
+        // (The URL cleaning here and below is examples.expanso.io's.)
+        if (ev.event === '$$heatmap' && isRecord(props.$heatmap_data)) {
+            var heatmap = {};
+            Object.keys(props.$heatmap_data).forEach(function (url) {
+                var points = props.$heatmap_data[url];
+                var key = cleanIfUrl(url);
+                heatmap[key] = (heatmap[key] || []).concat(Array.isArray(points) ? points : []);
+            });
+            props.$heatmap_data = heatmap;
+        }
+        // Web vitals copy the page URL into each metric and its attribution.
+        Object.keys(props).forEach(function (key) {
+            var metric = props[key];
+            if (!/^\$web_vitals_\w+_event$/.test(key) || !isRecord(metric)) return;
+            var cleaned = Object.assign({}, metric);
+            ['$current_url', 'navigationURL'].forEach(function (field) {
+                if (field in cleaned) cleaned[field] = cleanIfUrl(cleaned[field]);
+            });
+            if (isRecord(metric.attribution) && 'url' in metric.attribution) {
+                cleaned.attribution = Object.assign({}, metric.attribution, {
+                    url: cleanIfUrl(metric.attribution.url),
+                });
+            }
+            props[key] = cleaned;
+        });
+        // High-volume replay and heatmap batches go as the SDK built them.
+        if (ev.event === '$snapshot' || ev.event === '$$heatmap') return ev;
+        // The events the SDK sends by itself ($autocapture, $pageleave, $web_vitals and the
+        // others) get the context fields of skills' own events, as on docs and examples. A field
+        // that skills' capture call set keeps its value.
+        var ctx = context();
+        Object.keys(ctx).forEach(function (k) {
+            if (!(k in props)) props[k] = ctx[k];
         });
         // The SDK marks every cookieless event with $cookieless_mode before before_send, so
         // identity_mode reports the lane the event was captured in (examples.expanso.io's rule).
-        if (ev.properties) ev.properties.identity_mode = ev.properties.$cookieless_mode ? 'ephemeral' : 'persistent';
+        props.identity_mode = props.$cookieless_mode ? 'ephemeral' : 'persistent';
         return ev;
     }
 
@@ -162,15 +228,31 @@
         // is skills' own. Nothing below may change a key of the contract's slice.
         var options = consent.consentInitOptions(window.location.hostname);
         options.api_host = API_HOST;
+        // docs.expanso.io's capture settings (src/analytics/client.mjs there). The toolbar and
+        // heatmaps open from the PostHog app, not from the proxy.
+        options.ui_host = 'https://us.posthog.com';
         // One $pageview per page load, sent below, and one more per lane change (watchConsent
         // below); app.js's pushState calls add none.
         options.capture_pageview = false;
-        options.capture_pageleave = false;
-        options.autocapture = false;
-        options.capture_dead_clicks = false;
-        options.capture_heatmaps = false;
-        options.capture_performance = false;
-        options.disable_session_recording = true;
+        options.capture_pageleave = true;
+        options.autocapture = true;
+        // This starts the recorder only when the PostHog project turns replay on. Typed values
+        // are masked, as on cloud.expanso.io: the search box text is never recorded. The two
+        // filter checkboxes are inputs too, but rrweb does not mask checkbox state.
+        // The custom URL mask replaces posthog-js's body scrubber, so skills records no
+        // network bodies or headers, and no console output (a logged message can hold the full
+        // page URL). The client values win over the project's remote config.
+        options.session_recording = {
+            recordCrossOriginIframes: false,
+            maskAllInputs: true,
+            recordBody: false,
+            recordHeaders: false,
+            maskCapturedNetworkRequestFn: cleanReplayUrl,
+        };
+        options.enable_recording_console_log = false;
+        options.capture_heatmaps = true;
+        // Web vitals.
+        options.capture_performance = true;
         options.advanced_disable_feature_flags = true;
         options.save_campaign_params = false;
         options.save_referrer = false;

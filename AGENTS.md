@@ -112,7 +112,18 @@ contract (`window.__expansoConsent`): `syncSdkConsentFlag` before `init`, the co
 `expanso-cookie-consent` cookie or posthog-js's consent flag yourself, and never set
 `persistence`, `cookieless_mode` or another key of `consentInitOptions` after it.
 
-PostHog's SDK core is not loaded from the PostHog proxy. `npm run build` also copies
+The capture settings follow docs.expanso.io (autocapture, page leave, heatmaps, web vitals,
+session replay). Replay masks typed input values (`session_recording.maskAllInputs: true`),
+as on cloud.expanso.io: keep it, because skills never records search text. Checkbox state is
+not masked. Replay URLs are cleaned to origin plus path too
+(`session_recording.maskCapturedNetworkRequestFn`). That mask replaces posthog-js's body
+scrubber, so `recordBody: false` and `recordHeaders: false` stay set: keep them.
+`tests/browser/capture.test.mjs` types into the search box and fails if the text reaches
+PostHog.
+
+PostHog's SDK core is not loaded from the PostHog proxy. Its lazy extensions (the replay
+recorder, web vitals, dead clicks) are, at the pinned path `/static/<version>/<name>.js`, which
+the proxy serves as in the pinned package. `npm run build` also copies
 `node_modules/posthog-js/dist/array.js` (the version `package.json` pins) to
 `docs/js/array-<version>.js` (git-ignored), and `docs/js/analytics.js` loads that file
 (`SDK_CORE_PATH`). To update posthog-js, change its exact version in `package.json`, run

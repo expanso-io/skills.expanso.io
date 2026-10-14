@@ -15,8 +15,10 @@
 //   scripts/test-posthog-real-sdk.mjs.
 //
 // The SDK is the real posthog-js: the site serves its own pinned copy (js/array-<version>.js,
-// from npm run build), and the PostHog answers here (remote config, event POSTs) are the
-// ones the real proxy gives. The events the SDK sends are decoded and kept per context.
+// from npm run build), and the PostHog answers here (remote config, the extensions the SDK
+// lazy-loads, event POSTs) are the ones the real proxy gives. The events the SDK sends are
+// decoded and kept per context, and so is the whole text of each body, with the replay data
+// that posthog-js compresses inside it.
 //
 // Before the tests run: pages.yml's copy step (in CI) and `npm run build`, which writes
 // docs/js/consent-runtime.js and docs/js/array-<version>.js.
@@ -210,11 +212,37 @@ function eventsIn(text) {
   return list.map((raw) => ({ event: raw.event, properties: raw.properties ?? {}, uuid: raw.uuid }));
 }
 
+/**
+ * A decoded body's text, followed by every gzip string inside it, unpacked. Session replay
+ * compresses snapshot data into such strings (latin1 bytes of a gzip stream).
+ */
+function unpack(text) {
+  const parts = [text];
+  const walk = (value) => {
+    if (typeof value === 'string') {
+      if (value.charCodeAt(0) !== 0x1f || value.charCodeAt(1) !== 0x8b) return;
+      const inner = gunzipSync(Buffer.from(value, 'latin1')).toString('utf8');
+      parts.push(inner);
+      try {
+        walk(JSON.parse(inner));
+      } catch {
+        // Not JSON: the text above is all there is.
+      }
+    } else if (value && typeof value === 'object') {
+      for (const item of Object.values(value)) walk(item);
+    }
+  };
+  walk(JSON.parse(text));
+  return parts.join('\n');
+}
+
 /** Every request a context made, how it was answered, and the events PostHog received. */
 class Traffic {
   site = [];
   posthog = [];
   events = [];
+  bodies = [];
+  extensions = [];
   problems = [];
   aborted = [];
   leaks = [];
@@ -260,6 +288,17 @@ class Traffic {
     if (method === 'GET' && url.pathname === `/array/${TOKEN}/config`) {
       return this.fulfill(route, 200, CONTENT_TYPES['.json'], JSON.stringify(REMOTE_CONFIG));
     }
+    // Extensions: /static/<version>/<name>.js, from the pinned package. posthog-js asks for
+    // its own version, so these are pinned with the core.
+    const extension = url.pathname.match(/^\/static\/([^/]+)\/([\w.-]+\.js)$/);
+    if (method === 'GET' && extension) {
+      const [, version, name] = extension;
+      const file = path.join(SDK_PACKAGE, 'dist', name);
+      this.extensions.push(`${version}/${name}`);
+      if (version === SDK_VERSION && existsSync(file)) return this.fulfill(route, 200, CONTENT_TYPES['.js'], readFileSync(file));
+      this.problems.push(`extension ${url.pathname} is not in posthog-js ${SDK_VERSION}`);
+      return this.fulfill(route, 404, CONTENT_TYPES['.txt'], 'not found');
+    }
     if (method === 'POST' && /^\/(flags|decide)(\/|$)/.test(url.pathname)) {
       this.problems.push(`unexpected ${url.pathname} request: skills reads no feature flags`);
       return this.fulfill(route, 200, CONTENT_TYPES['.json'], '{}');
@@ -276,7 +315,9 @@ class Traffic {
   record(request, url) {
     let events;
     try {
-      events = eventsIn(decodeBody(request.postDataBuffer(), url));
+      const text = decodeBody(request.postDataBuffer(), url);
+      this.bodies.push(unpack(text));
+      events = eventsIn(text);
     } catch (error) {
       this.problems.push(`could not read the body of ${url.pathname}: ${error.message}`);
       return;
@@ -384,17 +425,33 @@ export async function cookiesNamed(context, name) {
 
 /**
  * The events with this name that PostHog received from the page, once at least `count` arrived.
- * posthog-js sends its queue every 3 seconds, so this waits up to 10.
+ * posthog-js sends its queue every 3 seconds, so this waits up to 10 (or `timeout` ms: heatmaps
+ * and web vitals wait 5 more seconds in the SDK before they join the queue).
  */
-export async function sdkEvents(page, name, count = 1) {
+export async function sdkEvents(page, name, count = 1, timeout = 10_000) {
   const traffic = trafficOf.get(page);
   const matching = () => traffic.events.filter((e) => e.event === name);
-  for (const deadline = Date.now() + 10_000; matching().length < count && Date.now() < deadline;) {
+  for (const deadline = Date.now() + timeout; matching().length < count && Date.now() < deadline;) {
     await page.waitForTimeout(100);
   }
   assert.ok(matching().length >= count, `PostHog received ${matching().length} ${name}, expected ${count}; ` +
     `it received: ${traffic.events.map((e) => e.event).join(', ') || 'nothing'}`);
   return matching();
+}
+
+/** The events in the page's stored sendBeacon payloads to PostHog (window.__beacons), decoded. */
+export async function beaconEvents(page) {
+  const beacons = await page.evaluate(() => Promise.all(window.__beacons.map(async (beacon) => {
+    const data = beacon.data;
+    const bytes = data instanceof Blob ? new Uint8Array(await data.arrayBuffer())
+      : typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array();
+    let binary = '';
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return { url: beacon.url, body: btoa(binary) };
+  })));
+  return beacons
+    .filter((beacon) => new URL(beacon.url).hostname === POSTHOG_HOST)
+    .flatMap((beacon) => eventsIn(decodeBody(Buffer.from(beacon.body, 'base64'), new URL(beacon.url))));
 }
 
 /** The distinct_id in each identity cookie of the context, as "<distinct_id>@<domain>". */

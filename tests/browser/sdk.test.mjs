@@ -21,7 +21,10 @@ test('analytics.js loads the pinned posthog-js from this site, not from the Post
   assert.equal(pageview.properties.$lib_version, SDK_VERSION);
   assert.equal(pageview.properties.site_id, 'expanso_skills');
   assert.deepEqual(traffic.site.filter((pathname) => pathname.startsWith('/js/array')), [SDK_CORE_PATH]);
-  assert.deepEqual(traffic.posthog.filter((request) => request.includes('/static/')), []);
+  // From the proxy's /static/ the page asks only for the extensions the core lazy-loads, under
+  // the core's own version (the harness serves them from the pinned package).
+  assert.deepEqual(traffic.posthog.filter((request) => request.includes('/static/') &&
+    !request.startsWith(`GET /static/${SDK_VERSION}/`)), []);
   await closeSite(visit);
 });
 
