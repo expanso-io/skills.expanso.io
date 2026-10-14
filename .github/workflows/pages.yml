@@ -81,15 +81,16 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Build the consent runtime
-        # Writes docs/js/consent-runtime.js, which index.html loads. It is
-        # git-ignored, so the site has it only because this step runs.
+      - name: Build the consent runtime and the SDK core
+        # Writes docs/js/consent-runtime.js, which index.html loads, and
+        # docs/js/array-<version>.js, the posthog-js core analytics.js loads.
+        # Both are git-ignored, so the site has them only because this step runs.
         run: npm run build
 
-      - name: Test the consent contract and the runtime bundle
+      - name: Test the consent contract, the runtime bundle and the tag check
         run: npm test
 
-      - name: Check for retired analytics tags
+      - name: Check for retired analytics tags and the pinned SDK core
         run: python scripts/check-site-tags.py docs
 
       - name: Setup Pages

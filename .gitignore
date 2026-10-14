@@ -43,6 +43,7 @@ secrets.yaml
 docs/sitemap.xml
 docs/skill/
 
-# Node: npm ci, and the consent runtime that npm run build writes
+# Node: npm ci, and what npm run build writes (the consent runtime, the posthog-js core)
 node_modules/
 docs/js/consent-runtime.js
+docs/js/array-[0-9]*.[0-9]*.[0-9]*.js
