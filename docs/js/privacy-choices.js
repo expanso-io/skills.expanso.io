@@ -7,8 +7,8 @@
  * The choice is read and written only through the shared consent contract
  * (window.__expansoConsent, from js/consent-runtime.js). The banner's events go through
  * analytics.js's capture (window.__expansoSkillsCapture), so they get the skills context
- * fields, the host gate and the debug mode. Until analytics.js moves to the consent lanes, a
- * choice applies from the next page load.
+ * fields, the host gate and the debug mode. analytics.js watches the choice (watchConsent), so
+ * a choice moves PostHog to its lane at once, without a reload.
  *
  * The file name has no "cookie-consent" in it: the EasyList Cookie and Fanboy Cookiemonster
  * lists block paths like /cookie-consent.js, and a blocked banner is a page where nobody can
