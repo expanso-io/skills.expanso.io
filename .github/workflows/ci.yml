@@ -91,6 +91,23 @@ jobs:
             python3 -c 'import json; json.load(open("catalog-minimal.json")); print("catalog-minimal.json valid")'
           fi
 
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build the consent runtime
+        # Writes docs/js/consent-runtime.js (git-ignored). Runs before the
+        # tag check below copies docs/, so the check sees the built file.
+        run: npm run build
+
+      - name: Test the consent contract and the runtime bundle
+        run: npm test
+
       - name: Check the built site for retired analytics tags
         # Builds the per-skill pages the way pages.yml does, into a scratch
         # copy, and fails if GTM or the old ph.expanso.io proxy comes back.
