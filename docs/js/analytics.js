@@ -96,6 +96,9 @@
         }
         if (sdk) sdk.capture(event, payload); else queue.push([event, payload]);
     }
+    // The banner (js/privacy-choices.js) reports cookie_consent and cookie_banner_dismissed
+    // through this, so they get the context fields above and go where every event goes.
+    window.__expansoSkillsCapture = capture;
 
     if (!debug) {
         var script = document.createElement('script');

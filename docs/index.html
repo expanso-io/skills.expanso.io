@@ -123,9 +123,26 @@
             </div>
             <div class="footer-text">
                 MIT License &bull; Built by <a href="https://expanso.io" target="_blank" rel="noopener">Expanso</a>
+                &bull; <button type="button" id="privacy-settings" class="footer-privacy-button">Cookie settings</button>
             </div>
         </div>
     </footer>
+
+    <!-- Analytics privacy choices. Hidden until js/privacy-choices.js decides to show it.
+         Last in <body>, and it never takes focus on its own. -->
+    <section id="privacy-choices" class="privacy-choices" aria-label="Analytics privacy choices" hidden>
+        <p class="privacy-choices__text">
+            <span id="privacy-choices-text">We use analytics to understand how people browse these skills. Until you accept, we measure anonymously and keep no analytics cookies or data on your device. Accepting lets us recognise repeat visits.</span>
+            <a href="https://expanso.io/privacy-policy/" target="_blank" rel="noopener">Read our privacy policy</a>.
+            <span id="privacy-choices-current" class="privacy-choices__current" hidden></span>
+        </p>
+        <div class="privacy-choices__actions">
+            <button id="privacy-accept" type="button" class="privacy-choices__button privacy-choices__button--primary">Accept analytics</button>
+            <button id="privacy-decline" type="button" class="privacy-choices__button privacy-choices__button--link">Decline analytics</button>
+        </div>
+        <!-- Last, so Tab reaches both choices before the exit that makes none. -->
+        <button id="privacy-close" type="button" class="privacy-choices__close" aria-label="Close">&times;</button>
+    </section>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
@@ -134,6 +151,9 @@
     <!-- The shared consent contract, built by `npm run build`. A classic script (no async,
          defer or module), so window.__expansoConsent exists before the scripts below run. -->
     <script src="js/consent-runtime.js"></script>
+    <!-- The banner above. It needs only the consent runtime, so it runs even when a blocker
+         stops analytics.js. -->
+    <script src="js/privacy-choices.js"></script>
     <!-- Before app.js: it reads the /skill/<name> landing path that app.js clears. -->
     <script src="js/analytics.js"></script>
     <script src="js/app.js"></script>

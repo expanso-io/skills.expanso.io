@@ -1036,3 +1036,203 @@ code[class*="language-"] {
         text-align: center;
     }
 }
+
+/* Analytics privacy choices: the banner (js/privacy-choices.js) and the footer's
+   "Cookie settings" control. Modelled on expanso.io's banner: a bar at the bottom of the
+   viewport, a bottom sheet below 720px. Every button is at least 44x44 CSS px. The class
+   names avoid "cookie", which filter lists hide. Light and dark text colours keep at least
+   4.5:1 on the banner's background. */
+.privacy-choices {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    z-index: 900; /* Above the header (100), below the skill modal (1000). */
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: min(860px, calc(100vw - 32px));
+    padding: 8px 8px 8px 18px;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateX(-50%);
+}
+
+[data-theme="dark"] .privacy-choices {
+    background: var(--bg-secondary);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* display: flex above would otherwise beat the browser's own [hidden] rule. */
+.privacy-choices[hidden] {
+    display: none;
+}
+
+.privacy-choices__text {
+    flex: 1;
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* The reopened banner's "Your current choice" line, under the text. */
+.privacy-choices__current {
+    display: block;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.privacy-choices__current[hidden] {
+    display: none;
+}
+
+.privacy-choices__text a {
+    color: #1d4ed8;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    white-space: nowrap;
+}
+
+[data-theme="dark"] .privacy-choices__text a {
+    color: #60a5fa;
+}
+
+.privacy-choices__actions {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 4px;
+}
+
+.privacy-choices__button {
+    min-width: 44px;
+    min-height: 44px;
+    font: inherit;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+}
+
+.privacy-choices__button--primary {
+    padding: 0 16px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #2563eb;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+}
+
+.privacy-choices__button--primary:hover {
+    background: #1d4ed8;
+}
+
+/* A text button: refusing costs one click, like accepting. */
+.privacy-choices__button--link {
+    padding: 0 8px;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.privacy-choices__button--link:hover {
+    color: var(--text-primary);
+}
+
+.privacy-choices__close {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    font: inherit;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+}
+
+.privacy-choices__close:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+}
+
+.footer-privacy-button {
+    display: inline-flex;
+    align-items: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    font: inherit;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    vertical-align: middle;
+    background: none;
+    border: 0;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+    transition: color var(--transition);
+}
+
+.footer-privacy-button:hover {
+    color: var(--text-primary);
+}
+
+.privacy-choices button:focus-visible,
+.footer-privacy-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+    .privacy-choices {
+        right: 12px;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        left: 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        width: auto;
+        padding: 16px 16px 10px;
+        transform: none;
+    }
+
+    /* Keeps the text clear of the close button in the corner. */
+    .privacy-choices__text {
+        padding-right: 32px;
+    }
+
+    .privacy-choices__close {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+    }
+
+    .privacy-choices__actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .privacy-choices__button--link {
+        align-self: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .privacy-choices button,
+    .footer-privacy-button {
+        transition: none;
+    }
+}
