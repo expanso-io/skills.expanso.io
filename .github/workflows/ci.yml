@@ -100,17 +100,19 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Build the consent runtime
-        # Writes docs/js/consent-runtime.js (git-ignored). Runs before the
-        # tag check below copies docs/, so the check sees the built file.
+      - name: Build the consent runtime and the SDK core
+        # Writes docs/js/consent-runtime.js and docs/js/array-<version>.js
+        # (both git-ignored). Runs before the tag check below copies docs/,
+        # so the check sees the built files.
         run: npm run build
 
-      - name: Test the consent contract and the runtime bundle
+      - name: Test the consent contract, the runtime bundle and the tag check
         run: npm test
 
       - name: Check the built site for retired analytics tags
         # Builds the per-skill pages the way pages.yml does, into a scratch
-        # copy, and fails if GTM or the old ph.expanso.io proxy comes back.
+        # copy, and fails if GTM or the old ph.expanso.io proxy comes back,
+        # or if the site does not serve the pinned posthog-js core.
         run: |
           SITE="$RUNNER_TEMP/site"
           cp -r docs "$SITE"
@@ -152,7 +154,7 @@ jobs:
             done
           done
 
-      - name: Build the consent runtime
+      - name: Build the consent runtime and the SDK core
         run: npm run build
 
       - name: Run the browser tests

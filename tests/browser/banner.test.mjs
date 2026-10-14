@@ -138,8 +138,11 @@ test('Escape closes the reopened banner and records nothing; with a skill open, 
   assert.equal(await page.locator('#privacy-choices').getAttribute('hidden'), null, 'the banner stays open');
   assert.equal((await cookiesNamed(context, CONSENT))[0].value, 'true');
   assert.deepEqual(await cookiesNamed(context, DISMISSED), []);
-  assert.equal(await page.evaluate(() => (window.__sdkCaptured || [])
-    .filter((e) => e.event === 'cookie_consent' || e.event === 'cookie_banner_dismissed').length), 0);
+  // A later event marks the end: PostHog receives the events in the order they were captured.
+  await page.locator('.tab[data-category="jobs"]').click();
+  await sdkEvents(page, 'skills_category_tab');
+  assert.deepEqual(visit.traffic.events.map((e) => e.event)
+    .filter((name) => name === 'cookie_consent' || name === 'cookie_banner_dismissed'), []);
   await closeSite(visit);
 });
 

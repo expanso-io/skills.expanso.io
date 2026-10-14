@@ -98,12 +98,22 @@ claude.ai/directory/manage with plugin path `plugin`; raise `version` in
 `docs/js/consent-runtime.js` is built, not committed. Run `npm ci && npm run build` before a
 local preview (`just serve` runs both). The build bundles `src/consent-runtime.js` and
 the shared consent contract `src/cookieConsentUtils.ts` with esbuild into one classic script;
-`npm test` builds first, then runs the contract test and the bundle test. Never edit
+`npm test` builds first, then runs the contract test, the bundle test and the tag-check test
+(`tests/check-site-tags.test.mjs`). Never edit
 `src/cookieConsentUtils.ts` or `src/__tests__/cookieConsentUtils.test.ts`: they are copies
 of expanso-cloud's canonical files, and expanso-cloud's `CLAUDE.md` lists every copy. Copy
 both again from expanso-cloud; the test here keeps the `'../cookieConsentUtils.ts'` import
 (with the extension), as expanso.io's does, because plain Node runs it (Node 22.18 or later,
 `.node-version`).
+
+PostHog's SDK core is not loaded from the PostHog proxy. `npm run build` also copies
+`node_modules/posthog-js/dist/array.js` (the version `package.json` pins) to
+`docs/js/array-<version>.js` (git-ignored), and `docs/js/analytics.js` loads that file
+(`SDK_CORE_PATH`). To update posthog-js, change its exact version in `package.json`, run
+`npx -y npm@12.0.2 install`, change `SDK_CORE_PATH` to the new version, then run
+`npm run build`, `npm test` and `npm run test:browser`. `scripts/check-site-tags.py` fails
+while `SDK_CORE_PATH` names a file that is not the pinned core. Move posthog-js together with
+the other Expanso sites, so that all of them run the same version.
 
 `npm run test:browser` runs `tests/browser/` in Chromium (install it once with
 `npx playwright install chromium`). `tests/browser/harness.mjs` serves

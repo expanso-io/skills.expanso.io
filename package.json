@@ -8,18 +8,20 @@
   },
   "packageManager": "npm@12.0.2",
   "scripts": {
-    "build": "esbuild src/consent-runtime.js --bundle --format=iife --platform=browser --target=es2017 --minify --legal-comments=none --outfile=docs/js/consent-runtime.js",
+    "build": "esbuild src/consent-runtime.js --bundle --format=iife --platform=browser --target=es2017 --minify --legal-comments=none --outfile=docs/js/consent-runtime.js && node scripts/copy-sdk-core.mjs",
     "pretest": "npm run build",
-    "test": "node --import ./scripts/node-test-globals.mjs --test --test-reporter=spec src/__tests__/cookieConsentUtils.test.ts tests/consent-runtime.test.mjs",
+    "test": "node --import ./scripts/node-test-globals.mjs --test --test-reporter=spec src/__tests__/cookieConsentUtils.test.ts tests/consent-runtime.test.mjs tests/check-site-tags.test.mjs",
     "pretest:browser": "npm run build",
     "test:browser": "node --test --test-reporter=spec tests/browser/*.test.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
     "esbuild": "0.28.2",
-    "playwright": "1.63.0"
+    "playwright": "1.63.0",
+    "posthog-js": "1.435.6"
   },
   "allowScripts": {
+    "core-js": false,
     "esbuild@0.28.2": true
   }
 }

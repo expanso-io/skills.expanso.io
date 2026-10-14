@@ -23,6 +23,13 @@
 
     var POSTHOG_KEY = 'phc_f467hBf7ZUEc5HDT3xFcbhZ4tL7wUYJH0COw9Y2bzSK';
     var API_HOST = 'https://web.t.expanso.io';
+    // The SDK core: posthog-js's own dist/array.js from the version package.json pins, which
+    // `npm run build` copies into the site (scripts/copy-sdk-core.mjs). The proxy's
+    // /static/array.js was always the newest release, so a PostHog release reached visitors
+    // with no test run. Events, remote config and the extensions the core lazy-loads still go
+    // through API_HOST. Change the version here together with package.json:
+    // scripts/check-site-tags.py fails while this file is not the pinned core.
+    var SDK_CORE_PATH = '/js/array-1.435.6.js';
     var SITE_HOST = 'skills.expanso.io';
     var CONSENT_COOKIE = 'expanso-cookie-consent';
     var SCHEMA_VERSION = '2026-09-18';
@@ -103,7 +110,7 @@
     if (!debug) {
         var script = document.createElement('script');
         script.async = true;
-        script.src = API_HOST + '/static/array.js';
+        script.src = SDK_CORE_PATH;
         script.onload = function () {
             if (!window.posthog || typeof window.posthog.init !== 'function') return;
             window.posthog.init(POSTHOG_KEY, {
