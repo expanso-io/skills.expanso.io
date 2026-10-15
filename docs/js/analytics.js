@@ -76,11 +76,17 @@
         return 'browser_unclassified';
     }
 
+    // A skill link landed on a per-skill page, which sent the visitor here. index.html's first
+    // script put the skill's address back, and worked out the visit's referrer: after a skill
+    // link the page that linked to the skill, never a redirect page.
+    var landing = window.__skillsLanding || null;
+
     // The visit's source, on the page-load $pageview and on the one a lane change sends: with
     // save_referrer off, nothing else gives the new identity's session its source.
+    var referrer = typeof window.__skillsReferrer === 'string' ? window.__skillsReferrer : document.referrer;
     var referrerHost = '';
     try {
-        if (document.referrer) referrerHost = new URL(document.referrer).hostname;
+        if (referrer) referrerHost = new URL(referrer).hostname;
     } catch (e) {}
 
     var campaign = {};
@@ -289,12 +295,9 @@
         document.head.appendChild(script);
     }
 
-    // Page view. A per-skill page (/skill/<name>) redirects here and leaves
-    // its path in sessionStorage; record it as the landing skill.
-    var landing = null;
-    try { landing = sessionStorage.getItem('spa-redirect'); } catch (e) {}
+    // Page view. After a skill link, its path is the landing skill too.
     capture('$pageview', {
-        landing_skill_path: landing || null,
+        landing_skill_path: landing ? landing.path : null,
         referrer_host: referrerHost
     });
 
@@ -374,8 +377,7 @@
                     var skill = openSkill();
                     if (skill || tries++ > 40) {
                         var badge = document.querySelector('#skill-modal .skill-badges .badge');
-                        var deep = !!(landing && skill &&
-                            landing.replace(/\/$/, '').split('/').pop() === skill);
+                        var deep = !!(landing && skill && landing.skill === skill);
                         capture('skill_modal_open', {
                             skill: skill,
                             category: badge ? badge.textContent.trim() : null,

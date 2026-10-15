@@ -154,6 +154,10 @@ jobs:
             done
           done
 
+      - name: Build the per-skill pages (pages.yml's SEO step)
+        # A skill link opens one of these pages first; tests/browser/landing.test.mjs needs them.
+        run: python3 scripts/build-seo.py --catalog catalog.json --output docs
+
       - name: Build the consent runtime and the SDK core
         run: npm run build
 
