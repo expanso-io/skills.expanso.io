@@ -46,6 +46,8 @@ for (const [label, unavailable] of [['the per-skill page', {}], ['404.html', { [
     assert.equal(pageview.properties.$current_url, `${SITE}${SKILL_PATH}`);
     assert.equal(pageview.properties.landing_skill_path, SKILL_PATH);
     assert.equal(pageview.properties.referrer_host, 'www.google.com');
+    assert.equal(pageview.properties.$referrer, 'https://www.google.com/');
+    assert.equal(pageview.properties.$referring_domain, 'www.google.com');
     assert.equal(pageview.properties.utm_source, 'chatgpt.com');
     const [modal] = await sdkEvents(page, 'skill_modal_open');
     assert.equal(modal.properties.skill, SKILL);
@@ -57,6 +59,9 @@ for (const [label, unavailable] of [['the per-skill page', {}], ['404.html', { [
     await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
     const [leave] = (await beaconEvents(page)).filter((event) => event.event === '$pageleave');
     assert.equal(leave.properties.$prev_pageview_pathname, SKILL_PATH);
+    // ... and its source: here document.referrer is the redirect page, unlike on the home page.
+    assert.equal(leave.properties.$referring_domain, 'www.google.com');
+    assert.equal(leave.properties.$referrer, 'https://www.google.com/');
     assert.doesNotMatch(JSON.stringify(traffic.events), LEAK);
     assert.doesNotMatch(JSON.stringify(await beaconEvents(page)), LEAK);
     assert.doesNotMatch(traffic.bodies.join('\n'), LEAK);
@@ -69,6 +74,8 @@ test('a skill link without a referrer is a direct visit, not a visit from skills
   const [pageview] = await sdkEvents(visit.page, '$pageview');
   assert.equal(pageview.properties.$pathname, SKILL_PATH);
   assert.equal(pageview.properties.referrer_host, '');
+  assert.equal(pageview.properties.$referrer, '$direct');
+  assert.equal(pageview.properties.$referring_domain, '$direct');
   await closeSite(visit);
 });
 
@@ -79,6 +86,8 @@ test('the home page keeps its own address and referrer', async () => {
   assert.equal(pageview.properties.$pathname, '/');
   assert.equal(pageview.properties.landing_skill_path, null);
   assert.equal(pageview.properties.referrer_host, 'www.google.com');
+  assert.equal(pageview.properties.$referrer, 'https://www.google.com/');
+  assert.equal(pageview.properties.$referring_domain, 'www.google.com');
   assert.equal(page.url(), `${SITE}/`);
   await closeSite(visit);
 });
@@ -101,6 +110,7 @@ test('after a skill link, Back reopens the skill, and a reload is not a visit fr
   const [, again] = await sdkEvents(page, '$pageview', 2);
   assert.equal(again.properties.$pathname, SKILL_PATH);
   assert.equal(again.properties.referrer_host, '');
+  assert.equal(again.properties.$referring_domain, '$direct');
 
   // So does a reload of / after the skill is closed.
   await modalOpen(page).waitFor();
@@ -110,6 +120,7 @@ test('after a skill link, Back reopens the skill, and a reload is not a visit fr
   const [, , home] = await sdkEvents(page, '$pageview', 3);
   assert.equal(home.properties.$pathname, '/');
   assert.equal(home.properties.referrer_host, '');
+  assert.equal(home.properties.$referring_domain, '$direct');
   await closeSite(visit);
 });
 
@@ -141,6 +152,7 @@ test('a skill link whose page does not finish keeps the skill address, and later
   assert.equal(next.properties.$pathname, '/');
   assert.equal(next.properties.landing_skill_path, null);
   assert.equal(next.properties.referrer_host, 'expanso.io');
+  assert.equal(next.properties.$referring_domain, 'expanso.io');
 
   // A referrer that a redirect stored, but whose load never came (the network failed during the
   // hop), does not belong to a later visit.
@@ -148,6 +160,7 @@ test('a skill link whose page does not finish keeps the skill address, and later
   await page.goto(`${SITE}/`, { referer: 'https://expanso.io/' });
   const [, , later] = await sdkEvents(page, '$pageview', 3);
   assert.equal(later.properties.referrer_host, 'expanso.io');
+  assert.equal(later.properties.$referring_domain, 'expanso.io');
   assert.equal(later.properties.landing_skill_path, null);
   assert.deepEqual(await spaKeys(page), []);
   await closeSite(blocked);
@@ -214,4 +227,39 @@ for (const name of ['no-such-skill', 'constructor']) {
 test('index.html declares its charset in its first 1024 bytes', () => {
   const head = readFileSync(new URL('../../docs/index.html', import.meta.url)).subarray(0, 1024).toString('latin1');
   assert.match(head, /<meta charset="UTF-8">/i);
+});
+
+// PostHog's channel charts read $referring_domain (and the campaign tags) of a visit's first
+// event; without it, every skills visit was "Unknown".
+test('a direct visit to the home page has $direct as its source', async () => {
+  const visit = await openSite(browser, { cookies: [geoCookie('row')] });
+  const [pageview] = await sdkEvents(visit.page, '$pageview');
+  assert.equal(pageview.properties.$referrer, '$direct');
+  assert.equal(pageview.properties.$referring_domain, '$direct');
+  await closeSite(visit);
+});
+
+// A PostHog session can start with any event: after 30 minutes without one, the next click
+// starts a new session. Every event carries the source, as on examples.expanso.io.
+test('every event carries the visit source, the SDK events too', async () => {
+  const visit = await openSite(browser, { cookies: [geoCookie('row')], referer: 'https://www.google.com/' });
+  const { page } = visit;
+  await page.locator('.tab[data-category="jobs"]').click();
+  const [tab] = await sdkEvents(page, 'skills_category_tab');
+  assert.equal(tab.properties.$referring_domain, 'www.google.com');
+  assert.equal(tab.properties.$referrer, 'https://www.google.com/');
+  await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+  const [leave] = (await beaconEvents(page)).filter((event) => event.event === '$pageleave');
+  assert.equal(leave.properties.$referring_domain, 'www.google.com');
+  await closeSite(visit);
+});
+
+// posthog-js takes its own session entry fields from document.referrer, which after a skill link
+// is the redirect page.
+test("after a skill link, the SDK's session entry fields name the visit's own source", async () => {
+  const visit = await openSite(browser, { cookies: [geoCookie('row')], pathname: SKILL_PATH, referer: 'https://www.google.com/' });
+  const [pageview] = await sdkEvents(visit.page, '$pageview');
+  assert.equal(pageview.properties.$session_entry_referring_domain, 'www.google.com');
+  assert.equal(pageview.properties.$session_entry_referrer, 'https://www.google.com/');
+  await closeSite(visit);
 });
