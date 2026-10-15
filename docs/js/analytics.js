@@ -89,6 +89,15 @@
         if (referrer) referrerHost = new URL(referrer).hostname;
     } catch (e) {}
 
+    // PostHog's own source fields, which its channel charts read from a session's first event.
+    // save_referrer is off, so the SDK sets neither: skills puts them on every event (context()
+    // below), because a session can start with any event. As on examples.expanso.io, the
+    // referrer (origin + path), or '$direct' without one.
+    var source = {
+        $referrer: referrerHost ? cleanUrl(referrer) || referrerHost : '$direct',
+        $referring_domain: referrerHost || '$direct'
+    };
+
     var campaign = {};
     ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(function (k) {
         if (params.has(k)) campaign[k] = params.get(k).slice(0, 200);
@@ -106,7 +115,9 @@
             traffic_class: trafficClass(),
             is_synthetic: params.get('analytics_test') === '1',
             $current_url: cleanUrl(window.location.href),
-            $pathname: window.location.pathname
+            $pathname: window.location.pathname,
+            $referrer: source.$referrer,
+            $referring_domain: source.$referring_domain
         };
         for (var k in campaign) ctx[k] = campaign[k];
         return ctx;
@@ -204,6 +215,15 @@
         var ctx = context();
         Object.keys(ctx).forEach(function (k) {
             if (!(k in props)) props[k] = ctx[k];
+        });
+        // posthog-js takes its session entry referrer from document.referrer. When that was
+        // skills itself (after a skill link, the redirect page), the visit's source is this
+        // page's: the one index.html's first script worked out.
+        [props, ev.$set_once].forEach(function (fields) {
+            if (fields && fields.$session_entry_referring_domain === window.location.hostname) {
+                fields.$session_entry_referrer = source.$referrer;
+                fields.$session_entry_referring_domain = source.$referring_domain;
+            }
         });
         // The SDK marks every cookieless event with $cookieless_mode before before_send, so
         // identity_mode reports the lane the event was captured in (examples.expanso.io's rule).

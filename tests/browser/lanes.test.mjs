@@ -94,6 +94,8 @@ test('Accept moves an EU visitor to the shared identity cookie, with one more $p
   // The new identity's first page view keeps the visit's source; the landing is counted once.
   assert.equal(pageviews[0].properties.referrer_host, 'www.google.com');
   assert.equal(pageviews[1].properties.referrer_host, 'www.google.com');
+  assert.equal(pageviews[1].properties.$referring_domain, 'www.google.com');
+  assert.equal(pageviews[1].properties.$referrer, 'https://www.google.com/');
   assert.equal('landing_skill_path' in pageviews[1].properties, false);
   const [choice] = await sdkEvents(page, 'cookie_consent');
   assertPersistent(choice, 'granted');
