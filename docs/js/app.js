@@ -69,7 +69,7 @@
 
             // A skill link's address is back already (index.html's first script).
             var match = window.location.pathname.match(/^\/skill\/([^/]+)\/?$/);
-            if (match && catalog.skills[match[1]]) {
+            if (match && hasSkill(match[1])) {
                 openModal(match[1], true);
             }
         } catch (error) {
@@ -78,8 +78,13 @@
         }
     }
 
+    // A skill of the catalog; a name such as "constructor" is not one.
+    function hasSkill(name) {
+        return typeof name === 'string' && Object.prototype.hasOwnProperty.call(catalog.skills, name);
+    }
+
     async function loadCatalog() {
-        var urls = ['/catalog.json', '../catalog.json', GITHUB_RAW_BASE + '/catalog.json'];
+        var urls = ['/catalog.json', GITHUB_RAW_BASE + '/catalog.json'];
         for (var i = 0; i < urls.length; i++) {
             try {
                 var response = await fetch(urls[i]);
@@ -96,7 +101,7 @@
     // Best effort: without the report the modal says status is unknown rather
     // than implying a pipeline validates.
     async function loadValidationReport() {
-        var urls = ['/validation-report.json', '../validation-report.json', GITHUB_RAW_BASE + '/validation-report.json'];
+        var urls = ['/validation-report.json', GITHUB_RAW_BASE + '/validation-report.json'];
         for (var i = 0; i < urls.length; i++) {
             try {
                 var response = await fetch(urls[i]);
@@ -178,7 +183,7 @@
 
         window.addEventListener('popstate', function(e) {
             // A link to an unknown skill also leaves a skill state (index.html's first script).
-            if (e.state && e.state.skill && catalog.skills[e.state.skill]) {
+            if (e.state && hasSkill(e.state.skill)) {
                 openModal(e.state.skill, true);
             } else {
                 closeModal(true);
@@ -274,8 +279,8 @@
     // ── Modal ──────────────────────────────────────────────
 
     async function openModal(skillName, skipPush) {
+        if (!hasSkill(skillName)) return;
         var skill = catalog.skills[skillName];
-        if (!skill) return;
 
         if (!skipPush) history.pushState({ skill: skillName }, '', '/skill/' + skillName);
         updateMetaTags(skillName, skill);

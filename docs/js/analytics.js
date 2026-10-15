@@ -77,13 +77,13 @@
     }
 
     // A skill link landed on a per-skill page, which sent the visitor here. index.html's first
-    // script put the skill's address back and kept the page that linked to the skill.
+    // script put the skill's address back, and worked out the visit's referrer: after a skill
+    // link the page that linked to the skill, never a redirect page.
     var landing = window.__skillsLanding || null;
 
     // The visit's source, on the page-load $pageview and on the one a lane change sends: with
-    // save_referrer off, nothing else gives the new identity's session its source. After a
-    // skill link, document.referrer is the per-skill page, so the source is the one it had.
-    var referrer = landing ? landing.referrer : document.referrer;
+    // save_referrer off, nothing else gives the new identity's session its source.
+    var referrer = typeof window.__skillsReferrer === 'string' ? window.__skillsReferrer : document.referrer;
     var referrerHost = '';
     try {
         if (referrer) referrerHost = new URL(referrer).hostname;
@@ -377,8 +377,7 @@
                     var skill = openSkill();
                     if (skill || tries++ > 40) {
                         var badge = document.querySelector('#skill-modal .skill-badges .badge');
-                        var deep = !!(landing && skill &&
-                            landing.path.replace(/\/$/, '').split('/').pop() === skill);
+                        var deep = !!(landing && skill && landing.skill === skill);
                         capture('skill_modal_open', {
                             skill: skill,
                             category: badge ? badge.textContent.trim() : null,

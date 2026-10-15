@@ -26,8 +26,15 @@ SITE_URL = "https://skills.expanso.io"
 
 # Each per-skill page sends the visitor on to the app with docs/404.html's own redirect
 # script, so the two redirects stay the same (index.html's first script reads what it stores).
-_NOT_FOUND_PAGE = Path(__file__).resolve().parent.parent / "docs" / "404.html"
-REDIRECT_SCRIPT = re.search(r"<script>.*?</script>", _NOT_FOUND_PAGE.read_text(encoding="utf-8"), re.S).group(0)
+NOT_FOUND_PAGE = Path(__file__).resolve().parent.parent / "docs" / "404.html"
+
+
+def redirect_script() -> str:
+    """The <script> element of docs/404.html (the repository's, whatever --output is)."""
+    match = re.search(r"<script>.*?</script>", NOT_FOUND_PAGE.read_text(encoding="utf-8"), re.S)
+    if not match:
+        sys.exit(f"build-seo.py: no <script> element in {NOT_FOUND_PAGE}; per-skill pages need its redirect script")
+    return match.group(0)
 
 
 CATEGORY_DISPLAY = {
@@ -96,6 +103,7 @@ def generate_sitemap(catalog: dict, output_dir: Path) -> None:
 def generate_skill_pages(catalog: dict, output_dir: Path) -> None:
     """Generate per-skill index.html pages with SEO meta tags."""
     skills = catalog.get("skills", {})
+    redirect = redirect_script()
     count = 0
 
     for skill_name, skill in skills.items():
@@ -156,7 +164,7 @@ def generate_skill_pages(catalog: dict, output_dir: Path) -> None:
     </script>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>E</text></svg>">
-    {REDIRECT_SCRIPT}
+    {redirect}
 </head>
 <body>
     <h1>{pretty_name}</h1>

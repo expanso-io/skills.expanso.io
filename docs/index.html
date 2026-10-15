@@ -1,37 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <script>
         (function () {
             // A skill link opens a per-skill page (scripts/build-seo.py) or 404.html. Both send
-            // the visitor here with the query, and leave the skill's path and the page that
-            // linked to it in sessionStorage. Take both now, so that they last this page load
-            // only, and put the skill's address back before any other script runs: every event,
-            // the SDK's own page fields too, then names the skill page. This is why this page's
-            // URLs (and app.js's catalog fetches) start with /. analytics.js reads the referrer
-            // from window.__skillsLanding.
-            var landing = null;
+            // the visitor here with the skill's path in the _skill query parameter, and the page
+            // that linked to the skill in sessionStorage. Put the skill's address back now,
+            // before any other script runs: every event, the SDK's own page fields too, then
+            // names the skill page. This is why this page's local URLs (and app.js's catalog
+            // fetches) start with /. app.js and analytics.js read window.__skillsLanding;
+            // analytics.js reads the visit's referrer from window.__skillsReferrer.
             function ownRedirect(url) {
                 try {
                     var from = new URL(url);
                     return from.origin === location.origin && /^\/skill\//.test(from.pathname);
                 } catch (e) { return false; }
             }
+            var landing = null;
+            var referrer = document.referrer;
+            // The stored referrer counts only for the load whose address names a skill.
+            var stored = '';
             try {
-                var path = sessionStorage.getItem('spa-redirect');
-                var referrer = sessionStorage.getItem('spa-referrer') || '';
-                sessionStorage.removeItem('spa-redirect');
+                stored = sessionStorage.getItem('spa-referrer') || '';
                 sessionStorage.removeItem('spa-referrer');
-                var skill = path && location.pathname === '/' && path.match(/^\/skill\/([^/]+)\/?$/);
+            } catch (e) {}
+            try {
+                var param = location.search.match(/[?&]_skill=([^&#]*)/);
+                var path = param ? decodeURIComponent(param[1]) : '';
+                var skill = location.pathname === '/' && path.match(/^\/skill\/([^/]+)\/?$/);
                 if (skill) {
-                    // A reload asks for the skill page with the redirect page as its referrer.
-                    if (ownRedirect(referrer)) referrer = '';
+                    var search = location.search.replace(/([?&])_skill=[^&#]*&?/, '$1').replace(/[?&]$/, '');
                     // The state lets Back reopen the skill, as after a card click (app.js).
-                    history.replaceState({ skill: skill[1] }, '', path + location.search + location.hash);
-                    landing = { path: path, referrer: referrer };
+                    history.replaceState({ skill: skill[1] }, '', path + search + location.hash);
+                    landing = { path: path, skill: skill[1] };
+                    // document.referrer is the redirect page; the page before it is the source.
+                    referrer = stored;
                 }
             } catch (e) {}
+            // A reload (or Back without the page cache) asks for a page again with its old
+            // referrer, which can be a redirect page: no source then.
+            if (ownRedirect(referrer)) referrer = '';
             window.__skillsLanding = landing;
+            window.__skillsReferrer = referrer;
         })();
     </script>
     <script>
@@ -44,7 +55,6 @@
                 'data-theme', theme === 'dark' ? 'dark' : 'light');
         })();
     </script>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expanso Skills Marketplace – Pre-Built Data Pipelines for AI Agents</title>
     <meta name="description" content="Browse 177 pre-built Expanso pipeline definitions for AI agents. Deploy to your own Expanso Cloud control plane and run them on edge nodes you control.">
