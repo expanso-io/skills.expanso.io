@@ -4,21 +4,22 @@
     <meta charset="utf-8">
     <title>Expanso Skills</title>
     <script>
-        // SPA redirect for GitHub Pages / Cloudflare Pages
-        // Routes like /skill/foo → index.html, whose landing script puts the path back. The
-        // page that linked here goes along for analytics.js, and so do the query (campaign
-        // tags) and the hash.
+        // SPA redirect for GitHub Pages / Cloudflare Pages: a skill link (/skill/foo) goes to
+        // index.html, whose first script reads the path and the page that linked here, and
+        // puts the address back. The query (campaign tags) and the hash come along.
+        // scripts/build-seo.py copies this script into every per-skill page. Without
+        // sessionStorage, the visitor stays here (a per-skill page shows the skill).
         var path = window.location.pathname;
         if (path.match(/^\/skill\/[^/]+\/?$/)) {
             try {
                 sessionStorage.setItem('spa-redirect', path);
                 sessionStorage.setItem('spa-referrer', document.referrer);
+                window.location.replace('/' + window.location.search + window.location.hash);
             } catch (e) {}
-            window.location.replace('/' + window.location.search + window.location.hash);
         }
     </script>
 </head>
 <body>
-    <p>Redirecting...</p>
+    <p>Page not found. <a href="/">Browse all skills</a></p>
 </body>
 </html>

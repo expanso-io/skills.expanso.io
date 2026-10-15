@@ -132,11 +132,12 @@ the proxy serves as in the pinned package. `npm run build` also copies
 while `SDK_CORE_PATH` names a file that is not the pinned core. Move posthog-js together with
 the other Expanso sites, so that all of them run the same version.
 
-A skill link (`/skill/<name>/`) opens a per-skill page from `scripts/build-seo.py`, or
-`docs/404.html`, which sends the visitor to `/` with the path and the referrer in
-sessionStorage, for one page load. `app.js` puts the address back only after the catalog loads, because
-`index.html`'s relative URLs need `/`, so `analytics.js` gives the page-load `$pageview` the
-skill page's address and source itself. Change the two redirect pages together.
+A skill link (`/skill/<name>/`) opens a per-skill page from `scripts/build-seo.py` (or
+`docs/404.html`, whose redirect script build-seo.py copies into every per-skill page). It sends
+the visitor to `/` with the query, and the path and the referrer in sessionStorage. The first
+script in `index.html` takes both (they last one page load) and puts the skill's address back
+before any other script runs, so every event names the skill page. That is why every local URL in
+`index.html`, and app.js's catalog fetches, start with `/`: keep it so.
 
 `npm run test:browser` runs `tests/browser/` in Chromium (install it once with
 `npx playwright install chromium`). It needs pages.yml's copy step and the per-skill pages

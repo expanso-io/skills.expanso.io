@@ -76,37 +76,14 @@
         return 'browser_unclassified';
     }
 
-    // A skill link lands on a per-skill page (scripts/build-seo.py) or on 404.html. Both send
-    // the visitor here with the query, and leave the skill's path and the page that linked to
-    // it in sessionStorage. app.js puts the path back once the catalog has loaded.
-    // The keys count only when that redirect page is this page's referrer: keys left by a
-    // redirect whose page never finished (app.js did not run) belong to no page load.
-    function fromRedirect(path) {
-        try {
-            var from = new URL(document.referrer);
-            return from.origin === window.location.origin && from.pathname === path;
-        } catch (e) { return false; }
-    }
-    var landing = null;
-    var landingReferrer = '';
-    try {
-        landing = sessionStorage.getItem('spa-redirect');
-        landingReferrer = sessionStorage.getItem('spa-referrer') || '';
-        // This script is the referrer's only reader.
-        sessionStorage.removeItem('spa-referrer');
-        if (landing && !(/^\/skill\/[^/]+\/?$/.test(landing) && fromRedirect(landing))) {
-            sessionStorage.removeItem('spa-redirect');
-            landing = null;
-        }
-    } catch (e) {
-        landing = null;
-    }
-    landing = landing || null;
+    // A skill link landed on a per-skill page, which sent the visitor here. index.html's first
+    // script put the skill's address back and kept the page that linked to the skill.
+    var landing = window.__skillsLanding || null;
 
     // The visit's source, on the page-load $pageview and on the one a lane change sends: with
     // save_referrer off, nothing else gives the new identity's session its source. After a
     // skill link, document.referrer is the per-skill page, so the source is the one it had.
-    var referrer = landing ? landingReferrer : document.referrer;
+    var referrer = landing ? landing.referrer : document.referrer;
     var referrerHost = '';
     try {
         if (referrer) referrerHost = new URL(referrer).hostname;
@@ -138,10 +115,8 @@
     // Events captured before the SDK loads are queued, then flushed.
     var queue = [];
     var sdk = null;
-    // `address` replaces the page address in the context fields: only the page-load $pageview
-    // after a skill link passes one.
-    function capture(event, props, address) {
-        var payload = Object.assign({}, props || {}, context(), address || {});
+    function capture(event, props) {
+        var payload = Object.assign({}, props || {}, context());
         if (debug) {
             (window.__expansoAnalyticsEvents = window.__expansoAnalyticsEvents || [])
                 .push({ event: event, properties: payload });
@@ -320,12 +295,11 @@
         document.head.appendChild(script);
     }
 
-    // Page view. After a skill link it is the skill page's: its address, not / (app.js puts
-    // the address back only later), and its path as the landing skill too.
+    // Page view. After a skill link, its path is the landing skill too.
     capture('$pageview', {
-        landing_skill_path: landing,
+        landing_skill_path: landing ? landing.path : null,
         referrer_host: referrerHost
-    }, landing ? { $current_url: cleanUrl(landing), $pathname: landing } : null);
+    });
 
     var overlay = document.getElementById('modal-overlay');
     function modalOpen() {
@@ -404,7 +378,7 @@
                     if (skill || tries++ > 40) {
                         var badge = document.querySelector('#skill-modal .skill-badges .badge');
                         var deep = !!(landing && skill &&
-                            landing.replace(/\/$/, '').split('/').pop() === skill);
+                            landing.path.replace(/\/$/, '').split('/').pop() === skill);
                         capture('skill_modal_open', {
                             skill: skill,
                             category: badge ? badge.textContent.trim() : null,

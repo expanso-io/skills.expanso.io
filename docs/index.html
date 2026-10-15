@@ -3,6 +3,39 @@
 <head>
     <script>
         (function () {
+            // A skill link opens a per-skill page (scripts/build-seo.py) or 404.html. Both send
+            // the visitor here with the query, and leave the skill's path and the page that
+            // linked to it in sessionStorage. Take both now, so that they last this page load
+            // only, and put the skill's address back before any other script runs: every event,
+            // the SDK's own page fields too, then names the skill page. This is why this page's
+            // URLs (and app.js's catalog fetches) start with /. analytics.js reads the referrer
+            // from window.__skillsLanding.
+            var landing = null;
+            function ownRedirect(url) {
+                try {
+                    var from = new URL(url);
+                    return from.origin === location.origin && /^\/skill\//.test(from.pathname);
+                } catch (e) { return false; }
+            }
+            try {
+                var path = sessionStorage.getItem('spa-redirect');
+                var referrer = sessionStorage.getItem('spa-referrer') || '';
+                sessionStorage.removeItem('spa-redirect');
+                sessionStorage.removeItem('spa-referrer');
+                var skill = path && location.pathname === '/' && path.match(/^\/skill\/([^/]+)\/?$/);
+                if (skill) {
+                    // A reload asks for the skill page with the redirect page as its referrer.
+                    if (ownRedirect(referrer)) referrer = '';
+                    // The state lets Back reopen the skill, as after a card click (app.js).
+                    history.replaceState({ skill: skill[1] }, '', path + location.search + location.hash);
+                    landing = { path: path, referrer: referrer };
+                }
+            } catch (e) {}
+            window.__skillsLanding = landing;
+        })();
+    </script>
+    <script>
+        (function () {
             // Light on first visit. Dark only when the viewer explicitly chose it
             // and we stored that choice; OS preference deliberately does not apply.
             var theme = null;
@@ -30,7 +63,7 @@
     <meta name="twitter:title" content="Expanso Skills Marketplace – Data Pipelines for AI Agents">
     <meta name="twitter:description" content="177 pre-built Expanso pipeline definitions and integration connectors for AI agents. Runs on edge nodes you own.">
 
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>E</text></svg>">
 </head>
@@ -150,12 +183,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
     <!-- The shared consent contract, built by `npm run build`. A classic script (no async,
          defer or module), so window.__expansoConsent exists before the scripts below run. -->
-    <script src="js/consent-runtime.js"></script>
+    <script src="/js/consent-runtime.js"></script>
     <!-- The banner above. It needs only the consent runtime, so it runs even when a blocker
          stops analytics.js. -->
-    <script src="js/privacy-choices.js"></script>
-    <!-- Before app.js: it reads the /skill/<name> landing path that app.js clears. -->
-    <script src="js/analytics.js"></script>
-    <script src="js/app.js"></script>
+    <script src="/js/privacy-choices.js"></script>
+    <script src="/js/analytics.js"></script>
+    <script src="/js/app.js"></script>
 </body>
 </html>
