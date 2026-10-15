@@ -5,12 +5,16 @@
     <title>Expanso Skills</title>
     <script>
         // SPA redirect for GitHub Pages / Cloudflare Pages
-        // Routes like /skill/foo → index.html with the path preserved
+        // Routes like /skill/foo → index.html, whose landing script puts the path back. The
+        // page that linked here goes along for analytics.js, and so do the query (campaign
+        // tags) and the hash.
         var path = window.location.pathname;
         if (path.match(/^\/skill\/[^/]+\/?$/)) {
-            // Store the path and redirect to root
-            sessionStorage.setItem('spa-redirect', path);
-            window.location.replace('/');
+            try {
+                sessionStorage.setItem('spa-redirect', path);
+                sessionStorage.setItem('spa-referrer', document.referrer);
+            } catch (e) {}
+            window.location.replace('/' + window.location.search + window.location.hash);
         }
     </script>
 </head>

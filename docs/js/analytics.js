@@ -76,11 +76,40 @@
         return 'browser_unclassified';
     }
 
+    // A skill link lands on a per-skill page (scripts/build-seo.py) or on 404.html. Both send
+    // the visitor here with the query, and leave the skill's path and the page that linked to
+    // it in sessionStorage. app.js puts the path back once the catalog has loaded.
+    // The keys count only when that redirect page is this page's referrer: keys left by a
+    // redirect whose page never finished (app.js did not run) belong to no page load.
+    function fromRedirect(path) {
+        try {
+            var from = new URL(document.referrer);
+            return from.origin === window.location.origin && from.pathname === path;
+        } catch (e) { return false; }
+    }
+    var landing = null;
+    var landingReferrer = '';
+    try {
+        landing = sessionStorage.getItem('spa-redirect');
+        landingReferrer = sessionStorage.getItem('spa-referrer') || '';
+        // This script is the referrer's only reader.
+        sessionStorage.removeItem('spa-referrer');
+        if (landing && !(/^\/skill\/[^/]+\/?$/.test(landing) && fromRedirect(landing))) {
+            sessionStorage.removeItem('spa-redirect');
+            landing = null;
+        }
+    } catch (e) {
+        landing = null;
+    }
+    landing = landing || null;
+
     // The visit's source, on the page-load $pageview and on the one a lane change sends: with
-    // save_referrer off, nothing else gives the new identity's session its source.
+    // save_referrer off, nothing else gives the new identity's session its source. After a
+    // skill link, document.referrer is the per-skill page, so the source is the one it had.
+    var referrer = landing ? landingReferrer : document.referrer;
     var referrerHost = '';
     try {
-        if (document.referrer) referrerHost = new URL(document.referrer).hostname;
+        if (referrer) referrerHost = new URL(referrer).hostname;
     } catch (e) {}
 
     var campaign = {};
@@ -109,8 +138,10 @@
     // Events captured before the SDK loads are queued, then flushed.
     var queue = [];
     var sdk = null;
-    function capture(event, props) {
-        var payload = Object.assign({}, props || {}, context());
+    // `address` replaces the page address in the context fields: only the page-load $pageview
+    // after a skill link passes one.
+    function capture(event, props, address) {
+        var payload = Object.assign({}, props || {}, context(), address || {});
         if (debug) {
             (window.__expansoAnalyticsEvents = window.__expansoAnalyticsEvents || [])
                 .push({ event: event, properties: payload });
@@ -289,14 +320,12 @@
         document.head.appendChild(script);
     }
 
-    // Page view. A per-skill page (/skill/<name>) redirects here and leaves
-    // its path in sessionStorage; record it as the landing skill.
-    var landing = null;
-    try { landing = sessionStorage.getItem('spa-redirect'); } catch (e) {}
+    // Page view. After a skill link it is the skill page's: its address, not / (app.js puts
+    // the address back only later), and its path as the landing skill too.
     capture('$pageview', {
-        landing_skill_path: landing || null,
+        landing_skill_path: landing,
         referrer_host: referrerHost
-    });
+    }, landing ? { $current_url: cleanUrl(landing), $pathname: landing } : null);
 
     var overlay = document.getElementById('modal-overlay');
     function modalOpen() {

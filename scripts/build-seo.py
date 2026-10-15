@@ -151,9 +151,14 @@ def generate_skill_pages(catalog: dict, output_dir: Path) -> None:
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>E</text></svg>">
     <script>
-        // SPA redirect: preserve path for the main app
-        sessionStorage.setItem('spa-redirect', window.location.pathname);
-        window.location.replace('/');
+        // SPA redirect: index.html shows the skill, and its landing script puts this path
+        // back. The page that linked here goes along for analytics.js, and so do the query
+        // (campaign tags) and the hash.
+        try {{
+            sessionStorage.setItem('spa-redirect', window.location.pathname);
+            sessionStorage.setItem('spa-referrer', document.referrer);
+        }} catch (e) {{}}
+        window.location.replace('/' + window.location.search + window.location.hash);
     </script>
 </head>
 <body>

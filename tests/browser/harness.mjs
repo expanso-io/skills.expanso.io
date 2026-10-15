@@ -20,8 +20,8 @@
 // decoded and kept per context, and so is the whole text of each body, with the replay data
 // that posthog-js compresses inside it.
 //
-// Before the tests run: pages.yml's copy step (in CI) and `npm run build`, which writes
-// docs/js/consent-runtime.js and docs/js/array-<version>.js.
+// Before the tests run: pages.yml's copy and SEO steps (in CI) and `npm run build`, which
+// writes docs/js/consent-runtime.js and docs/js/array-<version>.js.
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -250,7 +250,8 @@ class Traffic {
   seen = new Set();
 
   // Site files that fail on purpose, as { '/js/<file>': 404 | 'abort' }: 404 is a half
-  // deploy, 'abort' a blocker or a network error.
+  // deploy (or, for a /skill/<name>/ page, a skill without one), 'abort' a blocker or a
+  // network error.
   constructor(unavailable = {}) {
     this.unavailable = unavailable;
   }
@@ -376,10 +377,10 @@ export async function launchBrowser() {
 /**
  * A fresh context with the given cookies, on https://skills.expanso.io/ (or `pathname`, or
  * another `origin`: LOCAL_PREVIEW). `unavailable` makes site files fail
- * ({ '/js/<file>': 404 | 'abort' }). Returns the page, its context, the page errors and the
- * traffic record.
+ * ({ '/js/<file>': 404 | 'abort' }). `initScripts` run in each page before its own scripts.
+ * Returns the page, its context, the page errors and the traffic record.
  */
-export async function openSite(browser, { cookies = [], viewport, pathname = '/', origin = SITE, unavailable = {}, referer } = {}) {
+export async function openSite(browser, { cookies = [], viewport, pathname = '/', origin = SITE, unavailable = {}, referer, initScripts = [] } = {}) {
   for (const [file, failure] of Object.entries(unavailable)) {
     assert.ok(failure === 404 || failure === 'abort', `unavailable ${file}: ${failure} is not 404 or 'abort'`);
   }
@@ -394,6 +395,7 @@ export async function openSite(browser, { cookies = [], viewport, pathname = '/'
   const traffic = new Traffic(unavailable);
   await context.addInitScript(maskAutomation);
   await context.addInitScript(stubUnloadRequests);
+  for (const script of initScripts) await context.addInitScript(script);
   if (cookies.length) await context.addCookies(cookies);
   await context.route('**/*', (route) => traffic.handle(route));
   await context.routeWebSocket(/.*/, (ws) => { traffic.aborted.push(`websocket ${ws.url()}`); ws.close(); });

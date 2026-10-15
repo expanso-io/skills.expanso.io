@@ -61,16 +61,25 @@
 
     async function init() {
         initThemeToggle();
+        // A skill link came through a per-skill page or 404.html, which left its path here.
+        // Take it now, so that the keys last one page load even if the catalog fails below;
+        // analytics.js has read them already. Blocked storage throws: no skill then.
+        var redirectPath = null;
+        try {
+            redirectPath = sessionStorage.getItem('spa-redirect');
+            sessionStorage.removeItem('spa-redirect');
+            sessionStorage.removeItem('spa-referrer');
+        } catch (e) {}
         try {
             await loadCatalog();
             await loadValidationReport();
             bindEvents();
             filterAndRender();
 
-            var redirectPath = sessionStorage.getItem('spa-redirect');
+            // Put the skill link's address back, with the query and hash it kept. Not earlier:
+            // the relative URLs above need /.
             if (redirectPath) {
-                sessionStorage.removeItem('spa-redirect');
-                history.replaceState(null, '', redirectPath);
+                history.replaceState(null, '', redirectPath + window.location.search + window.location.hash);
             }
             var match = window.location.pathname.match(/^\/skill\/([^/]+)\/?$/);
             if (match && catalog.skills[match[1]]) {
