@@ -50,9 +50,11 @@ jobs:
         run: |
           echo "Scanning diff for AI language patterns..."
 
+          # A PR that adds no line to these files gives grep nothing to match, and grep then
+          # exits 1, which stops this bash -e step before any check: there is nothing to scan.
           DIFF=$(git diff "$BASE_SHA".."$HEAD_SHA" -- \
             '*.md' '*.mdx' '*.txt' '*.yaml' '*.yml' '*.json' \
-            | grep '^+' | grep -v '^+++')
+            | grep '^+' | grep -v '^+++' || true)
 
           FOUND=0
 
