@@ -6,7 +6,7 @@ default:
 
 # Serve the website locally with hot reload
 serve:
-    npx live-server docs --port=8080
+    npx live-server docs --port=8080 --no-browser
 
 # Build the catalog from skills
 build-catalog:

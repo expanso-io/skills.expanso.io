@@ -21,6 +21,11 @@ jobs:
         run: |
           yamllint -d relaxed skills/ || true
 
+      - name: Prevent development servers from opening browsers
+        run: |
+          ./scripts/test-check-no-auto-open.sh
+          uv run -s scripts/check-no-auto-open.py
+
       - name: Validate skill structure
         run: |
           echo "Checking skill directory structure..."
